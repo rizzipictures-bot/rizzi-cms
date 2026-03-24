@@ -93,36 +93,97 @@
     #cursor-label.show { opacity: 1; }
 
     /* ══════════════════════════════════════════════════════════════
-       SPLASH SCREEN (rizzi-web)
+       LANDING PAGE HERO
     ══════════════════════════════════════════════════════════════ */
-    #splash {
+    #landing {
       position: fixed; inset: 0;
-      background: var(--black);
       z-index: 1000;
-      display: flex;
-      align-items: center;
-      padding: var(--pad);
-      animation: splashOut 3.8s linear 1 forwards;
+      background: #000;
+      cursor: none;
     }
-    #splash .line {
-      color: var(--white);
-      font-size: 13px;
-      letter-spacing: 0.4px;
-      animation: textIn 2.4s linear 1 forwards;
+    /* Foto a tutto schermo */
+    #landing-photo {
+      position: absolute; inset: 0;
+      background: url('images/landing-hero.png') center center / cover no-repeat;
       opacity: 0;
+      transition: opacity 1.2s ease;
     }
-    #splash .line:nth-child(2) { animation-delay: .4s; }
-    #splash .line b { color: var(--yellow); font-weight: 900; }
-    @keyframes splashOut {
-      70%  { transform: translateY(0); }
-      100% { transform: translateY(-100vh); }
+    #landing.photo-visible #landing-photo {
+      opacity: 1;
+    }
+    /* Lettering in alto a sinistra */
+    #landing-text {
+      position: absolute;
+      top: var(--pad);
+      left: var(--pad);
+      font-family: var(--font-nav);
+      font-size: 11px;
+      font-weight: 400;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--white);
+      opacity: 0;
+      transition: opacity 0.8s ease 0.4s;
+      pointer-events: none;
+    }
+    #landing.photo-visible #landing-text {
+      opacity: 1;
+    }
+    /* Banda nera superiore — parte coperta, poi sale */
+    #landing-band {
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 50vh;
+      background: var(--black);
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      padding: calc(var(--nav-h) + 16px) calc(var(--pad) + 24px) 28px;
+      transform: translateY(0);
+      transition: transform 0.7s cubic-bezier(0.76, 0, 0.24, 1);
+    }
+    #landing.band-up #landing-band {
+      transform: translateY(-102%);
+    }
+    /* Voci menu nella banda */
+    #landing-band .lband-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      flex: 1;
+    }
+    #landing-band .lband-col {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+    #landing-band .lband-col a {
+      font-size: 15px;
+      font-weight: 400;
+      color: var(--white);
+      line-height: 1.7;
+      transition: opacity .1s;
+    }
+    #landing-band .lband-col a.bold { font-weight: 700; }
+    #landing-band .lband-col a:hover { opacity: .5; }
+    #landing-band .lband-secondary {
+      display: flex;
+      gap: 24px;
+    }
+    #landing-band .lband-secondary a {
+      font-size: 11px;
+      font-weight: 300;
+      color: #aaa;
+    }
+    /* Nasconde la landing dopo l'uscita */
+    #landing.gone {
+      pointer-events: none;
+      display: none;
     }
     @keyframes textIn {
       0%   { opacity: 0; }
       20%  { opacity: 1; }
-      70%  { opacity: 1; transform: translateY(0); }
-      90%  { opacity: .2; transform: translateY(-4vh); }
-      100% { opacity: 0; transform: translateY(-5vh); }
+      70%  { opacity: 1; }
+      100% { opacity: 1; }
     }
 
     /* ══════════════════════════════════════════════════════════════
@@ -950,11 +1011,35 @@
 <div id="cursor"></div>
 <div id="cursor-label"></div>
 
-<!-- Splash screen -->
-<div id="splash">
-  <div>
-    <div class="line">Alessandro Rizzi — <b>Portfolio</b></div>
-    <div class="line" style="margin-top:4px; font-size:10px; color:#aaa">Proposta integrazione design</div>
+<!-- Landing page hero -->
+<div id="landing">
+  <!-- Foto a tutto schermo -->
+  <div id="landing-photo"></div>
+  <!-- Lettering -->
+  <div id="landing-text">Index of the works</div>
+  <!-- Banda nera con menu -->
+  <div id="landing-band">
+    <div class="lband-grid">
+      <div class="lband-col">
+        <a href="#" class="bold" id="lband-overview">Overview</a>
+        <a href="#" id="lband-cities">Cities</a>
+        <a href="#" id="lband-archive">Archive</a>
+      </div>
+      <div class="lband-col" id="lband-col-projects">
+        <!-- progetti Cities popolati da JS -->
+      </div>
+      <div class="lband-col">
+        <a href="#" id="lband-interview">Interview</a>
+      </div>
+      <div class="lband-col">
+        <a href="#">About</a>
+        <a href="#">Contact</a>
+        <a href="#">Instagram</a>
+      </div>
+    </div>
+    <div class="lband-secondary">
+      <a href="#">Alessandro Rizzi</a>
+    </div>
   </div>
 </div>
 
@@ -1912,6 +1997,87 @@ async function loadFromCMS() {
 }
 
 loadFromCMS();
+
+// ══════════════════════════════════════════════════════════════════
+// LANDING PAGE HERO
+// ══════════════════════════════════════════════════════════════════
+(function() {
+  const landing = document.getElementById('landing');
+  if (!landing) return;
+
+  let dismissed = false;
+  let autoTimer = null;
+
+  function dismissLanding(targetView, targetProject) {
+    if (dismissed) return;
+    dismissed = true;
+    clearTimeout(autoTimer);
+
+    // Alza la banda nera
+    landing.classList.add('band-up');
+
+    // Dopo l'animazione, rimuovi la landing
+    setTimeout(() => {
+      landing.classList.add('gone');
+      // Naviga alla sezione scelta (se cliccata dal menu)
+      if (targetView) {
+        switchView(targetView);
+        if (targetProject) setTimeout(() => openGallery(targetProject), 50);
+      }
+    }, 750);
+  }
+
+  // Mostra la foto dopo 300ms (fade in)
+  setTimeout(() => landing.classList.add('photo-visible'), 300);
+
+  // Auto-dismiss dopo 3 secondi
+  autoTimer = setTimeout(() => dismissLanding(null), 3000);
+
+  // Click ovunque sulla landing (non sui link del menu)
+  landing.addEventListener('click', e => {
+    // Se il click è su un link del menu, lascia gestire al link
+    if (e.target.tagName === 'A') return;
+    dismissLanding(null);
+  });
+
+  // Click sui link del menu nella banda
+  const lbOverview  = document.getElementById('lband-overview');
+  const lbCities    = document.getElementById('lband-cities');
+  const lbArchive   = document.getElementById('lband-archive');
+  const lbInterview = document.getElementById('lband-interview');
+
+  if (lbOverview)  lbOverview.addEventListener('click',  e => { e.preventDefault(); dismissLanding('home'); });
+  if (lbCities)    lbCities.addEventListener('click',    e => { e.preventDefault(); dismissLanding('gallery'); });
+  if (lbArchive)   lbArchive.addEventListener('click',   e => { e.preventDefault(); dismissLanding('archive'); });
+  if (lbInterview) lbInterview.addEventListener('click', e => { e.preventDefault(); dismissLanding('interview'); });
+
+  // Popola la colonna progetti Cities nella banda
+  function populateLandingProjects() {
+    const col = document.getElementById('lband-col-projects');
+    if (!col) return;
+    col.innerHTML = '';
+    PROJECTS.forEach(p => {
+      const catId = (p.category_id || p.section || '').toLowerCase();
+      if (catId === 'cities' || catId === 'gallery') {
+        const a = document.createElement('a');
+        a.href = '#';
+        a.textContent = p.title + (p.year ? ', ' + p.year : '');
+        a.addEventListener('click', e => { e.preventDefault(); dismissLanding('gallery', p); });
+        col.appendChild(a);
+      }
+    });
+  }
+
+  // Aspetta che il CMS carichi i progetti, poi popola
+  const origLoadFromCMS = window._onCMSLoaded;
+  window._onCMSLoaded = function() {
+    if (origLoadFromCMS) origLoadFromCMS();
+    populateLandingProjects();
+  };
+  // Fallback: prova subito e dopo 1s
+  populateLandingProjects();
+  setTimeout(populateLandingProjects, 1200);
+})();
 
 // ══════════════════════════════════════════════════════════════════
 // PULSANTE AGGIORNA — visibile solo su localhost
