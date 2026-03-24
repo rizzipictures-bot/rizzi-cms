@@ -318,18 +318,17 @@
       flex-direction: column;
     }
     #view-home .thumbs-grid {
-      /* CSS Grid: Miechowski style — 9 colonne fisse, celle quadrate */
+      /* Miechowski: 9 colonne fisse, celle quadrate, gap minimo */
       display: grid;
       grid-template-columns: repeat(9, 1fr);
-      grid-auto-rows: calc((100vw - 32px) / 9);
-      gap: 4px;
-      padding: 0 16px;
+      /* Righe quadrate: altezza = 1/9 della larghezza del container */
+      grid-auto-rows: calc((100vw) / 9);
+      gap: 2px;
+      padding: 0;
       margin-top: 0;
     }
     #view-home .thumbs-grid .thumb-item {
-      display: flex;
-      align-items: center;
-      justify-content: center;
+      display: block;
       position: relative;
       overflow: hidden;
       cursor: none;
@@ -339,16 +338,22 @@
       display: block;
       width: 100%;
       height: 100%;
-      object-fit: contain;
-      object-position: center;
+      object-fit: cover;
+      object-position: center top;
       transition: opacity .25s var(--ease-out);
+    }
+    /* Foto orizzontale: mostra tutta la foto con spazio bianco sopra/sotto */
+    #view-home .thumbs-grid .thumb-item.is-landscape img {
+      object-fit: contain;
+      object-position: center center;
+      background: #fff;
     }
     #view-home .thumbs-grid .thumb-item:hover img {
       opacity: .75;
     }
-    /* Spazio vuoto Miechowski — cella intera vuota */
+    /* Spazio vuoto Miechowski — cella bianca vuota */
     #view-home .thumbs-grid .thumb-blank {
-      background: transparent;
+      background: #fff;
     }
     /* Nome progetto fisso sopra la griglia — centrato, stile Miechowski */
     #overview-project-name {
@@ -742,6 +747,12 @@
       background: #000;
     }
     [data-theme="dark"] #view-home .thumbs-grid .thumb-item {
+      background: #000;
+    }
+    [data-theme="dark"] #view-home .thumbs-grid .thumb-blank {
+      background: #000;
+    }
+    [data-theme="dark"] #view-home .thumbs-grid .thumb-item.is-landscape img {
       background: #000;
     }
     [data-theme="dark"] #view-home .thumbs-grid .thumb-item img {
@@ -1466,15 +1477,21 @@ function buildOverviewGrid() {
     el.src     = img.url;
     el.alt     = img.project.title;
     el.loading = 'lazy';
+    // Rileva foto orizzontale dopo il caricamento
+    el.addEventListener('load', function() {
+      if (this.naturalWidth > this.naturalHeight) {
+        item.classList.add('is-landscape');
+      }
+    });
     item.appendChild(el);
 
-    // Hover: mostra il nome del progetto
+    // Hover: mostra il nome del progetto centrato
     const nameEl = document.getElementById('overview-project-name');
     item.addEventListener('mouseenter', () => {
       if (nameEl) nameEl.textContent = img.project.title || '';
     });
     item.addEventListener('mouseleave', () => {
-      if (nameEl) nameEl.innerHTML = '&nbsp;';
+      if (nameEl) nameEl.innerHTML = '\u00a0';
     });
 
     // Click apre l'overlay
