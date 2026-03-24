@@ -422,12 +422,12 @@
       max-height: calc(var(--vh, 1vh) * 65);
       display: block;
       object-fit: contain;
-      /* Animazione dall'alto verso il basso — identica all'overview */
-      clip-path: inset(0 0 0% 0);
-      transition: clip-path .65s cubic-bezier(.77, 0, .175, 1);
-    }
-    .gallery-main-img-wrap img.fade {
+      /* Stato iniziale: nascosta (come overview-overlay-img) */
       clip-path: inset(0 0 100% 0);
+      transition: clip-path .7s cubic-bezier(.77, 0, .175, 1);
+    }
+    .gallery-main-img-wrap img.revealed {
+      clip-path: inset(0 0 0% 0);
     }
     .gallery-info-row {
       display: flex;
@@ -1523,13 +1523,22 @@ function renderGallery() {
   const img = p.images[galleryIndex];
   const ri  = REAL_IMAGES[p.realImages ? p.realImages[galleryIndex] : galleryIndex];
 
-  // Foto principale — animazione dall'alto verso il basso (identica all'overview)
+  // Foto principale — animazione identica all'overview (clip-path dall'alto)
   const mainImg = document.getElementById('gallery-img');
-  mainImg.classList.add('fade');          // clip-path chiude verso il basso
-  setTimeout(() => {
-    mainImg.src = img.url;                // cambia immagine mentre è nascosta
-    mainImg.classList.remove('fade');    // clip-path si apre dall'alto verso il basso
-  }, 220);
+
+  // Rimuovi revealed → foto torna nascosta (clip-path: inset 100%)
+  mainImg.classList.remove('revealed');
+
+  // Aspetta che il browser applichi lo stato nascosto, poi cambia src e rivela
+  // Usiamo requestAnimationFrame doppio per garantire il reflow
+  requestAnimationFrame(() => {
+    requestAnimationFrame(() => {
+      mainImg.src = img.url;
+      // Forza reflow
+      void mainImg.offsetWidth;
+      mainImg.classList.add('revealed');
+    });
+  });
 
   // Didascalia: titolo + anno
   const caption = ri ? `${ri.title}, ${ri.year}` : '';
