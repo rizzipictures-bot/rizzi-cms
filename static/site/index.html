@@ -170,9 +170,11 @@
       color: rgba(255,255,255,0.7);
       letter-spacing: 0.06em;
     }
-    /* Quando la banda sale: la foto rimane, click ovunque → Overview */
+    /* Quando la banda sale: la navbar torna accessibile */
     #landing.band-up {
-      cursor: none;
+      cursor: pointer;
+      /* Lascia passare i click nella zona header */
+      clip-path: inset(var(--nav-h) 0 0 0);
     }
     /* Nasconde la landing dopo l'uscita */
     #landing.gone {
