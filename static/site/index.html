@@ -1666,6 +1666,14 @@ function openGallery(project) {
 function renderGallery() {
   if (!galleryProject) return;
   const p   = galleryProject;
+  console.log(`renderGallery: "${p.title}" | ${p.images.length} immagini | index=${galleryIndex}`);
+  if (!p.images || p.images.length === 0) {
+    console.warn('renderGallery: nessuna immagine nel progetto');
+    document.getElementById('gallery-series-title').textContent = p.title + (p.year ? ' — ' + p.year : '');
+    document.getElementById('gallery-img').src = '';
+    document.getElementById('gallery-thumbs').innerHTML = '';
+    return;
+  }
   const img = p.images[galleryIndex];
   const ri  = REAL_IMAGES[p.realImages ? p.realImages[galleryIndex] : galleryIndex];
 
@@ -1678,7 +1686,8 @@ function renderGallery() {
   mainImg.style.clipPath = 'inset(0 0 100% 0)';
 
   // 2. Cambia l'immagine
-  mainImg.src = img.url;
+  mainImg.src = img ? img.url : '';
+  console.log(`  img.url = ${img ? img.url : 'undefined'}`);
 
   // 3. Dopo un frame, riabilita la transition e apri dall'alto
   setTimeout(() => {
@@ -2028,6 +2037,10 @@ async function loadFromCMS() {
 
       usedCMS = true;
       console.log(`CMS: caricati ${CMS_CATEGORIES.length} categorie, ${PROJECTS.length} progetti, ${ALL_IMAGES.length} immagini`);
+      PROJECTS.forEach(p => {
+        console.log(`  Progetto: "${p.title}" | category_id=${p.category_id} | immagini=${p.images.length}`);
+        if (p.images.length > 0) console.log(`    Prima img URL: ${p.images[0].url}`);
+      });
     } else {
       console.log('CMS: nessun progetto trovato, uso dati statici');
     }
