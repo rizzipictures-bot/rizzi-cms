@@ -583,10 +583,10 @@
       z-index: 500;
       transform: translateY(-102%);
       transition: transform .3s var(--ease-custom);
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      padding: var(--pad) var(--pad) var(--pad) calc(var(--pad) + 24px);
-      padding-top: calc(var(--nav-h) + 16px);
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      padding: calc(var(--nav-h) + 16px) calc(var(--pad) + 24px) 28px;
       cursor: none;
     }
     #menu-overlay.open { transform: translateY(0); }
@@ -640,6 +640,11 @@
     }
     #menu-overlay ul li .sub-list li a:hover { opacity: .5; color: var(--white); }
 
+    #menu-overlay ul.secondary {
+      display: flex;
+      flex-direction: row;
+      gap: 24px;
+    }
     #menu-overlay ul.secondary li a {
       font-size: 11px;
       font-weight: 300;
