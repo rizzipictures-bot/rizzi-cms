@@ -1692,10 +1692,10 @@ function buildMenuSubItems() {
     });
     li.appendChild(a);
 
-    const sec = (p.section || 'archive').toLowerCase();
-    if (sec === 'cities' || sec === 'gallery') {
+    const catId = (p.category_id || p.section || 'archive').toLowerCase();
+    if (catId === 'cities' || catId === 'gallery') {
       subCities.appendChild(li);
-    } else if (sec === 'interview') {
+    } else if (catId === 'interview') {
       subInterview.appendChild(li.cloneNode(true));
       li.querySelector('a').addEventListener('click', e => {
         e.preventDefault();
@@ -1997,7 +1997,10 @@ async function loadFromCMS() {
     buildMenuSubItems(); // fallback statico
   }
 
-  if (PROJECTS.length > 0) openGallery(PROJECTS[0]);
+  // Apri il primo progetto Cities per default
+  const firstCities = PROJECTS.find(p => (p.category_id || p.section || '').toLowerCase() === 'cities');
+  if (firstCities) openGallery(firstCities);
+  else if (PROJECTS.length > 0) openGallery(PROJECTS[0]);
   updateFooter();
 }
 
