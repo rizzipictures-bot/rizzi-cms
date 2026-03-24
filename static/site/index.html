@@ -1940,8 +1940,15 @@ async function loadFromCMS() {
     const cmsProjects = await projRes.json();
 
     if (cmsProjects && cmsProjects.length > 0) {
-      // Converte i progetti CMS nel formato usato dal prototipo
+      // Mantieni i progetti statici Cities (category_id: 'cities') e sostituisci solo gli altri
+      const staticCitiesProjects = PROJECTS.filter(p => p.category_id === 'cities' || (!p.category_id && p.id && p.id.includes('-')));
+
+      // Rimuovi solo i progetti non-cities dall'array
       PROJECTS.length = 0;
+      // Reinserisci i progetti Cities statici
+      staticCitiesProjects.forEach(p => PROJECTS.push(p));
+
+      // Aggiungi i progetti dal CMS
       cmsProjects.forEach(p => {
         // Risolve la categoria: usa category_id (Approccio B) oppure fallback su section
         const cat = CMS_CATEGORIES.find(c => c.id === p.category_id);
@@ -1968,11 +1975,14 @@ async function loadFromCMS() {
         PROJECTS.push(proj);
       });
 
-      // Aggiorna ALL_IMAGES con le immagini CMS
+      // ALL_IMAGES: mantieni le immagini statiche (Cities) + aggiungi quelle CMS
       ALL_IMAGES.length = 0;
-      PROJECTS.forEach(p => {
-        p.images.forEach(img => {
-          ALL_IMAGES.push({ url: img.url, ar: img.ar, project: p });
+      // Ripristina le immagini statiche originali per Overview
+      REAL_IMAGES.forEach((img, i) => {
+        ALL_IMAGES.push({
+          url: img.file,
+          ar: img.ar,
+          project: PROJECTS.find(p => p.realImages && p.realImages.includes(i)) || PROJECTS[0]
         });
       });
 
