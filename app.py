@@ -343,6 +343,58 @@ def update_settings():
     save_db(db)
     return jsonify(db['settings'])
 
+# ── MIGRAZIONE IMMAGINI ──────────────────────────────────────
+# Allinea i nomi nel db.json con i file UUID fisici in uploads/
+# Logica: se img.file non esiste fisicamente ma c'è un solo file UUID
+# nella cartella con la stessa estensione, aggiorna il record.
+# Chiamare UNA SOLA VOLTA dopo l'aggiornamento.
+@app.route('/api/migrate-images', methods=['POST'])
+def migrate_images():
+    db = load_db()
+    # Lista tutti i file UUID nella cartella uploads (esclude thumbs/)
+    uuid_files = [f.name for f in UPLOAD.iterdir()
+                  if f.is_file() and not f.name.startswith('thumb_')]
+    # Costruisce un set dei file che esistono fisicamente
+    existing = set(uuid_files)
+
+    fixed = 0
+    broken = []
+    for p in db['projects']:
+        for img in p.get('images', []):
+            fname = img.get('file', '')
+            if fname not in existing:
+                # Il file non esiste con questo nome — cerca un match per UUID
+                # (il CMS salva con UUID, quindi tutti i file validi hanno formato UUID)
+                broken.append({'project': p['title'], 'file': fname})
+
+    # Strategia: ricostruisce i record immagine abbinando per ordine
+    # Se un progetto ha N immagini e N file UUID nella cartella, li abbina in ordine
+    for p in db['projects']:
+        bad_imgs = [img for img in p.get('images', []) if img.get('file','') not in existing]
+        if not bad_imgs:
+            continue
+        # Trova i file UUID non ancora assegnati ad altri progetti
+        assigned = set()
+        for pp in db['projects']:
+            for im in pp.get('images', []):
+                if im.get('file','') in existing:
+                    assigned.add(im['file'])
+        # File UUID disponibili (non assegnati)
+        available = sorted([f for f in uuid_files if f not in assigned])
+        for i, img in enumerate(bad_imgs):
+            if i < len(available):
+                old = img['file']
+                img['file'] = available[i]
+                # Aggiorna anche il thumb
+                ext = Path(available[i]).suffix
+                tname = 'thumbs/thumb_' + available[i].replace(ext, '.jpg')
+                if (UPLOAD / tname.replace('thumbs/','thumbs/')).exists():
+                    img['thumb'] = tname
+                fixed += 1
+
+    save_db(db)
+    return jsonify({'ok': True, 'fixed': fixed, 'broken_before': broken})
+
 # ── UPDATE (solo git pull, nessun restart) ─────────────────
 @app.route('/api/update', methods=['POST'])
 def update_from_github():

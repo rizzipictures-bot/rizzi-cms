@@ -1805,33 +1805,6 @@ document.querySelectorAll('#menu-overlay .has-sub > a').forEach(a => {
 
 // Popola il menu griglia con i progetti
 function buildMenuSubItems() {
-  const col2 = document.getElementById('menu-col-2');
-  const col3 = document.getElementById('menu-col-3');
-  col2.innerHTML = '';
-  // Ripristina Interview in col3
-  col3.innerHTML = '<a href="#" data-view="interview">Interview</a>';
-  col3.querySelector('a').addEventListener('click', e => {
-    e.preventDefault();
-    document.getElementById('menu-overlay').classList.remove('open');
-    switchView('interview');
-  });
-
-  PROJECTS.forEach(p => {
-    const catId = (p.category_id || p.section || 'archive').toLowerCase();
-    if (catId === 'cities' || catId === 'gallery') {
-      const a = document.createElement('a');
-      a.href = '#';
-      a.textContent = p.title + (p.year ? ', ' + p.year : '');
-      a.addEventListener('click', e => {
-        e.preventDefault();
-        document.getElementById('menu-overlay').classList.remove('open');
-        switchView('gallery');
-        setTimeout(() => openGallery(p), 50);
-      });
-      col2.appendChild(a);
-    }
-  });
-
   // Click su voci principali col1
   const linkOverview = document.getElementById('menu-link-overview');
   const linkCities   = document.getElementById('menu-link-cities');
