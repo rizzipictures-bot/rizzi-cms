@@ -102,27 +102,36 @@
       cursor: none;
       overflow: hidden;
     }
-    /* Foto a tutto schermo — visibile subito, sempre sotto la banda */
+    /* Foto a tutto schermo — sempre visibile, copre tutto */
     #landing-photo {
       position: absolute; inset: 0;
       background: url('images/landing-hero.webp') center center / cover no-repeat;
-      opacity: 1;
+      z-index: 1;
+    }
+    /* Banda bianca in cima alla foto (visibile quando la banda nera sale) */
+    #landing-photo::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 36px;
+      background: #fff;
+      z-index: 2;
     }
     /* Lettering in alto a sinistra — appare quando la banda sale */
     #landing-text {
       position: absolute;
-      top: var(--pad);
-      left: var(--pad);
+      top: 8px;
+      left: 16px;
       font-family: var(--font-nav);
       font-size: 11px;
       font-weight: 400;
       letter-spacing: 0.12em;
       text-transform: uppercase;
-      color: var(--white);
+      color: var(--black);
       opacity: 0;
       transition: opacity 0.6s ease 0.5s;
       pointer-events: none;
-      z-index: 2;
+      z-index: 4;
     }
     #landing.band-up #landing-text {
       opacity: 1;
@@ -132,11 +141,11 @@
       position: absolute;
       top: 0; left: 0; right: 0;
       height: 50vh;
-      background: var(--black);
+      background: #000;
       display: flex;
       flex-direction: column;
       justify-content: flex-start;
-      padding: 40px var(--pad) 40px;
+      padding: 16px 16px 40px;
       transform: translateY(0);
       transition: transform 0.9s cubic-bezier(0.76, 0, 0.24, 1);
       z-index: 3;
@@ -149,9 +158,21 @@
       font-family: var(--font-nav);
       font-size: 13px;
       font-weight: 700;
-      color: var(--white);
+      color: #fff;
       letter-spacing: 0.04em;
-      margin-bottom: 0;
+      margin-bottom: 6px;
+    }
+    /* Sottotitolo nella banda */
+    #landing-band .lband-subtitle {
+      font-family: var(--font-nav);
+      font-size: 11px;
+      font-weight: 400;
+      color: rgba(255,255,255,0.7);
+      letter-spacing: 0.06em;
+    }
+    /* Quando la banda sale: la foto rimane, click ovunque → Overview */
+    #landing.band-up {
+      cursor: none;
     }
     /* Nasconde la landing dopo l'uscita */
     #landing.gone {
@@ -326,6 +347,26 @@
     /* Spazio vuoto Miechowski — cella intera vuota */
     #view-home .thumbs-grid .thumb-blank {
       background: transparent;
+    }
+    /* Nome progetto fisso sopra la griglia */
+    #overview-project-name {
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      padding: 10px 16px 6px;
+      font-family: var(--font-nav);
+      font-size: 11px;
+      font-weight: 400;
+      letter-spacing: 0.08em;
+      color: var(--black);
+      background: var(--white);
+      min-height: 28px;
+      transition: color .2s;
+      pointer-events: none;
+    }
+    [data-theme="dark"] #overview-project-name {
+      background: #000;
+      color: #fff;
     }
 
     /* Overlay preview — jackdavison style */
@@ -999,11 +1040,10 @@
 <div id="landing">
   <!-- Foto a tutto schermo (sotto la banda) -->
   <div id="landing-photo"></div>
-  <!-- Lettering visibile dopo che la banda sale -->
-  <div id="landing-text">Index of the works</div>
   <!-- Banda nera a tutto schermo -->
   <div id="landing-band">
     <div class="lband-name">Alessandro Rizzi</div>
+    <div class="lband-subtitle">Index of the works</div>
   </div>
 </div>
 
@@ -1048,6 +1088,8 @@
 
     <!-- ── VIEW: HOME — Thumbs Grid (jackdavison / Miechowski) ── -->
     <div class="view active" id="view-home">
+      <!-- Nome progetto fisso, allineato alla griglia -->
+      <div id="overview-project-name">&nbsp;</div>
       <div class="thumbs-grid" id="thumbs-grid">
         <!-- Generata via JS -->
       </div>
@@ -1423,7 +1465,16 @@ function buildOverviewGrid() {
     el.loading = 'lazy';
     item.appendChild(el);
 
-    // Solo click apre l'overlay — nessun hover
+    // Hover: mostra il nome del progetto
+    const nameEl = document.getElementById('overview-project-name');
+    item.addEventListener('mouseenter', () => {
+      if (nameEl) nameEl.textContent = img.project.title || '';
+    });
+    item.addEventListener('mouseleave', () => {
+      if (nameEl) nameEl.innerHTML = '&nbsp;';
+    });
+
+    // Click apre l'overlay
     item.addEventListener('click', () => showOverview(img, i));
 
     grid.appendChild(item);
@@ -1960,39 +2011,38 @@ loadFromCMS();
   const landing = document.getElementById('landing');
   if (!landing) return;
 
-  let dismissed = false;
+  let bandUp = false;
   let autoTimer = null;
 
-  function dismissLanding(targetView, targetProject) {
-    if (dismissed) return;
-    dismissed = true;
+  function raiseBand() {
+    if (bandUp) return;
+    bandUp = true;
     clearTimeout(autoTimer);
-
-    // Alza la banda nera
+    // Alza la banda nera, lascia la foto visibile
     landing.classList.add('band-up');
-
-    // Dopo l'animazione, rimuovi la landing
-    setTimeout(() => {
-      landing.classList.add('gone');
-      // Naviga alla sezione scelta (se cliccata dal menu)
-      if (targetView) {
-        switchView(targetView);
-        if (targetProject) setTimeout(() => openGallery(targetProject), 50);
-      }
-    }, 750);
+    // Abilita il click sulla foto per andare all'Overview
+    landing.style.cursor = 'pointer';
   }
 
-  // Mostra la foto dopo 300ms (fade in)
-  setTimeout(() => landing.classList.add('photo-visible'), 300);
+  function goToOverview() {
+    // Chiudi la landing e vai all'Overview
+    landing.classList.add('gone');
+    switchView('home');
+  }
 
-  // Auto-dismiss dopo 3 secondi
-  autoTimer = setTimeout(() => dismissLanding(null), 3000);
+  // Auto-alza la banda dopo 3 secondi
+  autoTimer = setTimeout(raiseBand, 3000);
 
-  // Click ovunque sulla landing (non sui link del menu)
+  // Click ovunque sulla landing
   landing.addEventListener('click', e => {
-    // Se il click è su un link del menu, lascia gestire al link
     if (e.target.tagName === 'A') return;
-    dismissLanding(null);
+    if (bandUp) {
+      // Banda già salita: vai all'Overview
+      goToOverview();
+    } else {
+      // Banda ancora visibile: alzala subito
+      raiseBand();
+    }
   });
 
   // Click sui link del menu nella banda
@@ -2001,10 +2051,18 @@ loadFromCMS();
   const lbArchive   = document.getElementById('lband-archive');
   const lbInterview = document.getElementById('lband-interview');
 
-  if (lbOverview)  lbOverview.addEventListener('click',  e => { e.preventDefault(); dismissLanding('home'); });
-  if (lbCities)    lbCities.addEventListener('click',    e => { e.preventDefault(); dismissLanding('gallery'); });
-  if (lbArchive)   lbArchive.addEventListener('click',   e => { e.preventDefault(); dismissLanding('archive'); });
-  if (lbInterview) lbInterview.addEventListener('click', e => { e.preventDefault(); dismissLanding('interview'); });
+  function goToView(view) {
+    raiseBand();
+    setTimeout(() => {
+      landing.classList.add('gone');
+      switchView(view);
+    }, 950);
+  }
+
+  if (lbOverview)  lbOverview.addEventListener('click',  e => { e.preventDefault(); goToView('home'); });
+  if (lbCities)    lbCities.addEventListener('click',    e => { e.preventDefault(); goToView('gallery'); });
+  if (lbArchive)   lbArchive.addEventListener('click',   e => { e.preventDefault(); goToView('archive'); });
+  if (lbInterview) lbInterview.addEventListener('click', e => { e.preventDefault(); goToView('interview'); });
 
   // Popola la colonna progetti Cities nella banda
   function populateLandingProjects() {
@@ -2017,7 +2075,7 @@ loadFromCMS();
         const a = document.createElement('a');
         a.href = '#';
         a.textContent = p.title + (p.year ? ', ' + p.year : '');
-        a.addEventListener('click', e => { e.preventDefault(); dismissLanding('gallery', p); });
+        a.addEventListener('click', e => { e.preventDefault(); goToView('gallery'); });
         col.appendChild(a);
       }
     });
