@@ -157,7 +157,7 @@
       text-transform: none;
       /* Allineato al margine sx della griglia (padding header = 12px) */
     }
-    .logo span { color: var(--accent); }
+    .logo span { color: #000; }
 
     /* Nav — testo puro, nessun box/pill */
     nav.pill-nav {
@@ -190,10 +190,11 @@
     }
     nav.pill-nav button:hover,
     nav.pill-nav a:hover {
-      color: var(--gray);
+      color: #000;
+      opacity: 0.6;
     }
     nav.pill-nav button.active {
-      color: var(--gray);
+      color: #000;
       font-weight: 700;
     }
     /* Pulsante Aggiorna — solo localhost */
@@ -204,11 +205,11 @@
     }
     #btn-update:hover { opacity: 1 !important; }
     #btn-update.updating { opacity: 0.4 !important; pointer-events: none; }
-    /* Menu, Theme e Screensaver restano grigi */
+    /* Menu, Theme e Screensaver — nero pieno */
     nav.pill-nav #btn-menu,
     nav.pill-nav #btn-theme,
     nav.pill-nav #btn-screensaver {
-      color: var(--gray);
+      color: #000;
     }
     nav.pill-nav #btn-theme {
       font-size: 13px;
