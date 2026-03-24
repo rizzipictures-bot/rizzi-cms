@@ -959,6 +959,264 @@
     .interview-imgs img {
       width: 100%; height: auto; display: block;
     }
+
+    /* ══════════════════════════════════════════════════════════════════
+       ARCHIVE 2 — Box Nero Angelucci Style
+    ══════════════════════════════════════════════════════════════════ */
+
+    /* La view Archive 2 è un contenitore relativo che occupa tutto lo spazio */
+    #view-archive2 {
+      padding: 0 !important;
+      overflow: hidden !important;
+    }
+
+    /* Wrapper interno che gestisce il layout flex */
+    .a2-wrapper {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    /* Striscia titoli orizzontale */
+    .a2-titles-strip {
+      position: relative;
+      z-index: 10;
+      width: 100%;
+      padding: 24px 32px 16px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0;
+      flex-shrink: 0;
+    }
+    .a2-title-item {
+      font-family: var(--font-nav);
+      font-size: clamp(22px, 3.5vw, 44px);
+      font-weight: 400;
+      line-height: 1.2;
+      color: var(--black);
+      cursor: none;
+      padding: 4px 0;
+      margin-right: 36px;
+      margin-bottom: 4px;
+      position: relative;
+      transition: opacity .3s ease;
+      white-space: nowrap;
+    }
+    .a2-title-item::after {
+      content: '';
+      position: absolute;
+      bottom: 2px;
+      left: 0;
+      width: 0;
+      height: 1px;
+      background: var(--black);
+      transition: width .4s var(--ease-custom);
+    }
+    .a2-title-item:hover::after,
+    .a2-title-item.active::after {
+      width: 100%;
+    }
+    .a2-title-item.active {
+      opacity: 1;
+    }
+    .a2-title-item:not(.active) {
+      opacity: 0.35;
+    }
+    .a2-titles-strip:not(.has-active) .a2-title-item {
+      opacity: 1;
+    }
+
+    /* Area del box nero: occupa il resto dello spazio */
+    .a2-box-area {
+      position: relative;
+      flex: 1;
+      overflow: hidden;
+    }
+
+    /* Contenuto rivelato: foto + testo — sempre presente, sotto il box */
+    .a2-revealed-content {
+      position: absolute;
+      inset: 0;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 48px;
+      padding: 32px 48px;
+      align-items: start;
+      overflow: hidden;
+    }
+
+    /* Box nero: scende/sale con translateY */
+    .a2-black-box {
+      position: absolute;
+      inset: 0;
+      background: #000;
+      /* Stato iniziale: box copre tutto */
+      transform: translateY(0%);
+      transition: transform .85s cubic-bezier(.77, 0, .175, 1);
+      z-index: 5;
+      overflow: hidden;
+    }
+    /* Box aperto: scende, lascia visibile solo la maniglia in basso */
+    .a2-black-box.open {
+      transform: translateY(calc(100% - 48px));
+    }
+
+    /* Maniglia del box (in basso quando il box è aperto) */
+    .a2-box-handle {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 48px;
+      display: flex;
+      align-items: center;
+      padding: 0 32px;
+      cursor: none;
+      border-top: 1px solid rgba(255,255,255,0.15);
+    }
+    .a2-box-handle-label {
+      font-family: var(--font);
+      font-size: 10px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: rgba(255,255,255,0.5);
+      transition: color .3s ease;
+    }
+    .a2-black-box:hover .a2-box-handle-label {
+      color: rgba(255,255,255,0.9);
+    }
+
+    /* Contenuto nel box (visibile quando il box è in posizione alta) */
+    .a2-box-content {
+      position: absolute;
+      top: 48px;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      overflow: hidden;
+    }
+    .a2-content-inner {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 48px;
+      padding: 32px 48px;
+      height: 100%;
+      align-items: start;
+    }
+    .a2-photo-col {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+    .a2-main-photo {
+      width: 100%;
+      height: auto;
+      max-height: 55vh;
+      object-fit: contain;
+      object-position: left top;
+      display: block;
+      /* Animazione entrata dall'alto */
+      clip-path: inset(0 0 100% 0);
+      transition: clip-path .75s cubic-bezier(.77, 0, .175, 1);
+    }
+    .a2-main-photo.revealed {
+      clip-path: inset(0 0 0% 0);
+    }
+    .a2-photo-strip {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+      margin-top: 16px;
+    }
+    .a2-strip-thumb {
+      width: 60px;
+      height: 60px;
+      object-fit: cover;
+      cursor: none;
+      opacity: 0.6;
+      transition: opacity .2s ease;
+    }
+    .a2-strip-thumb:hover,
+    .a2-strip-thumb.active {
+      opacity: 1;
+    }
+    .a2-text-col {
+      color: #fff;
+      padding-top: 8px;
+    }
+    .a2-project-title {
+      font-family: var(--font-nav);
+      font-size: clamp(32px, 5vw, 64px);
+      font-weight: 400;
+      line-height: 1.05;
+      margin-bottom: 12px;
+      opacity: 0;
+      transform: translateY(20px);
+      transition: opacity .6s ease .3s, transform .6s var(--ease-custom) .3s;
+    }
+    .a2-project-title.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+    .a2-project-year {
+      font-family: var(--font);
+      font-size: 11px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: rgba(255,255,255,0.5);
+      margin-bottom: 24px;
+      opacity: 0;
+      transition: opacity .6s ease .45s;
+    }
+    .a2-project-year.visible {
+      opacity: 1;
+    }
+    .a2-project-desc {
+      font-family: var(--font-nav);
+      font-size: 15px;
+      line-height: 1.7;
+      color: rgba(255,255,255,0.8);
+      max-width: 480px;
+      opacity: 0;
+      transform: translateY(10px);
+      transition: opacity .6s ease .55s, transform .6s var(--ease-custom) .55s;
+    }
+    .a2-project-desc.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    /* Testo intro nel box (stato iniziale, box in alto) */
+    .a2-box-intro {
+      position: absolute;
+      inset: 48px 0 0 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .a2-box-intro-text {
+      font-family: var(--font-nav);
+      font-size: 13px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: rgba(255,255,255,0.25);
+    }
+
+    /* Testo nel contenuto rivelato (sfondo bianco) */
+    .a2-revealed-content .a2-text-col {
+      color: var(--black);
+    }
+    .a2-revealed-content .a2-project-title {
+      color: var(--black);
+    }
+    .a2-revealed-content .a2-project-year {
+      color: var(--gray);
+    }
+    .a2-revealed-content .a2-project-desc {
+      color: var(--black);
+    }
   </style>
 </head>
 <body>
@@ -1005,6 +1263,7 @@
     <nav class="pill-nav">
       <button class="active" data-view="home">Overview</button>
       <button data-view="archive">Archive</button>
+      <button data-view="archive2">Archive 2</button>
       <button data-view="interview">Interview</button>
       <button data-view="gallery">Cities</button>
       <button id="btn-menu">Menu</button>
@@ -1068,6 +1327,49 @@
         <div class="interview-label">Testi &amp; Interviste</div>
       </div>
       <div id="interview-list"></div>
+    </div>
+
+    <!-- ── VIEW: ARCHIVE 2 — Box nero Angelucci style ── -->
+    <div class="view" id="view-archive2">
+      <div class="a2-wrapper">
+
+        <!-- Striscia titoli orizzontale -->
+        <div class="a2-titles-strip" id="a2-titles-strip">
+          <!-- Generata via JS -->
+        </div>
+
+        <!-- Area box: contiene il contenuto rivelato E il box nero sopra -->
+        <div class="a2-box-area">
+
+          <!-- Contenuto rivelato: foto + testo (sempre presente, sotto il box) -->
+          <div class="a2-revealed-content">
+            <div class="a2-photo-col">
+              <img class="a2-main-photo" id="a2-main-photo" src="" alt="" />
+              <div class="a2-photo-strip" id="a2-photo-strip"></div>
+            </div>
+            <div class="a2-text-col">
+              <div class="a2-project-title" id="a2-project-title"></div>
+              <div class="a2-project-year" id="a2-project-year"></div>
+              <div class="a2-project-desc" id="a2-project-desc"></div>
+            </div>
+          </div>
+
+          <!-- Box nero: scende per rivelare il contenuto sopra -->
+          <div class="a2-black-box" id="a2-black-box">
+            <!-- Maniglia: click per alzare/abbassare il box -->
+            <div class="a2-box-handle" id="a2-box-handle" onclick="a2ToggleBox()">
+              <span class="a2-box-handle-label" id="a2-handle-label">Clicca per aprire</span>
+            </div>
+            <!-- Contenuto nel box (visibile quando il box è in alto: stato iniziale) -->
+            <div class="a2-box-content" id="a2-box-content">
+              <div class="a2-box-intro">
+                <div class="a2-box-intro-text">Seleziona un progetto</div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
     </div>
 
     <!-- ── VIEW: GALLERY — Nadav Kander style ── -->
@@ -1977,6 +2279,7 @@ async function loadFromCMS() {
   buildOverviewGrid();
   buildArchive();
   buildInterview();
+  buildArchive2();
 
   // Costruisce il menu: dinamico se CMS disponibile, statico altrimenti
   if (usedCMS && CMS_CATEGORIES.length > 0) {
@@ -1990,6 +2293,155 @@ async function loadFromCMS() {
 }
 
 loadFromCMS();
+
+// ══════════════════════════════════════════════════════════════════
+// ARCHIVE 2 — Box Nero Angelucci Style
+// ══════════════════════════════════════════════════════════════════
+let a2CurrentProject = null;
+let a2BoxOpen = false;
+
+function buildArchive2() {
+  const strip = document.getElementById('a2-titles-strip');
+  if (!strip) return;
+  strip.innerHTML = '';
+
+  // Prendi tutti i progetti (o solo quelli di categoria archive2 se esiste)
+  const a2Projects = PROJECTS.length > 0 ? PROJECTS : [];
+  if (a2Projects.length === 0) return;
+
+  a2Projects.forEach((p, i) => {
+    const span = document.createElement('span');
+    span.className = 'a2-title-item';
+    span.textContent = p.title;
+    span.dataset.idx = i;
+    span.addEventListener('click', () => openArchive2Project(p, span));
+    strip.appendChild(span);
+  });
+
+  // Apri il primo progetto di default
+  const firstSpan = strip.querySelector('.a2-title-item');
+  if (firstSpan) {
+    const firstProject = a2Projects[0];
+    openArchive2Project(firstProject, firstSpan);
+  }
+}
+
+function openArchive2Project(project, titleEl) {
+  a2CurrentProject = project;
+
+  // Aggiorna titoli attivi
+  const strip = document.getElementById('a2-titles-strip');
+  strip.classList.add('has-active');
+  strip.querySelectorAll('.a2-title-item').forEach(el => el.classList.remove('active'));
+  if (titleEl) titleEl.classList.add('active');
+
+  // Popola il contenuto nel box nero
+  const titleEl2 = document.getElementById('a2-project-title');
+  const yearEl   = document.getElementById('a2-project-year');
+  const descEl   = document.getElementById('a2-project-desc');
+  const mainImg  = document.getElementById('a2-main-photo');
+  const thumbStrip = document.getElementById('a2-photo-strip');
+
+  // Reset animazioni
+  titleEl2.classList.remove('visible');
+  yearEl.classList.remove('visible');
+  descEl.classList.remove('visible');
+  mainImg.classList.remove('revealed');
+
+  // Imposta contenuto
+  titleEl2.textContent = project.title || '';
+  yearEl.textContent   = [project.year, project.place, project.publication].filter(Boolean).join(' — ');
+  descEl.textContent   = project.description || '';
+
+  // Foto principale
+  if (project.images && project.images.length > 0) {
+    mainImg.src = project.images[0].url;
+    mainImg.onload = () => {
+      setTimeout(() => mainImg.classList.add('revealed'), 50);
+    };
+    // Se già caricata
+    if (mainImg.complete && mainImg.naturalWidth > 0) {
+      setTimeout(() => mainImg.classList.add('revealed'), 50);
+    }
+  } else {
+    mainImg.src = '';
+  }
+
+  // Thumbnail strip
+  thumbStrip.innerHTML = '';
+  if (project.images) {
+    project.images.forEach((img, i) => {
+      const t = document.createElement('img');
+      t.className = 'a2-strip-thumb' + (i === 0 ? ' active' : '');
+      t.src = img.thumb || img.url;
+      t.loading = 'lazy';
+      t.addEventListener('click', () => {
+        thumbStrip.querySelectorAll('.a2-strip-thumb').forEach(el => el.classList.remove('active'));
+        t.classList.add('active');
+        mainImg.classList.remove('revealed');
+        mainImg.src = img.url;
+        mainImg.onload = () => setTimeout(() => mainImg.classList.add('revealed'), 50);
+        if (mainImg.complete && mainImg.naturalWidth > 0) {
+          setTimeout(() => mainImg.classList.add('revealed'), 50);
+        }
+      });
+      thumbStrip.appendChild(t);
+    });
+  }
+
+  // Apri il box (abbassalo per rivelare il contenuto)
+  const box = document.getElementById('a2-black-box');
+  if (!a2BoxOpen) {
+    a2BoxOpen = true;
+    box.classList.add('open');
+    box.classList.remove('revealed');
+  }
+
+  // Anima il testo con un piccolo delay
+  setTimeout(() => {
+    titleEl2.classList.add('visible');
+    yearEl.classList.add('visible');
+    descEl.classList.add('visible');
+  }, 200);
+}
+
+function closeArchive2() {
+  const box = document.getElementById('a2-black-box');
+  a2BoxOpen = false;
+  box.classList.remove('open');
+  box.classList.add('revealed');
+
+  const strip = document.getElementById('a2-titles-strip');
+  strip.classList.remove('has-active');
+  strip.querySelectorAll('.a2-title-item').forEach(el => el.classList.remove('active'));
+
+  const label = document.getElementById('a2-handle-label');
+  if (label) label.textContent = 'Clicca per aprire';
+}
+
+function a2ToggleBox() {
+  const box   = document.getElementById('a2-black-box');
+  const label = document.getElementById('a2-handle-label');
+  if (a2BoxOpen) {
+    // Chiudi: box risale
+    a2BoxOpen = false;
+    box.classList.remove('open');
+    box.classList.add('revealed');
+    if (label) label.textContent = 'Clicca per aprire';
+  } else {
+    // Apri: box scende
+    if (!a2CurrentProject) return;
+    a2BoxOpen = true;
+    box.classList.add('open');
+    box.classList.remove('revealed');
+    if (label) label.textContent = a2CurrentProject.title || 'Chiudi';
+  }
+}
+
+// Click sulla maniglia del box: se aperto lo chiude, se chiuso lo apre
+document.addEventListener('DOMContentLoaded', () => {
+  // La maniglia viene aggiunta dinamicamente, usiamo event delegation
+});
 
 // ══════════════════════════════════════════════════════════════════
 // PULSANTE AGGIORNA — visibile solo su localhost
