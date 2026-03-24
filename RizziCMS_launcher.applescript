@@ -1,140 +1,179 @@
--- Rizzi CMS Launcher
--- Interfaccia grafica nativa Mac tramite AppleScript
--- Non richiede Tkinter né dipendenze esterne
+-- ============================================================
+-- Rizzi CMS Launcher v4
+-- Apri con Script Editor → File → Esporta → Applicazione
+-- ============================================================
 
-property CMS_DIR : (POSIX path of (path to home folder)) & "Library/Application Support/RizziCMS/rizzi-cms"
-property PORT : 5151
-property SITE_URL : "http://localhost:5151/"
-property CMS_URL : "http://localhost:5151/cms"
+set CMS_DIR to (POSIX path of (path to home folder)) & "Library/Application Support/RizziCMS/rizzi-cms"
+set SITE_URL to "http://localhost:5151/"
+set CMS_URL to "http://localhost:5151/cms"
+set REPO_URL to "https://github.com/rizzipictures-bot/rizzi-cms.git"
 
--- Controlla se il server è già in esecuzione
-on isServerRunning()
-	try
-		do shell script "curl -s -o /dev/null -w '%{http_code}' --connect-timeout 1 http://localhost:5151/ | grep -q '200\\|304' && echo yes || echo no"
-		return true
-	on error
-		return false
-	end try
-end isServerRunning
+-- Controlla installazione
+try
+	do shell script "test -d " & quoted form of CMS_DIR
+on error
+	display alert "Rizzi CMS non installato" message "Esegui prima 'Installa Rizzi CMS.command' dalla cartella dello zip." as critical
+	return
+end try
 
 -- Trova python3
-on findPython()
-	repeat with p in {"/opt/homebrew/bin/python3", "/usr/local/bin/python3", "/usr/bin/python3"}
-		try
-			do shell script "test -x " & p & " && echo yes"
-			return p
-		end try
-	end repeat
-	return ""
-end findPython
-
--- Avvia il server
-on startServer()
-	set pyPath to findPython()
-	if pyPath is "" then
-		display alert "Python 3 non trovato" message "Installa Python 3 da python.org e riprova." as critical
-		return false
-	end if
-	
-	-- Installa dipendenze se mancanti
+set pyPath to ""
+repeat with p in {"/opt/homebrew/bin/python3", "/usr/local/bin/python3", "/usr/bin/python3"}
 	try
-		do shell script pyPath & " -c 'import flask' 2>/dev/null || " & pyPath & " -m pip install flask pillow -q"
+		do shell script "test -x " & p
+		set pyPath to p
+		exit repeat
 	end try
-	
-	-- Avvia il server in background
-	do shell script "cd " & quoted form of CMS_DIR & " && " & pyPath & " app.py > /tmp/rizzi_cms.log 2>&1 &"
-	
-	-- Aspetta che risponda (max 8 secondi)
-	repeat 16 times
-		delay 0.5
-		try
-			do shell script "curl -s -o /dev/null -w '%{http_code}' --connect-timeout 1 http://localhost:5151/"
+end repeat
+
+if pyPath is "" then
+	display alert "Python 3 non trovato" message "Installa Python 3 da python.org e riprova." as critical
+	return
+end if
+
+-- Controlla stato server
+on checkServer()
+	try
+		set result to do shell script "curl -s -o /dev/null -w '%{http_code}' --connect-timeout 2 http://localhost:5151/ 2>/dev/null"
+		if result is not "" and result is not "000" then
 			return true
-		end try
-	end repeat
-	
-	return false
-end startServer
-
--- Ferma il server
-on stopServer()
-	try
-		do shell script "lsof -ti:5151 | xargs kill -9 2>/dev/null; echo done"
+		end if
 	end try
-end stopServer
+	return false
+end checkServer
+
+-- Aggiorna da GitHub (git pull)
+on updateFromGitHub(cmsDir)
+	-- Controlla se git è disponibile
+	try
+		do shell script "which git"
+	on error
+		display alert "Git non trovato" message "Installa Xcode Command Line Tools con: xcode-select --install" as warning
+		return false
+	end try
+
+	-- Controlla se è un repo git
+	try
+		do shell script "test -d " & quoted form of (cmsDir & "/.git")
+	on error
+		-- Non è un repo git, inizializza e collega
+		try
+			do shell script "cd " & quoted form of cmsDir & " && git init && git remote add origin https://github.com/rizzipictures-bot/rizzi-cms.git && git fetch origin && git reset --hard origin/main 2>&1"
+		on error errMsg
+			display alert "Errore configurazione Git" message errMsg as warning
+			return false
+		end try
+		return true
+	end try
+
+	-- Esegui git pull
+	try
+		set pullResult to do shell script "cd " & quoted form of cmsDir & " && git pull origin main 2>&1"
+		if pullResult contains "Already up to date" then
+			display alert "Già aggiornato" message "Il sito è già all'ultima versione." buttons {"OK"} default button "OK"
+		else
+			display alert "Aggiornamento completato!" message "Modifiche scaricate:\n" & pullResult buttons {"OK"} default button "OK"
+		end if
+		return true
+	on error errMsg
+		display alert "Errore aggiornamento" message errMsg as warning
+		return false
+	end try
+end updateFromGitHub
+
+set serverRunning to checkServer()
 
 -- Loop principale
-on run
-	-- Controlla se la cartella CMS esiste
-	try
-		do shell script "test -d " & quoted form of CMS_DIR & " && echo ok"
-	on error
-		display alert "Rizzi CMS non installato" message "Esegui prima 'Installa Rizzi CMS.command' dalla cartella dello zip." as critical
-		return
-	end try
-	
-	-- Controlla stato iniziale
-	set serverRunning to false
-	try
-		set result to do shell script "curl -s -o /dev/null -w '%{http_code}' --connect-timeout 1 http://localhost:5151/ 2>/dev/null"
-		if result is "200" or result is "304" then
-			set serverRunning to true
-		end if
-	end try
-	
-	-- Menu principale
-	repeat
-		if serverRunning then
-			set btnLabel to "Ferma il server"
-			set statusMsg to "● Server attivo — tutto funziona"
-		else
-			set btnLabel to "Avvia il server"
-			set statusMsg to "● Server fermo"
-		end if
-		
-		set scelta to button returned of (display dialog "Rizzi CMS — Gestione Portfolio
+repeat
+	if serverRunning then
+		set statoMsg to "● Server ATTIVO — tutto funziona"
+		set scelta to button returned of (display dialog "Rizzi CMS
 
-" & statusMsg & "
+" & statoMsg & "
 
-Sito:  " & SITE_URL & "
-CMS:   " & CMS_URL with title "Rizzi CMS" buttons {btnLabel, "Apri Sito", "Apri CMS", "Esci"} default button 1 with icon note)
-		
-		if scelta is "Avvia il server" then
-			display dialog "Avvio in corso..." with title "Rizzi CMS" buttons {} giving up after 0
-			set ok to startServer()
-			if ok then
-				set serverRunning to true
-				open location SITE_URL
-			else
-				display alert "Errore avvio" message "Il server non si è avviato. Controlla che Python 3 sia installato." as warning
-			end if
-			
-		else if scelta is "Ferma il server" then
-			stopServer()
-			set serverRunning to false
-			
-		else if scelta is "Apri Sito" then
-			if serverRunning then
-				open location SITE_URL
-			else
-				display alert "Server non attivo" message "Prima avvia il server." as warning
-			end if
-			
+  Sito:   " & SITE_URL & "
+  CMS:    " & CMS_URL with title "Rizzi CMS" buttons {"Altro...", "Apri CMS", "Apri Sito"} default button "Apri Sito" with icon note)
+
+		if scelta is "Apri Sito" then
+			open location SITE_URL
+
 		else if scelta is "Apri CMS" then
-			if serverRunning then
-				open location CMS_URL
-			else
-				display alert "Server non attivo" message "Prima avvia il server." as warning
-			end if
-			
-		else if scelta is "Esci" then
-			if serverRunning then
-				set conf to button returned of (display dialog "Vuoi fermare il server prima di uscire?" buttons {"Ferma ed esci", "Esci senza fermare"} default button 1)
-				if conf is "Ferma ed esci" then
-					stopServer()
+			open location CMS_URL
+
+		else if scelta is "Altro..." then
+			set scelta2 to button returned of (display dialog "Rizzi CMS — Opzioni" with title "Rizzi CMS" buttons {"Indietro", "Aggiorna sito", "Ferma server"} default button "Aggiorna sito")
+
+			if scelta2 is "Aggiorna sito" then
+				-- Ferma il server, aggiorna, riavvia
+				try
+					do shell script "lsof -ti:5151 | xargs kill -9 2>/dev/null; echo done"
+				end try
+				set serverRunning to false
+				set ok to updateFromGitHub(CMS_DIR)
+				if ok then
+					-- Riavvia il server
+					try
+						do shell script "cd " & quoted form of CMS_DIR & " && " & pyPath & " app.py > /tmp/rizzi_cms.log 2>&1 &"
+					end try
+					set avviato to false
+					repeat 20 times
+						delay 0.5
+						try
+							set code to do shell script "curl -s -o /dev/null -w '%{http_code}' --connect-timeout 1 http://localhost:5151/ 2>/dev/null"
+							if code is not "" and code is not "000" then
+								set avviato to true
+								exit repeat
+							end if
+						end try
+					end repeat
+					set serverRunning to true
+					open location SITE_URL
+				end if
+
+			else if scelta2 is "Ferma server" then
+				set conf to button returned of (display dialog "Fermare il server?" buttons {"Annulla", "Ferma"} default button "Ferma" with title "Rizzi CMS")
+				if conf is "Ferma" then
+					try
+						do shell script "lsof -ti:5151 | xargs kill -9 2>/dev/null; echo done"
+					end try
+					set serverRunning to false
 				end if
 			end if
+		end if
+
+	else
+		set statoMsg to "● Server FERMO"
+		set scelta to button returned of (display dialog "Rizzi CMS
+
+" & statoMsg & "
+
+Clicca Avvia per accendere il server
+e aprire il sito nel browser." with title "Rizzi CMS" buttons {"Esci", "Avvia il server"} default button "Avvia il server" with icon note)
+
+		if scelta is "Avvia il server" then
+			try
+				do shell script "cd " & quoted form of CMS_DIR & " && " & pyPath & " app.py > /tmp/rizzi_cms.log 2>&1 &"
+			on error errMsg
+				display alert "Errore avvio" message errMsg as warning
+			end try
+
+			set avviato to false
+			repeat 20 times
+				delay 0.5
+				try
+					set code to do shell script "curl -s -o /dev/null -w '%{http_code}' --connect-timeout 1 http://localhost:5151/ 2>/dev/null"
+					if code is not "" and code is not "000" then
+						set avviato to true
+						exit repeat
+					end if
+				end try
+			end repeat
+
+			set serverRunning to true
+			open location SITE_URL
+
+		else if scelta is "Esci" then
 			exit repeat
 		end if
-	end repeat
-end run
+	end if
+end repeat
