@@ -590,57 +590,33 @@
       cursor: none;
     }
     #menu-overlay.open { transform: translateY(0); }
-    #menu-overlay ul {
-      list-style: none;
+
+    /* Griglia 4 colonne */
+    #menu-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 0 0;
+      flex: 1;
+    }
+    .menu-col {
       display: flex;
       flex-direction: column;
       gap: 2px;
     }
-    #menu-overlay ul li a {
-      font-size: 22px;
-      font-weight: 900;
+    .menu-col a {
+      font-size: 15px;
+      font-weight: 400;
       color: var(--white);
-      letter-spacing: -0.02em;
-      line-height: 1.4;
+      letter-spacing: 0;
+      line-height: 1.7;
       transition: opacity .1s;
+      white-space: nowrap;
     }
-    #menu-overlay ul li a:hover { opacity: .5; }
-
-    /* Sottovoci espandibili */
-    #menu-overlay ul li.has-sub > a::after {
-      content: '';
-      display: inline-block;
-      width: 6px; height: 6px;
-      border-right: 1.5px solid var(--white);
-      border-bottom: 1.5px solid var(--white);
-      transform: rotate(45deg);
-      margin-left: 8px;
-      vertical-align: middle;
-      transition: transform .2s;
-    }
-    #menu-overlay ul li.has-sub.open > a::after {
-      transform: rotate(-135deg);
-    }
-    #menu-overlay ul li .sub-list {
-      display: none;
-      flex-direction: column;
-      gap: 1px;
-      padding-left: 0;
-      margin-top: 4px;
-    }
-    #menu-overlay ul li.open .sub-list {
-      display: flex;
-    }
-    #menu-overlay ul li .sub-list li a {
-      font-size: 13px;
-      font-weight: 300;
-      letter-spacing: 0.02em;
-      color: #ccc;
-      line-height: 1.8;
-    }
-    #menu-overlay ul li .sub-list li a:hover { opacity: .5; color: var(--white); }
+    .menu-col a:hover { opacity: .5; }
+    .menu-col a.bold { font-weight: 700; }
 
     #menu-overlay ul.secondary {
+      list-style: none;
       display: flex;
       flex-direction: row;
       gap: 24px;
@@ -982,25 +958,31 @@
   </div>
 </div>
 
-<!-- Menu overlay (centrephotogeneve) -->
+<!-- Menu overlay — griglia 4 colonne -->
 <div id="menu-overlay">
-  <ul id="menu-main-list">
-    <li><a href="#" data-view="home">Overview</a></li>
-    <li class="has-sub" data-section="cities"><a href="#" data-view="gallery">Cities</a>
-      <ul class="sub-list" id="menu-sub-cities"></ul>
-    </li>
-    <li class="has-sub" data-section="archive"><a href="#" data-view="archive">Archive</a>
-      <ul class="sub-list" id="menu-sub-archive"></ul>
-    </li>
-    <li class="has-sub" data-section="interview"><a href="#" data-view="interview">Interview</a>
-      <ul class="sub-list" id="menu-sub-interview"></ul>
-    </li>
-  </ul>
-  <ul class="secondary">
-    <li><a href="#">About</a></li>
-    <li><a href="#">Contact</a></li>
-    <li><a href="#">Instagram</a></li>
-  </ul>
+  <div id="menu-grid">
+    <!-- Colonna 1: navigazione principale -->
+    <div class="menu-col" id="menu-col-1">
+      <a href="#" class="bold" data-view="home" id="menu-link-overview">Overview</a>
+      <a href="#" data-view="gallery" id="menu-link-cities">Cities</a>
+      <a href="#" data-view="archive" id="menu-link-archive">Archive</a>
+    </div>
+    <!-- Colonna 2: progetti Cities (popolata dinamicamente) -->
+    <div class="menu-col" id="menu-col-2">
+      <!-- popolata da JS -->
+    </div>
+    <!-- Colonna 3: sezioni secondarie -->
+    <div class="menu-col" id="menu-col-3">
+      <a href="#" data-view="interview">Interview</a>
+    </div>
+    <!-- Colonna 4: info -->
+    <div class="menu-col" id="menu-col-4">
+      <a href="#">About</a>
+      <a href="#">Contact</a>
+      <a href="#">Instagram</a>
+    </div>
+  </div>
+  <ul class="secondary" style="display:none"></ul>
 </div>
 
 <!-- App -->
@@ -1669,50 +1651,42 @@ document.querySelectorAll('#menu-overlay .has-sub > a').forEach(a => {
   });
 });
 
-// Popola le sottovoci del menu con i progetti
+// Popola il menu griglia con i progetti
 function buildMenuSubItems() {
-  const subCities   = document.getElementById('menu-sub-cities');
-  const subArchive  = document.getElementById('menu-sub-archive');
-  const subInterview = document.getElementById('menu-sub-interview');
-  subCities.innerHTML = '';
-  subArchive.innerHTML = '';
-  subInterview.innerHTML = '';
+  const col2 = document.getElementById('menu-col-2');
+  const col3 = document.getElementById('menu-col-3');
+  col2.innerHTML = '';
+  // Ripristina Interview in col3
+  col3.innerHTML = '<a href="#" data-view="interview">Interview</a>';
+  col3.querySelector('a').addEventListener('click', e => {
+    e.preventDefault();
+    document.getElementById('menu-overlay').classList.remove('open');
+    switchView('interview');
+  });
 
   PROJECTS.forEach(p => {
-    const li = document.createElement('li');
-    const a  = document.createElement('a');
-    a.href = '#';
-    a.textContent = p.title + (p.year ? ', ' + p.year : '');
-    a.addEventListener('click', e => {
-      e.preventDefault();
-      document.getElementById('menu-overlay').classList.remove('open');
-      document.querySelectorAll('#menu-overlay .has-sub').forEach(el => el.classList.remove('open'));
-      switchView('gallery');
-      setTimeout(() => openGallery(p), 50);
-    });
-    li.appendChild(a);
-
     const catId = (p.category_id || p.section || 'archive').toLowerCase();
     if (catId === 'cities' || catId === 'gallery') {
-      subCities.appendChild(li);
-    } else if (catId === 'interview') {
-      subInterview.appendChild(li.cloneNode(true));
-      li.querySelector('a').addEventListener('click', e => {
+      const a = document.createElement('a');
+      a.href = '#';
+      a.textContent = p.title + (p.year ? ', ' + p.year : '');
+      a.addEventListener('click', e => {
         e.preventDefault();
         document.getElementById('menu-overlay').classList.remove('open');
-        switchView('interview');
+        switchView('gallery');
+        setTimeout(() => openGallery(p), 50);
       });
-    } else {
-      subArchive.appendChild(li);
+      col2.appendChild(a);
     }
   });
 
-  // Mostra/nascondi freccia se non ci sono sottovoci
-  ['cities','archive','interview'].forEach(sec => {
-    const sub = document.getElementById('menu-sub-' + sec);
-    const li  = document.querySelector(`[data-section="${sec}"]`);
-    if (li) li.classList.toggle('has-sub', sub && sub.children.length > 0);
-  });
+  // Click su voci principali col1
+  const linkOverview = document.getElementById('menu-link-overview');
+  const linkCities   = document.getElementById('menu-link-cities');
+  const linkArchive  = document.getElementById('menu-link-archive');
+  if (linkOverview) linkOverview.onclick = e => { e.preventDefault(); document.getElementById('menu-overlay').classList.remove('open'); switchView('home'); };
+  if (linkCities)   linkCities.onclick   = e => { e.preventDefault(); document.getElementById('menu-overlay').classList.remove('open'); switchView('gallery'); };
+  if (linkArchive)  linkArchive.onclick  = e => { e.preventDefault(); document.getElementById('menu-overlay').classList.remove('open'); switchView('archive'); };
 }
 
 // ══════════════════════════════════════════════════════════════════
@@ -1852,76 +1826,9 @@ let CMS_CATEGORIES = [];
 // Ogni categoria diventa una voce espandibile nel menu
 // ─────────────────────────────────────────────────────────────────
 function buildDynamicMenu(categories, projects) {
-  const mainList = document.getElementById('menu-main-list');
-
-  // Rimuovi tutte le voci dinamiche precedenti (tieni solo Overview)
-  mainList.querySelectorAll('li[data-dynamic]').forEach(li => li.remove());
-
-  // Categorie visibili, ordinate per .order
-  const visibleCats = categories
-    .filter(c => c.visible !== false)
-    .sort((a, b) => (a.order || 0) - (b.order || 0));
-
-  visibleCats.forEach(cat => {
-    // Progetti assegnati a questa categoria
-    const catProjects = projects.filter(p => p.category_id === cat.id);
-
-    const li = document.createElement('li');
-    li.dataset.dynamic = '1';
-    li.dataset.section = cat.id;
-
-    // Determina la vista di destinazione in base al nome della categoria
-    // (Cities → gallery, Interview → interview, tutto il resto → archive)
-    const catLower = cat.name.toLowerCase();
-    let targetView = 'archive';
-    if (catLower === 'cities' || catLower === 'gallery') targetView = 'gallery';
-    else if (catLower === 'interview') targetView = 'interview';
-
-    if (catProjects.length > 0) {
-      li.classList.add('has-sub');
-      const subId = 'menu-sub-' + cat.id;
-      li.innerHTML = `<a href="#" data-view="${targetView}">${cat.name}</a>
-        <ul class="sub-list" id="${subId}"></ul>`;
-
-      // Aggiungi i progetti come sottovoci
-      const subList = li.querySelector('.sub-list');
-      catProjects.forEach(p => {
-        const subLi = document.createElement('li');
-        const a = document.createElement('a');
-        a.href = '#';
-        a.textContent = p.title + (p.year ? ', ' + p.year : '');
-        a.addEventListener('click', e => {
-          e.preventDefault();
-          document.getElementById('menu-overlay').classList.remove('open');
-          document.querySelectorAll('#menu-overlay .has-sub').forEach(el => el.classList.remove('open'));
-          switchView(targetView);
-          setTimeout(() => openGallery(p), 50);
-        });
-        subLi.appendChild(a);
-        subList.appendChild(subLi);
-      });
-
-      // Toggle sottomenu al click sulla voce principale
-      const mainA = li.querySelector(':scope > a');
-      mainA.addEventListener('click', e => {
-        e.preventDefault();
-        const isOpen = li.classList.contains('open');
-        document.querySelectorAll('#menu-overlay .has-sub').forEach(el => el.classList.remove('open'));
-        if (!isOpen) li.classList.add('open');
-      });
-    } else {
-      li.innerHTML = `<a href="#" data-view="${targetView}">${cat.name}</a>`;
-      li.querySelector('a').addEventListener('click', e => {
-        e.preventDefault();
-        document.getElementById('menu-overlay').classList.remove('open');
-        switchView(targetView);
-      });
-    }
-
-    mainList.appendChild(li);
-  });
-
-  console.log(`Menu dinamico: ${visibleCats.length} categorie, ${projects.length} progetti`);
+  // Con la nuova struttura a griglia, buildMenuSubItems gestisce tutto
+  buildMenuSubItems();
+  console.log(`Menu griglia: ${categories.length} categorie, ${projects.length} progetti`);
 }
 
 async function loadFromCMS() {
