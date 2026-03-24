@@ -1462,47 +1462,72 @@ function buildOverviewGrid() {
   const grid = document.getElementById('thumbs-grid');
   grid.innerHTML = '';
 
-  // Inserisce spazi vuoti casuali ogni ~5-7 foto — Miechowski style
-  const items = [...ALL_IMAGES];
-  let insertedBlanks = 0;
-  items.forEach((img, i) => {
-    // Spazio vuoto casuale: ~1 ogni 5-7 immagini, posizioni irregolari
-    if (i > 0 && insertedBlanks < 6 && Math.random() < 0.18) {
+  const COLS = 9;
+  const imgs = [...ALL_IMAGES];
+
+  // Costruiamo la sequenza di celle: foto + blank interni
+  // Strategia: inseriamo blank solo quando la posizione nella riga
+  // risultante è interna (colonna 2..8) e non è l'ultima cella dell'ultima riga
+  const cells = []; // ogni elemento: { type: 'img', img } oppure { type: 'blank' }
+  let imgIdx = 0;
+  let blanksInserted = 0;
+  const maxBlanks = Math.floor(imgs.length / 6); // ~1 blank ogni 6 foto
+
+  while (imgIdx < imgs.length) {
+    const posInRow = cells.length % COLS; // 0-based colonna corrente
+    // Inserisci blank solo se:
+    // - non siamo in colonna 0 (prima) o colonna 8 (ultima)
+    // - non è la prima cella in assoluto
+    // - non è l'ultima foto rimasta (evita bordo destro vuoto)
+    // - quota non esaurita
+    const remainingImgs = imgs.length - imgIdx;
+    const canBlank =
+      posInRow > 0 &&
+      posInRow < COLS - 1 &&
+      cells.length > 0 &&
+      remainingImgs > 1 &&
+      blanksInserted < maxBlanks &&
+      Math.random() < 0.15;
+
+    if (canBlank) {
+      cells.push({ type: 'blank' });
+      blanksInserted++;
+    } else {
+      cells.push({ type: 'img', img: imgs[imgIdx] });
+      imgIdx++;
+    }
+  }
+
+  cells.forEach((cell, i) => {
+    if (cell.type === 'blank') {
       const blank = document.createElement('div');
       blank.className = 'thumb-item thumb-blank';
       grid.appendChild(blank);
-      insertedBlanks++;
+      return;
     }
 
+    const img = cell.img;
     const item = document.createElement('div');
     item.className = 'thumb-item';
 
-    const el = document.createElement('img');
-    el.src     = img.url;
-    el.alt     = img.project.title;
-    el.loading = 'lazy';
-    // Rileva foto orizzontale dopo il caricamento
-    el.addEventListener('load', function() {
-      if (this.naturalWidth > this.naturalHeight) {
-        item.classList.add('is-landscape');
-      }
+    // alias per il forEach originale
+    const imgEl = document.createElement('img');
+    imgEl.src     = img.url;
+    imgEl.alt     = img.project.title;
+    imgEl.loading = 'lazy';
+    imgEl.addEventListener('load', function() {
+      if (this.naturalWidth > this.naturalHeight) item.classList.add('is-landscape');
     });
-    item.appendChild(el);
+    item.appendChild(imgEl);
 
-    // Hover: mostra il nome del progetto centrato
     const nameEl = document.getElementById('overview-project-name');
-    item.addEventListener('mouseenter', () => {
-      if (nameEl) nameEl.textContent = img.project.title || '';
-    });
-    item.addEventListener('mouseleave', () => {
-      if (nameEl) nameEl.innerHTML = '\u00a0';
-    });
-
-    // Click apre l'overlay
+    item.addEventListener('mouseenter', () => { if (nameEl) nameEl.textContent = img.project.title || ''; });
+    item.addEventListener('mouseleave', () => { if (nameEl) nameEl.innerHTML = '\u00a0'; });
     item.addEventListener('click', () => showOverview(img, i));
 
     grid.appendChild(item);
   });
+
 }
 
 // ══════════════════════════════════════════════════════════════════
