@@ -313,7 +313,6 @@
     #view-home {
       padding: 0;
       overflow-y: auto;
-      /* Griglia parte subito dall'alto, nessun margine */
       display: flex;
       flex-direction: column;
     }
@@ -355,29 +354,27 @@
     #view-home .thumbs-grid .thumb-blank {
       background: #fff;
     }
-    /* Nome progetto fisso sopra la griglia — centrato, stesso stile navbar */
+    /* Nome progetto — sovrapposto all'header, centrato */
     #overview-project-name {
-      position: sticky;
+      position: fixed;
       top: 0;
-      z-index: 10;
-      /* Altezza uguale alla header per allineamento visivo */
-      height: 40px;
+      left: 0;
+      right: 0;
+      z-index: 99; /* sotto l'header (z-index 100) ma sopra il contenuto */
+      height: var(--nav-h);
       display: flex;
       align-items: center;
       justify-content: center;
-      padding: 0 16px;
+      padding: 0;
       font-family: var(--font-nav);
       font-size: 13px;
       font-weight: 400;
       letter-spacing: 0.02em;
       color: var(--black);
-      background: var(--white);
-      text-align: center;
-      transition: color .2s;
+      background: transparent;
       pointer-events: none;
     }
     [data-theme="dark"] #overview-project-name {
-      background: #000;
       color: #fff;
     }
 
@@ -1443,6 +1440,10 @@ function switchView(name) {
 
   currentView = name;
   updateFooter();
+
+  // Mostra/nascondi il nome progetto (solo nella view home)
+  const pName = document.getElementById('overview-project-name');
+  if (pName) pName.style.display = (name === 'home') ? 'flex' : 'none';
 
   // Chiudi menu se aperto
   document.getElementById('menu-overlay').classList.remove('open');
