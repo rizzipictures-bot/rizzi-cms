@@ -342,10 +342,10 @@
       object-position: center top;
       transition: opacity .25s var(--ease-out);
     }
-    /* Foto orizzontale: mostra tutta la foto con spazio bianco sopra/sotto */
+    /* Foto orizzontale: base allineata alle verticali, spazio bianco in cima */
     #view-home .thumbs-grid .thumb-item.is-landscape img {
       object-fit: contain;
-      object-position: center center;
+      object-position: center bottom;
       background: #fff;
     }
     #view-home .thumbs-grid .thumb-item:hover img {
@@ -355,20 +355,24 @@
     #view-home .thumbs-grid .thumb-blank {
       background: #fff;
     }
-    /* Nome progetto fisso sopra la griglia — centrato, stile Miechowski */
+    /* Nome progetto fisso sopra la griglia — centrato, stesso stile navbar */
     #overview-project-name {
       position: sticky;
       top: 0;
       z-index: 10;
-      padding: 12px 16px 10px;
-      font-family: var(--font);
-      font-size: 15px;
-      font-weight: 700;
-      letter-spacing: 0.01em;
+      /* Altezza uguale alla header per allineamento visivo */
+      height: 40px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0 16px;
+      font-family: var(--font-nav);
+      font-size: 13px;
+      font-weight: 400;
+      letter-spacing: 0.02em;
       color: var(--black);
       background: var(--white);
       text-align: center;
-      min-height: 38px;
       transition: color .2s;
       pointer-events: none;
     }
