@@ -98,20 +98,17 @@
     #landing {
       position: fixed; inset: 0;
       z-index: 1000;
-      background: #000;
+      background: transparent;
       cursor: none;
+      overflow: hidden;
     }
-    /* Foto a tutto schermo — sempre visibile sotto la banda */
+    /* Foto a tutto schermo — visibile subito, sempre sotto la banda */
     #landing-photo {
       position: absolute; inset: 0;
       background: url('images/landing-hero.webp') center center / cover no-repeat;
-      opacity: 0;
-      transition: opacity 1.4s ease;
-    }
-    #landing.photo-visible #landing-photo {
       opacity: 1;
     }
-    /* Lettering sotto la banda — appare quando la banda sale */
+    /* Lettering in alto a sinistra — appare quando la banda sale */
     #landing-text {
       position: absolute;
       top: var(--pad);
@@ -123,18 +120,18 @@
       text-transform: uppercase;
       color: var(--white);
       opacity: 0;
-      transition: opacity 0.6s ease 0.3s;
+      transition: opacity 0.6s ease 0.5s;
       pointer-events: none;
       z-index: 2;
     }
     #landing.band-up #landing-text {
       opacity: 1;
     }
-    /* Banda nera — copre tutto lo schermo, poi sale */
+    /* Banda nera — occupa metà schermo in alto, poi sale fuori */
     #landing-band {
       position: absolute;
       top: 0; left: 0; right: 0;
-      bottom: 0;
+      height: 50vh;
       background: var(--black);
       display: flex;
       flex-direction: column;
