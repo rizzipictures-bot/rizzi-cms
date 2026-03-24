@@ -343,6 +343,34 @@ def update_settings():
     save_db(db)
     return jsonify(db['settings'])
 
+# ── UPDATE (git pull + restart) ─────────────────────────────
+@app.route('/api/update', methods=['POST'])
+def update_from_github():
+    import subprocess, sys, threading
+    try:
+        # Esegui git pull nella directory del progetto
+        result = subprocess.run(
+            ['git', 'pull', 'origin', 'main'],
+            cwd=str(BASE),
+            capture_output=True,
+            text=True,
+            timeout=30
+        )
+        output = result.stdout + result.stderr
+        if result.returncode != 0:
+            return jsonify({'ok': False, 'error': output})
+
+        # Riavvia il server dopo 1.5s (lascia tempo alla risposta HTTP)
+        def restart():
+            import time, os, signal
+            time.sleep(1.5)
+            os.execv(sys.executable, [sys.executable] + sys.argv)
+        threading.Thread(target=restart, daemon=True).start()
+
+        return jsonify({'ok': True, 'output': output})
+    except Exception as e:
+        return jsonify({'ok': False, 'error': str(e)})
+
 if __name__ == '__main__':
     print('\n  Rizzi CMS — avviato su http://localhost:5151')
     print('  Sito:  http://localhost:5151/')

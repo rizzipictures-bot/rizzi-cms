@@ -196,6 +196,14 @@
       color: var(--gray);
       font-weight: 700;
     }
+    /* Pulsante Aggiorna — solo localhost */
+    #btn-update {
+      color: var(--accent) !important;
+      font-weight: 700 !important;
+      opacity: 0.7;
+    }
+    #btn-update:hover { opacity: 1 !important; }
+    #btn-update.updating { opacity: 0.4 !important; pointer-events: none; }
     /* Menu, Theme e Screensaver restano grigi */
     nav.pill-nav #btn-menu,
     nav.pill-nav #btn-theme,
@@ -1001,6 +1009,7 @@
       <button id="btn-menu">Menu</button>
       <button id="btn-theme">◐</button>
       <button id="btn-screensaver">Screensaver</button>
+      <button id="btn-update" style="display:none" title="Aggiorna sito da GitHub">↻ Aggiorna</button>
     </nav>
   </header>
 
@@ -1979,6 +1988,40 @@ async function loadFromCMS() {
 }
 
 loadFromCMS();
+
+// ══════════════════════════════════════════════════════════════════
+// PULSANTE AGGIORNA — visibile solo su localhost
+// ══════════════════════════════════════════════════════════════════
+(function() {
+  const isLocal = location.hostname === 'localhost' || location.hostname === '127.0.0.1';
+  const btnUpdate = document.getElementById('btn-update');
+  if (!isLocal || !btnUpdate) return;
+
+  // Mostra il pulsante solo in locale
+  btnUpdate.style.display = 'inline-block';
+
+  btnUpdate.addEventListener('click', async () => {
+    btnUpdate.classList.add('updating');
+    btnUpdate.textContent = '↻ Aggiornamento...';
+    try {
+      const res = await fetch('/api/update', { method: 'POST' });
+      const data = await res.json();
+      if (data.ok) {
+        btnUpdate.textContent = '↻ Ricarico...';
+        // Aspetta 2s poi ricarica la pagina
+        setTimeout(() => location.reload(), 2000);
+      } else {
+        btnUpdate.textContent = '↻ Errore — riprova';
+        btnUpdate.classList.remove('updating');
+        setTimeout(() => { btnUpdate.textContent = '↻ Aggiorna'; }, 3000);
+      }
+    } catch(e) {
+      btnUpdate.textContent = '↻ Errore — riprova';
+      btnUpdate.classList.remove('updating');
+      setTimeout(() => { btnUpdate.textContent = '↻ Aggiorna'; }, 3000);
+    }
+  });
+})();
 </script>
 </body>
 </html>
