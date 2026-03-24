@@ -2008,8 +2008,8 @@ loadFromCMS();
       const data = await res.json();
       if (data.ok) {
         btnUpdate.textContent = '↻ Ricarico...';
-        // Aspetta 2s poi ricarica la pagina
-        setTimeout(() => location.reload(), 2000);
+        // Ricarica subito la pagina (nessun restart server)
+        setTimeout(() => location.reload(), 500);
       } else {
         btnUpdate.textContent = '↻ Errore — riprova';
         btnUpdate.classList.remove('updating');
