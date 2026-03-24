@@ -1,0 +1,86 @@
+{
+  "projects": [
+    {
+      "id": "6a78c708",
+      "title": "New York",
+      "year": "2003",
+      "place": "New York",
+      "publication": "Various Media",
+      "category": "Photography",
+      "subtitle": "Untitled",
+      "description": "",
+      "section": "archive",
+      "images": [],
+      "texts": [],
+      "order": 0,
+      "category_id": "archive"
+    },
+    {
+      "id": "3129bdc2",
+      "title": "Giappone",
+      "year": "2015",
+      "place": "Tokyo, Giappone",
+      "publication": "Unpublished",
+      "category": "Photography",
+      "subtitle": "Fioritura ciliegio",
+      "description": "",
+      "section": "archive",
+      "images": [],
+      "texts": [],
+      "order": 1,
+      "category_id": "archive"
+    },
+    {
+      "id": "87c289a9",
+      "title": "Paris pictures",
+      "year": "2023",
+      "place": "Paris",
+      "publication": "Unpublished",
+      "category": "Photography",
+      "subtitle": "street photo",
+      "description": "",
+      "section": "archive",
+      "images": [],
+      "texts": [],
+      "order": 2,
+      "category_id": "archive"
+    },
+    {
+      "id": "f4a12e01",
+      "title": "Monster",
+      "year": "2017",
+      "place": "Austria",
+      "publication": "Unpublished",
+      "category": "Photography",
+      "subtitle": "Shooting x Monster",
+      "description": "",
+      "section": "archive",
+      "images": [],
+      "texts": [],
+      "order": 3,
+      "category_id": "archive"
+    }
+  ],
+  "texts": {},
+  "settings": {},
+  "categories": [
+    {
+      "id": "cities",
+      "name": "Cities",
+      "order": 0,
+      "visible": true
+    },
+    {
+      "id": "archive",
+      "name": "Archive",
+      "order": 1,
+      "visible": true
+    },
+    {
+      "id": "interview",
+      "name": "Interview",
+      "order": 2,
+      "visible": true
+    }
+  ]
+}

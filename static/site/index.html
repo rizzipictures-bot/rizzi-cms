@@ -373,7 +373,7 @@
     }
     .archive-row {
       display: grid;
-      grid-template-columns: 80px 1fr 1fr 120px 80px;
+      grid-template-columns: 70px 1fr 1fr 1fr 1fr 60px;
       gap: 0;
       border-bottom: 1px solid var(--light);
       align-items: center;
@@ -1035,11 +1035,12 @@
     <!-- ── VIEW: ARCHIVE — Tabella (rizzi-web) ── -->
     <div class="view" id="view-archive">
       <div class="archive-row header">
-        <div><span>Anno</span></div>
-        <div><span>Titolo</span></div>
-        <div><span>Luogo</span></div>
-        <div><span>Pubblicazione</span></div>
-        <div><span>Immagini</span></div>
+        <div><span>Year</span></div>
+        <div><span>Project</span></div>
+        <div><span>Subtitle</span></div>
+        <div><span>Place</span></div>
+        <div><span>Publication</span></div>
+        <div><span>Media</span></div>
       </div>
       <div id="archive-list">
         <!-- Generata via JS -->
@@ -1438,15 +1439,19 @@ function buildArchive() {
   const list = document.getElementById('archive-list');
   list.innerHTML = '';
 
-  PROJECTS.forEach(p => {
+  // Filtra solo i progetti con category_id 'archive'
+  const archiveProjects = PROJECTS.filter(p => (p.category_id || p.section) === 'archive');
+
+  archiveProjects.forEach(p => {
     const row = document.createElement('div');
     row.className = 'archive-row';
     row.innerHTML = `
-      <div class="year">${p.year}</div>
-      <div><strong>${p.title}</strong></div>
-      <div>${p.place}</div>
-      <div class="keyword">${p.category}</div>
-      <div>${p.count}</div>
+      <div class="year">${p.year || '–'}</div>
+      <div><strong>${p.title || '–'}</strong></div>
+      <div>${p.subtitle || '–'}</div>
+      <div>${p.place || '–'}</div>
+      <div>${p.publication || '–'}</div>
+      <div style="color:var(--gray)">–</div>
     `;
     row.addEventListener('click', () => openArchiveProject(p));
     list.appendChild(row);
