@@ -1,0 +1,8 @@
+{
+  "projects": [],
+  "categories": [
+    {"id": "cities", "name": "Cities", "order": 0},
+    {"id": "archive", "name": "Archive", "order": 1},
+    {"id": "interview", "name": "Interview", "order": 2}
+  ]
+}

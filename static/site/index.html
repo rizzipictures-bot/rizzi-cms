@@ -1,0 +1,1975 @@
+<!DOCTYPE html>
+<html lang="it" data-theme="light">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Rizzi — Proposta Integrazione</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500&family=EB+Garamond:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    /* ══════════════════════════════════════════════════════════════
+       VARIABILI — ereditate da rizzi-web + palette Angelucci
+    ══════════════════════════════════════════════════════════════ */
+    :root {
+      --black:        #000;
+      --white:        #fff;
+      --gray:         #666;
+      --light:        #e7e7e7;
+      --accent:       #6a49be;
+      --accent-light: #9670b2;
+      --yellow:       #ffd600;
+      --orange:       #ff8c00;
+      --pad:          0px;
+      --nav-h:        36px;
+      --footer-h:     0px;
+      --font:         'Helvetica Neue', Helvetica, Arial, sans-serif;
+      --font-nav:     'EB Garamond', Georgia, 'Times New Roman', serif;
+      --ease-custom:  cubic-bezier(.77, 0, .175, 1);
+      --ease-out:     cubic-bezier(.4, 0, .2, 1);
+    }
+    [data-theme="dark"] {
+      --black:  #fff;
+      --white:  #000;
+      --gray:   #aaa;
+      --light:  #333;
+    }
+
+    /* ══════════════════════════════════════════════════════════════
+       RESET & BASE
+    ══════════════════════════════════════════════════════════════ */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body {
+      height: 100%;
+      font-family: var(--font);
+      font-size: 11px;
+      line-height: 16px;
+      letter-spacing: 0.4px;
+      background: var(--white);
+      color: var(--black);
+      cursor: none;
+      overflow: hidden;
+    }
+    a { text-decoration: none; color: inherit; }
+
+    /* ══════════════════════════════════════════════════════════════
+       CURSORE CUSTOM (jackdavison + rizzi-web)
+    ══════════════════════════════════════════════════════════════ */
+    /* Pallino cursore — solido, mix-blend-mode difference */
+    #cursor {
+      position: fixed;
+      width: 12px; height: 12px;
+      border-radius: 50%;
+      background: #fff;
+      box-shadow: none;
+      pointer-events: none;
+      z-index: 9999;
+      /* translate centrato + scale per animazione hover */
+      transform: translate(-50%, -50%) scale(1);
+      mix-blend-mode: difference;
+      transition: transform .2s var(--ease-out);
+    }
+    /* Hover: pulsazione via scale */
+    #cursor.hover {
+      animation: cursorPulse .7s ease-in-out infinite;
+    }
+    @keyframes cursorPulse {
+      0%, 100% { transform: translate(-50%, -50%) scale(1);   }
+      50%       { transform: translate(-50%, -50%) scale(1.8); }
+    }
+    #cursor-label {
+      position: fixed;
+      font-size: 22px;
+      letter-spacing: 0;
+      color: var(--black);
+      pointer-events: none;
+      z-index: 9998;
+      transform: translate(14px, -50%);
+      opacity: 0;
+      transition: opacity .15s;
+      white-space: nowrap;
+      font-weight: 300;
+    }
+    #cursor-label.show { opacity: 1; }
+
+    /* ══════════════════════════════════════════════════════════════
+       SPLASH SCREEN (rizzi-web)
+    ══════════════════════════════════════════════════════════════ */
+    #splash {
+      position: fixed; inset: 0;
+      background: var(--black);
+      z-index: 1000;
+      display: flex;
+      align-items: center;
+      padding: var(--pad);
+      animation: splashOut 3.8s linear 1 forwards;
+    }
+    #splash .line {
+      color: var(--white);
+      font-size: 13px;
+      letter-spacing: 0.4px;
+      animation: textIn 2.4s linear 1 forwards;
+      opacity: 0;
+    }
+    #splash .line:nth-child(2) { animation-delay: .4s; }
+    #splash .line b { color: var(--yellow); font-weight: 900; }
+    @keyframes splashOut {
+      70%  { transform: translateY(0); }
+      100% { transform: translateY(-100vh); }
+    }
+    @keyframes textIn {
+      0%   { opacity: 0; }
+      20%  { opacity: 1; }
+      70%  { opacity: 1; transform: translateY(0); }
+      90%  { opacity: .2; transform: translateY(-4vh); }
+      100% { opacity: 0; transform: translateY(-5vh); }
+    }
+
+    /* ══════════════════════════════════════════════════════════════
+       LAYOUT SHELL
+    ══════════════════════════════════════════════════════════════ */
+    #app {
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+    }
+
+    /* ══════════════════════════════════════════════════════════════
+       NAVBAR (rizzi-web + pill centrephotogeneve)
+    ══════════════════════════════════════════════════════════════ */
+    header {
+      position: relative;
+      height: var(--nav-h);
+      padding: 0 16px 0 0;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-shrink: 0;
+      z-index: 100;
+      /* Nessuna linea separatrice — Miechowski style */
+    }
+    /* Nessuna riga separatrice — stile Miechowski/Angelucci */
+    .logo {
+      font-family: var(--font-nav);
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: 0.02em;
+      text-transform: none;
+      /* Allineato al margine sx della griglia (padding header = 12px) */
+    }
+    .logo span { color: var(--accent); }
+
+    /* Nav — testo puro, nessun box/pill */
+    nav.pill-nav {
+      display: flex;
+      gap: 20px;
+      align-items: center;
+    }
+    nav.pill-nav button,
+    nav.pill-nav a {
+      font-family: var(--font-nav);
+      font-size: 13px;
+      font-weight: 400;
+      letter-spacing: 0.02em;
+      text-transform: none;
+      background: none !important;
+      background-color: transparent !important;
+      color: var(--black);
+      border: none !important;
+      outline: none !important;
+      box-shadow: none !important;
+      -webkit-appearance: none;
+      appearance: none;
+      padding: 0;
+      margin: 0;
+      cursor: none;
+      transition: color .15s;
+      display: inline-block;
+      text-decoration: none;
+      border-radius: 0 !important;
+    }
+    nav.pill-nav button:hover,
+    nav.pill-nav a:hover {
+      color: var(--gray);
+    }
+    nav.pill-nav button.active {
+      color: var(--gray);
+      font-weight: 700;
+    }
+    /* Menu, Theme e Screensaver restano grigi */
+    nav.pill-nav #btn-menu,
+    nav.pill-nav #btn-theme,
+    nav.pill-nav #btn-screensaver {
+      color: var(--gray);
+    }
+    nav.pill-nav #btn-theme {
+      font-size: 13px;
+      margin-left: 4px;
+    }
+
+    /* ══════════════════════════════════════════════════════════════
+       MAIN AREA
+    ══════════════════════════════════════════════════════════════ */
+    main {
+      flex: 1;
+      overflow: hidden;
+      position: relative;
+    }
+
+    /* ══════════════════════════════════════════════════════════════
+       VIEWS (pagine)
+    ══════════════════════════════════════════════════════════════ */
+    .view {
+      position: absolute;
+      inset: 0;
+      overflow-y: auto;
+      padding: var(--pad);
+      opacity: 0;
+      transform: translateY(8px);
+      pointer-events: none;
+      transition: opacity .4s var(--ease-custom),
+                  transform .4s var(--ease-custom);
+    }
+    .view.active {
+      opacity: 1;
+      transform: translateY(0);
+      pointer-events: all;
+    }
+
+    /* ══════════════════════════════════════════════════════════════
+       VIEW: HOME — THUMBS GRID (jackdavison / Miechowski)
+       Thumbnail piccole con aspect ratio naturali, molte colonne
+    ══════════════════════════════════════════════════════════════ */
+    #view-home {
+      padding: 0;
+      overflow-y: auto;
+      /* Griglia parte subito dall'alto, nessun margine */
+      display: flex;
+      flex-direction: column;
+    }
+    #view-home .thumbs-grid {
+      /* CSS columns: Miechowski style — thumbs piccole, flusso naturale */
+      column-count: auto;
+      column-width: 100px;
+      column-gap: 3px;
+      padding: 0;
+      margin-top: 0;
+    }
+    #view-home .thumbs-grid .thumb-item {
+      break-inside: avoid;
+      display: block;
+      margin-bottom: 2px;
+      position: relative;
+      overflow: hidden;
+      cursor: none;
+    }
+    #view-home .thumbs-grid .thumb-item img {
+      display: block;
+      width: 100%;
+      height: auto;
+      transition: opacity .25s var(--ease-out);
+    }
+    #view-home .thumbs-grid .thumb-item:hover img {
+      opacity: .75;
+    }
+    /* Spazio vuoto Miechowski */
+    #view-home .thumbs-grid .thumb-blank {
+      height: 80px;
+      background: transparent;
+    }
+
+    /* Overlay preview — jackdavison style */
+    #overview-overlay {
+      position: fixed; inset: 0;
+      z-index: 300;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      pointer-events: none;
+      visibility: hidden;
+    }
+    #overview-overlay.open {
+      pointer-events: all;
+      visibility: visible;
+    }
+    /* Sfondo sfumato come jackdavison */
+    #overview-overlay-bg {
+      position: absolute; inset: 0;
+      background: rgba(255,255,255,.82);
+      backdrop-filter: blur(1px);
+      opacity: 0;
+      transition: opacity .3s var(--ease-custom);
+    }
+    #overview-overlay.open #overview-overlay-bg { opacity: 1; }
+    #overview-overlay-img {
+      position: relative;
+      z-index: 1;
+      max-width: 50vw;
+      max-height: 72vh;
+      object-fit: contain;
+      display: block;
+      /* Animazione jackdavison: si svolge dall'alto verso il basso */
+      clip-path: inset(0 0 100% 0);
+      transition: clip-path .7s cubic-bezier(.77, 0, .175, 1);
+    }
+    #overview-overlay.open #overview-overlay-img {
+      clip-path: inset(0 0 0% 0);
+    }
+    [data-theme="dark"] #overview-overlay-bg {
+      background: rgba(0,0,0,.85);
+    }
+    /* Label in basso — jackdavison */
+    #overview-overlay-label {
+      position: absolute;
+      bottom: 28px; left: 50%;
+      transform: translateX(-50%);
+      z-index: 2;
+      font-size: 10px;
+      letter-spacing: 0.4px;
+      color: var(--gray);
+      white-space: nowrap;
+      opacity: 0;
+      transition: opacity .3s .15s;
+    }
+    #overview-overlay.open #overview-overlay-label { opacity: 1; }
+    /* Tasto chiudi in basso al centro — jackdavison */
+    #overview-overlay-close {
+      position: absolute;
+      bottom: 24px; left: 50%;
+      transform: translateX(-50%);
+      z-index: 2;
+      background: none; border: none;
+      font-family: var(--font);
+      font-size: 10px; letter-spacing: 0.4px;
+      color: var(--black);
+      cursor: none;
+      white-space: nowrap;
+    }
+    #overview-overlay-close:hover { opacity: .5; }
+
+    /* ══════════════════════════════════════════════════════════════
+       VIEW: ARCHIVE — Tabella (rizzi-web)
+    ══════════════════════════════════════════════════════════════ */
+    #view-archive .archive-header {
+      display: flex;
+      border-bottom: 1px solid var(--light);
+      padding: 6px 0;
+      margin-bottom: 0;
+    }
+    #view-archive .archive-header span {
+      font-weight: 900;
+      text-transform: uppercase;
+      font-size: 10px;
+      letter-spacing: 0.4px;
+    }
+    .archive-row {
+      display: grid;
+      grid-template-columns: 80px 1fr 1fr 120px 80px;
+      gap: 0;
+      border-bottom: 1px solid var(--light);
+      align-items: center;
+      min-height: 36px;
+      transition: background .1s, transform .15s;
+      cursor: none;
+    }
+    .archive-row:not(.header):hover {
+      background: var(--black);
+    }
+    .archive-row:not(.header):hover * { color: var(--white); }
+    /* skewX al hover — Angelucci */
+    .archive-row:not(.header):hover {
+      transform: skewX(-2deg);
+    }
+    .archive-row > div {
+      padding: 8px 12px;
+      font-size: 11px;
+    }
+    .archive-row .year { color: var(--gray); }
+    .archive-row:hover .year { color: #aaa; }
+    .archive-row .keyword {
+      color: var(--accent);
+      font-weight: 900;
+    }
+
+    /* ══════════════════════════════════════════════════════════════
+       VIEW: GALLERY — Nadav Kander style
+    ══════════════════════════════════════════════════════════════ */
+    #view-gallery {
+      padding: 0;
+      overflow-y: auto;
+      overflow-x: hidden;
+      scroll-behavior: smooth;
+    }
+    #view-gallery::-webkit-scrollbar { display: none; }
+
+    /* Foto principale centrata */
+    .gallery-main-wrap {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 32px var(--pad) 24px;
+      min-height: calc(100vh - var(--header-h));
+      box-sizing: border-box;
+    }
+    .gallery-main-img-wrap {
+      width: 100%;
+      max-width: 680px;
+      cursor: none;
+    }
+    .gallery-main-img-wrap img {
+      width: 100%;
+      height: auto;
+      max-height: calc(var(--vh, 1vh) * 65);
+      display: block;
+      object-fit: contain;
+      /* Animazione dall'alto verso il basso — identica all'overview */
+      clip-path: inset(0 0 0% 0);
+      transition: clip-path .65s cubic-bezier(.77, 0, .175, 1);
+    }
+    .gallery-main-img-wrap img.fade {
+      clip-path: inset(0 0 100% 0);
+    }
+    .gallery-info-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      padding: 10px var(--pad) 16px;
+    }
+    .gallery-caption {
+      font-family: var(--font-nav);
+      font-size: 12px;
+      color: var(--gray);
+      line-height: 1.5;
+    }
+    .gallery-counter-wrap {
+      font-family: var(--font-nav);
+      font-size: 11px;
+      color: var(--gray);
+      white-space: nowrap;
+      margin-left: 16px;
+    }
+
+    /* Sezione thumbs — linea + titolo + griglia */
+    .gallery-thumbs-section {
+      border-top: 1px solid var(--light);
+      padding: 0 var(--pad) 32px;
+    }
+    .gallery-series-title {
+      font-family: var(--font-nav);
+      font-size: 13px;
+      font-weight: 600;
+      padding: 14px 0 16px;
+      color: var(--black);
+    }
+    .gallery-grid {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 5px 8px;
+      align-items: flex-start;
+    }
+    .gallery-grid-item {
+      cursor: none;
+      flex-shrink: 0;
+    }
+    .gallery-grid-item img {
+      height: 80px;
+      width: auto;
+      display: block;
+      object-fit: cover;
+      opacity: .65;
+      transition: opacity .2s;
+    }
+    .gallery-grid-item:hover img { opacity: .9; }
+    .gallery-grid-item.active img { opacity: 1; }
+    .gallery-grid-caption {
+      font-family: var(--font-nav);
+      font-size: 10px;
+      color: var(--gray);
+      margin-top: 3px;
+      line-height: 1.3;
+      max-width: 120px;
+    }
+
+    /* Sezione testo — linea + descrizione */
+    .gallery-text-section {
+      border-top: 1px solid var(--light);
+      padding: 28px var(--pad) 60px;
+      max-width: 680px;
+    }
+    .gallery-text-title {
+      font-family: var(--font-nav);
+      font-size: 13px;
+      font-weight: 700;
+      margin-bottom: 18px;
+      color: var(--black);
+    }
+    .gallery-text-body {
+      font-family: var(--font-nav);
+      font-size: 13px;
+      line-height: 1.75;
+      color: var(--black);
+    }
+    .gallery-text-meta {
+      margin-top: 28px;
+      font-family: var(--font-nav);
+      font-size: 12px;
+      color: var(--gray);
+    }
+
+    /* ══════════════════════════════════════════════════════════════
+       SCREENSAVER — jackdavison
+    ══════════════════════════════════════════════════════════════ */
+    #screensaver {
+      position: fixed; inset: 0;
+      z-index: 200;
+      background: var(--white);
+      display: none;
+      opacity: 0;
+      transition: opacity .6s;
+    }
+    #screensaver.active {
+      display: block;
+      opacity: 1;
+    }
+    #screensaver .ss-img {
+      position: absolute;
+      opacity: 0;
+      transition: opacity 1.2s;
+    }
+    #screensaver .ss-img.show { opacity: 1; }
+    #screensaver .ss-img img {
+      width: auto;
+      height: auto;
+      max-width: 60vw;
+      max-height: 70vh;
+    }
+    #screensaver .ss-label {
+      position: fixed;
+      bottom: var(--pad);
+      left: var(--pad);
+      font-size: 10px;
+      color: var(--gray);
+      letter-spacing: 0.4px;
+    }
+
+    /* ══════════════════════════════════════════════════════════════
+       BLINK ANIMATION — centrephotogeneve
+    ══════════════════════════════════════════════════════════════ */
+    .blink { animation: blink .2s linear infinite; }
+    @keyframes blink {
+      0%, 100% { opacity: 1; }
+      50%       { opacity: .2; }
+    }
+
+    /* ══════════════════════════════════════════════════════════════
+       MENU OVERLAY — centrephotogeneve (slide from top)
+    ══════════════════════════════════════════════════════════════ */
+    #menu-overlay {
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%;
+      height: 50vh;
+      background: var(--black);
+      z-index: 500;
+      transform: translateY(-102%);
+      transition: transform .3s var(--ease-custom);
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      padding: var(--pad) var(--pad) var(--pad) calc(var(--pad) + 24px);
+      padding-top: calc(var(--nav-h) + 16px);
+      cursor: none;
+    }
+    #menu-overlay.open { transform: translateY(0); }
+    #menu-overlay ul {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+    #menu-overlay ul li a {
+      font-size: 22px;
+      font-weight: 900;
+      color: var(--white);
+      letter-spacing: -0.02em;
+      line-height: 1.4;
+      transition: opacity .1s;
+    }
+    #menu-overlay ul li a:hover { opacity: .5; }
+
+    /* Sottovoci espandibili */
+    #menu-overlay ul li.has-sub > a::after {
+      content: '';
+      display: inline-block;
+      width: 6px; height: 6px;
+      border-right: 1.5px solid var(--white);
+      border-bottom: 1.5px solid var(--white);
+      transform: rotate(45deg);
+      margin-left: 8px;
+      vertical-align: middle;
+      transition: transform .2s;
+    }
+    #menu-overlay ul li.has-sub.open > a::after {
+      transform: rotate(-135deg);
+    }
+    #menu-overlay ul li .sub-list {
+      display: none;
+      flex-direction: column;
+      gap: 1px;
+      padding-left: 0;
+      margin-top: 4px;
+    }
+    #menu-overlay ul li.open .sub-list {
+      display: flex;
+    }
+    #menu-overlay ul li .sub-list li a {
+      font-size: 13px;
+      font-weight: 300;
+      letter-spacing: 0.02em;
+      color: #ccc;
+      line-height: 1.8;
+    }
+    #menu-overlay ul li .sub-list li a:hover { opacity: .5; color: var(--white); }
+
+    #menu-overlay ul.secondary li a {
+      font-size: 11px;
+      font-weight: 300;
+      letter-spacing: 0.4px;
+      color: #aaa;
+    }
+
+    /* ══════════════════════════════════════════════════════════════
+       FOOTER (rizzi-web)
+    ══════════════════════════════════════════════════════════════ */
+    footer {
+      display: none;
+    }
+
+    /* ══════════════════════════════════════════════════════════════
+       SCROLLBAR
+    ══════════════════════════════════════════════════════════════ */
+    ::-webkit-scrollbar { width: 3px; height: 3px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: var(--light); }
+
+    /* ══════════════════════════════════════════════════════════════
+       DARK MODE
+    ══════════════════════════════════════════════════════════════ */
+    [data-theme="dark"] .archive-row:not(.header):hover { background: #fff; }
+    [data-theme="dark"] .archive-row:not(.header):hover * { color: #000; }
+
+    /* In dark mode: sfondo nero su griglia e celle per eliminare bordi bianchi */
+    [data-theme="dark"] #view-home .thumbs-grid {
+      background: #000;
+    }
+    [data-theme="dark"] #view-home .thumbs-grid .thumb-item {
+      background: #000;
+    }
+    [data-theme="dark"] #view-home .thumbs-grid .thumb-item img {
+      display: block;
+    }
+    /* Gallery thumbnails in dark mode */
+    [data-theme="dark"] .gallery-grid {
+      background: #000;
+    }
+    [data-theme="dark"] .gallery-grid-item {
+      background: #000;
+    }
+    /* Foto principale in dark mode: sfondo nero */
+    [data-theme="dark"] .gallery-main-img-wrap {
+      background: #000;
+    }
+    [data-theme="dark"] .gallery-main-wrap {
+      background: #000;
+    }
+
+    /* ══════════════════════════════════════════════════════════════
+       LABEL VISTE (per demo)
+    ══════════════════════════════════════════════════════════════ */
+    .view-label {
+      position: absolute;
+      top: 8px; right: 8px;
+      font-size: 9px;
+      letter-spacing: 0.4px;
+      color: var(--gray);
+      text-transform: uppercase;
+      opacity: .4;
+      pointer-events: none;
+    }
+
+    /* ══════════════════════════════════════════════════════════════
+       VIEW: ARCHIVE — Vista progetto con foto + testo
+    ══════════════════════════════════════════════════════════════ */
+    #view-archive-project {
+      padding: 0;
+    }
+    .archive-proj-back {
+      font-family: var(--font);
+      font-size: 11px;
+      letter-spacing: 0.4px;
+      background: none;
+      border: none;
+      color: var(--gray);
+      cursor: none;
+      padding: 0;
+      border-bottom: 1px solid var(--light);
+      padding-bottom: 1px;
+      margin-bottom: 20px;
+      display: inline-block;
+      transition: color .15s;
+    }
+    .archive-proj-back:hover { color: var(--black); }
+    .archive-proj-counter {
+      font-size: 11px;
+      color: var(--gray);
+      margin-bottom: 4px;
+    }
+    .archive-proj-title {
+      font-size: 11px;
+      font-weight: 900;
+      text-transform: uppercase;
+      letter-spacing: 0.4px;
+      margin-bottom: 20px;
+      padding-bottom: 12px;
+      border-bottom: 1px solid var(--light);
+    }
+    .archive-proj-body {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 32px;
+      margin-bottom: 24px;
+      align-items: start;
+    }
+    .archive-proj-text .proj-subtitle {
+      font-size: 10px;
+      color: var(--gray);
+      text-transform: uppercase;
+      letter-spacing: 0.4px;
+      margin-bottom: 8px;
+    }
+    .archive-proj-text .proj-meta {
+      font-size: 10px;
+      color: var(--gray);
+      line-height: 1.8;
+      margin-bottom: 12px;
+    }
+    .archive-proj-text .proj-desc {
+      font-size: 11px;
+      line-height: 1.7;
+      color: var(--black);
+    }
+    .archive-proj-cover img {
+      width: 100%;
+      height: auto;
+      display: block;
+    }
+    .archive-proj-divider {
+      height: 1px;
+      background: var(--light);
+      margin-bottom: 16px;
+    }
+    .archive-proj-strip-label {
+      font-size: 10px;
+      color: var(--gray);
+      text-transform: uppercase;
+      letter-spacing: 0.4px;
+      margin-bottom: 8px;
+    }
+    /* Griglia thumbnail piccole — come screenshot */
+    .archive-proj-grid {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 3px;
+    }
+    .archive-proj-grid .proj-thumb {
+      position: relative;
+      overflow: hidden;
+      cursor: none;
+      border: 2px solid transparent;
+      transition: border-color .15s;
+    }
+    .archive-proj-grid .proj-thumb.active { border-color: var(--black); }
+    .archive-proj-grid .proj-thumb::before {
+      content: '';
+      display: block;
+      padding-top: 75%;
+    }
+    .archive-proj-grid .proj-thumb img {
+      position: absolute;
+      inset: 0;
+      width: 100%; height: 100%;
+      object-fit: cover;
+      transition: transform .3s var(--ease-custom);
+    }
+    .archive-proj-grid .proj-thumb:hover img { transform: scale(1.05); }
+
+    /* ══════════════════════════════════════════════════════════════
+       LIGHTBOX
+    ══════════════════════════════════════════════════════════════ */
+    #lightbox {
+      position: fixed; inset: 0;
+      background: rgba(0,0,0,.95);
+      z-index: 800;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+    }
+    #lightbox.open { display: flex; }
+    #lightbox-img {
+      max-width: 88vw;
+      max-height: 80vh;
+      object-fit: contain;
+      display: block;
+      transition: opacity .3s;
+    }
+    #lightbox-img.fade { opacity: 0; }
+    .lightbox-info {
+      position: absolute;
+      bottom: 24px; left: 50%;
+      transform: translateX(-50%);
+      text-align: center;
+    }
+    .lightbox-info .lb-title {
+      font-size: 11px;
+      color: rgba(255,255,255,.7);
+      letter-spacing: 0.4px;
+    }
+    .lightbox-info .lb-count {
+      font-size: 10px;
+      color: rgba(255,255,255,.35);
+      margin-top: 2px;
+    }
+    .lightbox-close {
+      position: absolute; top: 20px; right: 24px;
+      background: none; border: none;
+      font-family: var(--font);
+      font-size: 10px; letter-spacing: 0.4px;
+      color: rgba(255,255,255,.4);
+      cursor: none;
+      transition: color .15s;
+    }
+    .lightbox-close:hover { color: rgba(255,255,255,.9); }
+    .lightbox-nav {
+      position: absolute; top: 50%; transform: translateY(-50%);
+      background: none; border: none;
+      font-size: 11px; color: rgba(255,255,255,.4);
+      padding: 20px; cursor: none;
+      transition: color .15s; letter-spacing: 0.4px;
+      font-family: var(--font);
+    }
+    .lightbox-nav:hover { color: rgba(255,255,255,.9); }
+    .lightbox-nav.prev { left: 2vw; }
+    .lightbox-nav.next { right: 2vw; }
+
+    /* ══════════════════════════════════════════════════════════════
+       VIEW: INTERVIEW — Testi & Interviste
+    ══════════════════════════════════════════════════════════════ */
+    #view-interview {
+      padding: var(--pad);
+    }
+    .interview-header {
+      border-bottom: 1px solid var(--light);
+      padding-bottom: 8px;
+      margin-bottom: 0;
+    }
+    .interview-header .interview-label {
+      font-size: 10px;
+      color: var(--gray);
+      text-transform: uppercase;
+      letter-spacing: 0.4px;
+    }
+    .interview-item {
+      border-bottom: 1px solid var(--light);
+      overflow: hidden;
+    }
+    .interview-item-head {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      padding: 12px 0;
+      cursor: none;
+      transition: transform .15s var(--ease-custom);
+      transform-origin: left center;
+    }
+    .interview-item:hover .interview-item-head {
+      transform: skewX(-6deg);
+    }
+    .interview-item-head .iw-title {
+      font-size: 12px;
+      font-weight: 900;
+      letter-spacing: 0.4px;
+    }
+    .interview-item-head .iw-meta {
+      display: flex; gap: 16px;
+      font-size: 10px; color: var(--gray);
+    }
+    .interview-item-head .iw-expand {
+      background: none; border: none;
+      font-family: var(--font);
+      font-size: 12px; color: var(--gray);
+      cursor: none;
+      transition: transform .3s var(--ease-custom), color .15s;
+    }
+    .interview-item.open .iw-expand {
+      transform: rotate(45deg);
+      color: var(--black);
+    }
+    .interview-body {
+      max-height: 0;
+      overflow: hidden;
+      transition: max-height .5s var(--ease-custom);
+    }
+    .interview-item.open .interview-body { max-height: 1200px; }
+    .interview-content {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 32px;
+      padding-bottom: 28px;
+      align-items: start;
+    }
+    .interview-text p {
+      font-size: 11px;
+      line-height: 1.8;
+      color: var(--black);
+      margin-bottom: 12px;
+    }
+    .interview-text .pull-quote {
+      font-size: 13px;
+      font-weight: 900;
+      line-height: 1.5;
+      color: var(--black);
+      border-left: 2px solid var(--accent);
+      padding-left: 12px;
+      margin: 16px 0;
+    }
+    .interview-imgs {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 3px;
+    }
+    .interview-imgs img {
+      width: 100%; height: auto; display: block;
+    }
+  </style>
+</head>
+<body>
+
+<!-- Cursore custom -->
+<div id="cursor"></div>
+<div id="cursor-label"></div>
+
+<!-- Splash screen -->
+<div id="splash">
+  <div>
+    <div class="line">Alessandro Rizzi — <b>Portfolio</b></div>
+    <div class="line" style="margin-top:4px; font-size:10px; color:#aaa">Proposta integrazione design</div>
+  </div>
+</div>
+
+<!-- Menu overlay (centrephotogeneve) -->
+<div id="menu-overlay">
+  <ul id="menu-main-list">
+    <li><a href="#" data-view="home">Overview</a></li>
+    <li class="has-sub" data-section="cities"><a href="#" data-view="gallery">Cities</a>
+      <ul class="sub-list" id="menu-sub-cities"></ul>
+    </li>
+    <li class="has-sub" data-section="archive"><a href="#" data-view="archive">Archive</a>
+      <ul class="sub-list" id="menu-sub-archive"></ul>
+    </li>
+    <li class="has-sub" data-section="interview"><a href="#" data-view="interview">Interview</a>
+      <ul class="sub-list" id="menu-sub-interview"></ul>
+    </li>
+  </ul>
+  <ul class="secondary">
+    <li><a href="#">About</a></li>
+    <li><a href="#">Contact</a></li>
+    <li><a href="#">Instagram</a></li>
+  </ul>
+</div>
+
+<!-- App -->
+<div id="app">
+
+  <!-- Navbar -->
+  <header>
+    <div class="logo">Alessandro <span>Rizzi</span></div>
+    <nav class="pill-nav">
+      <button class="active" data-view="home">Overview</button>
+      <button data-view="archive">Archive</button>
+      <button data-view="interview">Interview</button>
+      <button data-view="gallery">Cities</button>
+      <button id="btn-menu">Menu</button>
+      <button id="btn-theme">◐</button>
+      <button id="btn-screensaver">Screensaver</button>
+    </nav>
+  </header>
+
+  <!-- Main -->
+  <main>
+
+    <!-- ── VIEW: HOME — Thumbs Grid (jackdavison / Miechowski) ── -->
+    <div class="view active" id="view-home">
+      <div class="thumbs-grid" id="thumbs-grid">
+        <!-- Generata via JS -->
+      </div>
+    </div>
+
+
+    <!-- ── VIEW: ARCHIVE — Tabella (rizzi-web) ── -->
+    <div class="view" id="view-archive">
+      <div class="view-label">Archive rizzi-web — hover invertito + skewX Angelucci</div>
+      <div class="archive-row header">
+        <div><span>Anno</span></div>
+        <div><span>Titolo</span></div>
+        <div><span>Luogo</span></div>
+        <div><span>Pubblicazione</span></div>
+        <div><span>Immagini</span></div>
+      </div>
+      <div id="archive-list">
+        <!-- Generata via JS -->
+      </div>
+    </div>
+
+    <!-- ── VIEW: ARCHIVE PROGETTO ── -->
+    <div class="view" id="view-archive-project">
+      <div id="ap-back-btn" style="margin-bottom:16px">
+        <button class="archive-proj-back" onclick="closeArchiveProject()">← Tutti i progetti</button>
+      </div>
+      <div class="archive-proj-counter" id="ap-counter">—</div>
+      <div class="archive-proj-title" id="ap-title">—</div>
+      <div class="archive-proj-body">
+        <div class="archive-proj-text">
+          <div class="proj-subtitle" id="ap-subtitle">—</div>
+          <div class="proj-meta" id="ap-meta">—</div>
+          <div class="proj-desc" id="ap-desc">—</div>
+        </div>
+        <div class="archive-proj-cover">
+          <img id="ap-cover" src="" alt="">
+        </div>
+      </div>
+      <div class="archive-proj-divider"></div>
+      <div class="archive-proj-strip-label" id="ap-strip-label">—</div>
+      <div class="archive-proj-grid" id="ap-grid"></div>
+    </div>
+
+    <!-- ── VIEW: INTERVIEW — Testi & Interviste ── -->
+    <div class="view" id="view-interview">
+      <div class="interview-header">
+        <div class="interview-label">Testi &amp; Interviste</div>
+      </div>
+      <div id="interview-list"></div>
+    </div>
+
+    <!-- ── VIEW: GALLERY — Nadav Kander style ── -->
+    <div class="view" id="view-gallery">
+
+      <!-- Sezione 1: foto principale + didascalia -->
+      <div class="gallery-main-wrap" id="gallery-main-wrap">
+        <div class="gallery-main-img-wrap" id="gallery-stage">
+          <img id="gallery-img" src="" alt="" />
+        </div>
+      </div>
+
+      <!-- Info sopra la linea -->
+      <div class="gallery-info-row" id="gallery-info-row">
+        <div class="gallery-caption" id="gallery-caption"></div>
+        <div class="gallery-counter-wrap">
+          <span id="gallery-counter"></span>
+        </div>
+      </div>
+
+      <!-- Sezione 2: linea + titolo + griglia thumbnail -->
+      <div class="gallery-thumbs-section">
+        <div class="gallery-series-title" id="gallery-series-title"></div>
+        <div class="gallery-grid" id="gallery-thumbs"></div>
+      </div>
+
+      <!-- Sezione 3: testo descrizione -->
+      <div class="gallery-text-section">
+        <div class="gallery-text-title" id="gallery-text-title"></div>
+        <div class="gallery-text-body" id="gallery-text-body"></div>
+        <div class="gallery-text-meta" id="gallery-text-meta"></div>
+      </div>
+
+    </div>
+
+  </main>
+
+  <!-- Footer -->
+  <footer>
+    <span id="footer-status">Overview — 10 immagini</span>
+  </footer>
+
+</div>
+
+<!-- Overview Overlay (jackdavison) -->
+<div id="overview-overlay">
+  <div id="overview-overlay-bg" onclick="closeOverview()"></div>
+  <img id="overview-overlay-img" src="" alt="">
+  <button id="overview-overlay-close" onclick="closeOverview()">Work — Close</button>
+</div>
+
+<!-- Lightbox -->
+<div id="lightbox">
+  <button class="lightbox-close" onclick="closeLightbox()">Close ×</button>
+  <button class="lightbox-nav prev" onclick="lightboxNav(-1)">←</button>
+  <img id="lightbox-img" src="" alt="">
+  <button class="lightbox-nav next" onclick="lightboxNav(1)">→</button>
+  <div class="lightbox-info">
+    <div class="lb-title" id="lb-title">—</div>
+    <div class="lb-count" id="lb-count">01 / 01</div>
+  </div>
+</div>
+
+<!-- Screensaver -->
+<div id="screensaver">
+  <div class="ss-label">Screensaver — premi un tasto o clicca per uscire</div>
+</div>
+
+<script>
+// ══════════════════════════════════════════════════════════════════
+// DATI — immagini reali da rizzi-web + Miechowski
+// ══════════════════════════════════════════════════════════════════
+// Immagini reali di Alessandro Rizzi
+const REAL_IMAGES = [
+  { file:'images/B0000275.jpg',      title:'Untitled 01', year:'2024', ar:1.31 },
+  { file:'images/B0000276_1.jpg',    title:'Untitled 02', year:'2024', ar:1.31 },
+  { file:'images/B0000277_1.jpg',    title:'Untitled 03', year:'2024', ar:1.31 },
+  { file:'images/B0000281_1.jpg',    title:'Untitled 04', year:'2024', ar:1.29 },
+  { file:'images/B0000284_1.jpg',    title:'Untitled 05', year:'2024', ar:1.30 },
+  { file:'images/B0000289_1.jpg',    title:'Untitled 06', year:'2024', ar:1.30 },
+  { file:'images/B0000294_1.jpg',    title:'Untitled 07', year:'2024', ar:1.30 },
+  { file:'images/B0000366_openWith.webp', title:'Portrait I',   year:'2023', ar:0.76 },
+  { file:'images/B0000464_M.webp',   title:'Portrait II',  year:'2023', ar:0.76 },
+  { file:'images/B0000466.webp',     title:'Portrait III', year:'2023', ar:0.77 },
+  { file:'images/B0000475_openWith.webp', title:'Portrait IV',  year:'2023', ar:0.76 },
+  { file:'images/B0000557.webp',     title:'Portrait V',   year:'2023', ar:0.76 },
+  { file:'images/B0000558.webp',     title:'Portrait VI',  year:'2023', ar:0.76 },
+  { file:'images/B0000610_openWith.webp', title:'Landscape I',  year:'2022', ar:1.31 },
+  { file:'images/B0000615_1_openWith.webp', title:'Landscape II', year:'2022', ar:1.32 },
+  { file:'images/B0000705_openWith_openWith.webp', title:'Figure I', year:'2022', ar:0.75 },
+  { file:'images/B0000771_M_openWith.webp', title:'Landscape III', year:'2022', ar:1.29 },
+  { file:'images/B0000772_1.webp',   title:'Landscape IV', year:'2022', ar:1.32 },
+  { file:'images/B0000829_M_openWith.webp', title:'Landscape V',  year:'2021', ar:1.32 },
+  { file:'images/B0000833_openWith.webp', title:'Landscape VI', year:'2021', ar:1.30 },
+  { file:'images/B0000835_openWith.webp', title:'Landscape VII',year:'2021', ar:1.31 },
+  { file:'images/B0000295_1_openWith.webp', title:'Study I',    year:'2021', ar:1.30 },
+  { file:'images/B0000317_M_openWith_openWith.webp', title:'Study II', year:'2021', ar:1.32 },
+  { file:'images/AR_08_P_Tokyo_6x7_103.webp', title:'Tokyo 103', year:'2020', ar:1.19 },
+  { file:'images/0073551-0013.jpg',  title:'Series 13', year:'2019', ar:0.83 },
+  { file:'images/0073551-0016.jpg',  title:'Series 16', year:'2019', ar:0.82 },
+];
+
+const INTERVIEWS = [
+  {
+    title:'La luce come materia', publication:'Domus Magazine', year:'2024', author:'Marco Belpoliti',
+    pullQuote:'"La fotografia per me è sempre stata una questione di tempo — non di istanti, ma di durata."',
+    text:[
+      'Alessandro Rizzi lavora con la luce come un pittore lavora con il colore. Non la cerca, la aspetta. Nei suoi scatti, la luce non illumina semplicemente un soggetto: lo trasforma, lo dissolve, lo reinventa.',
+      'Il suo approccio è radicalmente analogico in un\'epoca di saturazione digitale. Usa la pellicola medio formato con una pazienza quasi meditativa, scattando poche immagini al giorno.',
+      '"La fotografia per me è sempre stata una questione di tempo — non di istanti, ma di durata. La luce cambia, il soggetto cambia, io cambio. L\'immagine è il residuo di tutto questo."'
+    ],
+    images:[0,7]
+  },
+  {
+    title:'Architettura dell\'invisibile', publication:'Vogue Italia', year:'2023', author:'Federica Sala',
+    pullQuote:'"Non fotografo luoghi. Fotografo la relazione tra un luogo e il momento in cui mi trovo a guardarlo."',
+    text:[
+      'C\'è qualcosa di architettonico nel modo in cui Alessandro Rizzi costruisce le sue immagini. Non nel senso di rigidità o geometria, ma nel senso di una struttura profonda, invisibile.',
+      'La sua serie "Landscape" — realizzata nel nord Italia tra il 2021 e il 2022 — è forse l\'esempio più compiuto di questa poetica.',
+      '"Non fotografo luoghi. Fotografo la relazione tra un luogo e il momento in cui mi trovo a guardarlo. È sempre una relazione temporanea, irripetibile."'
+    ],
+    images:[13,16]
+  },
+  {
+    title:'Tokyo: geometrie del vuoto', publication:'Aperture', year:'2022', author:'Yuki Tanaka',
+    pullQuote:'"A Tokyo ho capito che il vuoto non è assenza. È una presenza diversa, più sottile."',
+    text:[
+      'Il viaggio a Tokyo del 2020 ha segnato una svolta nel lavoro di Alessandro Rizzi. Non tanto per i soggetti — la città, l\'architettura, le strade — quanto per il modo in cui ha imparato a fotografare il vuoto.',
+      '"In Italia tendiamo a riempire il frame. A Tokyo ho capito che il vuoto non è assenza. È una presenza diversa, più sottile."',
+      'Le fotografie di questa serie hanno una qualità quasi grafica: linee nette, spazi ampi, una geometria rigorosa.'
+    ],
+    images:[23,24]
+  }
+];
+
+const PROJECTS = [
+  {
+    id: 'tokyo-2020',
+    title: 'Tokyo',
+    year: '2020',
+    place: 'Tokyo, Japan',
+    publication: 'Domus',
+    category: 'Paesaggio',
+    subtitle: 'Urban Geometry',
+    description: 'Una serie realizzata a Tokyo nel 2020. Il lavoro esplora la geometria nascosta dell\'architettura urbana, la luce filtrata tra i grattacieli e la solitudine delle strade deserte all\'alba.',
+    count: 6,
+    realImages: [23,24,25,0,1,2],
+    images: [
+      { url: REAL_IMAGES[23].file, ar: REAL_IMAGES[23].ar },
+      { url: REAL_IMAGES[24].file, ar: REAL_IMAGES[24].ar },
+      { url: REAL_IMAGES[25].file, ar: REAL_IMAGES[25].ar },
+      { url: REAL_IMAGES[0].file,  ar: REAL_IMAGES[0].ar  },
+      { url: REAL_IMAGES[1].file,  ar: REAL_IMAGES[1].ar  },
+      { url: REAL_IMAGES[2].file,  ar: REAL_IMAGES[2].ar  },
+    ]
+  },
+  {
+    id: 'portraits-2023',
+    title: 'Portraits',
+    year: '2023',
+    place: 'Milano, Italy',
+    publication: 'Vogue Italia',
+    category: 'Ritratto',
+    subtitle: 'Studio Series',
+    description: 'Ritratti in studio realizzati con luce naturale diffusa. La serie esplora la relazione tra soggetto e spazio, tra presenza e assenza.',
+    count: 6,
+    realImages: [7,8,9,10,11,12],
+    images: [
+      { url: REAL_IMAGES[7].file,  ar: REAL_IMAGES[7].ar  },
+      { url: REAL_IMAGES[8].file,  ar: REAL_IMAGES[8].ar  },
+      { url: REAL_IMAGES[9].file,  ar: REAL_IMAGES[9].ar  },
+      { url: REAL_IMAGES[10].file, ar: REAL_IMAGES[10].ar },
+      { url: REAL_IMAGES[11].file, ar: REAL_IMAGES[11].ar },
+      { url: REAL_IMAGES[12].file, ar: REAL_IMAGES[12].ar },
+    ]
+  },
+  {
+    id: 'landscape-2022',
+    title: 'Landscape',
+    year: '2022',
+    place: 'Nord Italia',
+    publication: 'Aperture',
+    category: 'Paesaggio',
+    subtitle: 'Paesaggi Industriali',
+    description: 'Paesaggi industriali del nord Italia fotografati in pellicola medio formato. Il progetto documenta la trasformazione del territorio tra fabbriche dismesse, canali e campi coltivati.',
+    count: 7,
+    realImages: [13,14,16,17,18,19,20],
+    images: [
+      { url: REAL_IMAGES[13].file, ar: REAL_IMAGES[13].ar },
+      { url: REAL_IMAGES[14].file, ar: REAL_IMAGES[14].ar },
+      { url: REAL_IMAGES[16].file, ar: REAL_IMAGES[16].ar },
+      { url: REAL_IMAGES[17].file, ar: REAL_IMAGES[17].ar },
+      { url: REAL_IMAGES[18].file, ar: REAL_IMAGES[18].ar },
+      { url: REAL_IMAGES[19].file, ar: REAL_IMAGES[19].ar },
+      { url: REAL_IMAGES[20].file, ar: REAL_IMAGES[20].ar },
+    ]
+  },
+  {
+    id: 'studies-2021',
+    title: 'Studies',
+    year: '2021',
+    place: 'Varie',
+    publication: '—',
+    category: 'Studio',
+    subtitle: 'Forme e Spazi',
+    description: 'Una raccolta di studi fotografici su forme, texture e spazi. Immagini che nascono dall\'osservazione quotidiana.',
+    count: 6,
+    realImages: [21,22,3,4,5,6],
+    images: [
+      { url: REAL_IMAGES[21].file, ar: REAL_IMAGES[21].ar },
+      { url: REAL_IMAGES[22].file, ar: REAL_IMAGES[22].ar },
+      { url: REAL_IMAGES[3].file,  ar: REAL_IMAGES[3].ar  },
+      { url: REAL_IMAGES[4].file,  ar: REAL_IMAGES[4].ar  },
+      { url: REAL_IMAGES[5].file,  ar: REAL_IMAGES[5].ar  },
+      { url: REAL_IMAGES[6].file,  ar: REAL_IMAGES[6].ar  },
+    ]
+  },
+];
+
+// Tutte le immagini per la overview grid — usa le foto reali
+const ALL_IMAGES = REAL_IMAGES.map((img, i) => ({
+  url: img.file,
+  ar: img.ar,
+  project: PROJECTS.find(p => p.realImages && p.realImages.includes(i)) || PROJECTS[0]
+}));
+
+// Variabile CSS --vh per altezza reale viewport (utile per foto verticali)
+function setVh() {
+  document.documentElement.style.setProperty('--vh', window.innerHeight * 0.01 + 'px');
+}
+setVh();
+window.addEventListener('resize', setVh);
+
+// ════════════════════════════════════════════════════════════════
+// CURSORE
+// ════════════════════════════════════════════════════════════════════
+const cursor = document.getElementById('cursor');
+const cursorLabel = document.getElementById('cursor-label');
+let mx = 0, my = 0;
+
+document.addEventListener('mousemove', e => {
+  mx = e.clientX; my = e.clientY;
+  cursor.style.left = mx + 'px';
+  cursor.style.top  = my + 'px';
+  cursorLabel.style.left = mx + 'px';
+  cursorLabel.style.top  = my + 'px';
+});
+
+function setCursorHover(label = '') {
+  cursor.classList.add('hover');
+  if (label) {
+    cursorLabel.textContent = label;
+    cursorLabel.classList.add('show');
+  }
+}
+function resetCursor() {
+  cursor.classList.remove('hover', 'drag');
+  cursorLabel.classList.remove('show');
+}
+
+document.addEventListener('mouseover', e => {
+  const t = e.target.closest('button, a, .grid-item, .archive-row, .thumb, .index-list li');
+  if (t) {
+    const label = t.dataset.label || '';
+    setCursorHover(label);
+  } else {
+    resetCursor();
+  }
+});
+
+// ══════════════════════════════════════════════════════════════════
+// NAVIGAZIONE VISTE
+// ══════════════════════════════════════════════════════════════════
+let currentView = 'home';
+
+function switchView(name) {
+  document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+  document.querySelectorAll('nav.pill-nav button[data-view]').forEach(b => b.classList.remove('active'));
+
+  const view = document.getElementById('view-' + name);
+  const btn  = document.querySelector(`nav.pill-nav button[data-view="${name}"]`);
+  if (view) view.classList.add('active');
+  if (btn)  btn.classList.add('active');
+
+  currentView = name;
+  updateFooter();
+
+  // Chiudi menu se aperto
+  document.getElementById('menu-overlay').classList.remove('open');
+}
+
+document.querySelectorAll('[data-view]').forEach(el => {
+  el.addEventListener('click', e => {
+    e.preventDefault();
+    switchView(el.dataset.view);
+  });
+});
+
+// ══════════════════════════════════════════════════════════════════
+// OVERVIEW GRID — Miechowski
+// ══════════════════════════════════════════════════════════════════
+function buildOverviewGrid() {
+  const grid = document.getElementById('thumbs-grid');
+  grid.innerHTML = '';
+
+  // Inserisce spazi vuoti casuali ogni ~5-7 foto — Miechowski style
+  const items = [...ALL_IMAGES];
+  let insertedBlanks = 0;
+  items.forEach((img, i) => {
+    // Spazio vuoto casuale: ~1 ogni 5-7 immagini, posizioni irregolari
+    if (i > 0 && insertedBlanks < 6 && Math.random() < 0.18) {
+      const blank = document.createElement('div');
+      blank.className = 'thumb-item thumb-blank';
+      grid.appendChild(blank);
+      insertedBlanks++;
+    }
+
+    const item = document.createElement('div');
+    item.className = 'thumb-item';
+
+    const el = document.createElement('img');
+    el.src     = img.url;
+    el.alt     = img.project.title;
+    el.loading = 'lazy';
+    item.appendChild(el);
+
+    // Solo click apre l'overlay — nessun hover
+    item.addEventListener('click', () => showOverview(img, i));
+
+    grid.appendChild(item);
+  });
+}
+
+// ══════════════════════════════════════════════════════════════════
+// OVERVIEW OVERLAY — jackdavison
+// ══════════════════════════════════════════════════════════════════
+let overlayOpen = false;
+
+function showOverview(img, idx) {
+  const ov  = document.getElementById('overview-overlay');
+  const oImg = document.getElementById('overview-overlay-img');
+  oImg.src = img.url;
+  ov.classList.add('open');
+  overlayOpen = true;
+}
+
+function closeOverview() {
+  const ov = document.getElementById('overview-overlay');
+  ov.classList.remove('open');
+  overlayOpen = false;
+}
+
+document.addEventListener('keydown', e => {
+  if (overlayOpen && e.key === 'Escape') closeOverview();
+});
+
+// ════════════════════════════════════════════════════════════════
+// ARCHIVE — rizzi-web
+// ══════════════════════════════════════════════════════════════════
+function buildArchive() {
+  const list = document.getElementById('archive-list');
+  list.innerHTML = '';
+
+  PROJECTS.forEach(p => {
+    const row = document.createElement('div');
+    row.className = 'archive-row';
+    row.innerHTML = `
+      <div class="year">${p.year}</div>
+      <div><strong>${p.title}</strong></div>
+      <div>${p.place}</div>
+      <div class="keyword">${p.category}</div>
+      <div>${p.count}</div>
+    `;
+    row.addEventListener('click', () => openArchiveProject(p));
+    list.appendChild(row);
+  });
+}
+
+// ══════════════════════════════════════════════════════════════════
+// ARCHIVE PROGETTO — vista testo + foto + lightbox
+// ══════════════════════════════════════════════════════════════════
+let lightboxImages = [];
+let lightboxIndex  = 0;
+
+function openArchiveProject(p) {
+  const projIdx = PROJECTS.indexOf(p) + 1;
+  document.getElementById('ap-counter').textContent = p.year + ' ' + projIdx + '/' + PROJECTS.length;
+  document.getElementById('ap-title').textContent   = p.title;
+  document.getElementById('ap-subtitle').textContent = p.subtitle || '';
+  document.getElementById('ap-meta').innerHTML =
+    `${p.year} &nbsp;·&nbsp; ${p.place} &nbsp;·&nbsp; ${p.publication}`;
+  document.getElementById('ap-desc').textContent = p.description || '';
+  document.getElementById('ap-strip-label').textContent = p.title;
+
+  const cover = document.getElementById('ap-cover');
+  cover.src = p.images[0].url;
+
+  // Griglia thumbnail
+  lightboxImages = p.images;
+  lightboxIndex  = 0;
+  const grid = document.getElementById('ap-grid');
+  grid.innerHTML = '';
+  p.images.forEach((img, i) => {
+    const thumb = document.createElement('div');
+    thumb.className = 'proj-thumb' + (i === 0 ? ' active' : '');
+    thumb.innerHTML = `<img src="${img.url}" alt="" loading="lazy">`;
+    thumb.addEventListener('click', () => openLightbox(i));
+    grid.appendChild(thumb);
+  });
+
+  switchView('archive-project');
+}
+
+function closeArchiveProject() {
+  switchView('archive');
+}
+
+function openLightbox(idx) {
+  lightboxIndex = idx;
+  const lb = document.getElementById('lightbox');
+  lb.classList.add('open');
+  setLightboxImg(idx);
+}
+
+function closeLightbox() {
+  document.getElementById('lightbox').classList.remove('open');
+}
+
+function setLightboxImg(idx) {
+  lightboxIndex = idx;
+  const img = lightboxImages[idx];
+  const el  = document.getElementById('lightbox-img');
+  el.classList.add('fade');
+  setTimeout(() => { el.src = img.url; el.classList.remove('fade'); }, 180);
+  document.getElementById('lb-title').textContent = REAL_IMAGES[idx] ? REAL_IMAGES[idx].title + ' — ' + REAL_IMAGES[idx].year : '';
+  document.getElementById('lb-count').textContent =
+    String(idx+1).padStart(2,'0') + ' / ' + String(lightboxImages.length).padStart(2,'0');
+  document.querySelectorAll('.proj-thumb').forEach((t,i) => t.classList.toggle('active', i===idx));
+}
+
+function lightboxNav(dir) {
+  setLightboxImg((lightboxIndex + dir + lightboxImages.length) % lightboxImages.length);
+}
+
+// ════════════════════════════════════════════════════════════════
+// GALLERY — Nadav Kander style
+// ════════════════════════════════════════════════════════════════
+let galleryProject = null;
+let galleryIndex   = 0;
+
+function openGallery(project) {
+  galleryProject = project;
+  galleryIndex   = 0;
+  renderGallery();
+  // Scroll in cima alla gallery
+  const vg = document.getElementById('view-gallery');
+  vg.scrollTop = 0;
+}
+
+function renderGallery() {
+  if (!galleryProject) return;
+  const p   = galleryProject;
+  const img = p.images[galleryIndex];
+  const ri  = REAL_IMAGES[p.realImages ? p.realImages[galleryIndex] : galleryIndex];
+
+  // Foto principale — animazione dall'alto verso il basso (identica all'overview)
+  const mainImg = document.getElementById('gallery-img');
+  mainImg.classList.add('fade');          // clip-path chiude verso il basso
+  setTimeout(() => {
+    mainImg.src = img.url;                // cambia immagine mentre è nascosta
+    mainImg.classList.remove('fade');    // clip-path si apre dall'alto verso il basso
+  }, 220);
+
+  // Didascalia: titolo + anno
+  const caption = ri ? `${ri.title}, ${ri.year}` : '';
+  document.getElementById('gallery-caption').textContent = caption;
+
+  // Contatore
+  document.getElementById('gallery-counter').textContent =
+    String(galleryIndex + 1).padStart(2,'0') + ' — ' + String(p.images.length).padStart(2,'0');
+
+  // Titolo serie
+  document.getElementById('gallery-series-title').textContent =
+    `${p.title} — ${p.year}`;
+
+  // Griglia thumbs
+  const thumbsEl = document.getElementById('gallery-thumbs');
+  thumbsEl.innerHTML = '';
+  p.images.forEach((im, i) => {
+    const ri2 = REAL_IMAGES[p.realImages ? p.realImages[i] : i];
+    const item = document.createElement('div');
+    item.className = 'gallery-grid-item' + (i === galleryIndex ? ' active' : '');
+    item.innerHTML = `
+      <img src="${im.url}" alt="" loading="lazy" />
+      <div class="gallery-grid-caption">${ri2 ? ri2.title + ', ' + ri2.year : ''}</div>
+    `;
+    item.addEventListener('click', () => {
+      galleryIndex = i;
+      renderGallery();
+      // Scroll alla foto principale con animazione veloce
+      document.getElementById('view-gallery').scrollTo({ top: 0, behavior: 'smooth' });
+    });
+    thumbsEl.appendChild(item);
+  });
+
+  // Sezione testo
+  document.getElementById('gallery-text-title').textContent = p.title;
+  document.getElementById('gallery-text-body').textContent  = p.description || '';
+  document.getElementById('gallery-text-meta').textContent  =
+    [p.place, p.publication, p.year].filter(Boolean).join(' — ');
+
+  updateFooter();
+}
+
+// Click sulla foto principale: avanza/indietro
+document.getElementById('gallery-stage').addEventListener('click', e => {
+  if (!galleryProject) return;
+  const rect = e.currentTarget.getBoundingClientRect();
+  const half = rect.left + rect.width / 2;
+  if (e.clientX > half) {
+    galleryIndex = (galleryIndex + 1) % galleryProject.images.length;
+  } else {
+    galleryIndex = (galleryIndex - 1 + galleryProject.images.length) % galleryProject.images.length;
+  }
+  renderGallery();
+});
+
+// Click sullo spazio bianco sotto la foto (gallery-main-wrap fuori dall'immagine) → scroll smooth alle thumbs
+document.getElementById('gallery-main-wrap').addEventListener('click', e => {
+  // Solo se il click NON è sull'immagine
+  if (!e.target.closest('#gallery-stage')) {
+    const thumbsSection = document.querySelector('.gallery-thumbs-section');
+    if (thumbsSection) {
+      thumbsSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  }
+});
+
+// Navigazione con frecce tastiera nella gallery
+document.addEventListener('keydown', e => {
+  const vg = document.getElementById('view-gallery');
+  if (!galleryProject || !vg.classList.contains('active')) return;
+  if (e.key === 'ArrowRight') {
+    galleryIndex = (galleryIndex + 1) % galleryProject.images.length;
+    renderGallery();
+    vg.scrollTo({ top: 0, behavior: 'smooth' });
+  } else if (e.key === 'ArrowLeft') {
+    galleryIndex = (galleryIndex - 1 + galleryProject.images.length) % galleryProject.images.length;
+    renderGallery();
+    vg.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+});
+
+// ══════════════════════════════════════════════════════════════════
+// MENU OVERLAY — centrephotogeneve
+// ══════════════════════════════════════════════════════════════════
+document.getElementById('btn-menu').addEventListener('click', () => {
+  document.getElementById('menu-overlay').classList.toggle('open');
+});
+
+// Click sul box del menu (non su una voce) chiude il menu
+document.getElementById('menu-overlay').addEventListener('click', e => {
+  if (!e.target.closest('a') && !e.target.closest('.has-sub')) {
+    document.getElementById('menu-overlay').classList.remove('open');
+  }
+});
+
+// Espandi/collassa sottovoci menu
+document.querySelectorAll('#menu-overlay .has-sub > a').forEach(a => {
+  a.addEventListener('click', e => {
+    const li = a.closest('.has-sub');
+    const isOpen = li.classList.contains('open');
+    // Chiudi tutti
+    document.querySelectorAll('#menu-overlay .has-sub').forEach(el => el.classList.remove('open'));
+    if (!isOpen) li.classList.add('open');
+    e.preventDefault();
+    e.stopPropagation();
+  });
+});
+
+// Popola le sottovoci del menu con i progetti
+function buildMenuSubItems() {
+  const subCities   = document.getElementById('menu-sub-cities');
+  const subArchive  = document.getElementById('menu-sub-archive');
+  const subInterview = document.getElementById('menu-sub-interview');
+  subCities.innerHTML = '';
+  subArchive.innerHTML = '';
+  subInterview.innerHTML = '';
+
+  PROJECTS.forEach(p => {
+    const li = document.createElement('li');
+    const a  = document.createElement('a');
+    a.href = '#';
+    a.textContent = p.title + (p.year ? ', ' + p.year : '');
+    a.addEventListener('click', e => {
+      e.preventDefault();
+      document.getElementById('menu-overlay').classList.remove('open');
+      document.querySelectorAll('#menu-overlay .has-sub').forEach(el => el.classList.remove('open'));
+      switchView('gallery');
+      setTimeout(() => openGallery(p), 50);
+    });
+    li.appendChild(a);
+
+    const sec = (p.section || 'archive').toLowerCase();
+    if (sec === 'cities' || sec === 'gallery') {
+      subCities.appendChild(li);
+    } else if (sec === 'interview') {
+      subInterview.appendChild(li.cloneNode(true));
+      li.querySelector('a').addEventListener('click', e => {
+        e.preventDefault();
+        document.getElementById('menu-overlay').classList.remove('open');
+        switchView('interview');
+      });
+    } else {
+      subArchive.appendChild(li);
+    }
+  });
+
+  // Mostra/nascondi freccia se non ci sono sottovoci
+  ['cities','archive','interview'].forEach(sec => {
+    const sub = document.getElementById('menu-sub-' + sec);
+    const li  = document.querySelector(`[data-section="${sec}"]`);
+    if (li) li.classList.toggle('has-sub', sub && sub.children.length > 0);
+  });
+}
+
+// ══════════════════════════════════════════════════════════════════
+// DARK MODE TOGGLE
+// ══════════════════════════════════════════════════════════════════
+document.getElementById('btn-theme').addEventListener('click', () => {
+  const html = document.documentElement;
+  html.dataset.theme = html.dataset.theme === 'dark' ? 'light' : 'dark';
+});
+
+// ══════════════════════════════════════════════════════════════════
+// SCREENSAVER — jackdavison
+// ══════════════════════════════════════════════════════════════════
+const ss = document.getElementById('screensaver');
+let ssActive = false;
+let ssTimer;
+let ssInterval;
+let ssCurrentImg = null;
+
+function startScreensaver() {
+  ssActive = true;
+  ss.classList.add('active');
+  ss.innerHTML = '<div class="ss-label">Screensaver — premi un tasto o clicca per uscire</div>';
+
+  let ssIdx = 0;
+  function showNext() {
+    if (ssCurrentImg) ssCurrentImg.classList.remove('show');
+    const img = ALL_IMAGES[ssIdx % ALL_IMAGES.length];
+    const el = document.createElement('div');
+    el.className = 'ss-img';
+    el.style.left = (10 + Math.random() * 60) + 'vw';
+    el.style.top  = (10 + Math.random() * 60) + 'vh';
+    el.innerHTML = `<img src="${img.url}" alt="" />`;
+    ss.appendChild(el);
+    setTimeout(() => el.classList.add('show'), 50);
+    ssCurrentImg = el;
+    ssIdx++;
+  }
+  showNext();
+  ssInterval = setInterval(showNext, 2500);
+}
+
+function stopScreensaver() {
+  ssActive = false;
+  ss.classList.remove('active');
+  clearInterval(ssInterval);
+}
+
+document.getElementById('btn-screensaver').addEventListener('click', () => {
+  if (ssActive) stopScreensaver(); else startScreensaver();
+});
+ss.addEventListener('click', stopScreensaver);
+document.addEventListener('keydown', e => {
+  if (ssActive && e.key !== 'F5') stopScreensaver();
+  // ESC chiude menu
+  if (e.key === 'Escape') document.getElementById('menu-overlay').classList.remove('open');
+});
+
+// ══════════════════════════════════════════════════════════════════
+// FOOTER
+// ══════════════════════════════════════════════════════════════════
+function updateFooter() {
+  const status = document.getElementById('footer-status');
+  const kw     = document.getElementById('footer-keyword');
+  const labels = {
+    home:    `Overview — ${ALL_IMAGES.length} immagini`,
+    index:   `Index — ${PROJECTS.length} progetti`,
+    archive: `Archive — ${PROJECTS.length} serie`,
+    gallery: galleryProject
+      ? `${galleryProject.title} — ${galleryProject.images.length} immagini`
+      : 'Gallery',
+  };
+  status.textContent = labels[currentView] || '';
+}
+
+// ══════════════════════════════════════════════════════════════════
+// INIT
+// ══════════════════════════════════════════════════════════════════
+// ══════════════════════════════════════════════════════════════════
+// INTERVIEW
+// ══════════════════════════════════════════════════════════════════
+function buildInterview() {
+  const list = document.getElementById('interview-list');
+  if (!list) return;
+  INTERVIEWS.forEach(iw => {
+    const item = document.createElement('div');
+    item.className = 'interview-item';
+    const imgs = iw.images.map(i => REAL_IMAGES[i]);
+    item.innerHTML = `
+      <div class="interview-item-head" onclick="this.parentElement.classList.toggle('open')">
+        <span class="iw-title">${iw.title}</span>
+        <div class="iw-meta">
+          <span>${iw.publication}</span>
+          <span>${iw.year}</span>
+          <span>— ${iw.author}</span>
+          <button class="iw-expand">+</button>
+        </div>
+      </div>
+      <div class="interview-body">
+        <div class="interview-content">
+          <div class="interview-text">
+            ${iw.text.map(p => `<p>${p}</p>`).join('')}
+            <blockquote class="pull-quote">${iw.pullQuote}</blockquote>
+          </div>
+          <div class="interview-imgs">
+            ${imgs.map(img => `<img src="${img.file}" alt="${img.title}" loading="lazy">`).join('')}
+          </div>
+        </div>
+      </div>
+    `;
+    list.appendChild(item);
+  });
+}
+
+// Lightbox keyboard
+document.addEventListener('keydown', e => {
+  const lb = document.getElementById('lightbox');
+  if (lb.classList.contains('open')) {
+    if (e.key === 'ArrowRight') lightboxNav(1);
+    if (e.key === 'ArrowLeft')  lightboxNav(-1);
+    if (e.key === 'Escape')     closeLightbox();
+  }
+});
+
+// ══════════════════════════════════════════════════════════════════
+// INIT — carica dati dal CMS 5151, fallback su dati statici
+// Approccio B: categorie come entità separate
+// ══════════════════════════════════════════════════════════════════
+// URL relativo: funziona sia in locale (localhost:5151) che su qualsiasi host
+const CMS_API = window.location.origin + '/api';
+
+// Categorie caricate dal CMS (Approccio B)
+let CMS_CATEGORIES = [];
+
+// ─────────────────────────────────────────────────────────────────
+// buildDynamicMenu — costruisce il menu overlay dalle categorie CMS
+// Ogni categoria diventa una voce espandibile nel menu
+// ─────────────────────────────────────────────────────────────────
+function buildDynamicMenu(categories, projects) {
+  const mainList = document.getElementById('menu-main-list');
+
+  // Rimuovi tutte le voci dinamiche precedenti (tieni solo Overview)
+  mainList.querySelectorAll('li[data-dynamic]').forEach(li => li.remove());
+
+  // Categorie visibili, ordinate per .order
+  const visibleCats = categories
+    .filter(c => c.visible !== false)
+    .sort((a, b) => (a.order || 0) - (b.order || 0));
+
+  visibleCats.forEach(cat => {
+    // Progetti assegnati a questa categoria
+    const catProjects = projects.filter(p => p.category_id === cat.id);
+
+    const li = document.createElement('li');
+    li.dataset.dynamic = '1';
+    li.dataset.section = cat.id;
+
+    // Determina la vista di destinazione in base al nome della categoria
+    // (Cities → gallery, Interview → interview, tutto il resto → archive)
+    const catLower = cat.name.toLowerCase();
+    let targetView = 'archive';
+    if (catLower === 'cities' || catLower === 'gallery') targetView = 'gallery';
+    else if (catLower === 'interview') targetView = 'interview';
+
+    if (catProjects.length > 0) {
+      li.classList.add('has-sub');
+      const subId = 'menu-sub-' + cat.id;
+      li.innerHTML = `<a href="#" data-view="${targetView}">${cat.name}</a>
+        <ul class="sub-list" id="${subId}"></ul>`;
+
+      // Aggiungi i progetti come sottovoci
+      const subList = li.querySelector('.sub-list');
+      catProjects.forEach(p => {
+        const subLi = document.createElement('li');
+        const a = document.createElement('a');
+        a.href = '#';
+        a.textContent = p.title + (p.year ? ', ' + p.year : '');
+        a.addEventListener('click', e => {
+          e.preventDefault();
+          document.getElementById('menu-overlay').classList.remove('open');
+          document.querySelectorAll('#menu-overlay .has-sub').forEach(el => el.classList.remove('open'));
+          switchView(targetView);
+          setTimeout(() => openGallery(p), 50);
+        });
+        subLi.appendChild(a);
+        subList.appendChild(subLi);
+      });
+
+      // Toggle sottomenu al click sulla voce principale
+      const mainA = li.querySelector(':scope > a');
+      mainA.addEventListener('click', e => {
+        e.preventDefault();
+        const isOpen = li.classList.contains('open');
+        document.querySelectorAll('#menu-overlay .has-sub').forEach(el => el.classList.remove('open'));
+        if (!isOpen) li.classList.add('open');
+      });
+    } else {
+      li.innerHTML = `<a href="#" data-view="${targetView}">${cat.name}</a>`;
+      li.querySelector('a').addEventListener('click', e => {
+        e.preventDefault();
+        document.getElementById('menu-overlay').classList.remove('open');
+        switchView(targetView);
+      });
+    }
+
+    mainList.appendChild(li);
+  });
+
+  console.log(`Menu dinamico: ${visibleCats.length} categorie, ${projects.length} progetti`);
+}
+
+async function loadFromCMS() {
+  let usedCMS = false;
+
+  try {
+    // 1. Carica categorie (Approccio B)
+    const catRes = await fetch(CMS_API + '/categories');
+    if (!catRes.ok) throw new Error('CMS non disponibile');
+    CMS_CATEGORIES = await catRes.json();
+
+    // 2. Carica progetti
+    const projRes = await fetch(CMS_API + '/projects');
+    if (!projRes.ok) throw new Error('CMS non disponibile');
+    const cmsProjects = await projRes.json();
+
+    if (cmsProjects && cmsProjects.length > 0) {
+      // Converte i progetti CMS nel formato usato dal prototipo
+      PROJECTS.length = 0;
+      cmsProjects.forEach(p => {
+        // Risolve la categoria: usa category_id (Approccio B) oppure fallback su section
+        const cat = CMS_CATEGORIES.find(c => c.id === p.category_id);
+        const proj = {
+          id:          p.id,
+          title:       p.title,
+          year:        p.year || '',
+          place:       p.place || '',
+          publication: p.publication || '',
+          category:    cat ? cat.name : (p.category || ''),
+          category_id: p.category_id || null,
+          subtitle:    p.subtitle || '',
+          description: p.description || '',
+          count:       p.images ? p.images.length : 0,
+          images:      p.images ? p.images.map(img => ({
+            url:   CMS_API.replace('/api', '') + '/uploads/' + img.file,
+            thumb: CMS_API.replace('/api', '') + '/uploads/' + img.thumb,
+            ar:    img.ar || 1.33,
+            title: img.caption || img.file,
+            year:  p.year || ''
+          })) : [],
+          texts: p.texts || []
+        };
+        PROJECTS.push(proj);
+      });
+
+      // Aggiorna ALL_IMAGES con le immagini CMS
+      ALL_IMAGES.length = 0;
+      PROJECTS.forEach(p => {
+        p.images.forEach(img => {
+          ALL_IMAGES.push({ url: img.url, ar: img.ar, project: p });
+        });
+      });
+
+      usedCMS = true;
+      console.log(`CMS: caricati ${CMS_CATEGORIES.length} categorie, ${PROJECTS.length} progetti, ${ALL_IMAGES.length} immagini`);
+    } else {
+      console.log('CMS: nessun progetto trovato, uso dati statici');
+    }
+  } catch (e) {
+    console.warn('CMS non raggiungibile, uso dati statici:', e.message);
+  }
+
+  // Inizializza le viste con i dati (CMS o statici)
+  buildOverviewGrid();
+  buildArchive();
+  buildInterview();
+
+  // Costruisce il menu: dinamico se CMS disponibile, statico altrimenti
+  if (usedCMS && CMS_CATEGORIES.length > 0) {
+    buildDynamicMenu(CMS_CATEGORIES, PROJECTS);
+  } else {
+    buildMenuSubItems(); // fallback statico
+  }
+
+  if (PROJECTS.length > 0) openGallery(PROJECTS[0]);
+  updateFooter();
+}
+
+loadFromCMS();
+</script>
+</body>
+</html>
