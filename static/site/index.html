@@ -6,7 +6,7 @@
   <title>Rizzi — Proposta Integrazione</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500&family=EB+Garamond:wght@400;500&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500&family=EB+Garamond:wght@400;500&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
   <style>
     /* ══════════════════════════════════════════════════════════════
        VARIABILI — ereditate da rizzi-web + palette Angelucci
@@ -25,6 +25,7 @@
       --footer-h:     0px;
       --font:         'Helvetica Neue', Helvetica, Arial, sans-serif;
       --font-nav:     'EB Garamond', Georgia, 'Times New Roman', serif;
+      --font-mono:    'Space Mono', 'Courier New', Courier, monospace;
       --ease-custom:  cubic-bezier(.77, 0, .175, 1);
       --ease-out:     cubic-bezier(.4, 0, .2, 1);
     }
@@ -356,47 +357,101 @@
     #overview-overlay-close:hover { opacity: .5; }
 
     /* ══════════════════════════════════════════════════════════════
-       VIEW: ARCHIVE — Tabella (rizzi-web)
+       VIEW: ARCHIVE — rizzi-web style
     ══════════════════════════════════════════════════════════════ */
-    #view-archive .archive-header {
-      display: flex;
+    #view-archive {
+      padding: 0 !important;
+      overflow-y: auto;
+    }
+    .archive-page {
+      padding: 32px 40px 64px;
+      max-width: 1400px;
+    }
+
+    /* Titolo grande — "Archive | Works Index" */
+    .archive-page-title {
+      font-family: var(--font-mono);
+      font-size: clamp(32px, 5vw, 64px);
+      font-weight: 700;
+      line-height: 1.0;
+      letter-spacing: -0.02em;
+      color: var(--black);
+      margin-bottom: 24px;
+    }
+
+    /* Campo di ricerca */
+    .archive-search-wrap {
       border-bottom: 1px solid var(--light);
-      padding: 6px 0;
       margin-bottom: 0;
+      padding-bottom: 8px;
     }
-    #view-archive .archive-header span {
-      font-weight: 900;
-      text-transform: uppercase;
-      font-size: 10px;
-      letter-spacing: 0.4px;
-    }
-    .archive-row {
-      display: grid;
-      grid-template-columns: 80px 1fr 1fr 120px 80px;
-      gap: 0;
-      border-bottom: 1px solid var(--light);
-      align-items: center;
-      min-height: 36px;
-      transition: background .1s, transform .15s;
+    .archive-search {
+      font-family: var(--font-mono);
+      font-size: 12px;
+      color: var(--gray);
+      background: none;
+      border: none;
+      outline: none;
+      width: 100%;
+      padding: 4px 0;
       cursor: none;
     }
-    .archive-row:not(.header):hover {
+    .archive-search::placeholder {
+      color: var(--gray);
+      opacity: 0.5;
+    }
+
+    /* Tabella */
+    .archive-table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+    .archive-table thead tr {
+      border-bottom: 1px solid var(--light);
+    }
+    .archive-table thead th {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      font-weight: 400;
+      color: var(--black);
+      text-align: left;
+      padding: 8px 12px 8px 0;
+      letter-spacing: 0;
+      white-space: nowrap;
+    }
+    .archive-table thead th:last-child { padding-right: 0; }
+    .archive-table tbody tr {
+      border-bottom: 1px solid var(--light);
+      cursor: none;
+      transition: background .08s;
+    }
+    .archive-table tbody tr:hover {
       background: var(--black);
     }
-    .archive-row:not(.header):hover * { color: var(--white); }
-    /* skewX al hover — Angelucci */
-    .archive-row:not(.header):hover {
-      transform: skewX(-2deg);
+    .archive-table tbody tr:hover td {
+      color: var(--white);
     }
-    .archive-row > div {
-      padding: 8px 12px;
-      font-size: 11px;
+    .archive-table tbody td {
+      font-family: var(--font-mono);
+      font-size: 12px;
+      font-weight: 400;
+      color: var(--black);
+      padding: 10px 12px 10px 0;
+      vertical-align: middle;
+      white-space: nowrap;
     }
-    .archive-row .year { color: var(--gray); }
-    .archive-row:hover .year { color: #aaa; }
-    .archive-row .keyword {
-      color: var(--accent);
-      font-weight: 900;
+    .archive-table tbody td:last-child { padding-right: 0; }
+    /* Anno: leggermente più grigio */
+    .archive-table tbody td.col-year {
+      color: var(--black);
+    }
+    /* Dash per celle vuote */
+    .archive-table tbody td.col-empty {
+      color: var(--gray);
+    }
+    /* Riga nascosta dalla ricerca */
+    .archive-table tbody tr.hidden {
+      display: none;
     }
 
     /* ══════════════════════════════════════════════════════════════
@@ -663,8 +718,8 @@
     /* ══════════════════════════════════════════════════════════════
        DARK MODE
     ══════════════════════════════════════════════════════════════ */
-    [data-theme="dark"] .archive-row:not(.header):hover { background: #fff; }
-    [data-theme="dark"] .archive-row:not(.header):hover * { color: #000; }
+    [data-theme="dark"] .archive-table tbody tr:hover { background: #fff; }
+    [data-theme="dark"] .archive-table tbody tr:hover td { color: #000; }
 
     /* In dark mode: sfondo nero su griglia e celle per eliminare bordi bianchi */
     [data-theme="dark"] #view-home .thumbs-grid {
@@ -1026,18 +1081,41 @@
     </div>
 
 
-    <!-- ── VIEW: ARCHIVE — Tabella (rizzi-web) ── -->
+    <!-- ── VIEW: ARCHIVE — rizzi-web style ── -->
     <div class="view" id="view-archive">
-      <div class="view-label">Archive rizzi-web — hover invertito + skewX Angelucci</div>
-      <div class="archive-row header">
-        <div><span>Anno</span></div>
-        <div><span>Titolo</span></div>
-        <div><span>Luogo</span></div>
-        <div><span>Pubblicazione</span></div>
-        <div><span>Immagini</span></div>
-      </div>
-      <div id="archive-list">
-        <!-- Generata via JS -->
+      <div class="archive-page">
+
+        <!-- Titolo grande -->
+        <h1 class="archive-page-title">Archive | Works Index</h1>
+
+        <!-- Campo di ricerca -->
+        <div class="archive-search-wrap">
+          <input
+            class="archive-search"
+            id="archive-search"
+            type="text"
+            placeholder="Type any keyword"
+            autocomplete="off"
+          />
+        </div>
+
+        <!-- Tabella -->
+        <table class="archive-table" id="archive-table">
+          <thead>
+            <tr>
+              <th>Year</th>
+              <th>Project</th>
+              <th>Subtitle</th>
+              <th>Place</th>
+              <th>Publication</th>
+              <th>Media</th>
+            </tr>
+          </thead>
+          <tbody id="archive-tbody">
+            <!-- Generata via JS -->
+          </tbody>
+        </table>
+
       </div>
     </div>
 
@@ -1331,7 +1409,7 @@ function resetCursor() {
 }
 
 document.addEventListener('mouseover', e => {
-  const t = e.target.closest('button, a, .grid-item, .archive-row, .thumb, .index-list li');
+  const t = e.target.closest('button, a, .grid-item, .archive-table tbody tr, .thumb, .index-list li');
   if (t) {
     const label = t.dataset.label || '';
     setCursorHover(label);
@@ -1427,25 +1505,46 @@ document.addEventListener('keydown', e => {
 });
 
 // ════════════════════════════════════════════════════════════════
-// ARCHIVE — rizzi-web
-// ══════════════════════════════════════════════════════════════════
+// ARCHIVE — rizzi-web style
+// ════════════════════════════════════════════════════════════════
 function buildArchive() {
-  const list = document.getElementById('archive-list');
-  list.innerHTML = '';
+  const tbody = document.getElementById('archive-tbody');
+  if (!tbody) return;
+  tbody.innerHTML = '';
 
   PROJECTS.forEach(p => {
-    const row = document.createElement('div');
-    row.className = 'archive-row';
-    row.innerHTML = `
-      <div class="year">${p.year}</div>
-      <div><strong>${p.title}</strong></div>
-      <div>${p.place}</div>
-      <div class="keyword">${p.category}</div>
-      <div>${p.count}</div>
+    const tr = document.createElement('tr');
+    const dash = '<td class="col-empty">–</td>';
+
+    tr.innerHTML = `
+      <td class="col-year">${p.year || '–'}</td>
+      <td>${p.title || '–'}</td>
+      <td>${p.subtitle || '–'}</td>
+      <td>${p.place || '–'}</td>
+      <td>${p.publication || '–'}</td>
+      <td class="col-empty">–</td>
     `;
-    row.addEventListener('click', () => openArchiveProject(p));
-    list.appendChild(row);
+
+    // Colora le celle vuote (dash)
+    tr.querySelectorAll('td').forEach(td => {
+      if (td.textContent.trim() === '–') td.classList.add('col-empty');
+    });
+
+    tr.addEventListener('click', () => openArchiveProject(p));
+    tbody.appendChild(tr);
   });
+
+  // Campo di ricerca
+  const searchInput = document.getElementById('archive-search');
+  if (searchInput) {
+    searchInput.addEventListener('input', () => {
+      const q = searchInput.value.toLowerCase();
+      tbody.querySelectorAll('tr').forEach(row => {
+        const text = row.textContent.toLowerCase();
+        row.classList.toggle('hidden', q.length > 0 && !text.includes(q));
+      });
+    });
+  }
 }
 
 // ══════════════════════════════════════════════════════════════════
