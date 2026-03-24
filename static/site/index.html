@@ -1211,7 +1211,7 @@ const INTERVIEWS = [
   }
 ];
 
-const PROJECTS = [
+const PROJECTS_STATIC = [
   {
     id: 'tokyo-2020',
     title: 'Tokyo',
@@ -1295,12 +1295,11 @@ const PROJECTS = [
   },
 ];
 
-// Tutte le immagini per la overview grid — usa le foto reali
-const ALL_IMAGES = REAL_IMAGES.map((img, i) => ({
-  url: img.file,
-  ar: img.ar,
-  project: PROJECTS.find(p => p.realImages && p.realImages.includes(i)) || PROJECTS[0]
-}));
+// PROJECTS: inizialmente vuoto, popolato dal CMS
+const PROJECTS = [];
+
+// ALL_IMAGES: inizialmente vuoto, popolato dal CMS
+const ALL_IMAGES = [];
 
 // Variabile CSS --vh per altezza reale viewport (utile per foto verticali)
 function setVh() {
@@ -1940,15 +1939,9 @@ async function loadFromCMS() {
     const cmsProjects = await projRes.json();
 
     if (cmsProjects && cmsProjects.length > 0) {
-      // Mantieni i progetti statici Cities (category_id: 'cities') e sostituisci solo gli altri
-      const staticCitiesProjects = PROJECTS.filter(p => p.category_id === 'cities' || (!p.category_id && p.id && p.id.includes('-')));
-
-      // Rimuovi solo i progetti non-cities dall'array
+      // Carica tutti i progetti dal CMS
       PROJECTS.length = 0;
-      // Reinserisci i progetti Cities statici
-      staticCitiesProjects.forEach(p => PROJECTS.push(p));
 
-      // Aggiungi i progetti dal CMS
       cmsProjects.forEach(p => {
         // Risolve la categoria: usa category_id (Approccio B) oppure fallback su section
         const cat = CMS_CATEGORIES.find(c => c.id === p.category_id);
@@ -1975,14 +1968,11 @@ async function loadFromCMS() {
         PROJECTS.push(proj);
       });
 
-      // ALL_IMAGES: mantieni le immagini statiche (Cities) + aggiungi quelle CMS
+      // ALL_IMAGES: tutte le immagini dei progetti CMS per la Overview grid
       ALL_IMAGES.length = 0;
-      // Ripristina le immagini statiche originali per Overview
-      REAL_IMAGES.forEach((img, i) => {
-        ALL_IMAGES.push({
-          url: img.file,
-          ar: img.ar,
-          project: PROJECTS.find(p => p.realImages && p.realImages.includes(i)) || PROJECTS[0]
+      PROJECTS.forEach(p => {
+        p.images.forEach(img => {
+          ALL_IMAGES.push({ url: img.url, ar: img.ar, project: p });
         });
       });
 
