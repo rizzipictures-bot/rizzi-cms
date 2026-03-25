@@ -604,6 +604,77 @@ def update_from_github():
     except Exception as e:
         return jsonify({'ok': False, 'error': str(e)})
 
+# ── SEED ISTANBUL IMAGES ──────────────────────────────────────────────────
+@app.route('/api/seed-istanbul-images', methods=['POST'])
+def seed_istanbul_images():
+    """Scarica 12 foto di Istanbul da Unsplash e le aggiunge al progetto Istanbul."""
+    import urllib.request
+    import hashlib
+
+    ISTANBUL_PHOTOS = [
+        'https://images.unsplash.com/photo-1524231757912-21f4fe3a7200?w=1200&q=80',
+        'https://images.unsplash.com/photo-1541432901042-2d8bd64b4a9b?w=1200&q=80',
+        'https://images.unsplash.com/photo-1527838832700-5059252407fa?w=1200&q=80',
+        'https://images.unsplash.com/photo-1570939274717-7eda259b50ed?w=1200&q=80',
+        'https://images.unsplash.com/photo-1604941834218-3a1e6b4d7c7a?w=1200&q=80',
+        'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=1200&q=80',
+        'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=1200&q=80',
+        'https://images.unsplash.com/photo-1551882547-ff40c63fe5fa?w=1200&q=80',
+        'https://images.unsplash.com/photo-1564507592333-c60657eea523?w=1200&q=80',
+        'https://images.unsplash.com/photo-1519451241324-20b4ea2c4220?w=1200&q=80',
+        'https://images.unsplash.com/photo-1533929736458-ca588d08c8be?w=1200&q=80',
+        'https://images.unsplash.com/photo-1555993539-1732b0258235?w=1200&q=80',
+    ]
+
+    db = load_db()
+    # Trova progetto Istanbul
+    project = next((p for p in db['projects'] if 'istanbul' in p.get('title','').lower()), None)
+    if not project:
+        return jsonify({'ok': False, 'error': 'Progetto Istanbul non trovato'})
+
+    # Svuota le immagini esistenti (potrebbero avere percorsi sbagliati)
+    project['images'] = []
+    UPLOAD.mkdir(exist_ok=True)
+    (UPLOAD / 'thumbs').mkdir(exist_ok=True)
+
+    added = []
+    for url in ISTANBUL_PHOTOS:
+        try:
+            uid = str(uuid.uuid4())[:8]
+            fname = uid + '.jpg'
+            fpath = UPLOAD / fname
+            req = urllib.request.Request(url, headers={'User-Agent': 'Mozilla/5.0'})
+            with urllib.request.urlopen(req, timeout=15) as resp:
+                data = resp.read()
+            with open(str(fpath), 'wb') as f:
+                f.write(data)
+            # Crea thumb
+            try:
+                from PIL import Image as PILImage
+                import io
+                im = PILImage.open(io.BytesIO(data))
+                im.thumbnail((400, 400))
+                tname = 'thumb_' + fname
+                im.save(str(UPLOAD / 'thumbs' / tname), 'JPEG', quality=82)
+                thumb_url = '/uploads/thumbs/' + tname
+            except:
+                thumb_url = '/uploads/' + fname
+            img_record = {
+                'id':    uid,
+                'file':  fname,
+                'url':   '/uploads/' + fname,
+                'thumb': thumb_url,
+                'tags':  [],
+                'ar':    1.5,
+            }
+            project['images'].append(img_record)
+            added.append(fname)
+        except Exception as e:
+            continue
+
+    save_db(db)
+    return jsonify({'ok': True, 'added': len(added), 'files': added})
+
 if __name__ == '__main__':
     print('\n  Rizzi CMS — avviato su http://localhost:5151')
     print('  Sito:  http://localhost:5151/')
