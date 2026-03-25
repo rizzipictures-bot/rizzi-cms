@@ -598,7 +598,7 @@
 
     /* Box nero — Ink Drop */
     .archive-expanded {
-      background: rgba(0,0,0,0.80);
+      background: #000;            /* nero 100% */
       overflow: hidden;
       /* Animazione: si svolge dall'alto al basso */
       clip-path: inset(0 0 100% 0);
@@ -610,11 +610,11 @@
 
     /* Contenuto interno del box nero */
     .archive-expanded-inner {
-      padding: 32px 40px;
+      padding: 32px 40px 32px 20px;  /* sx più stretto: 20px vs 32px top/bottom */
       display: flex;
       flex-direction: row;
-      align-items: flex-end;   /* tutto allineato al bottom */
-      height: 480px;           /* altezza fissa del box */
+      align-items: flex-end;         /* tutto allineato al bottom */
+      height: 480px;                 /* altezza fissa del box */
       gap: 0;
       box-sizing: border-box;
     }
@@ -623,7 +623,7 @@
     .archive-expanded-hero {
       flex-shrink: 0;
       width: auto;
-      height: 416px;           /* 480 - 32px*2 padding */
+      height: 416px;                 /* 480 - 32px*2 padding */
       overflow: hidden;
       position: relative;
       cursor: none;
@@ -632,8 +632,8 @@
     }
     .archive-expanded-hero img {
       width: auto;
-      height: 416px;           /* altezza fissa esplicita */
-      max-width: 600px;        /* limite larghezza */
+      height: 416px;                 /* altezza fissa esplicita */
+      max-width: 600px;              /* limite larghezza */
       object-fit: contain;
       display: block;
       transition: opacity .3s ease;
@@ -684,20 +684,20 @@
     /* Pulsante "View all" */
     .archive-expanded-viewall {
       font-family: var(--font-mono);
-      font-size: 10px;
-      color: #666;
+      font-size: 11px;
+      color: #fff;                   /* bianco di default */
       cursor: none;
       flex-shrink: 0;
       display: flex;
-      align-items: flex-end;
-      padding: 0 16px 12px;
+      align-items: flex-end;         /* allineato in basso con le thumbs */
+      padding: 0 16px 0;
       transition: color .2s;
       white-space: nowrap;
       writing-mode: vertical-rl;
       text-orientation: mixed;
-      letter-spacing: 0.12em;
+      letter-spacing: 0.14em;
     }
-    .archive-expanded-viewall:hover { color: #fff; }
+    .archive-expanded-viewall:hover { color: #aaa; } /* grigio chiaro in hover */
 
     /* ══════════════════════════════════════════════════════════════
        HERO CROSS-FADE — cambio foto nel box espanso
