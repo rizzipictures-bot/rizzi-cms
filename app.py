@@ -12,6 +12,50 @@ import os, json, uuid, shutil, base64, threading
 from pathlib import Path
 from flask import Flask, request, jsonify, send_from_directory, send_file
 from PIL import Image
+import numpy as np
+
+# ── AUTO-TRIM BORDI MONOCROMATICI ──────────────────────────────────────────────
+def auto_trim_border(im, threshold=18, min_strip=2, max_strip_pct=0.08):
+    """
+    Ritaglia automaticamente bordi monocromatici (bianchi, grigi, neri) da un'immagine PIL.
+    - threshold: tolleranza colore (0-255); bordi con std_dev < threshold vengono rimossi
+    - min_strip: minimo px da rimuovere per lato perché valga la pena
+    - max_strip_pct: massimo % del lato che può essere rimosso (evita crop aggressivi)
+    Restituisce l'immagine croppata (o l'originale se nessun bordo trovato).
+    """
+    arr = np.array(im.convert('RGB'), dtype=np.float32)
+    h, w = arr.shape[:2]
+    max_rows = int(h * max_strip_pct)
+    max_cols = int(w * max_strip_pct)
+
+    def row_is_border(row_pixels):
+        """True se la riga ha bassa varianza (monocromatica)"""
+        return float(row_pixels.std()) < threshold
+
+    def col_is_border(col_pixels):
+        return float(col_pixels.std()) < threshold
+
+    top = 0
+    while top < max_rows and row_is_border(arr[top]):
+        top += 1
+
+    bottom = h
+    while (h - bottom) < max_rows and row_is_border(arr[bottom - 1]):
+        bottom -= 1
+
+    left = 0
+    while left < max_cols and col_is_border(arr[:, left]):
+        left += 1
+
+    right = w
+    while (w - right) < max_cols and col_is_border(arr[:, right - 1]):
+        right -= 1
+
+    # Applica solo se c'è qualcosa da rimuovere
+    if top >= min_strip or (h - bottom) >= min_strip or left >= min_strip or (w - right) >= min_strip:
+        return im.crop((left, top, right, bottom))
+    return im
+# ───────────────────────────────────────────────────────────────────────────────
 
 # ── AI TAGGING (asincrono, non blocca l'upload) ──────────────────
 def ai_tag_image(fpath, img_data, db_ref, pid):
@@ -275,6 +319,10 @@ def upload_images(pid):
                 # Converti in RGB (gestisce PNG con trasparenza, TIFF, ecc.)
                 if im.mode not in ('RGB', 'L'):
                     im = im.convert('RGB')
+
+                # ── RIMUOVI BORDI MONOCROMATICI (bianco/grigio/nero) ──
+                im = auto_trim_border(im)
+
                 w, h = im.size
                 ar   = round(w / h, 4)
 
