@@ -43,8 +43,8 @@
     html, body {
       height: 100%;
       font-family: var(--font);
-      font-size: 11px;
-      line-height: 16px;
+      font-size: 12px;
+      line-height: 17px;
       letter-spacing: 0.4px;
       background: var(--white);
       color: var(--black);
@@ -215,7 +215,7 @@
     /* Nessuna riga separatrice — stile Miechowski/Angelucci */
     .logo {
       font-family: var(--font-nav);
-      font-size: 11px;
+      font-size: 13px;
       font-weight: 700;
       letter-spacing: 0.02em;
       text-transform: none;
@@ -232,7 +232,7 @@
     nav.pill-nav button,
     nav.pill-nav a {
       font-family: var(--font-nav);
-      font-size: 11px;
+      font-size: 13px;
       font-weight: 400;
       letter-spacing: 0.02em;
       text-transform: none;
@@ -276,7 +276,7 @@
       color: #000;
     }
     nav.pill-nav #btn-theme {
-      font-size: 11px;
+      font-size: 13px;
       margin-left: 4px;
     }
 
@@ -613,7 +613,7 @@
 
     /* Contenuto interno del box nero */
     .archive-expanded-inner {
-      padding: 0 40px 24px 0;        /* no padding sx/top: hero tocca il bordo del box */
+      padding: 0 40px 0 0;           /* no padding sx/top/bottom: hero tocca tutti i bordi */
       display: flex;
       flex-direction: row;
       align-items: flex-end;         /* tutto allineato al bottom */
@@ -713,9 +713,9 @@
       flex-shrink: 0;
       cursor: none;
       transition: background .2s;
-      align-self: flex-end;
-      margin-bottom: 2px;
-      margin-right: 16px;
+      align-self: center;          /* centrato rispetto all'altezza delle thumbs */
+      margin-left: 12px;           /* gap dalla strip thumbs */
+      margin-right: 0;
     }
     .archive-expanded-toggle:hover { opacity: 0.7; }
 
@@ -787,13 +787,7 @@
 
     /* Header overlay */
     .vao-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 0 24px;
-      height: 36px;
-      flex-shrink: 0;
-      border-bottom: 1px solid #e8e8e8;
+      display: none;   /* header grigio rimosso */
     }
     .vao-title {
       font-family: var(--font-mono);
@@ -843,7 +837,7 @@
       display: grid;
       grid-template-columns: repeat(9, 1fr);
       grid-auto-rows: calc(100vw / 9);
-      gap: 2px;
+      gap: 16px;
       align-content: start;
       opacity: 0;
       pointer-events: none;
@@ -1187,7 +1181,7 @@
     /* Nascondi colonne 2-4 nel menu overlay (usate solo nella landing) */
     #menu-col-2, #menu-col-3, #menu-col-4 { display: none; }
     .menu-col a {
-      font-size: 11px;
+      font-size: 20px;
       font-weight: 400;
       color: var(--white);
       letter-spacing: 0;
@@ -1205,7 +1199,7 @@
       gap: 0;
     }
     #menu-overlay ul.secondary li a {
-      font-size: 11px;
+      font-size: 12px;
       font-weight: 400;
       letter-spacing: 0;
       line-height: 1.9;
