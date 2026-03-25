@@ -490,6 +490,7 @@
   <div class="logo">Rizzi <span>CMS</span></div>
   <div class="header-actions">
     <button class="btn-text" onclick="exportAll()">Export JSON</button>
+    <button class="btn-text" id="btn-tag-ai" onclick="tagAllImages()">✦ Tag AI</button>
     <button class="btn-text" onclick="showNewCategoryModal()">+ Categoria</button>
     <button class="btn-text" onclick="toggleTheme()">☽</button>
     <button class="btn-text primary" onclick="showNewProjectModal()">+ Progetto</button>
@@ -1110,6 +1111,27 @@ async function exportAll() {
   a.download = 'rizzi-export.json';
   a.click();
   toast('Export completato');
+}
+
+async function tagAllImages() {
+  const btn = document.getElementById('btn-tag-ai');
+  btn.disabled = true;
+  btn.textContent = '⧗ Analisi in corso…';
+  try {
+    const res  = await fetch(`${API}/tag-all`, { method: 'POST' });
+    const data = await res.json();
+    const n = data.started || 0;
+    if (n === 0) {
+      toast('Tutte le foto hanno già le keyword AI ✔');
+    } else {
+      toast(`✦ Tag AI avviato per ${n} foto — pronto in pochi minuti`);
+    }
+  } catch(e) {
+    toast('Errore durante il Tag AI');
+  } finally {
+    btn.disabled = false;
+    btn.textContent = '✦ Tag AI';
+  }
 }
 
 function toast(msg) {

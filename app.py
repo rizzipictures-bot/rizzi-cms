@@ -259,16 +259,44 @@ def upload_images(pid):
         fpath = UPLOAD / fname
         file.save(str(fpath))
 
-        # Aspect ratio e thumbnail
+        # Conversione automatica + aspect ratio + thumbnail
+        MAX_SIDE = 2500   # px lato lungo massimo
+        WEB_QUALITY = 88  # qualità JPG per l'originale ottimizzato
         try:
             with Image.open(str(fpath)) as im:
+                # Converti in RGB (gestisce PNG con trasparenza, TIFF, ecc.)
+                if im.mode not in ('RGB', 'L'):
+                    im = im.convert('RGB')
                 w, h = im.size
                 ar   = round(w / h, 4)
+
+                # Ridimensiona se troppo grande
+                if max(w, h) > MAX_SIDE:
+                    if w >= h:
+                        new_w, new_h = MAX_SIDE, int(MAX_SIDE / ar)
+                    else:
+                        new_h, new_w = MAX_SIDE, int(MAX_SIDE * ar)
+                    im = im.resize((new_w, new_h), Image.LANCZOS)
+                    w, h = new_w, new_h
+
+                # Salva sempre come JPG ottimizzato (sovrascrive il file originale)
+                fname_jpg = str(uuid.uuid4())[:12] + '.jpg'
+                fpath_jpg = UPLOAD / fname_jpg
+                im.save(str(fpath_jpg), 'JPEG', quality=WEB_QUALITY, optimize=True)
+                # Rimuovi il file originale se era in formato diverso
+                if fpath != fpath_jpg:
+                    try: fpath.unlink()
+                    except: pass
+                fpath = fpath_jpg
+                fname = fname_jpg
+                ext   = '.jpg'
+
+                # Thumbnail
                 tw = 400
                 th = int(400 / ar)
                 thumb = im.copy()
                 thumb.thumbnail((tw, th), Image.LANCZOS)
-                tname = 'thumb_' + fname.replace(ext, '.jpg')
+                tname = 'thumb_' + fname
                 thumb.save(str(UPLOAD / 'thumbs' / tname), 'JPEG', quality=82)
         except Exception as e:
             ar    = 1.0
