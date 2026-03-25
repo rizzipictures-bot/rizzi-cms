@@ -656,18 +656,25 @@
     }
     .archive-expanded-hero:hover img { opacity: 0.92; }
 
-    /* Colonna destra: strip + toggle */
+    /* Colonna destra: caption sopra, thumbs+toggle sotto */
     .archive-expanded-right {
       flex: 1;
       display: flex;
-      flex-direction: row;
-      align-items: flex-end;         /* tutto allineato al bordo inferiore */
+      flex-direction: column;
+      justify-content: flex-end;     /* tutto spinto verso il basso */
       overflow: hidden;
       padding-left: 32px;            /* stacco dalla hero */
       height: 500px;                 /* stessa altezza del box */
+      padding-bottom: 0;
     }
 
-    /* Strip thumbs scorrevole */
+    /* Riga inferiore: thumbs + toggle affiancati */
+    .archive-expanded-bottom-row {
+      display: flex;
+      flex-direction: row;
+      align-items: flex-end;
+      overflow: hidden;
+    }
     .archive-expanded-thumbs {
       display: flex;
       flex-direction: row;
@@ -676,7 +683,7 @@
       padding: 0;
       scroll-behavior: smooth;
       flex: 1;
-      align-items: flex-end;   /* thumbs allineate in basso */
+      align-items: flex-end;
     }
     .archive-expanded-thumbs::-webkit-scrollbar { display: none; }
     .archive-expanded-thumb {
@@ -740,6 +747,36 @@
       width: 18px;
       height: 18px;
       display: block;
+    }
+
+    /* Caption elegante: nome progetto + contatore foto */
+    .archive-expanded-caption {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      letter-spacing: 0.18em;
+      color: rgba(255,255,255,0.45);
+      white-space: nowrap;
+      pointer-events: none;
+      user-select: none;
+      transition: color .25s;
+      margin-bottom: 14px;             /* stacco sopra i thumbnail */
+      flex-shrink: 0;
+    }
+    .archive-expanded-caption .caption-title {
+      font-weight: 400;
+      text-transform: uppercase;
+    }
+    .archive-expanded-caption .caption-sep {
+      margin: 0 6px;
+      opacity: 0.5;
+    }
+    .archive-expanded-caption .caption-count {
+      font-weight: 400;
+      font-variant-numeric: tabular-nums;
+    }
+    /* Tema bianco: caption scura */
+    .archive-expanded.box-white .archive-expanded-caption {
+      color: rgba(0,0,0,0.35);
     }
 
     /* Box in modalità bianca */
@@ -2300,6 +2337,38 @@ function buildArchive() {
             toggle.querySelector('circle:first-child').setAttribute('fill', 'none');
           });
 
+          // Caption: nome progetto + contatore foto (nella colonna destra, sopra le thumbs)
+          const caption = document.createElement('div');
+          caption.className = 'archive-expanded-caption';
+          const captionTitle = document.createElement('span');
+          captionTitle.className = 'caption-title';
+          captionTitle.textContent = p.title || '';
+          const captionSep = document.createElement('span');
+          captionSep.className = 'caption-sep';
+          captionSep.textContent = '\u2014';  /* em dash */
+          const captionCount = document.createElement('span');
+          captionCount.className = 'caption-count';
+          captionCount.textContent = '1\u2009/\u2009' + images.length;  /* thin space */
+          caption.appendChild(captionTitle);
+          caption.appendChild(captionSep);
+          caption.appendChild(captionCount);
+
+          // Riga inferiore: thumbs + toggle affiancati
+          const bottomRow = document.createElement('div');
+          bottomRow.className = 'archive-expanded-bottom-row';
+          bottomRow.appendChild(strip);
+          bottomRow.appendChild(toggle);
+
+          right.appendChild(caption);
+          right.appendChild(bottomRow);
+
+          // Aggiorna contatore al click su ogni thumb
+          strip.querySelectorAll('.archive-expanded-thumb').forEach((t, i) => {
+            t.addEventListener('click', () => {
+              captionCount.textContent = (i + 1) + '\u2009/\u2009' + images.length;
+            }, true);  /* capture: prima degli altri listener */
+          });
+
           // Pulsante View all (verticale, a destra)
           const viewAll = document.createElement('div');
           viewAll.className = 'archive-expanded-viewall';
@@ -2310,8 +2379,6 @@ function buildArchive() {
             openViewAllOverlay(images, p.title || '', isDark);
           });
 
-          right.appendChild(strip);
-          right.appendChild(toggle);
           inner.appendChild(right);
           inner.appendChild(viewAll);  /* viewAll dentro inner (position:relative), NON dentro right (overflow:hidden) */
         }
