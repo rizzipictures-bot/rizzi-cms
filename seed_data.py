@@ -1,15 +1,15 @@
 """
 Aggiorna anni (2003-2012) e pubblicazioni per i 15 progetti città.
+Usa solo librerie standard Python — nessuna installazione necessaria.
 Eseguire con: python3 seed_data.py
-Richiede il server attivo su localhost:5151
 """
-import json, random, requests
+import json, random, urllib.request, urllib.error
 
 BASE = 'http://localhost:5151'
 
 magazines = [
     'Amica Magazine', 'D Repubblica', 'Time', 'Newsweek',
-    'National Geographic', 'Vogue Italia', 'L\'Uomo Vogue',
+    'National Geographic', 'Vogue Italia', "L'Uomo Vogue",
     'Stern', 'Paris Match', 'Der Spiegel', 'Le Monde Magazine',
     'GEO', 'Io Donna', 'Grazia', 'The Sunday Times Magazine',
 ]
@@ -20,22 +20,30 @@ cities = [
     'Los Angeles', 'Amsterdam', 'Nairobi', 'Seoul', 'Lisbona'
 ]
 
-projects = requests.get(f'{BASE}/api/projects').json()
+def api_get(path):
+    with urllib.request.urlopen(BASE + path) as r:
+        return json.loads(r.read())
+
+def api_put(path, data):
+    body = json.dumps(data).encode()
+    req = urllib.request.Request(BASE + path, data=body, method='PUT',
+                                  headers={'Content-Type': 'application/json'})
+    with urllib.request.urlopen(req) as r:
+        return json.loads(r.read())
+
+projects = api_get('/api/projects')
 
 random.seed(42)
 updated = 0
 for p in projects:
     if p['title'] in cities:
         year = str(random.randint(2003, 2012))
-        pub = random.choice(magazines)
-        r = requests.put(f'{BASE}/api/projects/{p["id"]}', json={
-            'year': year,
-            'publication': pub
-        })
-        if r.status_code == 200:
-            print(f"  ✓ {p['title']} → {year} | {pub}")
+        pub  = random.choice(magazines)
+        try:
+            api_put(f'/api/projects/{p["id"]}', {'year': year, 'publication': pub})
+            print(f"  ✓ {p['title']:<22} {year}  |  {pub}")
             updated += 1
-        else:
-            print(f"  ✗ {p['title']} → errore {r.status_code}")
+        except Exception as e:
+            print(f"  ✗ {p['title']} → {e}")
 
-print(f"\nAggiornati {updated} progetti.")
+print(f"\nAggiornati {updated} progetti su {len(cities)} città.")
