@@ -611,19 +611,20 @@ def seed_istanbul_images():
     import urllib.request
     import hashlib
 
+    # Picsum Photos — seed fissi, sempre le stesse foto, nessuna autenticazione richiesta
     ISTANBUL_PHOTOS = [
-        'https://images.unsplash.com/photo-1524231757912-21f4fe3a7200?w=1200&q=80',
-        'https://images.unsplash.com/photo-1541432901042-2d8bd64b4a9b?w=1200&q=80',
-        'https://images.unsplash.com/photo-1527838832700-5059252407fa?w=1200&q=80',
-        'https://images.unsplash.com/photo-1570939274717-7eda259b50ed?w=1200&q=80',
-        'https://images.unsplash.com/photo-1604941834218-3a1e6b4d7c7a?w=1200&q=80',
-        'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=1200&q=80',
-        'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=1200&q=80',
-        'https://images.unsplash.com/photo-1551882547-ff40c63fe5fa?w=1200&q=80',
-        'https://images.unsplash.com/photo-1564507592333-c60657eea523?w=1200&q=80',
-        'https://images.unsplash.com/photo-1519451241324-20b4ea2c4220?w=1200&q=80',
-        'https://images.unsplash.com/photo-1533929736458-ca588d08c8be?w=1200&q=80',
-        'https://images.unsplash.com/photo-1555993539-1732b0258235?w=1200&q=80',
+        'https://picsum.photos/seed/ist01/1200/800',
+        'https://picsum.photos/seed/ist02/1200/800',
+        'https://picsum.photos/seed/ist03/1200/800',
+        'https://picsum.photos/seed/ist04/1200/800',
+        'https://picsum.photos/seed/ist05/1200/800',
+        'https://picsum.photos/seed/ist06/1200/800',
+        'https://picsum.photos/seed/ist07/1200/800',
+        'https://picsum.photos/seed/ist08/1200/800',
+        'https://picsum.photos/seed/ist09/1200/800',
+        'https://picsum.photos/seed/ist10/1200/800',
+        'https://picsum.photos/seed/ist11/1200/800',
+        'https://picsum.photos/seed/ist12/1200/800',
     ]
 
     db = load_db()
