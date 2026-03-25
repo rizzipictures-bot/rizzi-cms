@@ -494,7 +494,10 @@
       color: var(--accent);
       letter-spacing: 0;
     }
-    .archive-search::placeholder { color: #555; }
+    .archive-search::placeholder {
+      color: #5a1fd1;        /* viola più intenso */
+      font-weight: 500;     /* leggermente bold */
+    }
     .archive-col-header {
       display: grid;
       grid-template-columns: 100px 1fr 1fr 1fr 1fr 80px;
@@ -697,6 +700,7 @@
       writing-mode: vertical-rl;
       text-orientation: mixed;
       letter-spacing: 0.14em;
+      height: 48px;                  /* stessa altezza delle thumbs */
     }
     .archive-expanded-viewall:hover { color: #aaa; } /* grigio chiaro in hover */
 
@@ -2164,6 +2168,8 @@ function buildArchive() {
         <div>–</div>
       `;
 
+      row.addEventListener('mouseenter', () => archiveRowClick());
+
       row.addEventListener('click', () => {
         // Se c'è già una espansione aperta, rimuovila
         if (activeExpanded) {
@@ -2943,6 +2949,43 @@ loadFromCMS();
       setTimeout(() => { btnUpdate.textContent = '↻ Aggiorna'; }, 3000);
     }
   });
+})();
+
+// ══════════════════════════════════════════════════════════════
+// ARCHIVE ROW CLICK SOUND — tastiera telefono
+// ══════════════════════════════════════════════════════════════
+(function() {
+  let audioCtx = null;
+  function getCtx() {
+    if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    return audioCtx;
+  }
+  window.archiveRowClick = function() {
+    try {
+      const ctx = getCtx();
+      // Tono breve stile tasto telefono: burst di rumore filtrato
+      const bufferSize = ctx.sampleRate * 0.012; // 12ms
+      const buffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
+      const data = buffer.getChannelData(0);
+      for (let i = 0; i < bufferSize; i++) {
+        data[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / bufferSize, 3);
+      }
+      const source = ctx.createBufferSource();
+      source.buffer = buffer;
+      // Filtro passa-banda per dare il tono "click" tipico
+      const filter = ctx.createBiquadFilter();
+      filter.type = 'bandpass';
+      filter.frequency.value = 1200;
+      filter.Q.value = 0.8;
+      // Gain basso
+      const gain = ctx.createGain();
+      gain.gain.value = 0.08;
+      source.connect(filter);
+      filter.connect(gain);
+      gain.connect(ctx.destination);
+      source.start();
+    } catch(e) {}
+  };
 })();
 
 // ══════════════════════════════════════════════════════════════
