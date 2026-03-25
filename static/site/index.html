@@ -3284,14 +3284,29 @@ async function loadFromCMS() {
           subtitle:    p.subtitle || '',
           description: p.description || '',
           count:       p.images ? p.images.length : 0,
-          images:      p.images ? p.images.map(img => ({
-            url:      CMS_API.replace('/api', '') + '/uploads/' + img.file,
-            thumb:    CMS_API.replace('/api', '') + '/uploads/' + img.thumb,
-            ar:       img.ar || 1.33,
-            title:    img.caption || img.file,
-            year:     p.year || '',
-            keywords: img.keywords || ''   /* keywords AI + manuali */
-          })) : [],
+          images:      p.images ? p.images.map(img => {
+            // Supporta sia campo 'file' (nuovo) che 'filename' (legacy)
+            const fname = img.file || img.filename || '';
+            const base  = CMS_API.replace('/api', '');
+            // URL: se img.url è già assoluto usalo, altrimenti costruiscilo
+            const imgUrl = img.url
+              ? (img.url.startsWith('http') ? img.url : base + img.url)
+              : base + '/uploads/' + fname;
+            // Thumb: se img.thumb è già assoluto usalo, altrimenti costruiscilo
+            const thumbUrl = img.thumb
+              ? (img.thumb.startsWith('http') ? img.thumb
+                 : img.thumb.startsWith('/') ? base + img.thumb
+                 : base + '/uploads/' + img.thumb)
+              : imgUrl;
+            return {
+              url:      imgUrl,
+              thumb:    thumbUrl,
+              ar:       img.ar || 1.33,
+              title:    img.caption || fname,
+              year:     p.year || '',
+              keywords: img.keywords || ''   /* IPTC + AI + manuali */
+            };
+          }) : [],
           texts: p.texts || []
         };
         PROJECTS.push(proj);
