@@ -625,7 +625,7 @@
     /* Foto hero grande a sinistra — BORDERLESS, tocca top/left/bottom del box */
     .archive-expanded-hero {
       flex-shrink: 0;
-      width: auto;
+      width: 667px;                  /* 500px * 4/3 — proporzione standard landscape */
       height: 500px;
       overflow: hidden;
       position: relative;
@@ -639,9 +639,8 @@
     }
     .archive-expanded-hero img {
       display: block;
-      width: auto;
-      height: 500px;
-      max-width: 700px;
+      width: 100%;                   /* riempie esattamente il contenitore */
+      height: 100%;
       object-fit: cover;
       object-position: center center;
       margin: 0;
@@ -650,7 +649,6 @@
       outline: none;
       box-shadow: none;
       background: transparent;
-      transition: opacity .3s ease;
     }
     .archive-expanded-hero:hover img { opacity: 0.92; }
 
