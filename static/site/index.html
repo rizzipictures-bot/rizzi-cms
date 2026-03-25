@@ -621,7 +621,8 @@
       transition: transform .18s cubic-bezier(.34,1.56,.64,1), opacity .18s;
       position: relative;
     }
-    .media-ball:hover { transform: scale(1.3); }
+    .media-ball:hover { transform: scale(1.5); }
+    .media-ball.active  { transform: scale(1.5); }
     .media-ball.ball-photo { background: #000; }
     .media-ball.ball-text  { background: #999; }
     .archive-row:not(.header):hover .media-ball.ball-photo { background: #fff; }
@@ -2355,6 +2356,7 @@ function buildArchive() {
           // Chiudi popup esistente (stesso o diverso)
           if (activePopup) {
             activePopup.classList.remove('open');
+            if (activePopup._sourceBall) activePopup._sourceBall.classList.remove('active');
             setTimeout(() => activePopup && activePopup.remove(), 220);
             const wasSame = activePopup._ballType === type && activePopup._projectId === p.id;
             activePopup = null;
@@ -2366,6 +2368,8 @@ function buildArchive() {
           popup.className = 'media-popup';
           popup._ballType   = type;
           popup._projectId  = p.id;
+          popup._sourceBall = ball;
+          ball.classList.add('active');
 
           // Ball replica in alto a destra
           const popupBall = document.createElement('div');
@@ -2425,6 +2429,7 @@ function buildArchive() {
           const closeOutside = ev => {
             if (!popup.contains(ev.target) && ev.target !== ball) {
               popup.classList.remove('open');
+              ball.classList.remove('active');
               setTimeout(() => popup.remove(), 220);
               if (activePopup === popup) activePopup = null;
               document.removeEventListener('click', closeOutside, true);
