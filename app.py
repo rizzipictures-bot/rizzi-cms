@@ -57,6 +57,80 @@ def auto_trim_border(im, threshold=18, min_strip=2, max_strip_pct=0.08):
     return im
 # ───────────────────────────────────────────────────────────────────────────────
 
+# ── LETTURA KEYWORDS IPTC ────────────────────────────────────────
+def read_iptc_keywords(fpath):
+    """
+    Legge le keywords IPTC/XMP da un file immagine.
+    Restituisce una lista di stringhe (mai None).
+    NON legge caption/description — solo keywords.
+    """
+    keywords = []
+    try:
+        # Metodo 1: iptcinfo3 (IPTC IIM standard, tag 2:25)
+        try:
+            from iptcinfo3 import IPTCInfo
+            import warnings
+            with warnings.catch_warnings():
+                warnings.simplefilter('ignore')
+                info = IPTCInfo(str(fpath), force=True)
+            kws = info.data.get(25, [])  # tag 25 = Keywords
+            for k in kws:
+                if isinstance(k, bytes):
+                    k = k.decode('utf-8', errors='ignore')
+                k = k.strip()
+                if k:
+                    keywords.append(k)
+        except Exception:
+            pass
+
+        # Metodo 2: Pillow EXIF/XMP fallback
+        if not keywords:
+            try:
+                from PIL import Image as _PILImg
+                with _PILImg.open(str(fpath)) as im:
+                    # XMP sidecar embedded
+                    xmp = im.info.get('xmp', b'')
+                    if isinstance(xmp, bytes):
+                        xmp = xmp.decode('utf-8', errors='ignore')
+                    if xmp:
+                        import re as _re
+                        # Cerca <dc:subject> o <lr:hierarchicalSubject>
+                        matches = _re.findall(
+                            r'<(?:dc:subject|lr:hierarchicalSubject)>.*?<rdf:Bag>(.*?)</rdf:Bag>',
+                            xmp, _re.DOTALL
+                        )
+                        for bag in matches:
+                            items = _re.findall(r'<rdf:li[^>]*>(.*?)</rdf:li>', bag)
+                            keywords.extend([i.strip() for i in items if i.strip()])
+            except Exception:
+                pass
+    except Exception:
+        pass
+
+    # Deduplicazione case-insensitive preservando l'originale
+    seen = set()
+    result = []
+    for k in keywords:
+        if k.lower() not in seen:
+            seen.add(k.lower())
+            result.append(k)
+    return result
+
+
+def merge_keywords_str(existing_str, new_list):
+    """
+    Aggiunge new_list alle keywords esistenti (stringa CSV).
+    Non sovrascrive mai le keywords esistenti.
+    """
+    existing_set = {k.strip().lower() for k in existing_str.split(',') if k.strip()}
+    added = [k for k in new_list if k.strip() and k.strip().lower() not in existing_set]
+    if not added:
+        return existing_str
+    if existing_str.strip():
+        return existing_str.rstrip(', ') + ', ' + ', '.join(added)
+    return ', '.join(added)
+
+
 # ── AI TAGGING (asincrono, non blocca l'upload) ──────────────────
 def ai_tag_image(fpath, img_data, db_ref, pid):
     """Chiama GPT-4o mini per generare keyword per una foto. Eseguito in background."""
@@ -97,10 +171,6 @@ def ai_tag_image(fpath, img_data, db_ref, pid):
                 save_db(db)
     except Exception as e:
         pass  # tagging fallisce silenziosamente, non blocca nulla
-
-BASE   = Path(__file__).parent
-DATA   = BASE / 'data'
-UPLOAD = BASE / 'uploads'
 STATIC = BASE / 'static'
 
 DATA.mkdir(exist_ok=True)
@@ -367,13 +437,17 @@ def upload_images(pid):
             ar    = 1.0
             tname = fname
 
+        # ── LEGGI KEYWORDS IPTC (sincrono, prima dell'AI) ──
+        iptc_kws = read_iptc_keywords(fpath)
+        iptc_str = ', '.join(iptc_kws) if iptc_kws else ''
+
         img_data = {
-            'id':      str(uuid.uuid4())[:8],
-            'file':    fname,
-            'thumb':   'thumbs/' + tname,
-            'ar':      ar,
-            'caption': '',
-            'keywords': '',  # verrà popolato dal thread AI
+            'id':       str(uuid.uuid4())[:8],
+            'file':     fname,
+            'thumb':    'thumbs/' + tname,
+            'ar':       ar,
+            'caption':  '',
+            'keywords': iptc_str,  # IPTC prima; AI aggiungerà in append
         }
         p['images'].append(img_data)
         results.append(img_data)
@@ -637,6 +711,65 @@ def seed_cities():
         added.append(city)
     save_db(db)
     return jsonify({'ok': True, 'added': added, 'skipped': [c for c in cities if c not in added]})
+
+# ── KEYWORDS: re-scan IPTC + aggiornamento manuale ──────────────
+@app.route('/api/projects/<pid>/images/<iid>/keywords', methods=['PUT'])
+def update_image_keywords(pid, iid):
+    """Aggiorna le keywords manuali di una foto (append, non sovrascrive IPTC/AI)."""
+    db = load_db()
+    p = next((p for p in db['projects'] if p['id'] == pid), None)
+    if not p: return jsonify({'error': 'not found'}), 404
+    img = next((i for i in p.get('images', []) if i['id'] == iid), None)
+    if not img: return jsonify({'error': 'not found'}), 404
+    manual_kws = request.json.get('keywords', '')
+    # Le keywords manuali vengono aggiunte in append (non sovrascrivono)
+    img['keywords'] = merge_keywords_str(img.get('keywords', ''), 
+                                          [k.strip() for k in manual_kws.split(',') if k.strip()])
+    save_db(db)
+    return jsonify({'ok': True, 'keywords': img['keywords']})
+
+
+@app.route('/api/projects/<pid>/images/<iid>/rescan-iptc', methods=['POST'])
+def rescan_iptc(pid, iid):
+    """Ri-legge le keywords IPTC da una foto già caricata e le aggiunge in append."""
+    db = load_db()
+    p = next((p for p in db['projects'] if p['id'] == pid), None)
+    if not p: return jsonify({'error': 'not found'}), 404
+    img = next((i for i in p.get('images', []) if i['id'] == iid), None)
+    if not img: return jsonify({'error': 'not found'}), 404
+    # Cerca il file fisico (supporta sia campo 'file' che 'filename')
+    fname = img.get('file') or img.get('filename', '')
+    fpath = (DATA / 'uploads' / fname) if fname else None
+    if not fpath or not fpath.exists():
+        return jsonify({'error': 'file not found on disk'}), 404
+    iptc_kws = read_iptc_keywords(fpath)
+    if iptc_kws:
+        img['keywords'] = merge_keywords_str(img.get('keywords', ''), iptc_kws)
+        save_db(db)
+    return jsonify({'ok': True, 'iptc_found': len(iptc_kws), 'keywords': img.get('keywords', '')})
+
+
+@app.route('/api/projects/<pid>/rescan-iptc-all', methods=['POST'])
+def rescan_iptc_all(pid):
+    """Ri-legge le keywords IPTC da tutte le foto di un progetto."""
+    db = load_db()
+    p = next((p for p in db['projects'] if p['id'] == pid), None)
+    if not p: return jsonify({'error': 'not found'}), 404
+    total_added = 0
+    for img in p.get('images', []):
+        fname = img.get('file') or img.get('filename', '')
+        fpath = (DATA / 'uploads' / fname) if fname else None
+        if not fpath or not fpath.exists():
+            continue
+        iptc_kws = read_iptc_keywords(fpath)
+        if iptc_kws:
+            before = img.get('keywords', '')
+            img['keywords'] = merge_keywords_str(before, iptc_kws)
+            if img['keywords'] != before:
+                total_added += 1
+    save_db(db)
+    return jsonify({'ok': True, 'updated': total_added})
+
 
 # ── UPDATE (fetch + checkout selettivo, preserva data/) ──────
 @app.route('/api/update', methods=['POST'])

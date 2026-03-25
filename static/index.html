@@ -579,6 +579,15 @@
             <textarea id="f-description" rows="3" oninput="livePreview()"></textarea>
           </div>
         </div>
+        <div class="field-group full">
+          <div class="field">
+            <label style="display:flex;align-items:center;gap:8px">
+              Keywords manuali
+              <span style="font-size:9px;font-weight:400;color:#888;letter-spacing:.3px">(separate da virgola — si aggiungono a IPTC e AI, non le sostituiscono)</span>
+            </label>
+            <input type="text" id="f-keywords" placeholder="architettura, bianco e nero, Istanbul" oninput="livePreview()">
+          </div>
+        </div>
         <button class="save-btn" onclick="saveProjectInfo()">Salva</button>
       </div>
 
@@ -860,6 +869,7 @@ function renderEditor() {
   if (catSel) catSel.value = p.category_id || '';
   document.getElementById('f-subtitle').value    = p.subtitle || '';
   document.getElementById('f-description').value = p.description || '';
+  document.getElementById('f-keywords').value    = p.keywords_manual || '';
 
   renderImageGrid();
   renderTextBlocks();
@@ -873,8 +883,9 @@ async function saveProjectInfo() {
     place:       document.getElementById('f-place').value,
     publication: document.getElementById('f-publication').value,
     category_id: document.getElementById('f-category-id').value || null,
-    subtitle:    document.getElementById('f-subtitle').value,
-    description: document.getElementById('f-description').value,
+    subtitle:         document.getElementById('f-subtitle').value,
+    description:      document.getElementById('f-description').value,
+    keywords_manual:  document.getElementById('f-keywords').value,
   };
   await fetch(`${API}/projects/${currentProject.id}`, {
     method: 'PUT',
