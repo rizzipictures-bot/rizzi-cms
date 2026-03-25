@@ -65,13 +65,13 @@
       z-index: 9999;
       /* Il triangolo è un SVG inline, centrato sul punto */
       transform: translate(-50%, -50%) rotate(0deg);
-      transition: transform .12s var(--ease-out);
+      transition: transform .18s var(--ease-out);
       mix-blend-mode: difference;
     }
     #cursor svg {
       display: block;
-      width: 12px;
-      height: 14px;
+      width: 14px;
+      height: 12px;
       overflow: visible;
     }
     #cursor svg polygon {
@@ -1724,7 +1724,7 @@
 <body>
 
 <!-- Cursore custom -->
-<div id="cursor"><svg viewBox="0 0 12 14" xmlns="http://www.w3.org/2000/svg"><polygon points="6,0 12,14 0,14" /></svg></div>
+<div id="cursor"><svg viewBox="0 0 14 12" xmlns="http://www.w3.org/2000/svg"><polygon points="7,0 14,12 0,12" /></svg></div>
 <div id="cursor-label"></div>
 
 <!-- Landing page hero -->
