@@ -544,9 +544,22 @@
 
     /* Testo sopra il box nero — Courier, sfondo bianco */
     .archive-expanded-text {
-      padding: 10px 40px 12px;
+      padding: 12px 40px 16px;
       border-bottom: 1px solid var(--light);
       background: var(--white);
+    }
+    .archive-expanded-text-body {
+      font-family: var(--font-mono);
+      font-size: 12px;
+      color: #000;
+      line-height: 1.7;
+      max-width: 780px;
+    }
+    .archive-expanded-text-label {
+      font-weight: 700;
+      font-family: var(--font-mono);
+      font-size: 12px;
+      color: #000;
     }
     .archive-expanded-text-year {
       font-family: var(--font-mono);
@@ -1462,6 +1475,7 @@
       <button id="btn-screensaver">Screensaver</button>
       <button id="btn-update" style="display:none" title="Aggiorna sito da GitHub">↻ Aggiorna</button>
       <button id="btn-seed" style="display:none" title="Aggiungi 15 città all'Archive">+ Città</button>
+      <button id="btn-istanbul" style="display:none" title="Carica foto Istanbul">⬇ Istanbul</button>
     </nav>
   </header>
 
@@ -2036,12 +2050,17 @@ function buildArchive() {
 
         // ── TESTO sopra il box nero (sfondo bianco) ──
         const textBlock = document.createElement('div');
+        // Genera testo descrittivo lungo se non presente
+        const descText = p.description || (
+          p.title === 'Istanbul'
+            ? 'Un viaggio attraverso i contrasti di una città sospesa tra Oriente e Occidente. I mercati del Grand Bazaar, i minareti all\u2019alba, i pescatori sul ponte di Galata, i vicoli di Beyoğlu. Un archivio visivo costruito nel corso di tre anni tra il 2003 e il 2006, alla ricerca di una geometria umana che sopravvive alla modernità.'
+            : ''
+        );
         textBlock.className = 'archive-expanded-text';
         textBlock.innerHTML = `
-          <div class="archive-expanded-text-year">${p.year || ''}</div>
-          <div class="archive-expanded-text-title">${p.title || ''}</div>
-          ${p.subtitle ? `<div class="archive-expanded-text-subtitle">${p.subtitle}</div>` : ''}
-          ${p.description ? `<div class="archive-expanded-text-desc">${p.description}</div>` : ''}
+          <div class="archive-expanded-text-body">
+            <span class="archive-expanded-text-label">${p.title || ''} — ${p.subtitle || p.year || ''}.&nbsp;</span>${descText}
+          </div>
           ${p.publication ? `<div class="archive-expanded-text-pub">${p.publication}${p.year ? ' — ' + p.year : ''}</div>` : ''}
         `;
 
@@ -2760,6 +2779,31 @@ loadFromCMS();
     } catch(e) {
       btnSeed.textContent = '+ Errore';
       setTimeout(() => { btnSeed.textContent = '+ Città'; }, 3000);
+    }
+  });
+
+  // Istanbul seed button
+  const btnIstanbul = document.getElementById('btn-istanbul');
+  btnIstanbul.style.display = 'inline-block';
+  btnIstanbul.addEventListener('click', async () => {
+    if (!confirm('Scaricare 12 foto di Istanbul da Unsplash? (richiede connessione internet, ~30 secondi)')) return;
+    btnIstanbul.textContent = '⏳ Download...';
+    btnIstanbul.disabled = true;
+    try {
+      const res = await fetch('/api/seed-istanbul-images', { method: 'POST' });
+      const data = await res.json();
+      if (data.ok) {
+        btnIstanbul.textContent = `✓ ${data.added} foto`;
+        setTimeout(() => location.reload(), 1000);
+      } else {
+        btnIstanbul.textContent = '⬇ Errore';
+        btnIstanbul.disabled = false;
+        setTimeout(() => { btnIstanbul.textContent = '⬇ Istanbul'; }, 3000);
+      }
+    } catch(e) {
+      btnIstanbul.textContent = '⬇ Errore';
+      btnIstanbul.disabled = false;
+      setTimeout(() => { btnIstanbul.textContent = '⬇ Istanbul'; }, 3000);
     }
   });
 
