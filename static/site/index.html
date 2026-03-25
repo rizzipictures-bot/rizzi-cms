@@ -698,12 +698,12 @@
     /* Pulsante "View all" — ASSOLUTO sul bordo destro del box, L allineata al bottom */
     .archive-expanded-viewall {
       font-family: var(--font-mono);
-      font-size: 12.65px;
+      font-size: 14.55px;            /* +15% su 12.65px */
       color: #fff;
       cursor: pointer;
       position: absolute;
       right: 8px;
-      bottom: 0;
+      bottom: 8px;                   /* qualche pixel di stacco dal fondo */
       display: flex;
       align-items: flex-end;         /* L in basso */
       justify-content: flex-end;
@@ -792,7 +792,7 @@
     }
     .archive-expanded-hero img.hero-curtain-in {
       clip-path: inset(0 0 0 0%);
-      transition: clip-path .45s cubic-bezier(.77, 0, .175, 1);
+      transition: clip-path .70s cubic-bezier(.77, 0, .175, 1);
     }
     .archive-expanded-hero img.hero-curtain-reset {
       clip-path: inset(0 0 0 100%);
@@ -2310,8 +2310,8 @@ function buildArchive() {
 
           right.appendChild(strip);
           right.appendChild(toggle);
-          right.appendChild(viewAll);
           inner.appendChild(right);
+          inner.appendChild(viewAll);  /* viewAll dentro inner (position:relative), NON dentro right (overflow:hidden) */
         }
 
         panel.appendChild(inner);
