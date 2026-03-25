@@ -613,6 +613,7 @@
       padding: 32px 40px;
       display: flex;
       flex-direction: row;
+      align-items: stretch;   /* hero e right stessa altezza */
       min-height: 480px;
       gap: 0;
       box-sizing: border-box;
@@ -622,16 +623,16 @@
     .archive-expanded-hero {
       flex-shrink: 0;
       width: auto;
-      min-height: 100%;
       overflow: hidden;
       position: relative;
       cursor: none;
       display: flex;
-      align-items: stretch;
+      align-items: flex-start; /* foto parte dall'alto */
     }
     .archive-expanded-hero img {
       width: auto;
-      height: 100%;
+      height: 100%;            /* occupa tutta l'altezza dell'inner */
+      max-height: 416px;       /* 480px - 32px*2 padding */
       object-fit: contain;
       display: block;
       transition: opacity .3s ease;
@@ -643,9 +644,9 @@
       flex: 1;
       display: flex;
       flex-direction: row;
-      align-items: flex-end;  /* thumbs allineate in basso */
+      align-items: flex-end;   /* thumbs allineate al bottom della hero */
       overflow: hidden;
-      padding-left: 32px;     /* stacco dalla hero */
+      padding-left: 32px;      /* stacco dalla hero */
     }
 
     /* Strip thumbs scorrevole */
@@ -654,10 +655,10 @@
       flex-direction: row;
       gap: 4px;
       overflow-x: auto;
-      padding: 0 0 12px 0;
+      padding: 0;
       scroll-behavior: smooth;
       flex: 1;
-      align-items: flex-end;
+      align-items: flex-end;   /* thumbs allineate in basso */
     }
     .archive-expanded-thumbs::-webkit-scrollbar { display: none; }
     .archive-expanded-thumb {
