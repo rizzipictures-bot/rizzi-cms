@@ -488,7 +488,7 @@
       display: grid;
       grid-template-columns: 80px 220px 1fr 1fr 1fr 80px;
       border-bottom: 1px solid var(--light);
-      padding: 20px 16px 4px;
+      padding: 20px 0 4px;
     }
     .archive-col-header span {
       font-family: var(--font-mono);
@@ -496,7 +496,9 @@
       font-weight: 400;
       color: var(--black);
       letter-spacing: 0;
+      padding: 0 16px 0 0;
     }
+    .archive-col-header span:first-child { padding-left: 16px; }
     .archive-row {
       display: grid;
       grid-template-columns: 80px 220px 1fr 1fr 1fr 80px;
