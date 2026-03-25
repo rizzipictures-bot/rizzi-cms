@@ -68,14 +68,11 @@ on updateFromGitHub(cmsDir)
 
 	-- Aggiorna solo static/ e app.py, preserva data/db.json
 	try
-		set fetchResult to do shell script "cd " & quoted form of cmsDir & " && git fetch origin main 2>&1"
-		set checkoutResult to do shell script "cd " & quoted form of cmsDir & " && git checkout origin/main -- static/ app.py 2>&1"
-		set mergeResult to do shell script "cd " & quoted form of cmsDir & " && git merge -X ours origin/main 2>&1"
-		if mergeResult contains "Already up to date" then
-			display alert "Già aggiornato" message "Il sito è già all'ultima versione." buttons {"OK"} default button "OK"
-		else
-			display alert "Aggiornamento completato!" message "Sito aggiornato con successo." buttons {"OK"} default button "OK"
-		end if
+		do shell script "cd " & quoted form of cmsDir & " && git fetch origin main 2>&1"
+		set checkoutResult to do shell script "cd " & quoted form of cmsDir & " && git checkout origin/main -- static/ app.py RizziCMS_launcher.applescript 2>&1"
+		-- Aggiorna HEAD senza toccare i file locali
+		do shell script "cd " & quoted form of cmsDir & " && git update-ref refs/heads/main origin/main 2>&1"
+		display alert "Aggiornamento completato!" message "Sito aggiornato con successo." buttons {"OK"} default button "OK"
 		return true
 	on error errMsg
 		display alert "Errore aggiornamento" message errMsg as warning

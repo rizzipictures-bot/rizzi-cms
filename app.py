@@ -593,13 +593,13 @@ def update_from_github():
         if r1.returncode != 0:
             return jsonify({'ok': False, 'error': r1.stdout + r1.stderr})
         # 2. Aggiorna solo static/ e app.py dalla versione remota (forza sovrascrittura)
-        files_to_update = ['static/', 'app.py']
+        files_to_update = ['static/', 'app.py', 'RizziCMS_launcher.applescript']
         r2 = run(['git', 'checkout', 'origin/main', '--'] + files_to_update)
         if r2.returncode != 0:
             return jsonify({'ok': False, 'error': r2.stdout + r2.stderr})
-        # 3. Avanza HEAD al commit remoto (senza toccare data/)
-        r3 = run(['git', 'merge', '-X', 'ours', 'origin/main'])
-        output = r1.stdout + r2.stdout + r3.stdout
+        # 3. Aggiorna HEAD senza merge (evita conflitti su data/db.json)
+        run(['git', 'update-ref', 'refs/heads/main', 'origin/main'])
+        output = r1.stdout + r2.stdout
         return jsonify({'ok': True, 'output': output})
     except Exception as e:
         return jsonify({'ok': False, 'error': str(e)})
