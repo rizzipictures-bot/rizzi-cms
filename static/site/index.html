@@ -614,13 +614,14 @@
 
     /* Contenuto interno del box nero */
     .archive-expanded-inner {
-      padding: 0 40px 0 0;           /* hero tocca sx/top/bottom, padding dx per thumbs */
+      padding: 0 52px 0 0;           /* spazio a dx per View all in absolute */
       display: flex;
       flex-direction: row;
       align-items: flex-end;         /* tutto allineato al bottom */
       height: 500px;                 /* box più alto */
       gap: 0;
       box-sizing: border-box;
+      position: relative;            /* contesto per View all absolute */
     }
 
     /* Foto hero grande a sinistra — BORDERLESS, tocca top/left/bottom del box */
@@ -653,7 +654,7 @@
     }
     .archive-expanded-hero:hover img { opacity: 0.92; }
 
-    /* Colonna destra: strip + toggle + view all */
+    /* Colonna destra: strip + toggle */
     .archive-expanded-right {
       flex: 1;
       display: flex;
@@ -694,25 +695,27 @@
       display: block;
     }
 
-    /* Pulsante "View all" — vicino al margine destro del box, L allineata al bottom delle thumbs */
+    /* Pulsante "View all" — ASSOLUTO sul bordo destro del box, L allineata al bottom */
     .archive-expanded-viewall {
       font-family: var(--font-mono);
-      font-size: 12.65px;            /* +15% rispetto a 11px */
+      font-size: 12.65px;
       color: #fff;
       cursor: pointer;
-      flex-shrink: 0;
+      position: absolute;
+      right: 8px;
+      bottom: 0;
       display: flex;
       align-items: flex-end;         /* L in basso */
       justify-content: flex-end;
-      padding: 0 8px 0 8px;
+      padding: 0 4px;
       transition: color .2s;
       white-space: nowrap;
       writing-mode: vertical-rl;
       text-orientation: mixed;
       letter-spacing: 0.14em;
-      height: 48px;                  /* stessa altezza delle thumbs */
-      align-self: flex-end;          /* allineato al bottom del right */
-      margin-left: auto;             /* spinge verso il margine destro */
+      height: 48px;
+      z-index: 10;
+      pointer-events: auto;
     }
     .archive-expanded-viewall:hover { color: #aaa; }
 
