@@ -1,0 +1,588 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Archive Expand — Demo Animazioni</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --mono: 'Courier New', Courier, monospace;
+    --accent: #6b4fbb;
+    --light: #e8e8e8;
+  }
+
+  body {
+    font-family: var(--mono);
+    background: #fff;
+    color: #000;
+    font-size: 12px;
+  }
+
+  /* ── HEADER ── */
+  .demo-header {
+    padding: 40px 40px 24px;
+    border-bottom: 1px solid var(--light);
+  }
+  .demo-header h1 {
+    font-size: 28px;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin-bottom: 12px;
+  }
+  .demo-header h1 .sep {
+    display: inline-block;
+    width: 1px; height: 1em;
+    background: #000;
+  }
+  .demo-header p {
+    font-size: 11px;
+    color: #555;
+    max-width: 600px;
+    line-height: 1.6;
+  }
+
+  /* ── TABS ── */
+  .tabs {
+    display: flex;
+    gap: 0;
+    padding: 0 40px;
+    border-bottom: 1px solid var(--light);
+    position: sticky;
+    top: 0;
+    background: #fff;
+    z-index: 10;
+  }
+  .tab-btn {
+    font-family: var(--mono);
+    font-size: 11px;
+    padding: 14px 20px;
+    border: none;
+    background: none;
+    cursor: pointer;
+    color: #888;
+    border-bottom: 2px solid transparent;
+    transition: all .2s;
+    letter-spacing: 0;
+  }
+  .tab-btn:hover { color: #000; }
+  .tab-btn.active {
+    color: #000;
+    border-bottom-color: #000;
+    font-weight: 700;
+  }
+
+  /* ── DEMO PANEL ── */
+  .demo-panel { display: none; padding: 0 40px 60px; }
+  .demo-panel.active { display: block; }
+
+  .panel-desc {
+    padding: 24px 0 32px;
+    font-size: 11px;
+    color: #555;
+    line-height: 1.7;
+    max-width: 700px;
+    border-bottom: 1px solid var(--light);
+    margin-bottom: 0;
+  }
+  .panel-desc strong { color: #000; }
+
+  /* ── ARCHIVE TABLE ── */
+  .archive-wrap {
+    margin-top: 0;
+  }
+
+  .archive-col-header {
+    display: grid;
+    grid-template-columns: 100px 1fr 1fr 1fr 1fr 80px;
+    border-bottom: 1px solid #000;
+    padding: 20px 0 4px;
+  }
+  .archive-col-header span {
+    font-size: 12px;
+    color: #000;
+    padding: 0 16px 0 0;
+  }
+  .archive-col-header span:first-child { padding-left: 16px; }
+
+  .archive-row {
+    display: grid;
+    grid-template-columns: 100px 1fr 1fr 1fr 1fr 80px;
+    border-bottom: 1px solid var(--light);
+    cursor: pointer;
+    transition: background .1s;
+    min-height: 28px;
+    align-items: center;
+  }
+  .archive-row:hover { background: #000; }
+  .archive-row:hover > div { color: #fff; }
+  .archive-row > div {
+    font-size: 12px;
+    color: #000;
+    padding: 2px 16px 2px 0;
+    line-height: 1.3;
+  }
+  .archive-row > div:first-child { padding-left: 16px; }
+  .archive-row > div:last-child { text-align: right; padding-right: 16px; }
+
+  /* ── EXPAND BOX ── */
+  .expand-box {
+    overflow: hidden;
+    background: #000;
+    color: #fff;
+  }
+  .expand-inner {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0;
+    padding: 32px 40px;
+    min-height: 340px;
+  }
+  .expand-photo {
+    position: relative;
+    overflow: hidden;
+  }
+  .expand-photo img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+  .expand-text {
+    padding: 0 0 0 40px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+  }
+  .expand-text .ex-year {
+    font-size: 11px;
+    color: #888;
+    margin-bottom: 8px;
+  }
+  .expand-text .ex-title {
+    font-size: 22px;
+    font-weight: 700;
+    line-height: 1.2;
+    margin-bottom: 12px;
+  }
+  .expand-text .ex-subtitle {
+    font-size: 12px;
+    color: #aaa;
+    margin-bottom: 20px;
+  }
+  .expand-text .ex-desc {
+    font-size: 11px;
+    line-height: 1.8;
+    color: #ccc;
+    max-width: 380px;
+  }
+  .expand-text .ex-pub {
+    margin-top: 24px;
+    font-size: 10px;
+    color: #666;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+
+  /* ════════════════════════════════════════════
+     A — REVEAL A SIPARIO
+  ════════════════════════════════════════════ */
+  #panel-a .expand-box {
+    clip-path: inset(0 0 100% 0);
+    transition: clip-path 0s;
+  }
+  #panel-a .expand-box.open {
+    clip-path: inset(0 0 0% 0);
+    transition: clip-path .55s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  #panel-a .expand-box .expand-photo img {
+    opacity: 0;
+    transform: translateX(-24px);
+    transition: none;
+  }
+  #panel-a .expand-box.open .expand-photo img {
+    opacity: 1;
+    transform: translateX(0);
+    transition: opacity .5s .3s ease, transform .5s .3s ease;
+  }
+  #panel-a .expand-text .ex-title,
+  #panel-a .expand-text .ex-subtitle,
+  #panel-a .expand-text .ex-desc,
+  #panel-a .expand-text .ex-pub,
+  #panel-a .expand-text .ex-year {
+    opacity: 0;
+    transition: none;
+  }
+  #panel-a .expand-box.open .expand-text .ex-year  { opacity:1; transition: opacity .3s .4s; }
+  #panel-a .expand-box.open .expand-text .ex-title  { opacity:1; transition: opacity .3s .5s; }
+  #panel-a .expand-box.open .expand-text .ex-subtitle { opacity:1; transition: opacity .3s .6s; }
+  #panel-a .expand-box.open .expand-text .ex-desc   { opacity:1; transition: opacity .3s .7s; }
+  #panel-a .expand-box.open .expand-text .ex-pub    { opacity:1; transition: opacity .3s .85s; }
+
+  /* ════════════════════════════════════════════
+     B — SCAN LINE
+  ════════════════════════════════════════════ */
+  #panel-b .expand-box {
+    position: relative;
+    max-height: 0;
+    transition: max-height 0s;
+  }
+  #panel-b .expand-box.open {
+    max-height: 500px;
+    transition: max-height .6s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  #panel-b .expand-box::after {
+    content: '';
+    position: absolute;
+    left: 0; right: 0;
+    top: 0; height: 2px;
+    background: #fff;
+    opacity: 0;
+    transition: none;
+    z-index: 5;
+  }
+  #panel-b .expand-box.open::after {
+    opacity: 1;
+    animation: scanline .6s cubic-bezier(0.16,1,0.3,1) forwards;
+  }
+  @keyframes scanline {
+    0%   { top: 0; opacity: 1; }
+    90%  { top: calc(100% - 2px); opacity: 1; }
+    100% { top: calc(100% - 2px); opacity: 0; }
+  }
+  #panel-b .expand-photo img {
+    filter: brightness(3) saturate(0);
+    transition: none;
+  }
+  #panel-b .expand-box.open .expand-photo img {
+    filter: brightness(1) saturate(1);
+    transition: filter .8s .2s ease;
+  }
+  #panel-b .expand-text .ex-title {
+    letter-spacing: 2em;
+    opacity: 0;
+    transition: none;
+    overflow: hidden;
+    white-space: nowrap;
+  }
+  #panel-b .expand-box.open .expand-text .ex-title {
+    letter-spacing: 0;
+    opacity: 1;
+    transition: letter-spacing .6s .3s cubic-bezier(0.16,1,0.3,1),
+                opacity .3s .3s;
+  }
+  #panel-b .expand-text .ex-subtitle,
+  #panel-b .expand-text .ex-desc,
+  #panel-b .expand-text .ex-pub,
+  #panel-b .expand-text .ex-year {
+    opacity: 0;
+    transition: none;
+  }
+  #panel-b .expand-box.open .expand-text .ex-year     { opacity:1; transition: opacity .3s .5s; }
+  #panel-b .expand-box.open .expand-text .ex-subtitle { opacity:1; transition: opacity .3s .6s; }
+  #panel-b .expand-box.open .expand-text .ex-desc     { opacity:1; transition: opacity .4s .7s; }
+  #panel-b .expand-box.open .expand-text .ex-pub      { opacity:1; transition: opacity .3s .9s; }
+
+  /* ════════════════════════════════════════════
+     C — FOLD (raccomandato)
+  ════════════════════════════════════════════ */
+  #panel-c .expand-box {
+    transform: scaleY(0);
+    transform-origin: top center;
+    transition: transform 0s;
+  }
+  #panel-c .expand-box.open {
+    transform: scaleY(1);
+    transition: transform .55s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  #panel-c .expand-photo img {
+    filter: blur(10px);
+    transition: none;
+  }
+  #panel-c .expand-box.open .expand-photo img {
+    filter: blur(0);
+    transition: filter .5s .25s ease;
+  }
+  #panel-c .expand-text .ex-year,
+  #panel-c .expand-text .ex-title,
+  #panel-c .expand-text .ex-subtitle,
+  #panel-c .expand-text .ex-desc,
+  #panel-c .expand-text .ex-pub {
+    overflow: hidden;
+    display: block;
+  }
+  #panel-c .expand-text .ex-year span,
+  #panel-c .expand-text .ex-title span,
+  #panel-c .expand-text .ex-subtitle span,
+  #panel-c .expand-text .ex-desc span,
+  #panel-c .expand-text .ex-pub span {
+    display: block;
+    transform: translateY(110%);
+    transition: none;
+  }
+  #panel-c .expand-box.open .expand-text .ex-year span    { transform: translateY(0); transition: transform .45s .25s cubic-bezier(0.16,1,0.3,1); }
+  #panel-c .expand-box.open .expand-text .ex-title span   { transform: translateY(0); transition: transform .45s .35s cubic-bezier(0.16,1,0.3,1); }
+  #panel-c .expand-box.open .expand-text .ex-subtitle span{ transform: translateY(0); transition: transform .45s .42s cubic-bezier(0.16,1,0.3,1); }
+  #panel-c .expand-box.open .expand-text .ex-desc span    { transform: translateY(0); transition: transform .45s .5s cubic-bezier(0.16,1,0.3,1); }
+  #panel-c .expand-box.open .expand-text .ex-pub span     { transform: translateY(0); transition: transform .45s .62s cubic-bezier(0.16,1,0.3,1); }
+
+  /* ════════════════════════════════════════════
+     D — INK DROP
+  ════════════════════════════════════════════ */
+  #panel-d .expand-box {
+    max-height: 0;
+    border-top: 0px solid #fff;
+    transition: max-height 0s, border-top-width 0s;
+  }
+  #panel-d .expand-box.open {
+    max-height: 500px;
+    border-top: 2px solid #fff;
+    transition: max-height .7s cubic-bezier(0.16,1,0.3,1),
+                border-top-width .1s;
+  }
+  #panel-d .expand-photo {
+    position: relative;
+  }
+  #panel-d .expand-photo::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: #000;
+    transform-origin: left center;
+    transform: scaleX(1);
+    transition: none;
+  }
+  #panel-d .expand-box.open .expand-photo::after {
+    transform: scaleX(0);
+    transition: transform .7s .2s cubic-bezier(0.16,1,0.3,1);
+  }
+  #panel-d .expand-text .ex-year,
+  #panel-d .expand-text .ex-title,
+  #panel-d .expand-text .ex-subtitle,
+  #panel-d .expand-text .ex-desc,
+  #panel-d .expand-text .ex-pub {
+    opacity: 0;
+    filter: invert(1);
+    transition: none;
+  }
+  #panel-d .expand-box.open .expand-text .ex-year     { opacity:1; filter:invert(0); transition: opacity .3s .4s, filter .3s .4s; }
+  #panel-d .expand-box.open .expand-text .ex-title    { opacity:1; filter:invert(0); transition: opacity .3s .5s, filter .3s .5s; }
+  #panel-d .expand-box.open .expand-text .ex-subtitle { opacity:1; filter:invert(0); transition: opacity .3s .6s, filter .3s .6s; }
+  #panel-d .expand-box.open .expand-text .ex-desc     { opacity:1; filter:invert(0); transition: opacity .4s .7s, filter .4s .7s; }
+  #panel-d .expand-box.open .expand-text .ex-pub      { opacity:1; filter:invert(0); transition: opacity .3s .9s, filter .3s .9s; }
+
+  /* ── REPLAY BTN ── */
+  .replay-btn {
+    display: inline-block;
+    margin-top: 24px;
+    font-family: var(--mono);
+    font-size: 11px;
+    padding: 8px 20px;
+    border: 1px solid #000;
+    background: none;
+    cursor: pointer;
+    letter-spacing: 0.5px;
+    transition: background .15s, color .15s;
+  }
+  .replay-btn:hover { background: #000; color: #fff; }
+
+  /* ── TYPEWRITER cursor for panel A ── */
+  .typewriter-cursor {
+    display: inline-block;
+    width: 1px;
+    height: 1em;
+    background: #fff;
+    margin-left: 2px;
+    vertical-align: middle;
+    animation: blink 1s step-end infinite;
+  }
+  @keyframes blink { 50% { opacity: 0; } }
+</style>
+</head>
+<body>
+
+<div class="demo-header">
+  <h1>Archive Expand<span class="sep"></span>Demo Animazioni</h1>
+  <p>Quattro proposte di animazione per il box espanso dell'Archive. Clicca sulla riga per aprire il box, poi usa <strong>Replay</strong> per rivedere l'animazione.</p>
+</div>
+
+<!-- TABS -->
+<div class="tabs">
+  <button class="tab-btn active" onclick="switchTab('a')">A — Sipario</button>
+  <button class="tab-btn" onclick="switchTab('b')">B — Scan Line</button>
+  <button class="tab-btn active-rec" onclick="switchTab('c')">C — Fold ★</button>
+  <button class="tab-btn" onclick="switchTab('d')">D — Ink Drop</button>
+</div>
+
+<!-- ══ PANEL A ══ -->
+<div class="demo-panel active" id="panel-a">
+  <div class="panel-desc">
+    <strong>A — Reveal a Sipario.</strong> Il box nero scende con <code>clip-path</code> come un sipario teatrale. La foto entra da sinistra con fade. Il testo appare riga per riga con delay crescenti — effetto di composizione tipografica.
+  </div>
+  <div class="archive-wrap">
+    <div class="archive-col-header">
+      <span>Year</span><span>Project</span><span>Subtitle</span><span>Place</span><span>Publication</span><span>Media</span>
+    </div>
+    <div class="archive-row" onclick="toggleBox('box-a', this)">
+      <div>2003</div><div>New York</div><div>Street photography</div><div>New York</div><div>Various Media</div><div>—</div>
+    </div>
+    <div class="expand-box" id="box-a">
+      <div class="expand-inner">
+        <div class="expand-photo">
+          <img src="https://images.unsplash.com/photo-1534430480872-3498386e7856?w=800&q=80" alt="New York">
+        </div>
+        <div class="expand-text">
+          <div class="ex-year">2003</div>
+          <div class="ex-title">New York<span class="typewriter-cursor" style="display:none"></span></div>
+          <div class="ex-subtitle">Street photography</div>
+          <div class="ex-desc">Una serie di scatti realizzati nelle strade di Manhattan durante l'estate del 2003. La luce tagliente del mezzogiorno crea contrasti netti tra le architetture e le figure umane in transito.</div>
+          <div class="ex-pub">Various Media — 2003</div>
+        </div>
+      </div>
+    </div>
+    <div class="archive-row">
+      <div>2015</div><div>Giappone</div><div>Documentary</div><div>Tokyo, Giappone</div><div>Vogue Italia</div><div>—</div>
+    </div>
+    <button class="replay-btn" onclick="replayBox('box-a')">↺ Replay animazione</button>
+  </div>
+</div>
+
+<!-- ══ PANEL B ══ -->
+<div class="demo-panel" id="panel-b">
+  <div class="panel-desc">
+    <strong>B — Scan Line.</strong> Una linea bianca scorre dall'alto verso il basso come una scansione. La foto appare da overexposed (bianco accecante) e si normalizza. Il titolo si comprime da lettera-spacing larghissimo fino al normale.
+  </div>
+  <div class="archive-wrap">
+    <div class="archive-col-header">
+      <span>Year</span><span>Project</span><span>Subtitle</span><span>Place</span><span>Publication</span><span>Media</span>
+    </div>
+    <div class="archive-row" onclick="toggleBox('box-b', this)">
+      <div>2007</div><div>Tokyo</div><div>Documentary</div><div>Tokyo, Giappone</div><div>National Geographic</div><div>—</div>
+    </div>
+    <div class="expand-box" id="box-b">
+      <div class="expand-inner">
+        <div class="expand-photo">
+          <img src="https://images.unsplash.com/photo-1540959733332-eab4deabeeaf?w=800&q=80" alt="Tokyo">
+        </div>
+        <div class="expand-text">
+          <div class="ex-year">2007</div>
+          <div class="ex-title">Tokyo</div>
+          <div class="ex-subtitle">Documentary</div>
+          <div class="ex-desc">La metropoli giapponese osservata attraverso i ritmi della vita quotidiana. Stazioni, mercati, vicoli silenziosi al tramonto. Un archivio visivo della città che non dorme mai.</div>
+          <div class="ex-pub">National Geographic — 2007</div>
+        </div>
+      </div>
+    </div>
+    <div class="archive-row">
+      <div>2009</div><div>Berlino</div><div>Portraits</div><div>Berlino</div><div>Stern</div><div>—</div>
+    </div>
+    <button class="replay-btn" onclick="replayBox('box-b')">↺ Replay animazione</button>
+  </div>
+</div>
+
+<!-- ══ PANEL C ══ -->
+<div class="demo-panel" id="panel-c">
+  <div class="panel-desc">
+    <strong>C — Fold ★ (raccomandato).</strong> Il box si piega verso il basso come un foglio che si apre, con una curva <em>ease-out</em> molto rapida. La foto si mette a fuoco dal blur. Il testo sale riga per riga da sotto con delay sfalsati — effetto tipografico elegante.
+  </div>
+  <div class="archive-wrap">
+    <div class="archive-col-header">
+      <span>Year</span><span>Project</span><span>Subtitle</span><span>Place</span><span>Publication</span><span>Media</span>
+    </div>
+    <div class="archive-row" onclick="toggleBox('box-c', this)">
+      <div>2005</div><div>Paris pictures</div><div>Personal</div><div>Paris</div><div>Paris Match</div><div>—</div>
+    </div>
+    <div class="expand-box" id="box-c">
+      <div class="expand-inner">
+        <div class="expand-photo">
+          <img src="https://images.unsplash.com/photo-1499856871958-5b9627545d1a?w=800&q=80" alt="Paris">
+        </div>
+        <div class="expand-text">
+          <div class="ex-year"><span>2005</span></div>
+          <div class="ex-title"><span>Paris pictures</span></div>
+          <div class="ex-subtitle"><span>Personal</span></div>
+          <div class="ex-desc"><span>Parigi come non si vede nelle cartoline. Cortili interni, periferie silenziose, la Senna all'alba. Un lavoro personale nato durante un soggiorno di tre mesi nella capitale francese.</span></div>
+          <div class="ex-pub"><span>Paris Match — 2005</span></div>
+        </div>
+      </div>
+    </div>
+    <div class="archive-row">
+      <div>2010</div><div>Buenos Aires</div><div>Street photography</div><div>Buenos Aires</div><div>D Repubblica</div><div>—</div>
+    </div>
+    <button class="replay-btn" onclick="replayBox('box-c')">↺ Replay animazione</button>
+  </div>
+</div>
+
+<!-- ══ PANEL D ══ -->
+<div class="demo-panel" id="panel-d">
+  <div class="panel-desc">
+    <strong>D — Ink Drop.</strong> Il box si apre con un bordo bianco superiore che appare di scatto. La foto è coperta da un velo nero che si ritira da sinistra a destra come inchiostro che si asciuga. Il testo appare con un momentaneo effetto negativo (invert) prima di stabilizzarsi.
+  </div>
+  <div class="archive-wrap">
+    <div class="archive-col-header">
+      <span>Year</span><span>Project</span><span>Subtitle</span><span>Place</span><span>Publication</span><span>Media</span>
+    </div>
+    <div class="archive-row" onclick="toggleBox('box-d', this)">
+      <div>2011</div><div>Istanbul</div><div>Documentary</div><div>Istanbul</div><div>GEO</div><div>—</div>
+    </div>
+    <div class="expand-box" id="box-d">
+      <div class="expand-inner">
+        <div class="expand-photo">
+          <img src="https://images.unsplash.com/photo-1524231757912-21f4fe3a7200?w=800&q=80" alt="Istanbul">
+        </div>
+        <div class="expand-text">
+          <div class="ex-year">2011</div>
+          <div class="ex-title">Istanbul</div>
+          <div class="ex-subtitle">Documentary</div>
+          <div class="ex-desc">Il Bosforo come confine tra due mondi. I mercati del Grand Bazaar, i minareti all'alba, i pescatori sul ponte di Galata. Un viaggio visivo tra Oriente e Occidente.</div>
+          <div class="ex-pub">GEO — 2011</div>
+        </div>
+      </div>
+    </div>
+    <div class="archive-row">
+      <div>2008</div><div>Cairo</div><div>Portraits</div><div>Cairo</div><div>Time</div><div>—</div>
+    </div>
+    <button class="replay-btn" onclick="replayBox('box-d')">↺ Replay animazione</button>
+  </div>
+</div>
+
+<script>
+  function switchTab(id) {
+    document.querySelectorAll('.tab-btn').forEach((b,i) => {
+      b.classList.toggle('active', ['a','b','c','d'][i] === id);
+    });
+    document.querySelectorAll('.demo-panel').forEach(p => {
+      p.classList.toggle('active', p.id === 'panel-' + id);
+    });
+  }
+
+  function toggleBox(boxId, row) {
+    const box = document.getElementById(boxId);
+    const isOpen = box.classList.contains('open');
+    if (isOpen) {
+      box.classList.remove('open');
+      row.style.background = '';
+      row.querySelectorAll('div').forEach(d => d.style.color = '');
+    } else {
+      box.classList.add('open');
+    }
+  }
+
+  function replayBox(boxId) {
+    const box = document.getElementById(boxId);
+    box.classList.remove('open');
+    // Force reflow
+    void box.offsetWidth;
+    setTimeout(() => box.classList.add('open'), 50);
+  }
+
+  // Auto-open on load for the active panel
+  setTimeout(() => {
+    document.querySelector('#panel-a .archive-row').click();
+  }, 400);
+</script>
+</body>
+</html>
