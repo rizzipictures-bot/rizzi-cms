@@ -613,7 +613,7 @@
 
     /* Contenuto interno del box nero */
     .archive-expanded-inner {
-      padding: 0 40px 0 0;           /* no padding sx/top/bottom: hero tocca tutti i bordi */
+      padding: 0 40px 0 0;           /* hero tocca sx/top/bottom, padding dx per thumbs */
       display: flex;
       flex-direction: row;
       align-items: flex-end;         /* tutto allineato al bottom */
@@ -804,24 +804,26 @@
     }
     #archive-viewall-overlay.open { display: flex; }
 
-    /* Header overlay */
-    .vao-header {
-      display: none;   /* header grigio rimosso */
-    }
-    .vao-title {
-      font-family: var(--font-mono);
-      font-size: 11px;
-      color: #000;
-      font-weight: 400;
-    }
+    /* Header overlay — nascosto */
+    .vao-header { display: none; }
+    .vao-title { display: none; }
+
+    /* Close button fisso in alto a destra — sempre visibile */
     .vao-close {
+      position: fixed;
+      top: 14px;
+      right: 20px;
       font-family: var(--font-mono);
-      font-size: 11px;
+      font-size: 12px;
       color: #888;
       cursor: none;
       transition: color .2s;
+      z-index: 2100;
+      letter-spacing: 0.05em;
     }
     .vao-close:hover { color: #000; }
+    #archive-viewall-overlay.theme-dark .vao-close { color: #666; }
+    #archive-viewall-overlay.theme-dark .vao-close:hover { color: #fff; }
 
     /* Fase 1: foto singola centrata (come Miechowski) */
     #vao-single {
@@ -1769,11 +1771,8 @@
 
 <!-- View All Overlay — stile Miechowski -->
 <div id="archive-viewall-overlay">
-  <!-- Header -->
-  <div class="vao-header">
-    <div class="vao-title" id="vao-title"></div>
-    <div class="vao-close" id="vao-close">close ×</div>
-  </div>
+  <!-- Close button fisso in alto a destra -->
+  <div class="vao-close" id="vao-close">← chiudi</div>
   <!-- Fase 1: foto singola centrata -->
   <div id="vao-single">
     <img id="vao-single-img" src="" alt="">
