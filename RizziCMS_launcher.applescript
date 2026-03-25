@@ -66,13 +66,15 @@ on updateFromGitHub(cmsDir)
 		return true
 	end try
 
-	-- Esegui git pull
+	-- Aggiorna solo static/ e app.py, preserva data/db.json
 	try
-		set pullResult to do shell script "cd " & quoted form of cmsDir & " && git pull origin main 2>&1"
-		if pullResult contains "Already up to date" then
+		set fetchResult to do shell script "cd " & quoted form of cmsDir & " && git fetch origin main 2>&1"
+		set checkoutResult to do shell script "cd " & quoted form of cmsDir & " && git checkout origin/main -- static/ app.py 2>&1"
+		set mergeResult to do shell script "cd " & quoted form of cmsDir & " && git merge -X ours origin/main 2>&1"
+		if mergeResult contains "Already up to date" then
 			display alert "Già aggiornato" message "Il sito è già all'ultima versione." buttons {"OK"} default button "OK"
 		else
-			display alert "Aggiornamento completato!" message "Modifiche scaricate:\n" & pullResult buttons {"OK"} default button "OK"
+			display alert "Aggiornamento completato!" message "Sito aggiornato con successo." buttons {"OK"} default button "OK"
 		end if
 		return true
 	on error errMsg
