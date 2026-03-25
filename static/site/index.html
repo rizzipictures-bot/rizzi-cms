@@ -1118,56 +1118,81 @@
     /* ══════════════════════════════════════════════════════════════
        VIEW: INTERVIEW — Testi & Interviste
     ══════════════════════════════════════════════════════════════ */
+    /* ── INTERVIEW — stile Archive ── */
     #view-interview {
-      padding: var(--pad);
+      font-family: var(--font-mono);
+      overflow-y: auto;
+      overflow-x: hidden;
+      padding: 0 40px;
     }
-    .interview-header {
-      border-bottom: 1px solid var(--light);
-      padding-bottom: 8px;
-      margin-bottom: 0;
+    #view-interview::-webkit-scrollbar { display: none; }
+    .interview-page-title {
+      font-family: var(--font-mono);
+      font-size: 32px;
+      font-weight: 700;
+      letter-spacing: 0;
+      padding: 40px 0 32px;
+      color: #000;
+      display: flex;
+      align-items: center;
+      gap: 16px;
     }
-    .interview-header .interview-label {
-      font-size: 10px;
-      color: var(--gray);
-      text-transform: uppercase;
-      letter-spacing: 0.4px;
+    .interview-page-title .title-sep {
+      display: inline-block;
+      width: 1px;
+      height: 1.1em;
+      background: #000;
+      flex-shrink: 0;
     }
+    .interview-header { display: none; }
     .interview-item {
       border-bottom: 1px solid var(--light);
       overflow: hidden;
     }
     .interview-item-head {
-      display: flex;
-      align-items: baseline;
-      justify-content: space-between;
-      padding: 12px 0;
+      display: grid;
+      grid-template-columns: 1fr auto;
+      align-items: center;
+      gap: 16px;
+      padding: 2px 0;
+      min-height: 28px;
       cursor: none;
-      transition: transform .15s var(--ease-custom);
-      transform-origin: left center;
+      transition: background .1s;
     }
     .interview-item:hover .interview-item-head {
-      transform: skewX(-6deg);
+      background: #000;
+    }
+    .interview-item:hover .interview-item-head * {
+      color: #fff !important;
     }
     .interview-item-head .iw-title {
+      font-family: var(--font-mono);
       font-size: 12px;
-      font-weight: 900;
-      letter-spacing: 0.4px;
+      font-weight: 400;
+      letter-spacing: 0;
+      color: #000;
+      padding: 2px 0;
     }
     .interview-item-head .iw-meta {
-      display: flex; gap: 16px;
-      font-size: 10px; color: var(--gray);
+      display: flex;
+      align-items: center;
+      gap: 24px;
+      font-family: var(--font-mono);
+      font-size: 12px;
+      color: #000;
     }
     .interview-item-head .iw-expand {
-      background: none; border: none;
-      font-family: var(--font);
-      font-size: 12px; color: var(--gray);
+      background: none;
+      border: none;
+      font-family: var(--font-mono);
+      font-size: 12px;
+      color: #000;
       cursor: none;
-      transition: transform .3s var(--ease-custom), color .15s;
+      transition: transform .3s var(--ease-custom);
+      width: 20px;
+      text-align: center;
     }
-    .interview-item.open .iw-expand {
-      transform: rotate(45deg);
-      color: var(--black);
-    }
+    .interview-item.open .iw-expand { transform: rotate(45deg); }
     .interview-body {
       max-height: 0;
       overflow: hidden;
@@ -1178,20 +1203,22 @@
       display: grid;
       grid-template-columns: 1fr 1fr;
       gap: 32px;
-      padding-bottom: 28px;
+      padding: 24px 0 28px;
       align-items: start;
     }
     .interview-text p {
-      font-size: 11px;
-      line-height: 1.8;
-      color: var(--black);
+      font-family: var(--font-mono);
+      font-size: 12px;
+      line-height: 1.7;
+      color: #000;
       margin-bottom: 12px;
     }
     .interview-text .pull-quote {
+      font-family: var(--font-mono);
       font-size: 13px;
-      font-weight: 900;
+      font-weight: 700;
       line-height: 1.5;
-      color: var(--black);
+      color: #000;
       border-left: 2px solid var(--accent);
       padding-left: 12px;
       margin: 16px 0;
@@ -1317,6 +1344,9 @@
 
     <!-- ── VIEW: INTERVIEW — Testi & Interviste ── -->
     <div class="view" id="view-interview">
+      <div class="interview-page-title">
+        Interview<span class="title-sep"></span>Testi &amp; Interviste
+      </div>
       <div class="interview-header">
         <div class="interview-label">Testi &amp; Interviste</div>
       </div>
