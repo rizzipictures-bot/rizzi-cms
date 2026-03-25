@@ -695,98 +695,118 @@
     .archive-expanded-viewall:hover { color: #fff; }
 
     /* ══════════════════════════════════════════════════════════════
-       LIGHTBOX — popup a pagina intera con navigazione
+       HERO CROSS-FADE — cambio foto nel box espanso
     ══════════════════════════════════════════════════════════════ */
-    #archive-lightbox {
+    .archive-expanded-hero img.hero-fade-out {
+      opacity: 0;
+      transition: opacity .25s ease;
+    }
+    .archive-expanded-hero img.hero-fade-in {
+      opacity: 1;
+      transition: opacity .35s ease;
+    }
+
+    /* ══════════════════════════════════════════════════════════════
+       VIEW ALL — overlay fullscreen bianco stile Miechowski
+    ══════════════════════════════════════════════════════════════ */
+    #archive-viewall-overlay {
       position: fixed;
       inset: 0;
-      background: #000;
+      background: #fff;
       z-index: 2000;
       display: none;
       flex-direction: column;
+      overflow: hidden;
     }
-    #archive-lightbox.open { display: flex; }
+    #archive-viewall-overlay.open { display: flex; }
 
-    /* Header lightbox */
-    .lb-header {
+    /* Header overlay */
+    .vao-header {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      padding: 10px 24px;
-      border-bottom: 1px solid #222;
+      padding: 0 24px;
+      height: 36px;
       flex-shrink: 0;
+      border-bottom: 1px solid #e8e8e8;
     }
-    .lb-title {
+    .vao-title {
       font-family: var(--font-mono);
       font-size: 11px;
-      color: #888;
+      color: #000;
+      font-weight: 400;
     }
-    .lb-close {
+    .vao-close {
       font-family: var(--font-mono);
       font-size: 11px;
       color: #888;
       cursor: none;
       transition: color .2s;
     }
-    .lb-close:hover { color: #fff; }
+    .vao-close:hover { color: #000; }
 
-    /* Grid thumbs lightbox */
-    .lb-grid {
+    /* Fase 1: foto singola centrata (come Miechowski) */
+    #vao-single {
       flex: 1;
-      overflow-y: auto;
-      padding: 24px;
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
-      gap: 8px;
-    }
-    .lb-grid::-webkit-scrollbar { display: none; }
-    .lb-grid-thumb {
-      aspect-ratio: 3/2;
-      overflow: hidden;
-      cursor: none;
-      opacity: 0.7;
-      transition: opacity .2s;
-    }
-    .lb-grid-thumb:hover { opacity: 1; }
-    .lb-grid-thumb img {
-      width: 100%; height: 100%;
-      object-fit: cover;
-      display: block;
-    }
-
-    /* Viewer singola foto nel lightbox */
-    .lb-viewer {
-      flex: 1;
-      display: none;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      position: relative;
-      overflow: hidden;
-    }
-    .lb-viewer.active { display: flex; }
-    .lb-viewer-img-wrap {
-      width: 100%;
-      height: 100%;
       display: flex;
       align-items: center;
       justify-content: center;
+      position: absolute;
+      inset: 36px 0 0 0;
+      transition: opacity .4s ease;
     }
-    .lb-viewer-img-wrap img {
-      max-width: 90vw;
-      max-height: 85vh;
+    #vao-single.hidden { opacity: 0; pointer-events: none; }
+    #vao-single img {
+      max-width: 60vw;
+      max-height: 80vh;
       object-fit: contain;
       display: block;
-      /* Animazione tenda dall'alto al basso */
+      /* Curtain reveal dall'alto */
       clip-path: inset(0 0 100% 0);
       transition: none;
     }
-    .lb-viewer-img-wrap img.lb-reveal {
+    #vao-single img.reveal {
       clip-path: inset(0 0 0% 0);
-      transition: clip-path .75s cubic-bezier(.77, 0, .175, 1);
+      transition: clip-path .7s cubic-bezier(.77, 0, .175, 1);
     }
 
-    /* Frecce navigazione */
+    /* Fase 2: griglia masonry */
+    #vao-grid {
+      flex: 1;
+      overflow-y: auto;
+      padding: 20px 24px;
+      columns: 5;
+      column-gap: 4px;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity .3s ease;
+    }
+    #vao-grid::-webkit-scrollbar { display: none; }
+    #vao-grid.visible {
+      opacity: 1;
+      pointer-events: auto;
+    }
+    .vao-grid-item {
+      break-inside: avoid;
+      margin-bottom: 4px;
+      overflow: hidden;
+      cursor: none;
+      opacity: 0;
+      transform: translateY(10px);
+      transition: opacity .4s ease, transform .4s ease;
+    }
+    .vao-grid-item.appeared {
+      opacity: 1;
+      transform: translateY(0);
+    }
+    .vao-grid-item img {
+      width: 100%;
+      height: auto;
+      display: block;
+    }
+    .vao-grid-item:hover img { opacity: 0.85; }
+
+    /* Frecce navigazione (solo in viewer singolo) */
     .lb-nav {
       position: absolute;
       top: 50%;
@@ -794,7 +814,7 @@
       width: 32px;
       height: 32px;
       border-radius: 50%;
-      background: rgba(255,255,255,0.12);
+      background: rgba(0,0,0,0.08);
       display: flex;
       align-items: center;
       justify-content: center;
@@ -802,10 +822,10 @@
       transition: background .2s;
       font-family: var(--font-mono);
       font-size: 14px;
-      color: #fff;
+      color: #000;
       user-select: none;
     }
-    .lb-nav:hover { background: rgba(255,255,255,0.28); }
+    .lb-nav:hover { background: rgba(0,0,0,0.18); }
     .lb-nav-prev { left: 20px; }
     .lb-nav-next { right: 20px; }
 
@@ -813,7 +833,7 @@
     .lb-counter {
       font-family: var(--font-mono);
       font-size: 11px;
-      color: #555;
+      color: #aaa;
       padding: 8px 0 12px;
     }
 
@@ -1650,27 +1670,19 @@
   </div>
 </div>
 
-<!-- Archive Lightbox — popup a pagina intera -->
-<div id="archive-lightbox">
+<!-- View All Overlay — stile Miechowski -->
+<div id="archive-viewall-overlay">
   <!-- Header -->
-  <div class="lb-header">
-    <div class="lb-title" id="alb-title"></div>
-    <div style="display:flex;gap:20px;align-items:center;">
-      <div id="alb-back" style="font-family:var(--font-mono);font-size:11px;color:#888;cursor:none;display:none;" >&#8592; back</div>
-      <div class="lb-close" id="alb-close">close ×</div>
-    </div>
+  <div class="vao-header">
+    <div class="vao-title" id="vao-title"></div>
+    <div class="vao-close" id="vao-close">close ×</div>
   </div>
-  <!-- Grid thumbs -->
-  <div class="lb-grid" id="alb-grid"></div>
-  <!-- Viewer singola foto -->
-  <div class="lb-viewer" id="alb-viewer">
-    <div class="lb-viewer-img-wrap">
-      <img id="alb-viewer-img" src="" alt="">
-    </div>
-    <div class="lb-counter" id="alb-counter"></div>
-    <div class="lb-nav lb-nav-prev" id="alb-prev">←</div>
-    <div class="lb-nav lb-nav-next" id="alb-next">→</div>
+  <!-- Fase 1: foto singola centrata -->
+  <div id="vao-single">
+    <img id="vao-single-img" src="" alt="">
   </div>
+  <!-- Fase 2: griglia masonry -->
+  <div id="vao-grid"></div>
 </div>
 
 <!-- Screensaver -->
@@ -2134,7 +2146,7 @@ function buildArchive() {
           const strip = document.createElement('div');
           strip.className = 'archive-expanded-thumbs';
 
-          // Salta la prima immagine (già mostrata come hero)
+          // Tutte le thumbs (inclusa la prima)
           images.forEach((img, i) => {
             const t = document.createElement('div');
             t.className = 'archive-expanded-thumb' + (i === 0 ? ' active' : '');
@@ -2144,11 +2156,16 @@ function buildArchive() {
             t.appendChild(tImg);
             t.addEventListener('click', e => {
               e.stopPropagation();
-              // Aggiorna hero e apri lightbox
-              heroImg.src = img.url;
+              // Cross-fade hero: fade out → cambia src → fade in
+              heroImg.classList.add('hero-fade-out');
+              setTimeout(() => {
+                heroImg.src = img.url;
+                heroImg.classList.remove('hero-fade-out');
+                heroImg.classList.add('hero-fade-in');
+                setTimeout(() => heroImg.classList.remove('hero-fade-in'), 400);
+              }, 250);
               strip.querySelectorAll('.archive-expanded-thumb').forEach(el => el.classList.remove('active'));
               t.classList.add('active');
-              openLightboxViewer(images, i, p.title || '');
             });
             strip.appendChild(t);
           });
@@ -2159,7 +2176,7 @@ function buildArchive() {
           viewAll.textContent = 'View all';
           viewAll.addEventListener('click', e => {
             e.stopPropagation();
-            openLightboxGrid(images, p.title || '');
+            openViewAllOverlay(images, p.title || '');
           });
 
           right.appendChild(strip);
@@ -2839,106 +2856,89 @@ loadFromCMS();
 })();
 
 // ══════════════════════════════════════════════════════════════
-// ARCHIVE LIGHTBOX
+// VIEW ALL OVERLAY — stile Miechowski
 // ══════════════════════════════════════════════════════════════
 (function() {
-  let albImages = [];
-  let albIndex = 0;
-  let albTitle = '';
+  const overlay   = document.getElementById('archive-viewall-overlay');
+  const vaoTitle  = document.getElementById('vao-title');
+  const vaoClose  = document.getElementById('vao-close');
+  const vaoSingle = document.getElementById('vao-single');
+  const vaoSingleImg = document.getElementById('vao-single-img');
+  const vaoGrid   = document.getElementById('vao-grid');
 
-  const lb        = document.getElementById('archive-lightbox');
-  const albGrid   = document.getElementById('alb-grid');
-  const albViewer = document.getElementById('alb-viewer');
-  const albImg    = document.getElementById('alb-viewer-img');
-  const albCounter= document.getElementById('alb-counter');
-  const albTitleEl= document.getElementById('alb-title');
-  const albClose  = document.getElementById('alb-close');
-  const albBack   = document.getElementById('alb-back');
-  const albPrev   = document.getElementById('alb-prev');
-  const albNext   = document.getElementById('alb-next');
+  // Apri overlay: prima foto singola centrata, poi griglia propagata
+  window.openViewAllOverlay = function(images, title) {
+    if (!images || images.length === 0) return;
 
-  // Apri lightbox in modalità grid
-  window.openLightboxGrid = function(images, title) {
-    albImages = images;
-    albTitle = title;
-    albTitleEl.textContent = title;
-    // Popola grid
-    albGrid.innerHTML = '';
+    // Reset stato
+    vaoTitle.textContent = title;
+    vaoGrid.innerHTML = '';
+    vaoGrid.classList.remove('visible');
+    vaoSingle.classList.remove('hidden');
+    vaoSingleImg.classList.remove('reveal');
+    vaoSingleImg.src = images[0].url;
+
+    // Popola griglia (nascosta)
     images.forEach((img, i) => {
-      const t = document.createElement('div');
-      t.className = 'lb-grid-thumb';
+      const item = document.createElement('div');
+      item.className = 'vao-grid-item';
       const im = document.createElement('img');
       im.src = img.url;
       im.loading = 'lazy';
-      t.appendChild(im);
-      t.addEventListener('click', () => openLightboxViewer(images, i, title));
-      albGrid.appendChild(t);
+      im.alt = title;
+      item.appendChild(im);
+      item.addEventListener('click', e => {
+        e.stopPropagation();
+        // Apri il vecchio lightbox viewer per navigazione
+        openSingleViewer(images, i, title);
+      });
+      vaoGrid.appendChild(item);
     });
-    // Mostra grid, nascondi viewer
-    albGrid.style.display = 'grid';
-    albViewer.classList.remove('active');
-    albBack.style.display = 'none';
-    lb.classList.add('open');
-  };
 
-  // Apri lightbox in modalità viewer
-  window.openLightboxViewer = function(images, idx, title) {
-    albImages = images;
-    albIndex = idx;
-    albTitle = title;
-    albTitleEl.textContent = title;
-    // Nascondi grid, mostra viewer
-    albGrid.style.display = 'none';
-    albViewer.classList.add('active');
-    albBack.style.display = 'block';
-    lb.classList.add('open');
-    showAlbImage(idx);
-  };
+    overlay.classList.add('open');
 
-  function showAlbImage(idx) {
-    albIndex = idx;
-    const img = albImages[idx];
-    // Reset animazione tenda
-    albImg.classList.remove('lb-reveal');
-    albImg.src = img.url;
-    albCounter.textContent = `${String(idx + 1).padStart(2, '0')} / ${String(albImages.length).padStart(2, '0')}`;
-    // Trigger animazione tenda
+    // Fase 1: curtain reveal sulla foto singola
     requestAnimationFrame(() => {
-      requestAnimationFrame(() => albImg.classList.add('lb-reveal'));
+      requestAnimationFrame(() => vaoSingleImg.classList.add('reveal'));
     });
-    // Aggiorna frecce
-    albPrev.style.opacity = idx === 0 ? '0.2' : '1';
-    albNext.style.opacity = idx === albImages.length - 1 ? '0.2' : '1';
+
+    // Fase 2: dopo 900ms, transizione alla griglia
+    setTimeout(() => {
+      vaoSingle.classList.add('hidden');
+      vaoGrid.classList.add('visible');
+      // Stagger: ogni foto appare con delay progressivo
+      const items = vaoGrid.querySelectorAll('.vao-grid-item');
+      items.forEach((item, i) => {
+        setTimeout(() => item.classList.add('appeared'), i * 55);
+      });
+    }, 900);
+  };
+
+  // Viewer singolo per navigazione dentro la griglia
+  let svImages = [], svIndex = 0;
+  function openSingleViewer(images, idx, title) {
+    svImages = images;
+    svIndex = idx;
+    // Riusa il viewer del lightbox principale
+    const lbEl = document.getElementById('lightbox');
+    if (lbEl) {
+      document.getElementById('lightbox-img').src = images[idx].url;
+      document.getElementById('lb-title').textContent = title;
+      document.getElementById('lb-count').textContent =
+        `${String(idx+1).padStart(2,'0')} / ${String(images.length).padStart(2,'0')}`;
+      lbEl.classList.add('open');
+    }
   }
 
-  // Navigazione
-  albPrev.addEventListener('click', e => {
-    e.stopPropagation();
-    if (albIndex > 0) showAlbImage(albIndex - 1);
-  });
-  albNext.addEventListener('click', e => {
-    e.stopPropagation();
-    if (albIndex < albImages.length - 1) showAlbImage(albIndex + 1);
+  // Chiudi overlay
+  vaoClose.addEventListener('click', () => {
+    overlay.classList.remove('open');
   });
 
-  // Tasto back → torna alla grid
-  albBack.addEventListener('click', e => {
-    e.stopPropagation();
-    albGrid.style.display = 'grid';
-    albViewer.classList.remove('active');
-    albBack.style.display = 'none';
-  });
-
-  // Chiudi
-  albClose.addEventListener('click', () => lb.classList.remove('open'));
-
-  // Tastiera: frecce + ESC
+  // ESC per chiudere
   document.addEventListener('keydown', e => {
-    if (!lb.classList.contains('open')) return;
-    if (e.key === 'Escape') lb.classList.remove('open');
-    if (albViewer.classList.contains('active')) {
-      if (e.key === 'ArrowLeft' && albIndex > 0) showAlbImage(albIndex - 1);
-      if (e.key === 'ArrowRight' && albIndex < albImages.length - 1) showAlbImage(albIndex + 1);
+    if (e.key === 'Escape' && overlay.classList.contains('open')) {
+      overlay.classList.remove('open');
     }
   });
 })();
