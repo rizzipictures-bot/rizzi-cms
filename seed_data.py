@@ -14,6 +14,10 @@ magazines = [
     'GEO', 'Io Donna', 'Grazia', 'The Sunday Times Magazine',
 ]
 
+subtitles = [
+    'Documentary', 'Personal', 'Street photography', 'Portraits',
+]
+
 cities = [
     'Tokyo', 'Londra', 'Berlino', 'Città del Messico', 'Mumbai',
     'Lagos', 'Buenos Aires', 'Shanghai', 'Istanbul', 'Cairo',
@@ -39,9 +43,10 @@ for p in projects:
     if p['title'] in cities:
         year = str(random.randint(2003, 2012))
         pub  = random.choice(magazines)
+        subtitle = random.choice(subtitles)
         try:
-            api_put(f'/api/projects/{p["id"]}', {'year': year, 'publication': pub})
-            print(f"  ✓ {p['title']:<22} {year}  |  {pub}")
+            api_put(f'/api/projects/{p["id"]}', {'year': year, 'publication': pub, 'subtitle': subtitle})
+            print(f"  ✓ {p['title']:<22} {year}  |  {pub:<30}  |  {subtitle}")
             updated += 1
         except Exception as e:
             print(f"  ✗ {p['title']} → {e}")
