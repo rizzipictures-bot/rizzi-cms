@@ -581,21 +581,25 @@ def seed_cities():
     save_db(db)
     return jsonify({'ok': True, 'added': added, 'skipped': [c for c in cities if c not in added]})
 
-# ── UPDATE (solo git pull, nessun restart) ─────────────────
+# ── UPDATE (fetch + checkout selettivo, preserva data/) ──────
 @app.route('/api/update', methods=['POST'])
 def update_from_github():
     import subprocess
+    def run(cmd):
+        return subprocess.run(cmd, cwd=str(BASE), capture_output=True, text=True, timeout=30)
     try:
-        result = subprocess.run(
-            ['git', 'pull', 'origin', 'main'],
-            cwd=str(BASE),
-            capture_output=True,
-            text=True,
-            timeout=30
-        )
-        output = result.stdout + result.stderr
-        if result.returncode != 0:
-            return jsonify({'ok': False, 'error': output})
+        # 1. Scarica i nuovi commit senza toccare i file locali
+        r1 = run(['git', 'fetch', 'origin', 'main'])
+        if r1.returncode != 0:
+            return jsonify({'ok': False, 'error': r1.stdout + r1.stderr})
+        # 2. Aggiorna solo static/ e app.py dalla versione remota (forza sovrascrittura)
+        files_to_update = ['static/', 'app.py']
+        r2 = run(['git', 'checkout', 'origin/main', '--'] + files_to_update)
+        if r2.returncode != 0:
+            return jsonify({'ok': False, 'error': r2.stdout + r2.stderr})
+        # 3. Avanza HEAD al commit remoto (senza toccare data/)
+        r3 = run(['git', 'merge', '-X', 'ours', 'origin/main'])
+        output = r1.stdout + r2.stdout + r3.stdout
         return jsonify({'ok': True, 'output': output})
     except Exception as e:
         return jsonify({'ok': False, 'error': str(e)})
