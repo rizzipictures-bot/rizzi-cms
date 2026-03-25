@@ -619,20 +619,22 @@
     /* Foto hero grande a sinistra */
     .archive-expanded-hero {
       flex-shrink: 0;
-      width: 340px;
+      width: auto;
       height: 380px;
       overflow: hidden;
       position: relative;
       cursor: none;
+      display: flex;
+      align-items: center;
     }
     .archive-expanded-hero img {
-      width: 100%;
+      width: auto;
       height: 100%;
-      object-fit: cover;
+      object-fit: contain;
       display: block;
-      transition: transform .4s ease;
+      transition: opacity .3s ease;
     }
-    .archive-expanded-hero:hover img { transform: scale(1.03); }
+    .archive-expanded-hero:hover img { opacity: 0.92; }
 
     /* Colonna destra: strip + view all */
     .archive-expanded-right {
