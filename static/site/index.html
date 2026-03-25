@@ -1257,6 +1257,7 @@
       <button id="btn-theme">◐</button>
       <button id="btn-screensaver">Screensaver</button>
       <button id="btn-update" style="display:none" title="Aggiorna sito da GitHub">↻ Aggiorna</button>
+      <button id="btn-seed" style="display:none" title="Aggiungi 15 città all'Archive">+ Città</button>
     </nav>
   </header>
 
@@ -2483,6 +2484,28 @@ loadFromCMS();
 
   // Mostra il pulsante solo in locale
   btnUpdate.style.display = 'inline-block';
+
+  // Seed cities button
+  const btnSeed = document.getElementById('btn-seed');
+  btnSeed.style.display = 'inline-block';
+  btnSeed.addEventListener('click', async () => {
+    if (!confirm('Aggiungere 15 progetti città vuoti all\'Archive? (Idempotente: non duplica)')) return;
+    btnSeed.textContent = '+ Aggiunta...';
+    try {
+      const res = await fetch('/api/seed-cities', { method: 'POST' });
+      const data = await res.json();
+      if (data.ok) {
+        btnSeed.textContent = `+ ${data.added.length} aggiunte`;
+        setTimeout(() => location.reload(), 800);
+      } else {
+        btnSeed.textContent = '+ Errore';
+        setTimeout(() => { btnSeed.textContent = '+ Città'; }, 3000);
+      }
+    } catch(e) {
+      btnSeed.textContent = '+ Errore';
+      setTimeout(() => { btnSeed.textContent = '+ Città'; }, 3000);
+    }
+  });
 
   btnUpdate.addEventListener('click', async () => {
     btnUpdate.classList.add('updating');

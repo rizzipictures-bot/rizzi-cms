@@ -544,6 +544,43 @@ Return ONLY a JSON array of matching project IDs (strings), e.g. ["abc123", "def
     except Exception as e:
         return jsonify({'ids': [], 'error': str(e)})
 
+# ── SEED CITIES ───────────────────────────────────────────
+@app.route('/api/seed-cities', methods=['POST'])
+def seed_cities():
+    """Aggiunge 15 progetti vuoti con nomi di città internazionali.
+    Idempotente: non duplica se esistono già."""
+    cities = [
+        'Tokyo', 'Londra', 'Berlino', 'Città del Messico', 'Mumbai',
+        'Lagos', 'Buenos Aires', 'Shanghai', 'Istanbul', 'Cairo',
+        'Los Angeles', 'Amsterdam', 'Nairobi', 'Seoul', 'Lisbona'
+    ]
+    db = load_db()
+    existing_titles = {p['title'] for p in db['projects']}
+    added = []
+    max_order = max((p.get('order', 0) for p in db['projects']), default=0)
+    for i, city in enumerate(cities):
+        if city in existing_titles:
+            continue
+        project = {
+            'id':          str(uuid.uuid4())[:8],
+            'title':       city,
+            'year':        '',
+            'place':       city,
+            'publication': '',
+            'category_id': 'archive',
+            'category':    'Photography',
+            'subtitle':    '',
+            'description': '',
+            'section':     'archive',
+            'images':      [],
+            'texts':       [],
+            'order':       max_order + i + 1,
+        }
+        db['projects'].append(project)
+        added.append(city)
+    save_db(db)
+    return jsonify({'ok': True, 'added': added, 'skipped': [c for c in cities if c not in added]})
+
 # ── UPDATE (solo git pull, nessun restart) ─────────────────
 @app.route('/api/update', methods=['POST'])
 def update_from_github():
