@@ -427,7 +427,7 @@
       bottom: 28px; left: 50%;
       transform: translateX(-50%);
       z-index: 2;
-      font-size: 10px;
+      font-size: 11px;
       letter-spacing: 0.4px;
       color: var(--gray);
       white-space: nowrap;
@@ -443,7 +443,7 @@
       z-index: 2;
       background: none; border: none;
       font-family: var(--font);
-      font-size: 10px; letter-spacing: 0.4px;
+      font-size: 11px; letter-spacing: 0.4px;
       color: var(--black);
       cursor: none;
       white-space: nowrap;
@@ -700,6 +700,61 @@
     }
     .archive-expanded-viewall:hover { color: #aaa; } /* grigio chiaro in hover */
 
+    /* Pallino toggle colore box */
+    .archive-expanded-toggle {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #fff;            /* bianco su sfondo nero */
+      flex-shrink: 0;
+      cursor: none;
+      transition: background .2s;
+      align-self: flex-end;
+      margin-bottom: 2px;
+      margin-right: 16px;
+    }
+    .archive-expanded-toggle:hover { opacity: 0.7; }
+
+    /* Box in modalità bianca */
+    .archive-expanded.box-white {
+      background: #fff;
+    }
+    .archive-expanded.box-white .archive-expanded-toggle {
+      background: #000;            /* nero su sfondo bianco */
+    }
+    .archive-expanded.box-white .archive-expanded-viewall {
+      color: #000;
+    }
+    .archive-expanded.box-white .archive-expanded-viewall:hover {
+      color: #666;
+    }
+    .archive-expanded.box-white .archive-expanded-thumb.active {
+      outline: 1px solid #000;
+    }
+
+    /* View All overlay: tema nero */
+    #archive-viewall-overlay.theme-dark {
+      background: #000;
+    }
+    #archive-viewall-overlay.theme-dark .vao-header {
+      border-bottom-color: #333;
+    }
+    #archive-viewall-overlay.theme-dark .vao-title {
+      color: #fff;
+    }
+    #archive-viewall-overlay.theme-dark .vao-close {
+      color: #666;
+    }
+    #archive-viewall-overlay.theme-dark .vao-close:hover {
+      color: #fff;
+    }
+    #archive-viewall-overlay.theme-dark .vao-grid-item {
+      background: #000;
+    }
+    #archive-viewall-overlay.theme-dark .vao-grid-blank {
+      background: #000;
+    }
+
     /* ══════════════════════════════════════════════════════════════
        HERO CROSS-FADE — cambio foto nel box espanso
     ══════════════════════════════════════════════════════════════ */
@@ -846,7 +901,7 @@
       cursor: none;
       transition: background .2s;
       font-family: var(--font-mono);
-      font-size: 14px;
+      font-size: 11px;
       color: #000;
       user-select: none;
     }
@@ -1044,7 +1099,7 @@
     .gallery-text-meta {
       margin-top: 28px;
       font-family: var(--font-nav);
-      font-size: 12px;
+      font-size: 11px;
       color: #4d4d4d;
     }
 
@@ -1079,7 +1134,7 @@
       position: fixed;
       bottom: var(--pad);
       left: var(--pad);
-      font-size: 10px;
+      font-size: 11px;
       color: var(--gray);
       letter-spacing: 0.4px;
     }
@@ -1216,7 +1271,7 @@
     .view-label {
       position: absolute;
       top: 8px; right: 8px;
-      font-size: 9px;
+      font-size: 11px;
       letter-spacing: 0.4px;
       color: var(--gray);
       text-transform: uppercase;
@@ -1363,7 +1418,7 @@
       letter-spacing: 0.4px;
     }
     .lightbox-info .lb-count {
-      font-size: 10px;
+      font-size: 11px;
       color: rgba(255,255,255,.35);
       margin-top: 2px;
     }
@@ -1371,7 +1426,7 @@
       position: absolute; top: 20px; right: 24px;
       background: none; border: none;
       font-family: var(--font);
-      font-size: 10px; letter-spacing: 0.4px;
+      font-size: 11px; letter-spacing: 0.4px;
       color: rgba(255,255,255,.4);
       cursor: none;
       transition: color .15s;
@@ -2195,16 +2250,26 @@ function buildArchive() {
             strip.appendChild(t);
           });
 
+          // Pallino toggle colore box
+          const toggle = document.createElement('div');
+          toggle.className = 'archive-expanded-toggle';
+          toggle.addEventListener('click', e => {
+            e.stopPropagation();
+            panel.classList.toggle('box-white');
+          });
+
           // Pulsante View all (verticale, a destra)
           const viewAll = document.createElement('div');
           viewAll.className = 'archive-expanded-viewall';
           viewAll.textContent = 'View all';
           viewAll.addEventListener('click', e => {
             e.stopPropagation();
-            openViewAllOverlay(images, p.title || '');
+            const isDark = !panel.classList.contains('box-white');
+            openViewAllOverlay(images, p.title || '', isDark);
           });
 
           right.appendChild(strip);
+          right.appendChild(toggle);
           right.appendChild(viewAll);
           inner.appendChild(right);
         }
@@ -2891,19 +2956,22 @@ loadFromCMS();
   const vaoSingleImg = document.getElementById('vao-single-img');
   const vaoGrid   = document.getElementById('vao-grid');
 
-  // Apri overlay: prima foto singola centrata (Miechowski), poi esplode in griglia Overview
-  window.openViewAllOverlay = function(images, title) {
+  // Apri overlay: griglia diretta stile Overview (no animazione foto singola)
+  window.openViewAllOverlay = function(images, title, isDark) {
     if (!images || images.length === 0) return;
 
     const COLS = 9;
+
+    // Applica tema
+    overlay.classList.toggle('theme-dark', !!isDark);
 
     // Reset stato
     vaoTitle.textContent = title;
     vaoGrid.innerHTML = '';
     vaoGrid.classList.remove('visible');
-    vaoSingle.classList.remove('hidden');
-    vaoSingleImg.classList.remove('reveal');
-    vaoSingleImg.src = images[0].url;
+    // Nascondi subito la fase foto singola — non la usiamo
+    vaoSingle.classList.add('hidden');
+    vaoSingleImg.src = '';
 
     // Costruisci celle griglia stile Overview (con blank casuali)
     const cells = [];
@@ -2953,26 +3021,17 @@ loadFromCMS();
 
     overlay.classList.add('open');
 
-    // FASE 1: curtain reveal sulla foto singola centrata
+    // Griglia appare direttamente con stagger diagonale
     requestAnimationFrame(() => {
-      requestAnimationFrame(() => vaoSingleImg.classList.add('reveal'));
-    });
-
-    // FASE 2: dopo 950ms la foto singola svanisce e la griglia esplode con stagger
-    setTimeout(() => {
-      vaoSingle.classList.add('hidden');
-      // Mostra la griglia (ancora invisibile — le celle hanno opacity:0)
       vaoGrid.classList.add('visible');
-      // Stagger a partire dall'angolo in alto a sinistra, propagazione per riga
       const items = vaoGrid.querySelectorAll('.vao-grid-item, .vao-grid-blank');
       items.forEach((item, i) => {
-        // Delay basato sulla distanza dalla prima cella (riga + colonna)
         const row = Math.floor(i / COLS);
         const col = i % COLS;
-        const delay = (row + col) * 40; // propagazione diagonale
+        const delay = (row + col) * 40;
         setTimeout(() => item.classList.add('appeared'), delay);
       });
-    }, 950);
+    });
   };
 
   // Viewer singolo per navigazione dentro la griglia
