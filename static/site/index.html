@@ -457,28 +457,21 @@
       font-family: var(--font-mono);
       overflow-y: auto;
       overflow-x: hidden;
+      padding: 0 40px;
     }
     #view-archive::-webkit-scrollbar { display: none; }
-    .archive-page-title {
-      font-family: var(--font-mono);
-      font-size: 13px;
-      font-weight: 700;
-      letter-spacing: 0;
-      padding: 14px 16px 10px;
-      border-bottom: 1px solid var(--light);
-      color: var(--black);
-    }
+    .archive-page-title { display: none; }
     .archive-search-wrap {
-      padding: 8px 16px 0;
+      padding: 16px 0 0;
+      border-bottom: 1px solid var(--light);
     }
     .archive-search {
       font-family: var(--font-mono);
       font-size: 13px;
       border: none;
-      border-bottom: 1px solid var(--light);
       outline: none;
       width: 100%;
-      padding: 5px 0;
+      padding: 4px 0 8px;
       background: transparent;
       color: var(--black);
       letter-spacing: 0;
@@ -486,9 +479,9 @@
     .archive-search::placeholder { color: var(--gray); }
     .archive-col-header {
       display: grid;
-      grid-template-columns: 80px 220px 1fr 1fr 1fr 80px;
+      grid-template-columns: 100px 1fr 1fr 1fr 1fr 80px;
       border-bottom: 1px solid var(--light);
-      padding: 20px 0 4px;
+      padding: 8px 0 4px;
     }
     .archive-col-header span {
       font-family: var(--font-mono);
@@ -496,16 +489,15 @@
       font-weight: 400;
       color: var(--black);
       letter-spacing: 0;
-      padding: 0 16px 0 0;
+      padding: 0;
     }
-    .archive-col-header span:first-child { padding-left: 16px; }
     .archive-row {
       display: grid;
-      grid-template-columns: 80px 220px 1fr 1fr 1fr 80px;
+      grid-template-columns: 100px 1fr 1fr 1fr 1fr 80px;
       gap: 0;
       border-bottom: 1px solid var(--light);
       align-items: center;
-      min-height: 26px;
+      min-height: 28px;
       transition: background .1s;
       cursor: none;
       font-family: var(--font-mono);
@@ -517,12 +509,12 @@
     .archive-row > div {
       padding: 4px 16px 4px 0;
       font-size: 13px;
-      line-height: 1.5;
+      line-height: 1.6;
       font-family: var(--font-mono);
       letter-spacing: 0;
     }
-    .archive-row > div:first-child { padding-left: 16px; }
-    .archive-row .year { color: var(--black); font-weight: 700; }
+    .archive-row > div:first-child { padding-left: 0; }
+    .archive-row .year { color: var(--black); font-weight: 400; }
     .archive-row .keyword {
       color: var(--accent);
       font-weight: 900;
@@ -530,7 +522,7 @@
     /* Riga espansa — foto centrata + testo + thumbs */
     .archive-expanded {
       border-bottom: 1px solid var(--light);
-      padding: 0 16px 24px;
+      padding: 0 0 24px;
       background: var(--white);
     }
     .archive-expanded-desc {
