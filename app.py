@@ -34,14 +34,22 @@ def ai_tag_image(fpath, img_data, db_ref, pid):
                 ]
             }]
         )
-        keywords = resp.choices[0].message.content.strip()
-        # Aggiorna il db
+        new_keywords = resp.choices[0].message.content.strip()
+        # Aggiorna il db: APPEND alle keyword esistenti (non sovrascrive)
         db = load_db()
         p = next((p for p in db['projects'] if p['id'] == pid), None)
         if p:
             img = next((i for i in p['images'] if i['id'] == img_data['id']), None)
             if img:
-                img['keywords'] = keywords
+                existing = img.get('keywords', '').strip()
+                if existing:
+                    # Unisce e deduplica (case-insensitive)
+                    existing_set = {k.strip().lower() for k in existing.split(',') if k.strip()}
+                    new_list = [k.strip() for k in new_keywords.split(',') if k.strip()]
+                    added = [k for k in new_list if k.lower() not in existing_set]
+                    img['keywords'] = existing + (', ' + ', '.join(added) if added else '')
+                else:
+                    img['keywords'] = new_keywords
                 save_db(db)
     except Exception as e:
         pass  # tagging fallisce silenziosamente, non blocca nulla
