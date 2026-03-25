@@ -40,6 +40,8 @@
        RESET & BASE
     ══════════════════════════════════════════════════════════════ */
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    /* Cursore custom globale: nasconde SEMPRE il cursore di sistema incluse manina su link/button */
+    *, *::before, *::after { cursor: none !important; }
     html, body {
       height: 100%;
       font-family: var(--font);
