@@ -190,7 +190,128 @@
       "subtitle": "",
       "description": "",
       "section": "archive",
-      "images": [],
+      "images": [
+        {
+          "id": "1c860fd3",
+          "filename": "1c860fd3.jpg",
+          "url": "/uploads/1c860fd3.jpg",
+          "caption": "",
+          "tags": [],
+          "keywords": "Galata Tower, Istanbul, cityscape, historic architecture, sunset, seagulls, warm tones, urban buildings, Mediterranean, clear sky, tranquil atmosphere",
+          "file": "1c860fd3.jpg",
+          "thumb": "/uploads/thumbs/thumb_1c860fd3.jpg"
+        },
+        {
+          "id": "d0a64f7b",
+          "filename": "d0a64f7b.jpg",
+          "url": "/uploads/d0a64f7b.jpg",
+          "caption": "",
+          "tags": [],
+          "keywords": "Blue Mosque, Istanbul, mosque, architecture, sunset, minarets, historic, sky, trees, religious building, gray, green",
+          "file": "d0a64f7b.jpg",
+          "thumb": "/uploads/thumbs/thumb_d0a64f7b.jpg"
+        },
+        {
+          "id": "fc0db516",
+          "filename": "fc0db516.jpg",
+          "url": "/uploads/fc0db516.jpg",
+          "caption": "",
+          "tags": [],
+          "keywords": "mosque, minarets, sunset, pink sky, blue domes, architecture, cityscape, calm, historic, Istanbul, tranquil, evening",
+          "file": "fc0db516.jpg",
+          "thumb": "/uploads/thumbs/thumb_fc0db516.jpg"
+        },
+        {
+          "id": "7c04c784",
+          "filename": "7c04c784.jpg",
+          "url": "/uploads/7c04c784.jpg",
+          "caption": "",
+          "tags": [],
+          "keywords": "Eiffel Tower, Paris, architecture, blue sky, urban, autumn, landmark, tourism, daytime, clear weather, cityscape, famous monument",
+          "file": "7c04c784.jpg",
+          "thumb": "/uploads/thumbs/thumb_7c04c784.jpg"
+        },
+        {
+          "id": "2407d461",
+          "filename": "2407d461.jpg",
+          "url": "/uploads/2407d461.jpg",
+          "caption": "",
+          "tags": [],
+          "keywords": "dark, grunge, textured, black, rough, background, moody, worn, vintage, shadowed, distressed",
+          "file": "2407d461.jpg",
+          "thumb": "/uploads/thumbs/thumb_2407d461.jpg"
+        },
+        {
+          "id": "ff68def1",
+          "filename": "ff68def1.jpg",
+          "url": "/uploads/ff68def1.jpg",
+          "caption": "",
+          "tags": [],
+          "keywords": "eggs, faces, cartoon, emotions, humor, brown, plastic tray, kitchen, expressions, close-up",
+          "file": "ff68def1.jpg",
+          "thumb": "/uploads/thumbs/thumb_ff68def1.jpg"
+        },
+        {
+          "id": "1b3aafc9",
+          "filename": "1b3aafc9.jpg",
+          "url": "/uploads/1b3aafc9.jpg",
+          "caption": "",
+          "tags": [],
+          "keywords": "conference, speaker, audience, auditorium, formal, presentation, professional, business attire, dim lighting, seating, public speaking, event",
+          "file": "1b3aafc9.jpg",
+          "thumb": "/uploads/thumbs/thumb_1b3aafc9.jpg"
+        },
+        {
+          "id": "056c52fd",
+          "filename": "056c52fd.jpg",
+          "url": "/uploads/056c52fd.jpg",
+          "caption": "",
+          "tags": [],
+          "keywords": "blue sky, white clouds, sun rays, bright sunlight, daytime, clear weather, nature, outdoor, vibrant colors, fluffy clouds",
+          "file": "056c52fd.jpg",
+          "thumb": "/uploads/thumbs/thumb_056c52fd.jpg"
+        },
+        {
+          "id": "4a19e694",
+          "filename": "4a19e694.jpg",
+          "url": "/uploads/4a19e694.jpg",
+          "caption": "",
+          "tags": [],
+          "keywords": "solar eclipse, mountain silhouette, orange hue, water reflection, twilight, serene, mystical, nature, calm, glowing ring",
+          "file": "4a19e694.jpg",
+          "thumb": "/uploads/thumbs/thumb_4a19e694.jpg"
+        },
+        {
+          "id": "9174baf4",
+          "filename": "9174baf4.jpg",
+          "url": "/uploads/9174baf4.jpg",
+          "caption": "",
+          "tags": [],
+          "keywords": "mountains, sunset, rocky terrain, winding path, grass, clouds, warm light, nature, landscape, panoramic, dusk, serene",
+          "file": "9174baf4.jpg",
+          "thumb": "/uploads/thumbs/thumb_9174baf4.jpg"
+        },
+        {
+          "id": "d1fb1c5c",
+          "filename": "d1fb1c5c.jpg",
+          "url": "/uploads/d1fb1c5c.jpg",
+          "caption": "",
+          "tags": [],
+          "keywords": "bridge, cityscape, sunset, calm, urban, river, rocks, architectural, golden hour, modern, skyline",
+          "file": "d1fb1c5c.jpg",
+          "thumb": "/uploads/thumbs/thumb_d1fb1c5c.jpg"
+        },
+        {
+          "id": "b987e5f6",
+          "filename": "b987e5f6.jpg",
+          "url": "/uploads/b987e5f6.jpg",
+          "caption": "",
+          "tags": [],
+          "keywords": "motivational sign, lightbox, wooden shelf, window, natural light, inspirational message, modern style, black text, stars symbol, cozy setting",
+          "file": "b987e5f6.jpg",
+          "thumb": "/uploads/thumbs/thumb_b987e5f6.jpg"
+        }
+      ],
       "texts": [],
       "order": 12,
       "category_id": "archive"

@@ -182,6 +182,13 @@
       cursor: pointer;
       /* Lascia passare i click nella zona header */
       clip-path: inset(var(--nav-h) 0 0 0);
+      /* IMPORTANTE: pointer-events none sulla landing, solo la foto è cliccabile */
+      pointer-events: none;
+    }
+    /* La foto hero rimane cliccabile per andare all'Overview */
+    #landing.band-up #landing-photo {
+      pointer-events: all;
+      cursor: pointer;
     }
     /* Nasconde la landing dopo l'uscita */
     #landing.gone {
@@ -699,7 +706,7 @@
     /* Box nero — Ink Drop */
     .archive-expanded {
       background: #000;            /* nero 100% */
-      overflow: hidden;
+      /* overflow: hidden rimosso — clip-path gestisce l'animazione, overflow nascondeva il pannello keywords */
       /* Animazione: si svolge dall'alto al basso */
       clip-path: inset(0 0 100% 0);
       transition: clip-path .65s cubic-bezier(.16, 1, 0.3, 1);
@@ -757,8 +764,8 @@
       flex: 1;
       display: flex;
       flex-direction: column;
-      justify-content: space-between; /* caption in cima, thumbs in fondo */
-      overflow: hidden;
+      justify-content: flex-start;   /* caption in cima, poi keywords, poi bottomRow in fondo */
+      overflow: visible;
       padding-left: 32px;            /* stacco dalla hero */
       height: 500px;                 /* stessa altezza del box */
       padding-top: 18px;             /* stacco dal bordo superiore del box */
@@ -771,6 +778,7 @@
       flex-direction: row;
       align-items: flex-end;
       overflow: hidden;
+      margin-top: auto;              /* spinge la riga in fondo alla colonna */
     }
     .archive-expanded-thumbs {
       display: flex;
@@ -924,18 +932,18 @@
        KEYWORDS PANEL — angolo alto destra del box espanso
     ══════════════════════════════════════════════════════════════ */
     .archive-kw-panel {
-      position: absolute;
-      top: 0;
-      right: 52px;                  /* stacco dal bordo dx (spazio per View all) */
-      width: 220px;                 /* larghezza base */
-      aspect-ratio: 3 / 2;          /* proporzione 3:2 */
-      padding: 16px 18px 14px;
+      position: relative;           /* nel flusso della colonna destra */
+      width: 100%;
+      padding: 10px 0 8px;
       box-sizing: border-box;
       display: flex;
       flex-direction: column;
       gap: 0;
-      overflow: hidden;
+      overflow: hidden;              /* nasconde overflow verticale */
       pointer-events: all;
+      background: transparent;
+      max-height: 340px;             /* altezza massima: spazio disponibile tra caption e thumbs */
+      min-height: 60px;
     }
     /* Linea separatrice sottile in cima */
     .archive-kw-panel::before {
@@ -962,8 +970,11 @@
       display: flex;
       flex-wrap: wrap;
       gap: 5px 8px;
-      overflow: hidden;
+      overflow-y: auto;              /* scroll verticale se troppi tag */
+      overflow-x: hidden;
+      max-height: 260px;             /* altezza massima per i tag */
     }
+    .archive-kw-tags::-webkit-scrollbar { display: none; }
     /* Singolo tag */
     .archive-kw-tag {
       font-family: var(--font-mono);
@@ -2600,6 +2611,8 @@ function buildArchive() {
         // Se c'è già una espansione aperta, rimuovila
         if (activeExpanded) {
           if (activeExpanded._textBlock) activeExpanded._textBlock.remove();
+          if (activeExpanded._kwPanel) activeExpanded._kwPanel.remove();
+          if (activeExpanded._scrollListener) window.removeEventListener('scroll', activeExpanded._scrollListener, true);
           activeExpanded.remove();
           const prevRow = list.querySelector('.archive-row.is-open');
           if (prevRow) prevRow.classList.remove('is-open');
@@ -2758,6 +2771,7 @@ function buildArchive() {
               });
             }
           });
+
           if (allKws.size > 0) {
             const kwPanel = document.createElement('div');
             kwPanel.className = 'archive-kw-panel';
@@ -2782,7 +2796,8 @@ function buildArchive() {
             });
 
             kwPanel.appendChild(kwTags);
-            inner.appendChild(kwPanel);
+            // Inserisci direttamente nella colonna destra (tra caption e bottomRow)
+            right.insertBefore(kwPanel, bottomRow);
           }
         }
 
@@ -2793,6 +2808,24 @@ function buildArchive() {
         row.insertAdjacentElement('afterend', textBlock);
         activeExpanded = panel;
         activeExpanded._textBlock = textBlock;
+
+        // kwPanel è già inserito nella colonna destra, nessun posizionamento extra necessario
+        if (false && activeExpanded._kwPanel) {
+          // codice rimosso
+          const positionKwPanel = () => {};
+          setTimeout(positionKwPanel, 200);
+          const onScroll = () => {
+            if (!activeExpanded || !activeExpanded._kwPanel) {
+              window.removeEventListener('scroll', onScroll, true);
+              return;
+            }
+            const r = panel.getBoundingClientRect();
+            activeExpanded._kwPanel.style.top  = (r.top + 8) + 'px';
+            activeExpanded._kwPanel.style.right = (window.innerWidth - r.right + 52) + 'px';
+          };
+          window.addEventListener('scroll', onScroll, true);
+          activeExpanded._scrollListener = onScroll;
+        }
 
         // Animazione Ink Drop: trigger dopo un frame
         requestAnimationFrame(() => {
