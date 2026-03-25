@@ -621,6 +621,10 @@
       flex-shrink: 0;
       transition: transform .18s cubic-bezier(.34,1.56,.64,1), opacity .18s;
       position: relative;
+      /* Area hit espansa: padding invisibile attorno al pallino */
+      padding: 8px;
+      margin: -8px;
+      background-clip: content-box;  /* il colore rimane solo sul cerchio */
     }
     .media-ball:hover { transform: scale(1.5); }
     .media-ball.active  { transform: scale(1.5); }
@@ -2434,17 +2438,19 @@ function buildArchive() {
           activePopup = popup;
           requestAnimationFrame(() => popup.classList.add('open'));
 
-          // Chiudi cliccando fuori
+          // Chiudi cliccando fuori (bubble phase, non capture — non intercetta altri click)
           const closeOutside = ev => {
-            if (!popup.contains(ev.target) && ev.target !== ball) {
-              popup.classList.remove('open');
-              ball.classList.remove('active');
-              setTimeout(() => popup.remove(), 220);
-              if (activePopup === popup) activePopup = null;
-              document.removeEventListener('click', closeOutside, true);
-            }
+            // Non chiudere se si clicca dentro il popup o sulla ball stessa
+            if (popup.contains(ev.target) || ev.target === ball) return;
+            // Non chiudere se si clicca su elementi interattivi del box espanso
+            if (ev.target.closest('.archive-expanded-viewall, .archive-expanded-toggle, .archive-expanded-thumb')) return;
+            popup.classList.remove('open');
+            ball.classList.remove('active');
+            setTimeout(() => popup.remove(), 220);
+            if (activePopup === popup) activePopup = null;
+            document.removeEventListener('click', closeOutside, false);
           };
-          setTimeout(() => document.addEventListener('click', closeOutside, true), 10);
+          setTimeout(() => document.addEventListener('click', closeOutside, false), 10);
         });
       });
 
