@@ -25,6 +25,7 @@
       --footer-h:     0px;
       --font:         'Helvetica Neue', Helvetica, Arial, sans-serif;
       --font-nav:     'EB Garamond', Georgia, 'Times New Roman', serif;
+      --font-mono:    'Courier New', Courier, monospace;
       --ease-custom:  cubic-bezier(.77, 0, .175, 1);
       --ease-out:     cubic-bezier(.4, 0, .2, 1);
     }
@@ -452,45 +453,127 @@
     /* ══════════════════════════════════════════════════════════════
        VIEW: ARCHIVE — Tabella (rizzi-web)
     ══════════════════════════════════════════════════════════════ */
-    #view-archive .archive-header {
-      display: flex;
-      border-bottom: 1px solid var(--light);
-      padding: 6px 0;
-      margin-bottom: 0;
+    #view-archive {
+      font-family: var(--font-mono);
+      overflow-y: auto;
+      overflow-x: hidden;
     }
-    #view-archive .archive-header span {
-      font-weight: 900;
-      text-transform: uppercase;
-      font-size: 10px;
-      letter-spacing: 0.4px;
+    #view-archive::-webkit-scrollbar { display: none; }
+    .archive-page-title {
+      font-family: var(--font-mono);
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: 0;
+      padding: 14px 16px 10px;
+      border-bottom: 1px solid var(--light);
+      color: var(--black);
+    }
+    .archive-search-wrap {
+      padding: 8px 16px 0;
+    }
+    .archive-search {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      border: none;
+      border-bottom: 1px solid var(--light);
+      outline: none;
+      width: 100%;
+      padding: 5px 0;
+      background: transparent;
+      color: var(--black);
+      letter-spacing: 0;
+    }
+    .archive-search::placeholder { color: var(--gray); }
+    .archive-col-header {
+      display: grid;
+      grid-template-columns: 80px 220px 1fr 1fr 1fr 80px;
+      border-bottom: 1px solid var(--light);
+      padding: 20px 16px 4px;
+    }
+    .archive-col-header span {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      font-weight: 400;
+      color: var(--black);
+      letter-spacing: 0;
     }
     .archive-row {
       display: grid;
-      grid-template-columns: 70px 1fr 1fr 1fr 1fr 60px;
+      grid-template-columns: 80px 220px 1fr 1fr 1fr 80px;
       gap: 0;
       border-bottom: 1px solid var(--light);
       align-items: center;
-      min-height: 36px;
-      transition: background .1s, transform .15s;
+      min-height: 26px;
+      transition: background .1s;
       cursor: none;
+      font-family: var(--font-mono);
     }
     .archive-row:not(.header):hover {
       background: var(--black);
     }
-    .archive-row:not(.header):hover * { color: var(--white); }
-    /* skewX al hover — Angelucci */
-    .archive-row:not(.header):hover {
-      transform: skewX(-2deg);
-    }
+    .archive-row:not(.header):hover * { color: var(--white) !important; }
     .archive-row > div {
-      padding: 8px 12px;
+      padding: 4px 16px 4px 0;
       font-size: 11px;
+      font-family: var(--font-mono);
+      letter-spacing: 0;
     }
-    .archive-row .year { color: var(--gray); }
-    .archive-row:hover .year { color: #aaa; }
+    .archive-row > div:first-child { padding-left: 16px; }
+    .archive-row .year { color: var(--black); font-weight: 700; }
     .archive-row .keyword {
       color: var(--accent);
       font-weight: 900;
+    }
+    /* Riga espansa — foto centrata + testo + thumbs */
+    .archive-expanded {
+      border-bottom: 1px solid var(--light);
+      padding: 0 16px 24px;
+      background: var(--white);
+    }
+    .archive-expanded-desc {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      color: var(--gray);
+      padding: 8px 0 16px;
+      border-bottom: 1px solid var(--light);
+      margin-bottom: 0;
+    }
+    .archive-expanded-photo {
+      display: flex;
+      justify-content: center;
+      padding: 24px 0;
+    }
+    .archive-expanded-photo img {
+      max-height: 55vh;
+      max-width: 50vw;
+      width: auto;
+      height: auto;
+      display: block;
+      object-fit: contain;
+    }
+    .archive-expanded-thumbs {
+      display: flex;
+      gap: 4px;
+      overflow-x: auto;
+      padding: 8px 0 4px;
+      border-top: 1px solid var(--light);
+    }
+    .archive-expanded-thumbs::-webkit-scrollbar { display: none; }
+    .archive-expanded-thumb {
+      flex-shrink: 0;
+      width: 90px;
+      height: 60px;
+      overflow: hidden;
+      cursor: none;
+      opacity: 0.6;
+      transition: opacity .2s;
+    }
+    .archive-expanded-thumb:hover { opacity: 1; }
+    .archive-expanded-thumb.active { opacity: 1; outline: 1px solid var(--black); }
+    .archive-expanded-thumb img {
+      width: 100%; height: 100%;
+      object-fit: cover;
+      display: block;
     }
 
     /* ══════════════════════════════════════════════════════════════
@@ -1126,13 +1209,17 @@
 
     <!-- ── VIEW: ARCHIVE — Tabella (rizzi-web) ── -->
     <div class="view" id="view-archive">
-      <div class="archive-row header">
-        <div><span>Year</span></div>
-        <div><span>Project</span></div>
-        <div><span>Subtitle</span></div>
-        <div><span>Place</span></div>
-        <div><span>Publication</span></div>
-        <div><span>Media</span></div>
+      <div class="archive-page-title">Archive | Works Index</div>
+      <div class="archive-search-wrap">
+        <input class="archive-search" id="archive-search" type="text" placeholder="Type any keyword" autocomplete="off">
+      </div>
+      <div class="archive-col-header">
+        <span>Year</span>
+        <span>Project</span>
+        <span>Subtitle</span>
+        <span>Place</span>
+        <span>Publication</span>
+        <span>Media</span>
       </div>
       <div id="archive-list">
         <!-- Generata via JS -->
@@ -1577,20 +1664,108 @@ function buildArchive() {
   // Filtra solo i progetti con category_id 'archive'
   const archiveProjects = PROJECTS.filter(p => (p.category_id || p.section) === 'archive');
 
-  archiveProjects.forEach(p => {
-    const row = document.createElement('div');
-    row.className = 'archive-row';
-    row.innerHTML = `
-      <div class="year">${p.year || '–'}</div>
-      <div><strong>${p.title || '–'}</strong></div>
-      <div>${p.subtitle || '–'}</div>
-      <div>${p.place || '–'}</div>
-      <div>${p.publication || '–'}</div>
-      <div style="color:var(--gray)">–</div>
-    `;
-    row.addEventListener('click', () => openArchiveProject(p));
-    list.appendChild(row);
-  });
+  let activeExpanded = null; // tiene traccia della riga espansa
+
+  function renderRows(projects) {
+    list.innerHTML = '';
+    activeExpanded = null;
+    projects.forEach(p => {
+      const row = document.createElement('div');
+      row.className = 'archive-row';
+      row.innerHTML = `
+        <div class="year">${p.year || '–'}</div>
+        <div>${p.title || '–'}</div>
+        <div>${p.subtitle || '–'}</div>
+        <div>${p.place || '–'}</div>
+        <div>${p.publication || '–'}</div>
+        <div>–</div>
+      `;
+
+      row.addEventListener('click', () => {
+        // Se c'è già una espansione aperta, rimuovila
+        if (activeExpanded) {
+          activeExpanded.remove();
+          const prevRow = list.querySelector('.archive-row.is-open');
+          if (prevRow) prevRow.classList.remove('is-open');
+          if (activeExpanded._sourceRow === row) {
+            activeExpanded = null;
+            return;
+          }
+        }
+
+        // Crea il pannello espanso
+        const panel = document.createElement('div');
+        panel.className = 'archive-expanded';
+        panel._sourceRow = row;
+        row.classList.add('is-open');
+
+        // Descrizione
+        const desc = document.createElement('div');
+        desc.className = 'archive-expanded-desc';
+        desc.textContent = p.description || '';
+        panel.appendChild(desc);
+
+        // Foto principale centrata
+        const photoWrap = document.createElement('div');
+        photoWrap.className = 'archive-expanded-photo';
+        const mainImg = document.createElement('img');
+        mainImg.src = p.images && p.images[0] ? p.images[0].url : '';
+        mainImg.alt = p.title || '';
+        photoWrap.appendChild(mainImg);
+        panel.appendChild(photoWrap);
+
+        // Thumbs strip orizzontale
+        if (p.images && p.images.length > 1) {
+          const strip = document.createElement('div');
+          strip.className = 'archive-expanded-thumbs';
+          p.images.forEach((img, i) => {
+            const t = document.createElement('div');
+            t.className = 'archive-expanded-thumb' + (i === 0 ? ' active' : '');
+            const tImg = document.createElement('img');
+            tImg.src = img.url;
+            tImg.loading = 'lazy';
+            t.appendChild(tImg);
+            t.addEventListener('click', e => {
+              e.stopPropagation();
+              mainImg.src = img.url;
+              strip.querySelectorAll('.archive-expanded-thumb').forEach(el => el.classList.remove('active'));
+              t.classList.add('active');
+            });
+            strip.appendChild(t);
+          });
+          panel.appendChild(strip);
+        }
+
+        // Inserisci il pannello dopo la riga
+        row.insertAdjacentElement('afterend', panel);
+        activeExpanded = panel;
+
+        // Scroll alla riga
+        setTimeout(() => row.scrollIntoView({ behavior: 'smooth', block: 'start' }), 50);
+      });
+
+      list.appendChild(row);
+    });
+  }
+
+  renderRows(archiveProjects);
+
+  // Ricerca
+  const searchInput = document.getElementById('archive-search');
+  if (searchInput) {
+    searchInput.addEventListener('input', () => {
+      const q = searchInput.value.toLowerCase().trim();
+      if (!q) { renderRows(archiveProjects); return; }
+      const filtered = archiveProjects.filter(p =>
+        (p.title || '').toLowerCase().includes(q) ||
+        (p.subtitle || '').toLowerCase().includes(q) ||
+        (p.place || '').toLowerCase().includes(q) ||
+        (p.publication || '').toLowerCase().includes(q) ||
+        String(p.year || '').includes(q)
+      );
+      renderRows(filtered);
+    });
+  }
 }
 
 // ══════════════════════════════════════════════════════════════════
