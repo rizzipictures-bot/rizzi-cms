@@ -778,15 +778,18 @@
     }
 
     /* ══════════════════════════════════════════════════════════════
-       HERO CROSS-FADE — cambio foto nel box espanso
+       HERO TENDA DX→SX — cambio foto nel box espanso
     ══════════════════════════════════════════════════════════════ */
-    .archive-expanded-hero img.hero-fade-out {
-      opacity: 0;
-      transition: opacity .25s ease;
+    .archive-expanded-hero img {
+      clip-path: inset(0 0 0 0%);
     }
-    .archive-expanded-hero img.hero-fade-in {
-      opacity: 1;
-      transition: opacity .35s ease;
+    .archive-expanded-hero img.hero-curtain-in {
+      clip-path: inset(0 0 0 0%);
+      transition: clip-path .45s cubic-bezier(.77, 0, .175, 1);
+    }
+    .archive-expanded-hero img.hero-curtain-reset {
+      clip-path: inset(0 0 0 100%);
+      transition: none;
     }
 
     /* ══════════════════════════════════════════════════════════════
@@ -2254,14 +2257,15 @@ function buildArchive() {
             t.appendChild(tImg);
             t.addEventListener('click', e => {
               e.stopPropagation();
-              // Cross-fade hero: fade out → cambia src → fade in
-              heroImg.classList.add('hero-fade-out');
-              setTimeout(() => {
-                heroImg.src = img.url;
-                heroImg.classList.remove('hero-fade-out');
-                heroImg.classList.add('hero-fade-in');
-                setTimeout(() => heroImg.classList.remove('hero-fade-in'), 400);
-              }, 250);
+              // Tenda dx→sx: reset clip a dx, cambia src, poi apre da dx a sx
+              heroImg.classList.remove('hero-curtain-in');
+              heroImg.classList.add('hero-curtain-reset');
+              heroImg.src = img.url;
+              // Forza reflow per applicare il reset
+              void heroImg.offsetWidth;
+              heroImg.classList.remove('hero-curtain-reset');
+              heroImg.classList.add('hero-curtain-in');
+              setTimeout(() => heroImg.classList.remove('hero-curtain-in'), 500);
               strip.querySelectorAll('.archive-expanded-thumb').forEach(el => el.classList.remove('active'));
               t.classList.add('active');
             });
