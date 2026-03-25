@@ -566,21 +566,29 @@
     }
     .gallery-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
-      gap: 4px;
+      grid-template-columns: repeat(9, 1fr);
+      grid-auto-rows: calc((100vw - var(--pad) * 2) / 9);
+      gap: 2px;
     }
     .gallery-grid-item {
       cursor: none;
-      aspect-ratio: 1;
+      position: relative;
       overflow: hidden;
+      background: #fff;
     }
     .gallery-grid-item img {
       width: 100%;
       height: 100%;
       display: block;
       object-fit: cover;
+      object-position: center top;
       opacity: .65;
-      transition: opacity .2s;
+      transition: opacity .25s var(--ease-out);
+    }
+    .gallery-grid-item.is-landscape img {
+      object-fit: contain;
+      object-position: center bottom;
+      background: #fff;
     }
     .gallery-grid-item:hover img { opacity: .9; }
     .gallery-grid-item.active img { opacity: 1; }
@@ -766,6 +774,9 @@
       background: #000;
     }
     [data-theme="dark"] .gallery-grid-item {
+      background: #000;
+    }
+    [data-theme="dark"] .gallery-grid-item.is-landscape img {
       background: #000;
     }
     /* Foto principale in dark mode: sfondo nero */
@@ -1715,10 +1726,18 @@ function renderGallery() {
     const ri2 = REAL_IMAGES[p.realImages ? p.realImages[i] : i];
     const item = document.createElement('div');
     item.className = 'gallery-grid-item' + (i === galleryIndex ? ' active' : '');
-    item.innerHTML = `
-      <img src="${im.url}" alt="" loading="lazy" />
-      <div class="gallery-grid-caption">${ri2 ? ri2.title + ', ' + ri2.year : ''}</div>
-    `;
+    const imgEl2 = document.createElement('img');
+    imgEl2.src = im.url;
+    imgEl2.alt = '';
+    imgEl2.loading = 'lazy';
+    imgEl2.addEventListener('load', function() {
+      if (this.naturalWidth > this.naturalHeight) item.classList.add('is-landscape');
+    });
+    const capEl = document.createElement('div');
+    capEl.className = 'gallery-grid-caption';
+    capEl.textContent = ri2 ? ri2.title + ', ' + ri2.year : '';
+    item.appendChild(imgEl2);
+    item.appendChild(capEl);
     item.addEventListener('click', () => {
       galleryIndex = i;
       renderGallery();
