@@ -1508,8 +1508,6 @@
       <button id="btn-theme">◐</button>
       <button id="btn-screensaver">Screensaver</button>
       <button id="btn-update" style="display:none" title="Aggiorna sito da GitHub">↻ Aggiorna</button>
-      <button id="btn-seed" style="display:none" title="Aggiungi 15 città all'Archive">+ Città</button>
-      <button id="btn-istanbul" style="display:none" title="Carica foto Istanbul">⬇ Istanbul</button>
     </nav>
   </header>
 
@@ -2811,53 +2809,6 @@ loadFromCMS();
 
   // Mostra il pulsante solo in locale
   btnUpdate.style.display = 'inline-block';
-
-  // Seed cities button
-  const btnSeed = document.getElementById('btn-seed');
-  btnSeed.style.display = 'inline-block';
-  btnSeed.addEventListener('click', async () => {
-    if (!confirm('Aggiungere 15 progetti città vuoti all\'Archive? (Idempotente: non duplica)')) return;
-    btnSeed.textContent = '+ Aggiunta...';
-    try {
-      const res = await fetch('/api/seed-cities', { method: 'POST' });
-      const data = await res.json();
-      if (data.ok) {
-        btnSeed.textContent = `+ ${data.added.length} aggiunte`;
-        setTimeout(() => location.reload(), 800);
-      } else {
-        btnSeed.textContent = '+ Errore';
-        setTimeout(() => { btnSeed.textContent = '+ Città'; }, 3000);
-      }
-    } catch(e) {
-      btnSeed.textContent = '+ Errore';
-      setTimeout(() => { btnSeed.textContent = '+ Città'; }, 3000);
-    }
-  });
-
-  // Istanbul seed button
-  const btnIstanbul = document.getElementById('btn-istanbul');
-  btnIstanbul.style.display = 'inline-block';
-  btnIstanbul.addEventListener('click', async () => {
-    if (!confirm('Scaricare 12 foto di Istanbul da Unsplash? (richiede connessione internet, ~30 secondi)')) return;
-    btnIstanbul.textContent = '⏳ Download...';
-    btnIstanbul.disabled = true;
-    try {
-      const res = await fetch('/api/seed-istanbul-images', { method: 'POST' });
-      const data = await res.json();
-      if (data.ok) {
-        btnIstanbul.textContent = `✓ ${data.added} foto`;
-        setTimeout(() => location.reload(), 1000);
-      } else {
-        btnIstanbul.textContent = '⬇ Errore';
-        btnIstanbul.disabled = false;
-        setTimeout(() => { btnIstanbul.textContent = '⬇ Istanbul'; }, 3000);
-      }
-    } catch(e) {
-      btnIstanbul.textContent = '⬇ Errore';
-      btnIstanbul.disabled = false;
-      setTimeout(() => { btnIstanbul.textContent = '⬇ Istanbul'; }, 3000);
-    }
-  });
 
   btnUpdate.addEventListener('click', async () => {
     btnUpdate.classList.add('updating');
