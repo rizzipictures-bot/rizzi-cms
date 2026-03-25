@@ -320,13 +320,13 @@
       flex-direction: column;
     }
     #view-home .thumbs-grid {
-      /* Miechowski: 9 colonne fisse, celle quadrate, gap minimo */
+      /* Miechowski: 9 colonne fisse, celle quadrate, gap minimo, padding laterale */
       display: grid;
       grid-template-columns: repeat(9, 1fr);
-      /* Righe quadrate: altezza = 1/9 della larghezza del container */
-      grid-auto-rows: calc((100vw) / 9);
+      /* Righe quadrate: altezza = 1/9 della larghezza disponibile */
+      grid-auto-rows: calc((100vw - 24px) / 9);
       gap: 2px;
-      padding: 0;
+      padding: 0 12px;
       margin-top: 0;
     }
     #view-home .thumbs-grid .thumb-item {
@@ -833,10 +833,10 @@
     #vao-grid {
       flex: 1;
       overflow-y: auto;
-      padding: 0;
+      padding: 12px;
       display: grid;
       grid-template-columns: repeat(9, 1fr);
-      grid-auto-rows: calc(100vw / 9);
+      grid-auto-rows: calc((100vw - 24px) / 9);
       gap: 16px;
       align-content: start;
       opacity: 0;
