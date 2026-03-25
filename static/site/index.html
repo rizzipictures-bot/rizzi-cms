@@ -538,56 +538,233 @@
       color: var(--accent);
       font-weight: 900;
     }
-    /* Riga espansa — foto centrata + testo + thumbs */
-    .archive-expanded {
+    /* ══════════════════════════════════════════════════════════════
+       ARCHIVE — BOX ESPANSO INK DROP
+    ══════════════════════════════════════════════════════════════ */
+
+    /* Testo sopra il box nero — Courier, sfondo bianco */
+    .archive-expanded-text {
+      padding: 10px 40px 12px;
       border-bottom: 1px solid var(--light);
-      padding: 0 0 24px;
       background: var(--white);
     }
-    .archive-expanded-desc {
+    .archive-expanded-text-year {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      color: #888;
+      margin-bottom: 4px;
+    }
+    .archive-expanded-text-title {
+      font-family: var(--font-mono);
+      font-size: 18px;
+      font-weight: 700;
+      color: #000;
+      margin-bottom: 6px;
+    }
+    .archive-expanded-text-subtitle {
+      font-family: var(--font-mono);
+      font-size: 12px;
+      color: #444;
+      margin-bottom: 8px;
+    }
+    .archive-expanded-text-desc {
       font-family: var(--font-mono);
       font-size: 12px;
       color: #000;
-      padding: 8px 0 16px;
-      border-bottom: 1px solid var(--light);
-      margin-bottom: 0;
+      line-height: 1.6;
+      max-width: 600px;
     }
-    .archive-expanded-photo {
+    .archive-expanded-text-pub {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      color: #888;
+      margin-top: 10px;
+    }
+
+    /* Box nero — Ink Drop */
+    .archive-expanded {
+      background: #000;
+      overflow: hidden;
+      /* Animazione: si svolge dall'alto al basso */
+      clip-path: inset(0 0 100% 0);
+      transition: clip-path .65s cubic-bezier(.16, 1, 0.3, 1);
+    }
+    .archive-expanded.ink-open {
+      clip-path: inset(0 0 0% 0);
+    }
+
+    /* Contenuto interno del box nero */
+    .archive-expanded-inner {
+      padding: 20px 40px 20px;
       display: flex;
-      justify-content: center;
-      padding: 24px 0;
+      flex-direction: column;
+      gap: 16px;
     }
-    .archive-expanded-photo img {
-      max-height: 55vh;
-      max-width: 50vw;
-      width: auto;
-      height: auto;
-      display: block;
-      object-fit: contain;
-    }
+
+    /* Strip thumbs scorrevole */
     .archive-expanded-thumbs {
       display: flex;
-      gap: 4px;
+      gap: 6px;
       overflow-x: auto;
-      padding: 8px 0 4px;
-      border-top: 1px solid var(--light);
+      padding-bottom: 4px;
+      scroll-behavior: smooth;
     }
     .archive-expanded-thumbs::-webkit-scrollbar { display: none; }
     .archive-expanded-thumb {
       flex-shrink: 0;
-      width: 90px;
-      height: 60px;
+      width: 110px;
+      height: 74px;
       overflow: hidden;
       cursor: none;
-      opacity: 0.6;
-      transition: opacity .2s;
+      opacity: 0.55;
+      transition: opacity .25s;
+      position: relative;
     }
-    .archive-expanded-thumb:hover { opacity: 1; }
-    .archive-expanded-thumb.active { opacity: 1; outline: 1px solid var(--black); }
+    .archive-expanded-thumb:hover { opacity: 0.85; }
+    .archive-expanded-thumb.active { opacity: 1; outline: 1px solid #fff; }
     .archive-expanded-thumb img {
       width: 100%; height: 100%;
       object-fit: cover;
       display: block;
+    }
+
+    /* Pulsante "View all" */
+    .archive-expanded-viewall {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      color: #888;
+      cursor: none;
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      padding: 0 8px;
+      border-left: 1px solid #333;
+      transition: color .2s;
+      white-space: nowrap;
+    }
+    .archive-expanded-viewall:hover { color: #fff; }
+
+    /* ══════════════════════════════════════════════════════════════
+       LIGHTBOX — popup a pagina intera con navigazione
+    ══════════════════════════════════════════════════════════════ */
+    #archive-lightbox {
+      position: fixed;
+      inset: 0;
+      background: #000;
+      z-index: 2000;
+      display: none;
+      flex-direction: column;
+    }
+    #archive-lightbox.open { display: flex; }
+
+    /* Header lightbox */
+    .lb-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 10px 24px;
+      border-bottom: 1px solid #222;
+      flex-shrink: 0;
+    }
+    .lb-title {
+      font-family: var(--font-mono);
+      font-size: 12px;
+      color: #888;
+    }
+    .lb-close {
+      font-family: var(--font-mono);
+      font-size: 12px;
+      color: #888;
+      cursor: none;
+      transition: color .2s;
+    }
+    .lb-close:hover { color: #fff; }
+
+    /* Grid thumbs lightbox */
+    .lb-grid {
+      flex: 1;
+      overflow-y: auto;
+      padding: 24px;
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+      gap: 8px;
+    }
+    .lb-grid::-webkit-scrollbar { display: none; }
+    .lb-grid-thumb {
+      aspect-ratio: 3/2;
+      overflow: hidden;
+      cursor: none;
+      opacity: 0.7;
+      transition: opacity .2s;
+    }
+    .lb-grid-thumb:hover { opacity: 1; }
+    .lb-grid-thumb img {
+      width: 100%; height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+
+    /* Viewer singola foto nel lightbox */
+    .lb-viewer {
+      flex: 1;
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      overflow: hidden;
+    }
+    .lb-viewer.active { display: flex; }
+    .lb-viewer-img-wrap {
+      width: 100%;
+      height: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .lb-viewer-img-wrap img {
+      max-width: 90vw;
+      max-height: 85vh;
+      object-fit: contain;
+      display: block;
+      /* Animazione tenda dall'alto al basso */
+      clip-path: inset(0 0 100% 0);
+      transition: none;
+    }
+    .lb-viewer-img-wrap img.lb-reveal {
+      clip-path: inset(0 0 0% 0);
+      transition: clip-path .75s cubic-bezier(.77, 0, .175, 1);
+    }
+
+    /* Frecce navigazione */
+    .lb-nav {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.12);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: none;
+      transition: background .2s;
+      font-family: var(--font-mono);
+      font-size: 14px;
+      color: #fff;
+      user-select: none;
+    }
+    .lb-nav:hover { background: rgba(255,255,255,0.28); }
+    .lb-nav-prev { left: 20px; }
+    .lb-nav-next { right: 20px; }
+
+    /* Counter foto */
+    .lb-counter {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      color: #555;
+      padding: 8px 0 12px;
     }
 
     /* ══════════════════════════════════════════════════════════════
@@ -1410,7 +1587,7 @@
   <button id="overview-overlay-close" onclick="closeOverview()">Work — Close</button>
 </div>
 
-<!-- Lightbox -->
+<!-- Lightbox esistente -->
 <div id="lightbox">
   <button class="lightbox-close" onclick="closeLightbox()">Close ×</button>
   <button class="lightbox-nav prev" onclick="lightboxNav(-1)">←</button>
@@ -1419,6 +1596,29 @@
   <div class="lightbox-info">
     <div class="lb-title" id="lb-title">—</div>
     <div class="lb-count" id="lb-count">01 / 01</div>
+  </div>
+</div>
+
+<!-- Archive Lightbox — popup a pagina intera -->
+<div id="archive-lightbox">
+  <!-- Header -->
+  <div class="lb-header">
+    <div class="lb-title" id="alb-title"></div>
+    <div style="display:flex;gap:20px;align-items:center;">
+      <div id="alb-back" style="font-family:var(--font-mono);font-size:11px;color:#888;cursor:none;display:none;" >&#8592; back</div>
+      <div class="lb-close" id="alb-close">close ×</div>
+    </div>
+  </div>
+  <!-- Grid thumbs -->
+  <div class="lb-grid" id="alb-grid"></div>
+  <!-- Viewer singola foto -->
+  <div class="lb-viewer" id="alb-viewer">
+    <div class="lb-viewer-img-wrap">
+      <img id="alb-viewer-img" src="" alt="">
+    </div>
+    <div class="lb-counter" id="alb-counter"></div>
+    <div class="lb-nav lb-nav-prev" id="alb-prev">←</div>
+    <div class="lb-nav lb-nav-next" id="alb-next">→</div>
   </div>
 </div>
 
@@ -1824,6 +2024,7 @@ function buildArchive() {
       row.addEventListener('click', () => {
         // Se c'è già una espansione aperta, rimuovila
         if (activeExpanded) {
+          if (activeExpanded._textBlock) activeExpanded._textBlock.remove();
           activeExpanded.remove();
           const prevRow = list.querySelector('.archive-row.is-open');
           if (prevRow) prevRow.classList.remove('is-open');
@@ -1833,32 +2034,37 @@ function buildArchive() {
           }
         }
 
-        // Crea il pannello espanso
+        // ── TESTO sopra il box nero (sfondo bianco) ──
+        const textBlock = document.createElement('div');
+        textBlock.className = 'archive-expanded-text';
+        textBlock.innerHTML = `
+          <div class="archive-expanded-text-year">${p.year || ''}</div>
+          <div class="archive-expanded-text-title">${p.title || ''}</div>
+          ${p.subtitle ? `<div class="archive-expanded-text-subtitle">${p.subtitle}</div>` : ''}
+          ${p.description ? `<div class="archive-expanded-text-desc">${p.description}</div>` : ''}
+          ${p.publication ? `<div class="archive-expanded-text-pub">${p.publication}${p.year ? ' — ' + p.year : ''}</div>` : ''}
+        `;
+
+        // ── BOX NERO (Ink Drop) ──
         const panel = document.createElement('div');
         panel.className = 'archive-expanded';
         panel._sourceRow = row;
         row.classList.add('is-open');
 
-        // Descrizione
-        const desc = document.createElement('div');
-        desc.className = 'archive-expanded-desc';
-        desc.textContent = p.description || '';
-        panel.appendChild(desc);
+        const inner = document.createElement('div');
+        inner.className = 'archive-expanded-inner';
 
-        // Foto principale centrata
-        const photoWrap = document.createElement('div');
-        photoWrap.className = 'archive-expanded-photo';
-        const mainImg = document.createElement('img');
-        mainImg.src = p.images && p.images[0] ? p.images[0].url : '';
-        mainImg.alt = p.title || '';
-        photoWrap.appendChild(mainImg);
-        panel.appendChild(photoWrap);
+        // Strip thumbs scorrevole
+        const images = p.images || [];
+        if (images.length > 0) {
+          const stripWrap = document.createElement('div');
+          stripWrap.style.cssText = 'display:flex; align-items:center; gap:0;';
 
-        // Thumbs strip orizzontale
-        if (p.images && p.images.length > 1) {
           const strip = document.createElement('div');
           strip.className = 'archive-expanded-thumbs';
-          p.images.forEach((img, i) => {
+          strip.style.flex = '1';
+
+          images.forEach((img, i) => {
             const t = document.createElement('div');
             t.className = 'archive-expanded-thumb' + (i === 0 ? ' active' : '');
             const tImg = document.createElement('img');
@@ -1867,18 +2073,38 @@ function buildArchive() {
             t.appendChild(tImg);
             t.addEventListener('click', e => {
               e.stopPropagation();
-              mainImg.src = img.url;
-              strip.querySelectorAll('.archive-expanded-thumb').forEach(el => el.classList.remove('active'));
-              t.classList.add('active');
+              // Apri lightbox viewer sulla foto cliccata
+              openLightboxViewer(images, i, p.title || '');
             });
             strip.appendChild(t);
           });
-          panel.appendChild(strip);
+
+          // Pulsante View all
+          const viewAll = document.createElement('div');
+          viewAll.className = 'archive-expanded-viewall';
+          viewAll.textContent = 'View all';
+          viewAll.addEventListener('click', e => {
+            e.stopPropagation();
+            openLightboxGrid(images, p.title || '');
+          });
+
+          stripWrap.appendChild(strip);
+          stripWrap.appendChild(viewAll);
+          inner.appendChild(stripWrap);
         }
 
-        // Inserisci il pannello dopo la riga
+        panel.appendChild(inner);
+
+        // Inserisci: prima il testo, poi il box nero
         row.insertAdjacentElement('afterend', panel);
+        row.insertAdjacentElement('afterend', textBlock);
         activeExpanded = panel;
+        activeExpanded._textBlock = textBlock;
+
+        // Animazione Ink Drop: trigger dopo un frame
+        requestAnimationFrame(() => {
+          requestAnimationFrame(() => panel.classList.add('ink-open'));
+        });
 
         // Scroll alla riga
         setTimeout(() => row.scrollIntoView({ behavior: 'smooth', block: 'start' }), 50);
@@ -2556,6 +2782,111 @@ loadFromCMS();
       btnUpdate.textContent = '↻ Errore — riprova';
       btnUpdate.classList.remove('updating');
       setTimeout(() => { btnUpdate.textContent = '↻ Aggiorna'; }, 3000);
+    }
+  });
+})();
+
+// ══════════════════════════════════════════════════════════════
+// ARCHIVE LIGHTBOX
+// ══════════════════════════════════════════════════════════════
+(function() {
+  let albImages = [];
+  let albIndex = 0;
+  let albTitle = '';
+
+  const lb        = document.getElementById('archive-lightbox');
+  const albGrid   = document.getElementById('alb-grid');
+  const albViewer = document.getElementById('alb-viewer');
+  const albImg    = document.getElementById('alb-viewer-img');
+  const albCounter= document.getElementById('alb-counter');
+  const albTitleEl= document.getElementById('alb-title');
+  const albClose  = document.getElementById('alb-close');
+  const albBack   = document.getElementById('alb-back');
+  const albPrev   = document.getElementById('alb-prev');
+  const albNext   = document.getElementById('alb-next');
+
+  // Apri lightbox in modalità grid
+  window.openLightboxGrid = function(images, title) {
+    albImages = images;
+    albTitle = title;
+    albTitleEl.textContent = title;
+    // Popola grid
+    albGrid.innerHTML = '';
+    images.forEach((img, i) => {
+      const t = document.createElement('div');
+      t.className = 'lb-grid-thumb';
+      const im = document.createElement('img');
+      im.src = img.url;
+      im.loading = 'lazy';
+      t.appendChild(im);
+      t.addEventListener('click', () => openLightboxViewer(images, i, title));
+      albGrid.appendChild(t);
+    });
+    // Mostra grid, nascondi viewer
+    albGrid.style.display = 'grid';
+    albViewer.classList.remove('active');
+    albBack.style.display = 'none';
+    lb.classList.add('open');
+  };
+
+  // Apri lightbox in modalità viewer
+  window.openLightboxViewer = function(images, idx, title) {
+    albImages = images;
+    albIndex = idx;
+    albTitle = title;
+    albTitleEl.textContent = title;
+    // Nascondi grid, mostra viewer
+    albGrid.style.display = 'none';
+    albViewer.classList.add('active');
+    albBack.style.display = 'block';
+    lb.classList.add('open');
+    showAlbImage(idx);
+  };
+
+  function showAlbImage(idx) {
+    albIndex = idx;
+    const img = albImages[idx];
+    // Reset animazione tenda
+    albImg.classList.remove('lb-reveal');
+    albImg.src = img.url;
+    albCounter.textContent = `${String(idx + 1).padStart(2, '0')} / ${String(albImages.length).padStart(2, '0')}`;
+    // Trigger animazione tenda
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => albImg.classList.add('lb-reveal'));
+    });
+    // Aggiorna frecce
+    albPrev.style.opacity = idx === 0 ? '0.2' : '1';
+    albNext.style.opacity = idx === albImages.length - 1 ? '0.2' : '1';
+  }
+
+  // Navigazione
+  albPrev.addEventListener('click', e => {
+    e.stopPropagation();
+    if (albIndex > 0) showAlbImage(albIndex - 1);
+  });
+  albNext.addEventListener('click', e => {
+    e.stopPropagation();
+    if (albIndex < albImages.length - 1) showAlbImage(albIndex + 1);
+  });
+
+  // Tasto back → torna alla grid
+  albBack.addEventListener('click', e => {
+    e.stopPropagation();
+    albGrid.style.display = 'grid';
+    albViewer.classList.remove('active');
+    albBack.style.display = 'none';
+  });
+
+  // Chiudi
+  albClose.addEventListener('click', () => lb.classList.remove('open'));
+
+  // Tastiera: frecce + ESC
+  document.addEventListener('keydown', e => {
+    if (!lb.classList.contains('open')) return;
+    if (e.key === 'Escape') lb.classList.remove('open');
+    if (albViewer.classList.contains('active')) {
+      if (e.key === 'ArrowLeft' && albIndex > 0) showAlbImage(albIndex - 1);
+      if (e.key === 'ArrowRight' && albIndex < albImages.length - 1) showAlbImage(albIndex + 1);
     }
   });
 })();
