@@ -56,27 +56,32 @@
     /* ══════════════════════════════════════════════════════════════
        CURSORE CUSTOM (jackdavison + rizzi-web)
     ══════════════════════════════════════════════════════════════ */
-    /* Pallino cursore — solido, mix-blend-mode difference */
+    /* Triangolo cursore — ruota in base alla direzione del mouse */
     #cursor {
       position: fixed;
-      width: 12px; height: 12px;
-      border-radius: 50%;
-      background: #fff;
-      box-shadow: none;
+      width: 0;
+      height: 0;
       pointer-events: none;
       z-index: 9999;
-      /* translate centrato + scale per animazione hover */
-      transform: translate(-50%, -50%) scale(1);
+      /* Il triangolo è un SVG inline, centrato sul punto */
+      transform: translate(-50%, -50%) rotate(0deg);
+      transition: transform .12s var(--ease-out);
       mix-blend-mode: difference;
-      transition: transform .2s var(--ease-out);
     }
-    /* Hover: pulsazione via scale */
-    #cursor.hover {
-      animation: cursorPulse .7s ease-in-out infinite;
+    #cursor svg {
+      display: block;
+      width: 14px;
+      height: 14px;
+      overflow: visible;
     }
-    @keyframes cursorPulse {
-      0%, 100% { transform: translate(-50%, -50%) scale(1);   }
-      50%       { transform: translate(-50%, -50%) scale(1.8); }
+    #cursor svg polygon {
+      fill: #fff;
+      transition: transform .12s;
+    }
+    /* Hover: leggero ingrandimento */
+    #cursor.hover svg polygon {
+      transform: scale(1.35);
+      transform-origin: 7px 7px;
     }
     #cursor-label {
       position: fixed;
@@ -1718,7 +1723,7 @@
 <body>
 
 <!-- Cursore custom -->
-<div id="cursor"></div>
+<div id="cursor"><svg viewBox="0 0 14 14" xmlns="http://www.w3.org/2000/svg"><polygon points="7,1 13,13 7,10 1,13" /></svg></div>
 <div id="cursor-label"></div>
 
 <!-- Landing page hero -->
@@ -2089,11 +2094,29 @@ window.addEventListener('resize', setVh);
 const cursor = document.getElementById('cursor');
 const cursorLabel = document.getElementById('cursor-label');
 let mx = 0, my = 0;
+let prevMx = null, prevMy = null;
+let cursorAngle = 0;  // angolo corrente in gradi
 
 document.addEventListener('mousemove', e => {
   mx = e.clientX; my = e.clientY;
+
+  // Calcola angolo di rotazione in base alla direzione del movimento
+  if (prevMx !== null && prevMy !== null) {
+    const dx = mx - prevMx;
+    const dy = my - prevMy;
+    const dist = Math.sqrt(dx * dx + dy * dy);
+    if (dist > 2) {  // soglia minima per evitare jitter
+      // atan2 restituisce angolo in radianti: 0 = dx>0 (destra)
+      // Il triangolo punta verso l'alto (0°), quindi aggiungiamo 90°
+      const angle = Math.atan2(dy, dx) * (180 / Math.PI) + 90;
+      cursorAngle = angle;
+    }
+  }
+  prevMx = mx; prevMy = my;
+
   cursor.style.left = mx + 'px';
   cursor.style.top  = my + 'px';
+  cursor.style.transform = `translate(-50%, -50%) rotate(${cursorAngle}deg)`;
   cursorLabel.style.left = mx + 'px';
   cursorLabel.style.top  = my + 'px';
 });
@@ -2108,6 +2131,8 @@ function setCursorHover(label = '') {
 function resetCursor() {
   cursor.classList.remove('hover', 'drag');
   cursorLabel.classList.remove('show');
+  // Mantieni la rotazione corrente
+  cursor.style.transform = `translate(-50%, -50%) rotate(${cursorAngle}deg)`;
 }
 
 document.addEventListener('mouseover', e => {
