@@ -151,16 +151,25 @@ def cors(r):
     r.headers['Access-Control-Allow-Methods'] = 'GET,POST,PUT,DELETE,OPTIONS'
     return r
 
-# ── Sito pubblico (prototipo) ─────────────────
+# ── Sito pubblico (prototipo) ───────────────────────────
 # http://localhost:5151/  →  sito
+def _serve_site_index():
+    """Serve index.html con no-cache per garantire sempre la versione aggiornata."""
+    from flask import make_response
+    resp = make_response(send_file(STATIC / 'site' / 'index.html'))
+    resp.headers['Cache-Control'] = 'no-store, no-cache, must-revalidate, max-age=0'
+    resp.headers['Pragma'] = 'no-cache'
+    resp.headers['Expires'] = '0'
+    return resp
+
 @app.route('/')
 def site_root():
-    return send_file(STATIC / 'site' / 'index.html')
+    return _serve_site_index()
 
 @app.route('/site')
 @app.route('/site/')
 def site_index():
-    return send_file(STATIC / 'site' / 'index.html')
+    return _serve_site_index()
 
 @app.route('/site/<path:filename>')
 def serve_site_static(filename):

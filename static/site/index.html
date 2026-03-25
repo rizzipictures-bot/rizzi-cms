@@ -751,10 +751,11 @@
       flex: 1;
       display: flex;
       flex-direction: column;
-      justify-content: flex-end;     /* tutto spinto verso il basso */
+      justify-content: space-between; /* caption in cima, thumbs in fondo */
       overflow: hidden;
       padding-left: 32px;            /* stacco dalla hero */
       height: 500px;                 /* stessa altezza del box */
+      padding-top: 18px;             /* stacco dal bordo superiore del box */
       padding-bottom: 0;
     }
 
@@ -850,7 +851,6 @@
       pointer-events: none;
       user-select: none;
       transition: color .25s;
-      margin-bottom: 14px;             /* stacco sopra i thumbnail */
       flex-shrink: 0;
     }
     .archive-expanded-caption .caption-title {
