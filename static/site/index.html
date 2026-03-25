@@ -608,33 +608,64 @@
 
     /* Contenuto interno del box nero */
     .archive-expanded-inner {
-      padding: 20px 40px 20px;
+      padding: 0;
       display: flex;
-      flex-direction: column;
-      gap: 16px;
+      flex-direction: row;
+      height: 200px;
+    }
+
+    /* Foto hero grande a sinistra */
+    .archive-expanded-hero {
+      flex-shrink: 0;
+      width: 280px;
+      height: 200px;
+      overflow: hidden;
+      position: relative;
+      border-right: 3px solid #000;
+    }
+    .archive-expanded-hero img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+      transition: transform .4s ease;
+    }
+    .archive-expanded-hero:hover img { transform: scale(1.03); }
+
+    /* Colonna destra: strip + view all */
+    .archive-expanded-right {
+      flex: 1;
+      display: flex;
+      flex-direction: row;
+      align-items: stretch;
+      overflow: hidden;
     }
 
     /* Strip thumbs scorrevole */
     .archive-expanded-thumbs {
       display: flex;
-      gap: 6px;
+      flex-direction: row;
+      gap: 3px;
       overflow-x: auto;
-      padding-bottom: 4px;
+      padding: 8px 8px;
       scroll-behavior: smooth;
+      flex: 1;
+      align-items: center;
     }
     .archive-expanded-thumbs::-webkit-scrollbar { display: none; }
     .archive-expanded-thumb {
       flex-shrink: 0;
-      width: 110px;
-      height: 74px;
+      width: 120px;
+      height: 80px;
       overflow: hidden;
       cursor: none;
       opacity: 0.55;
       transition: opacity .25s;
       position: relative;
+      border: 2px solid #111;
     }
     .archive-expanded-thumb:hover { opacity: 0.85; }
-    .archive-expanded-thumb.active { opacity: 1; outline: 1px solid #fff; }
+    .archive-expanded-thumb.active { opacity: 1; border-color: #fff; }
     .archive-expanded-thumb img {
       width: 100%; height: 100%;
       object-fit: cover;
@@ -650,10 +681,13 @@
       flex-shrink: 0;
       display: flex;
       align-items: center;
-      padding: 0 8px;
-      border-left: 1px solid #333;
+      padding: 0 20px;
+      border-left: 1px solid #222;
       transition: color .2s;
       white-space: nowrap;
+      writing-mode: vertical-rl;
+      text-orientation: mixed;
+      letter-spacing: 0.1em;
     }
     .archive-expanded-viewall:hover { color: #fff; }
 
@@ -2076,13 +2110,28 @@ function buildArchive() {
         // Strip thumbs scorrevole
         const images = p.images || [];
         if (images.length > 0) {
-          const stripWrap = document.createElement('div');
-          stripWrap.style.cssText = 'display:flex; align-items:center; gap:0;';
+          // ── HERO: foto grande a sinistra ──
+          const hero = document.createElement('div');
+          hero.className = 'archive-expanded-hero';
+          const heroImg = document.createElement('img');
+          heroImg.src = images[0].url;
+          heroImg.loading = 'lazy';
+          heroImg.alt = p.title || '';
+          hero.appendChild(heroImg);
+          hero.addEventListener('click', e => {
+            e.stopPropagation();
+            openLightboxViewer(images, 0, p.title || '');
+          });
+          inner.appendChild(hero);
+
+          // ── DESTRA: strip + view all ──
+          const right = document.createElement('div');
+          right.className = 'archive-expanded-right';
 
           const strip = document.createElement('div');
           strip.className = 'archive-expanded-thumbs';
-          strip.style.flex = '1';
 
+          // Salta la prima immagine (già mostrata come hero)
           images.forEach((img, i) => {
             const t = document.createElement('div');
             t.className = 'archive-expanded-thumb' + (i === 0 ? ' active' : '');
@@ -2092,13 +2141,16 @@ function buildArchive() {
             t.appendChild(tImg);
             t.addEventListener('click', e => {
               e.stopPropagation();
-              // Apri lightbox viewer sulla foto cliccata
+              // Aggiorna hero e apri lightbox
+              heroImg.src = img.url;
+              strip.querySelectorAll('.archive-expanded-thumb').forEach(el => el.classList.remove('active'));
+              t.classList.add('active');
               openLightboxViewer(images, i, p.title || '');
             });
             strip.appendChild(t);
           });
 
-          // Pulsante View all
+          // Pulsante View all (verticale, a destra)
           const viewAll = document.createElement('div');
           viewAll.className = 'archive-expanded-viewall';
           viewAll.textContent = 'View all';
@@ -2107,9 +2159,9 @@ function buildArchive() {
             openLightboxGrid(images, p.title || '');
           });
 
-          stripWrap.appendChild(strip);
-          stripWrap.appendChild(viewAll);
-          inner.appendChild(stripWrap);
+          right.appendChild(strip);
+          right.appendChild(viewAll);
+          inner.appendChild(right);
         }
 
         panel.appendChild(inner);
