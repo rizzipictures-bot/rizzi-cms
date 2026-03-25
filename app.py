@@ -8,10 +8,43 @@ Avvio: python3 app.py  →  http://localhost:5151
   http://localhost:5151/api/  → API REST
 """
 
-import os, json, uuid, shutil
+import os, json, uuid, shutil, base64, threading
 from pathlib import Path
 from flask import Flask, request, jsonify, send_from_directory, send_file
 from PIL import Image
+
+# ── AI TAGGING (asincrono, non blocca l'upload) ──────────────────
+def ai_tag_image(fpath, img_data, db_ref, pid):
+    """Chiama GPT-4o mini per generare keyword per una foto. Eseguito in background."""
+    try:
+        import openai
+        client = openai.OpenAI()  # usa OPENAI_API_KEY dall'ambiente
+        with open(str(fpath), 'rb') as f:
+            b64 = base64.b64encode(f.read()).decode()
+        ext = Path(str(fpath)).suffix.lower().replace('.jpg', 'jpeg').replace('.jpeg', 'jpeg').replace('.png', 'png').replace('.webp', 'webp')
+        if ext not in ['jpeg', 'png', 'webp']: ext = 'jpeg'
+        resp = client.chat.completions.create(
+            model='gpt-4.1-mini',
+            max_tokens=120,
+            messages=[{
+                'role': 'user',
+                'content': [
+                    {'type': 'image_url', 'image_url': {'url': f'data:image/{ext};base64,{b64}', 'detail': 'low'}},
+                    {'type': 'text', 'text': 'List 8-12 concise English keywords describing this photo (subject, mood, colors, setting, style). Respond ONLY with a comma-separated list, no explanations.'}
+                ]
+            }]
+        )
+        keywords = resp.choices[0].message.content.strip()
+        # Aggiorna il db
+        db = load_db()
+        p = next((p for p in db['projects'] if p['id'] == pid), None)
+        if p:
+            img = next((i for i in p['images'] if i['id'] == img_data['id']), None)
+            if img:
+                img['keywords'] = keywords
+                save_db(db)
+    except Exception as e:
+        pass  # tagging fallisce silenziosamente, non blocca nulla
 
 BASE   = Path(__file__).parent
 DATA   = BASE / 'data'
@@ -242,14 +275,23 @@ def upload_images(pid):
             tname = fname
 
         img_data = {
-            'id':    str(uuid.uuid4())[:8],
-            'file':  fname,
-            'thumb': 'thumbs/' + tname,
-            'ar':    ar,
+            'id':      str(uuid.uuid4())[:8],
+            'file':    fname,
+            'thumb':   'thumbs/' + tname,
+            'ar':      ar,
             'caption': '',
+            'keywords': '',  # verrà popolato dal thread AI
         }
         p['images'].append(img_data)
         results.append(img_data)
+
+        # Avvia auto-tagging AI in background (non blocca la risposta)
+        t = threading.Thread(
+            target=ai_tag_image,
+            args=(fpath, img_data, None, pid),
+            daemon=True
+        )
+        t.start()
 
     save_db(db)
     return jsonify(results), 201
@@ -266,6 +308,35 @@ def delete_image(pid, iid):
         p['images'] = [i for i in p['images'] if i['id'] != iid]
     save_db(db)
     return jsonify({'ok': True})
+
+@app.route('/api/tag-all', methods=['POST'])
+def tag_all_images():
+    """Avvia il tagging AI per tutte le foto che non hanno ancora keyword."""
+    db = load_db()
+    count = 0
+    for p in db['projects']:
+        for img in p.get('images', []):
+            if not img.get('keywords'):
+                fpath = UPLOAD / img['file']
+                if fpath.exists():
+                    t = threading.Thread(target=ai_tag_image, args=(fpath, img, None, p['id']), daemon=True)
+                    t.start()
+                    count += 1
+    return jsonify({'ok': True, 'started': count})
+
+@app.route('/api/projects/<pid>/images/<iid>/tag-ai', methods=['POST'])
+def tag_image_ai(pid, iid):
+    """Avvia il tagging AI per una foto già caricata (utile per foto esistenti)."""
+    db = load_db()
+    p = next((p for p in db['projects'] if p['id'] == pid), None)
+    if not p: return jsonify({'error': 'not found'}), 404
+    img = next((i for i in p['images'] if i['id'] == iid), None)
+    if not img: return jsonify({'error': 'not found'}), 404
+    fpath = UPLOAD / img['file']
+    if not fpath.exists(): return jsonify({'error': 'file not found'}), 404
+    t = threading.Thread(target=ai_tag_image, args=(fpath, img, None, pid), daemon=True)
+    t.start()
+    return jsonify({'ok': True, 'message': 'tagging avviato in background'})
 
 @app.route('/api/projects/<pid>/images/<iid>/caption', methods=['PUT'])
 def update_caption(pid, iid):
@@ -393,7 +464,49 @@ def migrate_images():
                 fixed += 1
 
     save_db(db)
-    return jsonify({'ok': True, 'fixed': fixed, 'broken_before': broken})
+    return jsonify({'ok': True, 'fixed': fixed, 'broken_before': broken})# ── RICERCA SEMANTICA AI ───────────────────────────────────────
+@app.route('/api/search', methods=['POST'])
+def semantic_search():
+    """Ricerca semantica AI: dato un testo libero, restituisce gli ID dei progetti pertinenti."""
+    try:
+        import openai
+        data = request.json
+        q = data.get('q', '').strip()
+        projects = data.get('projects', [])
+        if not q or not projects:
+            return jsonify({'ids': []})
+
+        # Costruisce il contesto per GPT
+        proj_list = '\n'.join([
+            f"ID:{p['id']} | {p.get('year','')} | {p.get('title','')} | {p.get('subtitle','')} | {p.get('place','')} | keywords: {p.get('keywords','')}"
+            for p in projects
+        ])
+        prompt = f"""You are a photo archive search assistant. Given a user query, return the IDs of the most relevant projects.
+
+User query: \"{q}\"
+
+Projects:
+{proj_list}
+
+Return ONLY a JSON array of matching project IDs (strings), e.g. ["abc123", "def456"]. Return [] if nothing matches. No explanations."""
+
+        client = openai.OpenAI()
+        resp = client.chat.completions.create(
+            model='gpt-4.1-mini',
+            max_tokens=200,
+            messages=[{'role': 'user', 'content': prompt}]
+        )
+        import re
+        text = resp.choices[0].message.content.strip()
+        # Estrai l'array JSON dalla risposta
+        match = re.search(r'\[.*?\]', text, re.DOTALL)
+        if match:
+            ids = json.loads(match.group())
+        else:
+            ids = []
+        return jsonify({'ids': ids})
+    except Exception as e:
+        return jsonify({'ids': [], 'error': str(e)})
 
 # ── UPDATE (solo git pull, nessun restart) ─────────────────
 @app.route('/api/update', methods=['POST'])

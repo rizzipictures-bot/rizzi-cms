@@ -1750,20 +1750,63 @@ function buildArchive() {
 
   renderRows(archiveProjects);
 
-  // Ricerca
+  // Ricerca testuale + semantica AI
   const searchInput = document.getElementById('archive-search');
+  let searchTimer = null;
+
+  function textSearch(q) {
+    return archiveProjects.filter(p => {
+      // Cerca nei campi del progetto
+      const inProject = [
+        p.title, p.subtitle, p.place, p.publication, p.description, String(p.year || '')
+      ].some(v => (v || '').toLowerCase().includes(q));
+      if (inProject) return true;
+      // Cerca nelle keyword AI di ogni immagine
+      return (p.images || []).some(img =>
+        (img.keywords || '').toLowerCase().includes(q) ||
+        (img.caption || '').toLowerCase().includes(q)
+      );
+    });
+  }
+
+  async function semanticSearch(q) {
+    try {
+      const res = await fetch('/api/search', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({q, projects: archiveProjects.map(p => ({
+          id: p.id, title: p.title, subtitle: p.subtitle,
+          place: p.place, year: p.year, description: p.description,
+          keywords: (p.images || []).map(i => i.keywords).filter(Boolean).join(', ')
+        }))})
+      });
+      if (!res.ok) return null;
+      const data = await res.json();
+      if (!data.ids || !data.ids.length) return null;
+      return archiveProjects.filter(p => data.ids.includes(p.id));
+    } catch { return null; }
+  }
+
   if (searchInput) {
     searchInput.addEventListener('input', () => {
       const q = searchInput.value.toLowerCase().trim();
       if (!q) { renderRows(archiveProjects); return; }
-      const filtered = archiveProjects.filter(p =>
-        (p.title || '').toLowerCase().includes(q) ||
-        (p.subtitle || '').toLowerCase().includes(q) ||
-        (p.place || '').toLowerCase().includes(q) ||
-        (p.publication || '').toLowerCase().includes(q) ||
-        String(p.year || '').includes(q)
-      );
-      renderRows(filtered);
+
+      // Ricerca testuale immediata
+      const textResults = textSearch(q);
+      renderRows(textResults);
+
+      // Ricerca semantica AI con debounce 600ms
+      clearTimeout(searchTimer);
+      searchTimer = setTimeout(async () => {
+        const aiResults = await semanticSearch(q);
+        if (aiResults && aiResults.length > 0) {
+          // Unisce i risultati: AI prima, poi quelli testuali non già presenti
+          const aiIds = new Set(aiResults.map(p => p.id));
+          const merged = [...aiResults, ...textResults.filter(p => !aiIds.has(p.id))];
+          renderRows(merged);
+        }
+      }, 600);
     });
   }
 }
