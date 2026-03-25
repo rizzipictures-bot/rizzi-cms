@@ -204,7 +204,7 @@
     header {
       position: relative;
       height: var(--nav-h);
-      padding: 0 16px 0 0;
+      padding: 0 16px 0 12px;          /* 12px sx = allineato al padding griglia */
       display: flex;
       align-items: center;
       justify-content: space-between;
@@ -326,7 +326,7 @@
       /* Righe quadrate: altezza = 1/9 della larghezza disponibile */
       grid-auto-rows: calc((100vw - 24px) / 9);
       gap: 2px;
-      padding: 8px 12px 0;           /* Miechowski: 8px top, 12px laterali */
+      padding: 20px 12px 0;           /* stacco dalla navbar */
       margin-top: 0;
     }
     #view-home .thumbs-grid .thumb-item {
@@ -723,8 +723,9 @@
       text-orientation: mixed;
       letter-spacing: 0.14em;
       height: 48px;
-      z-index: 10;
-      pointer-events: auto;
+      z-index: 50;                   /* sopra tutto dentro il box */
+      pointer-events: all !important;
+      isolation: isolate;
     }
     .archive-expanded-viewall:hover { color: #aaa; }
 
