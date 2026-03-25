@@ -70,7 +70,7 @@
     }
     #cursor svg {
       display: block;
-      width: 14px;
+      width: 12px;
       height: 14px;
       overflow: visible;
     }
@@ -1548,7 +1548,7 @@
     ══════════════════════════════════════════════════════════════ */
     #lightbox {
       position: fixed; inset: 0;
-      background: rgba(0,0,0,.95);
+      background: #000;            /* nero pieno, nessuna trasparenza */
       z-index: 800;
       display: none;
       align-items: center;
@@ -1557,8 +1557,8 @@
     }
     #lightbox.open { display: flex; }
     #lightbox-img {
-      max-width: 88vw;
-      max-height: 80vh;
+      max-width: 62vw;             /* 88vw × 0.70 ≈ 62vw */
+      max-height: 56vh;            /* 80vh × 0.70 ≈ 56vh */
       object-fit: contain;
       display: block;
       transition: opacity .3s;
@@ -1724,7 +1724,7 @@
 <body>
 
 <!-- Cursore custom -->
-<div id="cursor"><svg viewBox="0 0 14 14" xmlns="http://www.w3.org/2000/svg"><polygon points="7,1 13,13 7,10 1,13" /></svg></div>
+<div id="cursor"><svg viewBox="0 0 12 14" xmlns="http://www.w3.org/2000/svg"><polygon points="6,0 12,14 0,14" /></svg></div>
 <div id="cursor-label"></div>
 
 <!-- Landing page hero -->
@@ -2102,15 +2102,23 @@ document.addEventListener('mousemove', e => {
   mx = e.clientX; my = e.clientY;
 
   // Calcola angolo di rotazione in base alla direzione del movimento
+  // Snap alle 4 direzioni cardinali (0°=su, 90°=dx, 180°=giù, 270°=sx)
   if (prevMx !== null && prevMy !== null) {
     const dx = mx - prevMx;
     const dy = my - prevMy;
     const dist = Math.sqrt(dx * dx + dy * dy);
-    if (dist > 2) {  // soglia minima per evitare jitter
-      // atan2 restituisce angolo in radianti: 0 = dx>0 (destra)
-      // Il triangolo punta verso l'alto (0°), quindi aggiungiamo 90°
-      const angle = Math.atan2(dy, dx) * (180 / Math.PI) + 90;
-      cursorAngle = angle;
+    if (dist > 3) {  // soglia minima per evitare jitter
+      const absDx = Math.abs(dx);
+      const absDy = Math.abs(dy);
+      let snapAngle;
+      if (absDx > absDy) {
+        // Movimento prevalentemente orizzontale
+        snapAngle = dx > 0 ? 90 : 270;
+      } else {
+        // Movimento prevalentemente verticale
+        snapAngle = dy > 0 ? 180 : 0;
+      }
+      cursorAngle = snapAngle;
     }
   }
   prevMx = mx; prevMy = my;
