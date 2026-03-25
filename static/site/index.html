@@ -610,20 +610,20 @@
 
     /* Contenuto interno del box nero */
     .archive-expanded-inner {
-      padding: 32px 40px 32px 20px;  /* sx più stretto: 20px vs 32px top/bottom */
+      padding: 0 40px 24px 0;        /* no padding sx/top: hero tocca il bordo del box */
       display: flex;
       flex-direction: row;
       align-items: flex-end;         /* tutto allineato al bottom */
-      height: 480px;                 /* altezza fissa del box */
+      height: 500px;                 /* box più alto */
       gap: 0;
       box-sizing: border-box;
     }
 
-    /* Foto hero grande a sinistra */
+    /* Foto hero grande a sinistra — tocca top e left del box, senza bordi */
     .archive-expanded-hero {
       flex-shrink: 0;
       width: auto;
-      height: 416px;                 /* 480 - 32px*2 padding */
+      height: 500px;                 /* occupa tutta l'altezza del box */
       overflow: hidden;
       position: relative;
       cursor: none;
@@ -632,10 +632,11 @@
     }
     .archive-expanded-hero img {
       width: auto;
-      height: 416px;                 /* altezza fissa esplicita */
-      max-width: 600px;              /* limite larghezza */
+      height: 500px;                 /* altezza piena del box, nessun bordo */
+      max-width: 700px;              /* +20% rispetto a 600px */
       object-fit: contain;
       display: block;
+      background: #000;              /* sfondo nero se l'immagine non copre */
       transition: opacity .3s ease;
     }
     .archive-expanded-hero:hover img { opacity: 0.92; }
@@ -645,10 +646,10 @@
       flex: 1;
       display: flex;
       flex-direction: row;
-      align-items: flex-end;   /* thumbs allineate al bottom della hero */
+      align-items: flex-end;         /* thumbs allineate al bottom della hero */
       overflow: hidden;
-      padding-left: 32px;      /* stacco dalla hero */
-      height: 416px;           /* stessa altezza della hero */
+      padding-left: 32px;            /* stacco dalla hero */
+      height: 476px;                 /* 500 - 24px padding bottom */
     }
 
     /* Strip thumbs scorrevole */
