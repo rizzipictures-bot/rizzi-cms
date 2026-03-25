@@ -460,7 +460,25 @@
       padding: 0 40px;
     }
     #view-archive::-webkit-scrollbar { display: none; }
-    .archive-page-title { display: none; }
+    .archive-page-title {
+      font-family: var(--font-mono);
+      font-size: 32px;
+      font-weight: 400;
+      letter-spacing: 0;
+      padding: 40px 0 32px;
+      color: #000;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+    .archive-page-title .title-sep {
+      display: inline-block;
+      width: 1px;
+      height: 1.1em;
+      background: #000;
+      vertical-align: middle;
+      flex-shrink: 0;
+    }
     .archive-search-wrap {
       padding: 16px 0 0;
       border-bottom: 1px solid var(--light);
@@ -1257,7 +1275,7 @@
 
     <!-- ── VIEW: ARCHIVE — Tabella (rizzi-web) ── -->
     <div class="view" id="view-archive">
-      <div class="archive-page-title">Archive | Works Index</div>
+      <div class="archive-page-title">Archive<span class="title-sep"></span>Works Index</div>
       <div class="archive-search-wrap">
         <input class="archive-search" id="archive-search" type="text" placeholder="Type any keyword" autocomplete="off">
       </div>
