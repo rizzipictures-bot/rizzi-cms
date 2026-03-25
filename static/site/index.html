@@ -775,16 +775,19 @@
       transition: clip-path .7s cubic-bezier(.77, 0, .175, 1);
     }
 
-    /* Fase 2: griglia masonry */
+    /* Fase 2: griglia identica a Overview (9 colonne, celle quadrate) */
     #vao-grid {
       flex: 1;
       overflow-y: auto;
-      padding: 20px 24px;
-      columns: 5;
-      column-gap: 4px;
+      padding: 0;
+      display: grid;
+      grid-template-columns: repeat(9, 1fr);
+      grid-auto-rows: calc(100vw / 9);
+      gap: 2px;
+      align-content: start;
       opacity: 0;
       pointer-events: none;
-      transition: opacity .3s ease;
+      transition: opacity .2s ease;
     }
     #vao-grid::-webkit-scrollbar { display: none; }
     #vao-grid.visible {
@@ -792,24 +795,40 @@
       pointer-events: auto;
     }
     .vao-grid-item {
-      break-inside: avoid;
-      margin-bottom: 4px;
+      position: relative;
       overflow: hidden;
       cursor: none;
+      background: #fff;
       opacity: 0;
-      transform: translateY(10px);
-      transition: opacity .4s ease, transform .4s ease;
+      transform: scale(0.92);
+      transition: opacity .35s ease, transform .35s ease;
     }
     .vao-grid-item.appeared {
       opacity: 1;
-      transform: translateY(0);
+      transform: scale(1);
     }
     .vao-grid-item img {
       width: 100%;
-      height: auto;
+      height: 100%;
+      object-fit: cover;
+      object-position: center top;
       display: block;
     }
-    .vao-grid-item:hover img { opacity: 0.85; }
+    .vao-grid-item.is-landscape img {
+      object-fit: contain;
+      object-position: center bottom;
+    }
+    .vao-grid-item:hover img { opacity: 0.75; }
+    .vao-grid-blank {
+      background: #fff;
+      opacity: 0;
+      transform: scale(0.92);
+      transition: opacity .35s ease, transform .35s ease;
+    }
+    .vao-grid-blank.appeared {
+      opacity: 1;
+      transform: scale(1);
+    }
 
     /* Frecce navigazione (solo in viewer singolo) */
     .lb-nav {
@@ -2871,9 +2890,11 @@ loadFromCMS();
   const vaoSingleImg = document.getElementById('vao-single-img');
   const vaoGrid   = document.getElementById('vao-grid');
 
-  // Apri overlay: prima foto singola centrata, poi griglia propagata
+  // Apri overlay: prima foto singola centrata (Miechowski), poi esplode in griglia Overview
   window.openViewAllOverlay = function(images, title) {
     if (!images || images.length === 0) return;
+
+    const COLS = 9;
 
     // Reset stato
     vaoTitle.textContent = title;
@@ -2883,40 +2904,74 @@ loadFromCMS();
     vaoSingleImg.classList.remove('reveal');
     vaoSingleImg.src = images[0].url;
 
-    // Popola griglia (nascosta)
-    images.forEach((img, i) => {
+    // Costruisci celle griglia stile Overview (con blank casuali)
+    const cells = [];
+    let imgIdx = 0;
+    let blanksInserted = 0;
+    const maxBlanks = Math.floor(images.length / 6);
+    while (imgIdx < images.length) {
+      const posInRow = cells.length % COLS;
+      const remaining = images.length - imgIdx;
+      const canBlank =
+        posInRow > 0 && posInRow < COLS - 1 &&
+        cells.length > 0 && remaining > 1 &&
+        blanksInserted < maxBlanks && Math.random() < 0.15;
+      if (canBlank) {
+        cells.push({ type: 'blank' });
+        blanksInserted++;
+      } else {
+        cells.push({ type: 'img', img: images[imgIdx] });
+        imgIdx++;
+      }
+    }
+
+    cells.forEach((cell, i) => {
+      if (cell.type === 'blank') {
+        const blank = document.createElement('div');
+        blank.className = 'vao-grid-blank';
+        vaoGrid.appendChild(blank);
+        return;
+      }
+      const img = cell.img;
       const item = document.createElement('div');
       item.className = 'vao-grid-item';
       const im = document.createElement('img');
       im.src = img.url;
       im.loading = 'lazy';
       im.alt = title;
+      im.addEventListener('load', function() {
+        if (this.naturalWidth > this.naturalHeight) item.classList.add('is-landscape');
+      });
       item.appendChild(im);
       item.addEventListener('click', e => {
         e.stopPropagation();
-        // Apri il vecchio lightbox viewer per navigazione
-        openSingleViewer(images, i, title);
+        openSingleViewer(images, cells.filter(c=>c.type==='img').indexOf(cell), title);
       });
       vaoGrid.appendChild(item);
     });
 
     overlay.classList.add('open');
 
-    // Fase 1: curtain reveal sulla foto singola
+    // FASE 1: curtain reveal sulla foto singola centrata
     requestAnimationFrame(() => {
       requestAnimationFrame(() => vaoSingleImg.classList.add('reveal'));
     });
 
-    // Fase 2: dopo 900ms, transizione alla griglia
+    // FASE 2: dopo 950ms la foto singola svanisce e la griglia esplode con stagger
     setTimeout(() => {
       vaoSingle.classList.add('hidden');
+      // Mostra la griglia (ancora invisibile — le celle hanno opacity:0)
       vaoGrid.classList.add('visible');
-      // Stagger: ogni foto appare con delay progressivo
-      const items = vaoGrid.querySelectorAll('.vao-grid-item');
+      // Stagger a partire dall'angolo in alto a sinistra, propagazione per riga
+      const items = vaoGrid.querySelectorAll('.vao-grid-item, .vao-grid-blank');
       items.forEach((item, i) => {
-        setTimeout(() => item.classList.add('appeared'), i * 55);
+        // Delay basato sulla distanza dalla prima cella (riga + colonna)
+        const row = Math.floor(i / COLS);
+        const col = i % COLS;
+        const delay = (row + col) * 40; // propagazione diagonale
+        setTimeout(() => item.classList.add('appeared'), delay);
       });
-    }, 900);
+    }, 950);
   };
 
   // Viewer singolo per navigazione dentro la griglia
