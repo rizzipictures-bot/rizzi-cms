@@ -611,7 +611,8 @@
       display: flex;
       gap: 6px;
       align-items: center;
-      height: 100%;              /* occupa tutta l'altezza della cella */
+      align-self: center;        /* centra verticalmente nella cella grid */
+      justify-self: start;       /* allineato a sinistra come le altre celle */
     }
     .media-ball {
       width: 10px;
@@ -918,6 +919,145 @@
     #archive-viewall-overlay.theme-dark .vao-grid-blank {
       background: #000;
     }
+
+    /* ══════════════════════════════════════════════════════════════
+       KEYWORDS PANEL — angolo alto destra del box espanso
+    ══════════════════════════════════════════════════════════════ */
+    .archive-kw-panel {
+      position: absolute;
+      top: 0;
+      right: 52px;                  /* stacco dal bordo dx (spazio per View all) */
+      width: 220px;                 /* larghezza base */
+      aspect-ratio: 3 / 2;          /* proporzione 3:2 */
+      padding: 16px 18px 14px;
+      box-sizing: border-box;
+      display: flex;
+      flex-direction: column;
+      gap: 0;
+      overflow: hidden;
+      pointer-events: all;
+    }
+    /* Linea separatrice sottile in cima */
+    .archive-kw-panel::before {
+      content: '';
+      display: block;
+      width: 100%;
+      height: 1px;
+      background: rgba(255,255,255,0.15);
+      margin-bottom: 10px;
+      flex-shrink: 0;
+    }
+    /* Label sezione */
+    .archive-kw-label {
+      font-family: var(--font-mono);
+      font-size: 9px;
+      letter-spacing: 0.22em;
+      text-transform: uppercase;
+      color: rgba(255,255,255,0.25);
+      margin-bottom: 10px;
+      flex-shrink: 0;
+    }
+    /* Contenitore tag — wrap */
+    .archive-kw-tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 5px 8px;
+      overflow: hidden;
+    }
+    /* Singolo tag */
+    .archive-kw-tag {
+      font-family: var(--font-mono);
+      font-size: 10px;
+      letter-spacing: 0.12em;
+      color: rgba(255,255,255,0.75);
+      text-transform: lowercase;
+      cursor: pointer;
+      transition: color .18s;
+      white-space: nowrap;
+      line-height: 1.6;
+    }
+    .archive-kw-tag:hover { color: rgba(255,255,255,0.35); }
+    /* Separatore tra tag: punto centrato */
+    .archive-kw-tag + .archive-kw-tag::before {
+      content: '·';
+      margin-right: 8px;
+      color: rgba(255,255,255,0.15);
+    }
+    /* Tema bianco */
+    .archive-expanded.box-white .archive-kw-panel::before {
+      background: rgba(0,0,0,0.1);
+    }
+    .archive-expanded.box-white .archive-kw-label {
+      color: rgba(0,0,0,0.25);
+    }
+    .archive-expanded.box-white .archive-kw-tag {
+      color: rgba(0,0,0,0.65);
+    }
+    .archive-expanded.box-white .archive-kw-tag:hover {
+      color: rgba(0,0,0,0.3);
+    }
+    .archive-expanded.box-white .archive-kw-tag + .archive-kw-tag::before {
+      color: rgba(0,0,0,0.15);
+    }
+
+    /* ══════════════════════════════════════════════════════════════
+       KEYWORD RESULTS OVERLAY — griglia foto filtrate
+    ══════════════════════════════════════════════════════════════ */
+    #kw-results-overlay {
+      position: fixed;
+      inset: 0;
+      background: #fff;
+      z-index: 2100;
+      display: none;
+      flex-direction: column;
+    }
+    #kw-results-overlay.open { display: flex; }
+    .kw-results-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 40px;
+      height: var(--nav-h);
+      border-bottom: 1px solid var(--light);
+      flex-shrink: 0;
+    }
+    .kw-results-title {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: #000;
+    }
+    .kw-results-close {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      letter-spacing: 0.12em;
+      color: #999;
+      cursor: pointer;
+      transition: color .15s;
+    }
+    .kw-results-close:hover { color: #000; }
+    .kw-results-grid {
+      flex: 1;
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+      gap: 2px;
+      padding: 2px;
+      overflow-y: auto;
+    }
+    .kw-results-grid::-webkit-scrollbar { display: none; }
+    .kw-results-item {
+      overflow: hidden;
+      background: #f0f0f0;
+      aspect-ratio: 3/2;
+    }
+    .kw-results-item img {
+      width: 100%; height: 100%;
+      object-fit: cover;
+      display: block;
+      transition: opacity .2s;
+    }
+    .kw-results-item:hover img { opacity: 0.6; }
 
     /* ══════════════════════════════════════════════════════════════
        HERO TENDA DX→SX — cambio foto nel box espanso
@@ -2607,6 +2747,43 @@ function buildArchive() {
 
           inner.appendChild(right);
           inner.appendChild(viewAll);  /* viewAll dentro inner (position:relative), NON dentro right (overflow:hidden) */
+
+          // ── KEYWORDS PANEL (angolo alto destra, stile Angelucci) ──
+          const allKws = new Set();
+          images.forEach(img => {
+            if (img.keywords) {
+              img.keywords.split(',').forEach(k => {
+                const kk = k.trim().toLowerCase();
+                if (kk) allKws.add(kk);
+              });
+            }
+          });
+          if (allKws.size > 0) {
+            const kwPanel = document.createElement('div');
+            kwPanel.className = 'archive-kw-panel';
+
+            const kwLabel = document.createElement('div');
+            kwLabel.className = 'archive-kw-label';
+            kwLabel.textContent = 'Keywords';
+            kwPanel.appendChild(kwLabel);
+
+            const kwTags = document.createElement('div');
+            kwTags.className = 'archive-kw-tags';
+
+            [...allKws].sort().forEach(kw => {
+              const tag = document.createElement('span');
+              tag.className = 'archive-kw-tag';
+              tag.textContent = kw;
+              tag.addEventListener('click', e => {
+                e.stopPropagation();
+                openKeywordResults(kw);
+              });
+              kwTags.appendChild(tag);
+            });
+
+            kwPanel.appendChild(kwTags);
+            inner.appendChild(kwPanel);
+          }
         }
 
         panel.appendChild(inner);
@@ -3108,11 +3285,12 @@ async function loadFromCMS() {
           description: p.description || '',
           count:       p.images ? p.images.length : 0,
           images:      p.images ? p.images.map(img => ({
-            url:   CMS_API.replace('/api', '') + '/uploads/' + img.file,
-            thumb: CMS_API.replace('/api', '') + '/uploads/' + img.thumb,
-            ar:    img.ar || 1.33,
-            title: img.caption || img.file,
-            year:  p.year || ''
+            url:      CMS_API.replace('/api', '') + '/uploads/' + img.file,
+            thumb:    CMS_API.replace('/api', '') + '/uploads/' + img.thumb,
+            ar:       img.ar || 1.33,
+            title:    img.caption || img.file,
+            year:     p.year || '',
+            keywords: img.keywords || ''   /* keywords AI + manuali */
           })) : [],
           texts: p.texts || []
         };
