@@ -624,11 +624,12 @@
       position: relative;            /* contesto per View all absolute */
     }
 
-    /* Foto hero grande a sinistra — BORDERLESS, tocca top/left/bottom del box */
+    /* Foto hero grande a sinistra — BORDERLESS, altezza fissa, larghezza automatica */
     .archive-expanded-hero {
       flex-shrink: 0;
-      width: 667px;                  /* 500px * 4/3 — proporzione standard landscape */
-      height: 500px;
+      width: auto;                   /* larghezza si adatta all'aspect ratio */
+      max-width: 700px;              /* limite massimo per foto molto orizzontali */
+      height: 500px;                 /* altezza fissa = altezza del box */
       overflow: hidden;
       position: relative;
       cursor: none;
@@ -641,16 +642,17 @@
     }
     .archive-expanded-hero img {
       display: block;
-      width: 100%;                   /* riempie esattamente il contenitore */
-      height: 100%;
-      object-fit: cover;
-      object-position: center center;
+      width: auto;                   /* larghezza automatica proporzionale */
+      height: 100%;                  /* altezza = 100% del contenitore (500px) */
+      object-fit: contain;           /* mostra la foto intera senza crop */
+      object-position: left center;
       margin: 0;
       padding: 0;
       border: none;
       outline: none;
       box-shadow: none;
       background: transparent;
+      max-width: 700px;
     }
     .archive-expanded-hero:hover img { opacity: 0.92; }
 
