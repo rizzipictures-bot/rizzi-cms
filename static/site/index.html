@@ -485,7 +485,8 @@
     }
     .archive-search {
       font-family: var(--font-mono);
-      font-size: 12px;
+      font-size: 13px;
+      font-weight: 600;
       border: none;
       outline: none;
       width: 100%;
@@ -652,15 +653,15 @@
     }
     .archive-expanded-hero:hover img { opacity: 0.92; }
 
-    /* Colonna destra: strip + view all */
+    /* Colonna destra: strip + toggle + view all */
     .archive-expanded-right {
       flex: 1;
       display: flex;
       flex-direction: row;
-      align-items: flex-end;         /* thumbs allineate al bottom della hero */
+      align-items: flex-end;         /* tutto allineato al bordo inferiore */
       overflow: hidden;
       padding-left: 32px;            /* stacco dalla hero */
-      height: 476px;                 /* 500 - 24px padding bottom */
+      height: 500px;                 /* stessa altezza del box */
     }
 
     /* Strip thumbs scorrevole */
@@ -693,7 +694,7 @@
       display: block;
     }
 
-    /* Pulsante "View all" — centrato verticalmente nel margine destro del box */
+    /* Pulsante "View all" — allineato in basso, alto come le thumbs */
     .archive-expanded-viewall {
       font-family: var(--font-mono);
       font-size: 11px;
@@ -701,28 +702,32 @@
       cursor: none;
       flex-shrink: 0;
       display: flex;
-      align-items: center;           /* centrato verticalmente */
+      align-items: flex-end;         /* testo ancorato in basso */
       justify-content: center;
-      padding: 0 14px;
+      padding: 0 14px 0 10px;
       transition: color .2s;
       white-space: nowrap;
       writing-mode: vertical-rl;
       text-orientation: mixed;
       letter-spacing: 0.14em;
-      align-self: stretch;           /* occupa tutta l'altezza del right */
+      height: 48px;                  /* stessa altezza delle thumbs */
+      align-self: flex-end;          /* allineato al bottom del right */
     }
     .archive-expanded-viewall:hover { color: #aaa; }
 
-    /* Toggle stile Angelucci — cerchio con punto centrale, simbolo cambio modalità */
+    /* Toggle stile Angelucci — centrato verticalmente rispetto alle thumbs (48px) */
     .archive-expanded-toggle {
       width: 18px;
-      height: 18px;
+      height: 48px;                  /* stessa altezza delle thumbs */
       flex-shrink: 0;
       cursor: none;
-      align-self: center;
+      align-self: flex-end;          /* allineato al bottom */
       margin-left: 14px;
       opacity: 0.75;
       transition: opacity .2s;
+      display: flex;
+      align-items: center;           /* SVG centrato verticalmente nei 48px */
+      justify-content: center;
     }
     .archive-expanded-toggle:hover { opacity: 1; }
     .archive-expanded-toggle svg {
