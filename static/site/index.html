@@ -539,7 +539,7 @@
       color: #000;
     }
     .archive-row > div:first-child { padding-left: 0; }
-    .archive-row .year { color: #000; font-weight: 400; }
+    .archive-row .year { color: #000; font-weight: 700; }
     .archive-row .keyword {
       color: var(--accent);
       font-weight: 900;
@@ -694,17 +694,17 @@
       display: block;
     }
 
-    /* Pulsante "View all" — allineato in basso, alto come le thumbs */
+    /* Pulsante "View all" — vicino al margine destro del box, L allineata al bottom delle thumbs */
     .archive-expanded-viewall {
       font-family: var(--font-mono);
-      font-size: 11px;
+      font-size: 12.65px;            /* +15% rispetto a 11px */
       color: #fff;
-      cursor: none;
+      cursor: pointer;
       flex-shrink: 0;
       display: flex;
-      align-items: flex-end;         /* testo ancorato in basso */
-      justify-content: center;
-      padding: 0 14px 0 10px;
+      align-items: flex-end;         /* L in basso */
+      justify-content: flex-end;
+      padding: 0 8px 0 8px;
       transition: color .2s;
       white-space: nowrap;
       writing-mode: vertical-rl;
@@ -712,6 +712,7 @@
       letter-spacing: 0.14em;
       height: 48px;                  /* stessa altezza delle thumbs */
       align-self: flex-end;          /* allineato al bottom del right */
+      margin-left: auto;             /* spinge verso il margine destro */
     }
     .archive-expanded-viewall:hover { color: #aaa; }
 
@@ -720,7 +721,7 @@
       width: 18px;
       height: 48px;                  /* stessa altezza delle thumbs */
       flex-shrink: 0;
-      cursor: none;
+      cursor: pointer;
       align-self: flex-end;          /* allineato al bottom */
       margin-left: 14px;
       opacity: 0.75;
@@ -1983,7 +1984,7 @@ function resetCursor() {
 }
 
 document.addEventListener('mouseover', e => {
-  const t = e.target.closest('button, a, .grid-item, .archive-row, .thumb, .index-list li');
+  const t = e.target.closest('button, a, .grid-item, .archive-row, .thumb, .index-list li, .archive-expanded-viewall, .archive-expanded-toggle, .vao-close, .vao-grid-item');
   if (t) {
     const label = t.dataset.label || '';
     setCursorHover(label);
