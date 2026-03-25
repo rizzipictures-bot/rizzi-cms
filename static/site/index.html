@@ -647,6 +647,58 @@
       padding: 14px 0 16px;
       color: var(--black);
     }
+    /* ── CITIES INDEX ── */
+    #view-cities-index {
+      padding: var(--nav-h) 0 0 0;
+      overflow-y: auto;
+    }
+    .cities-index-grid {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0;
+      padding: 24px 16px 40px;
+      align-items: flex-start;
+    }
+    .cities-card {
+      width: 175px;
+      margin-right: 24px;
+      margin-bottom: 32px;
+      cursor: none;
+    }
+    .cities-card-cover {
+      width: 175px;
+      height: 175px;
+      overflow: hidden;
+      background: #eee;
+    }
+    .cities-card-cover img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+      transition: opacity .2s;
+    }
+    .cities-card:hover .cities-card-cover img { opacity: .85; }
+    .cities-card-title {
+      font-family: var(--font-nav);
+      font-size: 13px;
+      font-weight: 400;
+      color: var(--black);
+      margin-top: 8px;
+      line-height: 1.3;
+    }
+    .cities-card-sub {
+      font-family: var(--font-nav);
+      font-size: 11px;
+      font-weight: 400;
+      color: var(--gray);
+      margin-top: 2px;
+      line-height: 1.3;
+    }
+    [data-theme="dark"] .cities-card-cover { background: #222; }
+    [data-theme="dark"] .cities-card-title { color: var(--white); }
+    [data-theme="dark"] .cities-card-sub  { color: #888; }
+
     .gallery-grid {
       display: grid;
       grid-template-columns: repeat(9, 1fr);
@@ -1164,7 +1216,7 @@
     <!-- Colonna unica: tutte le voci in verticale -->
     <div class="menu-col" id="menu-col-1">
       <a href="#" class="bold" data-view="home" id="menu-link-overview">Overview</a>
-      <a href="#" data-view="gallery" id="menu-link-cities">Cities</a>
+      <a href="#" data-view="cities-index" id="menu-link-cities">Cities</a>
       <a href="#" data-view="archive" id="menu-link-archive">Archive</a>
       <a href="#" data-view="interview">Interview</a>
     </div>
@@ -1186,7 +1238,7 @@
       <button class="active" data-view="home">Overview</button>
       <button data-view="archive">Archive</button>
       <button data-view="interview">Interview</button>
-      <button data-view="gallery">Cities</button>
+      <button data-view="cities-index">Cities</button>
       <button id="btn-menu">Menu</button>
       <button id="btn-theme">◐</button>
       <button id="btn-screensaver">Screensaver</button>
@@ -1256,6 +1308,13 @@
       <div id="interview-list"></div>
     </div>
 
+
+    <!-- ── VIEW: CITIES INDEX ── -->
+    <div class="view" id="view-cities-index">
+      <div class="cities-index-grid" id="cities-index-grid">
+        <!-- Generata via JS -->
+      </div>
+    </div>
 
     <!-- ── VIEW: GALLERY — Nadav Kander style ── -->
     <div class="view" id="view-gallery">
@@ -1655,6 +1714,42 @@ document.addEventListener('keydown', e => {
 });
 
 // ════════════════════════════════════════════════════════════════
+// CITIES INDEX
+// ════════════════════════════════════════════════════════════════
+function buildCitiesIndex() {
+  const grid = document.getElementById('cities-index-grid');
+  if (!grid) return;
+  grid.innerHTML = '';
+
+  const citiesProjects = PROJECTS.filter(p =>
+    (p.category_id || p.section || '').toLowerCase() === 'cities'
+  );
+
+  if (citiesProjects.length === 0) {
+    grid.innerHTML = '<p style="padding:32px;font-family:var(--font-nav);color:var(--gray)">Nessun progetto Cities.</p>';
+    return;
+  }
+
+  citiesProjects.forEach(p => {
+    const coverUrl = p.images && p.images.length > 0 ? p.images[0].url : '';
+    const card = document.createElement('div');
+    card.className = 'cities-card';
+    card.innerHTML = `
+      <div class="cities-card-cover">
+        ${coverUrl ? `<img src="${coverUrl}" alt="${p.title}" loading="lazy">` : ''}
+      </div>
+      <div class="cities-card-title">${p.title || ''}</div>
+      <div class="cities-card-sub">${p.subtitle || p.place || ''}</div>
+    `;
+    card.addEventListener('click', () => {
+      openGallery(p);
+      switchView('gallery');
+    });
+    grid.appendChild(card);
+  });
+}
+
+// ════════════════════════════════════════════════════════════════
 // ARCHIVE — rizzi-web
 // ══════════════════════════════════════════════════════════════════
 function buildArchive() {
@@ -2047,7 +2142,7 @@ function buildMenuSubItems() {
   const linkCities   = document.getElementById('menu-link-cities');
   const linkArchive  = document.getElementById('menu-link-archive');
   if (linkOverview) linkOverview.onclick = e => { e.preventDefault(); document.getElementById('menu-overlay').classList.remove('open'); switchView('home'); };
-  if (linkCities)   linkCities.onclick   = e => { e.preventDefault(); document.getElementById('menu-overlay').classList.remove('open'); switchView('gallery'); };
+  if (linkCities)   linkCities.onclick   = e => { e.preventDefault(); document.getElementById('menu-overlay').classList.remove('open'); switchView('cities-index'); };
   if (linkArchive)  linkArchive.onclick  = e => { e.preventDefault(); document.getElementById('menu-overlay').classList.remove('open'); switchView('archive'); };
 }
 
@@ -2260,6 +2355,7 @@ async function loadFromCMS() {
 
   // Inizializza le viste con i dati (CMS o statici)
   buildOverviewGrid();
+  buildCitiesIndex();
   buildArchive();
   buildInterview();
 
@@ -2270,10 +2366,6 @@ async function loadFromCMS() {
     buildMenuSubItems(); // fallback statico
   }
 
-  // Apri il primo progetto Cities per default
-  const firstCities = PROJECTS.find(p => (p.category_id || p.section || '').toLowerCase() === 'cities');
-  if (firstCities) openGallery(firstCities);
-  else if (PROJECTS.length > 0) openGallery(PROJECTS[0]);
   updateFooter();
 }
 
@@ -2335,7 +2427,7 @@ loadFromCMS();
   }
 
   if (lbOverview)  lbOverview.addEventListener('click',  e => { e.preventDefault(); goToView('home'); });
-  if (lbCities)    lbCities.addEventListener('click',    e => { e.preventDefault(); goToView('gallery'); });
+  if (lbCities)    lbCities.addEventListener('click',    e => { e.preventDefault(); goToView('cities-index'); });
   if (lbArchive)   lbArchive.addEventListener('click',   e => { e.preventDefault(); goToView('archive'); });
   if (lbInterview) lbInterview.addEventListener('click', e => { e.preventDefault(); goToView('interview'); });
 
