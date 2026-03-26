@@ -2153,92 +2153,85 @@
     /* Sub-nav interno */
     .index-subnav {
       display: flex;
-      gap: 24px;
-      padding: 28px 48px 20px;
-      border-bottom: 1px solid var(--light);
+      gap: 32px;
+      padding: 32px 56px 28px;
       flex-shrink: 0;
     }
     .index-subnav-btn {
       font-family: var(--font-nav);
-      font-size: 13px;
-      font-weight: 300;
-      letter-spacing: 0.06em;
-      color: var(--black);
-      opacity: 0.4;
+      font-size: 14px;
+      font-weight: 400;
+      letter-spacing: 0.01em;
+      color: #aaa;
       background: none;
       border: none;
       padding: 0;
       cursor: none;
-      transition: opacity .15s;
+      transition: color .15s;
     }
-    .index-subnav-btn:hover { opacity: 0.8; }
+    .index-subnav-btn:hover { color: #333; }
     .index-subnav-btn.active {
-      opacity: 1;
+      color: #111;
       font-weight: 400;
       text-decoration: underline;
-      text-underline-offset: 3px;
+      text-underline-offset: 4px;
+      text-decoration-thickness: 1px;
     }
 
     /* Lista voci */
     .index-entries {
       flex: 1;
       overflow-y: auto;
-      padding: 0 48px 60px;
+      padding: 0 56px 60px;
     }
 
-    /* Gruppo sezione (es. "Interview", "Books") */
+    /* Gruppo sezione */
     .index-section-group {
-      margin-top: 32px;
-    }
-    .index-section-group[data-section="biography"],
-    .index-section-group[data-section="contact"] {
-      /* sezioni singole: nessun gruppo visivo speciale */
+      margin-top: 40px;
     }
 
-    /* Voce singola */
+    /* Voce singola — nessuna linea */
     .index-entry {
       display: flex;
       justify-content: space-between;
       align-items: baseline;
-      padding: 9px 0;
-      border-bottom: 1px solid var(--light);
+      padding: 5px 0;
       cursor: none;
       transition: opacity .15s;
     }
-    .index-entry:hover { opacity: 0.55; }
+    .index-entry:hover { opacity: 0.45; }
     .index-entry-name {
       font-family: var(--font-nav);
-      font-size: 14px;
-      font-weight: 300;
-      letter-spacing: 0.03em;
-      color: var(--black);
+      font-size: 16px;
+      font-weight: 400;
+      letter-spacing: 0.01em;
+      color: #111;
     }
     .index-entry-meta {
-      font-family: var(--font-mono);
-      font-size: 10px;
-      color: var(--gray);
-      letter-spacing: 0.04em;
+      font-family: var(--font-nav);
+      font-size: 13px;
+      color: #aaa;
+      letter-spacing: 0.01em;
       margin-left: 16px;
       white-space: nowrap;
     }
     .index-entry-count {
-      font-family: var(--font-mono);
-      font-size: 11px;
-      color: var(--gray);
-      letter-spacing: 0.04em;
+      font-family: var(--font-nav);
+      font-size: 16px;
+      color: #111;
+      letter-spacing: 0.01em;
       flex-shrink: 0;
+      margin-left: 16px;
     }
 
-    /* Separatore sezione con label */
+    /* Label sezione — uppercase piccolo, nessuna linea */
     .index-section-label {
-      font-family: var(--font-mono);
-      font-size: 9px;
-      letter-spacing: 0.14em;
+      font-family: var(--font-nav);
+      font-size: 10px;
+      letter-spacing: 0.12em;
       text-transform: uppercase;
-      color: var(--gray);
-      opacity: 0.6;
-      padding: 28px 0 6px;
-      border-bottom: 1px solid var(--light);
+      color: #aaa;
+      padding: 0 0 10px;
     }
 
     [data-theme="dark"] .index-entry-name { color: var(--white); }
