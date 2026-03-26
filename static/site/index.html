@@ -73,10 +73,10 @@
       transition: none;
       will-change: transform;  /* GPU layer — usa transform invece di left/top */
     }
-    /* Pallino cursore */
+    /* Pallino cursore (+30%) */
     #cursor-dot {
-      width: 8px;
-      height: 8px;
+      width: 10px;
+      height: 10px;
       border-radius: 50%;
       background: #000;
       display: block;
@@ -144,8 +144,15 @@
     /* Foto a tutto schermo — sotto la banda, borderless */
     #landing-photo {
       position: absolute; inset: 0;
-      background: url('images/landing-hero.webp') center center / cover no-repeat;
       z-index: 1;
+      will-change: transform;
+      overflow: hidden;
+    }
+    #landing-photo img {
+      width: 100%; height: 100%;
+      object-fit: cover;
+      object-position: center center;
+      display: block;
     }
     /* Banda nera — a schermo intero all'inizio, poi sale */
     #landing-band {
@@ -605,7 +612,7 @@
 
     /* Testo sopra il box nero — Courier, sfondo bianco */
     .archive-expanded-text {
-      padding: 12px 40px 16px;
+      padding: 12px 0 16px;          /* padding 0 laterale: allineato al margine sx pagina */
       border-bottom: 1px solid var(--light);
       background: var(--white);
     }
@@ -613,46 +620,46 @@
       font-family: var(--font-mono);
       font-size: 11px;
       color: #000;
-      line-height: 1.7;
-      max-width: none;   /* tutta la larghezza */
+      line-height: 1.45;             /* interlinea tipografica stretta */
+      max-width: none;               /* tutta la larghezza */
     }
     .archive-expanded-text-label {
       font-weight: 700;
       font-family: var(--font-mono);
-      font-size: 12px;
+      font-size: 10px;
       color: #000;
     }
     .archive-expanded-text-year {
       font-family: var(--font-mono);
-      font-size: 12px;
+      font-size: 10px;
       color: #888;
-      margin-bottom: 4px;
+      margin-bottom: 2px;
     }
     .archive-expanded-text-title {
       font-family: var(--font-mono);
-      font-size: 18px;
+      font-size: 10px;
       font-weight: 700;
       color: #000;
-      margin-bottom: 6px;
+      margin-bottom: 2px;
     }
     .archive-expanded-text-subtitle {
       font-family: var(--font-mono);
-      font-size: 12px;
+      font-size: 10px;
       color: #444;
-      margin-bottom: 8px;
+      margin-bottom: 4px;
     }
     .archive-expanded-text-desc {
       font-family: var(--font-mono);
-      font-size: 12px;
+      font-size: 10px;
       color: #000;
-      line-height: 1.6;
-      max-width: 600px;
+      line-height: 1.45;
+      max-width: none;
     }
     .archive-expanded-text-pub {
       font-family: var(--font-mono);
-      font-size: 12px;
+      font-size: 10px;
       color: #888;
-      margin-top: 10px;
+      margin-top: 6px;
     }
 
     /* ── MEDIA TYPE BALLS ─────────────────────────────────────────── */
@@ -881,7 +888,7 @@
 
     /* Toggle stile Angelucci — centrato verticalmente rispetto alle thumbs (48px) */
     .archive-expanded-toggle {
-      width: 18px;
+      width: 26px;
       height: 48px;                  /* stessa altezza delle thumbs */
       flex-shrink: 0;
       cursor: pointer;
@@ -895,8 +902,8 @@
     }
     .archive-expanded-toggle:hover { opacity: 1; }
     .archive-expanded-toggle svg {
-      width: 18px;
-      height: 18px;
+      width: 26px;
+      height: 26px;
       display: block;
     }
 
@@ -1321,12 +1328,11 @@
     #vao-grid {
       flex: 1;
       overflow-y: auto;
-      padding: 8px 12px 12px;
+      padding: 20px 12px 40px;         /* uguale all'Overview */
       display: grid;
       grid-template-columns: repeat(9, 1fr);
       grid-auto-rows: calc((100vw - 24px) / 9 * 1.15);
-      gap: 16px;
-      /* align-items: stretch (default) — celle verticali a tutta altezza */
+      gap: 16px;                       /* uguale all'Overview */
       align-content: start;
       opacity: 0;
       pointer-events: none;
@@ -2083,7 +2089,7 @@
 <!-- Landing page hero -->
 <div id="landing">
   <!-- Foto a tutto schermo (sotto la banda) -->
-  <div id="landing-photo"></div>
+  <div id="landing-photo"><img src="images/landing-hero.webp" alt="" /></div>
   <!-- Etichetta flottante al cursore — segue il mouse, senza triangolo -->
   <div id="landing-cursor-label">Alessandro Rizzi</div>
   <!-- Banda nera — schermo intero all'inizio, poi sale -->
@@ -4173,7 +4179,16 @@ loadFromCMS();
       im.loading = 'lazy';
       im.alt = title;
       im.addEventListener('load', function() {
-        if (this.naturalWidth > this.naturalHeight) item.classList.add('is-landscape');
+        if (this.naturalWidth > this.naturalHeight) {
+          // Conta le orizzontali già presenti nella stessa riga (ogni 9 celle)
+          const allItems = Array.from(vaoGrid.querySelectorAll('.vao-grid-item, .vao-grid-blank'));
+          const idx = allItems.indexOf(item);
+          const rowStart = Math.floor(idx / 9) * 9;
+          const rowEnd   = rowStart + 9;
+          const rowItems = allItems.slice(rowStart, rowEnd);
+          const landscapeInRow = rowItems.filter(el => el.classList.contains('is-landscape')).length;
+          if (landscapeInRow < 3) item.classList.add('is-landscape');
+        }
       });
       item.appendChild(im);
       item.addEventListener('mouseenter', () => {
