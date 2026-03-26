@@ -14,6 +14,10 @@ from flask import Flask, request, jsonify, send_from_directory, send_file
 from PIL import Image
 import numpy as np
 
+BASE   = Path(__file__).parent
+DATA   = BASE / 'data'
+UPLOAD = BASE / 'uploads'
+
 # ── AUTO-TRIM BORDI MONOCROMATICI ──────────────────────────────────────────────
 def auto_trim_border(im, threshold=18, min_strip=2, max_strip_pct=0.08):
     """
@@ -171,8 +175,8 @@ def ai_tag_image(fpath, img_data, db_ref, pid):
                 save_db(db)
     except Exception as e:
         pass  # tagging fallisce silenziosamente, non blocca nulla
-STATIC = BASE / 'static'
 
+STATIC = BASE / 'static'
 DATA.mkdir(exist_ok=True)
 UPLOAD.mkdir(exist_ok=True)
 
