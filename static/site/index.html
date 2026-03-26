@@ -2131,7 +2131,6 @@
       <button data-view="archive">Archive</button>
       <button data-view="interview">Interview</button>
       <button data-view="cities-index">Cities</button>
-      <button id="btn-menu">Menu</button>
       <button id="btn-screensaver">Screensaver</button>
       <button id="btn-update" style="display:none" title="Aggiorna sito da GitHub">↻ Aggiorna</button>
     </nav>
@@ -3658,9 +3657,6 @@ document.addEventListener('keydown', e => {
 // ══════════════════════════════════════════════════════════════════
 // MENU OVERLAY — centrephotogeneve
 // ══════════════════════════════════════════════════════════════════
-document.getElementById('btn-menu').addEventListener('click', () => {
-  document.getElementById('menu-overlay').classList.toggle('open');
-});
 
 // Click sul box del menu (non su una voce) chiude il menu
 document.getElementById('menu-overlay').addEventListener('click', e => {
