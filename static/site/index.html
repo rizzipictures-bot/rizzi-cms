@@ -2670,7 +2670,20 @@ function buildOverviewGrid() {
     imgEl.alt     = img.project.title;
     imgEl.loading = 'lazy';
     imgEl.addEventListener('load', function() {
-      if (this.naturalWidth > this.naturalHeight) item.classList.add('is-landscape');
+      if (this.naturalWidth > this.naturalHeight) {
+        // Conta le orizzontali già presenti nella stessa riga CSS (ogni 9 celle)
+        const allItems = Array.from(grid.querySelectorAll('.thumb-item:not(.thumb-blank)'));
+        const myIndex = allItems.indexOf(item);
+        // Trova la riga CSS: ogni 9 celle nella griglia (inclusi blank)
+        const allCells = Array.from(grid.children);
+        const cellIndex = allCells.indexOf(item);
+        const rowStart = Math.floor(cellIndex / 9) * 9;
+        const rowCells = allCells.slice(rowStart, rowStart + 9);
+        const landscapeInRow = rowCells.filter(c => c.classList.contains('is-landscape')).length;
+        if (landscapeInRow < 3) {
+          item.classList.add('is-landscape');
+        }
+      }
     });
     item.appendChild(imgEl);
 
