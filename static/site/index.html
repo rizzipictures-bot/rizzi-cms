@@ -62,17 +62,16 @@
     /* ══════════════════════════════════════════════════════════════
        CURSORE CUSTOM (jackdavison + rizzi-web)
     ══════════════════════════════════════════════════════════════ */
-    /* Cursore wrapper — contiene freccia + testo sulla stessa riga */
+    /* Cursore custom: triangolo SVG che ruota — nessuna transizione sulla posizione */
     #cursor {
       position: fixed;
       pointer-events: none;
       z-index: 9999;
-      transform: translate(0, -50%);
-      transition: none;   /* nessuna transizione sulla posizione */
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      white-space: nowrap;
+      top: 0;
+      left: 0;
+      transform: translate(0, 0);
+      transition: none;
+      will-change: transform;  /* GPU layer — usa transform invece di left/top */
     }
     /* Freccia SVG */
     #cursor svg {
@@ -96,9 +95,12 @@
       position: fixed;
       pointer-events: none;
       z-index: 9998;
-      transform: translate(0, -50%);
+      top: 0;
+      left: 0;
+      transform: translate(0, 0);
       opacity: 0;
       transition: opacity .15s;
+      will-change: transform;  /* GPU layer per il label */
       white-space: nowrap;
       font-family: var(--font-nav);   /* EB Garamond */
       font-size: 14px;
@@ -2365,25 +2367,76 @@ window.addEventListener('resize', setVh);
 // ════════════════════════════════════════════════════════════════════
 const cursor = document.getElementById('cursor');
 const cursorLabel = document.getElementById('cursor-label');
+// Cache elementi DOM usati frequentemente
+const cursorSvg    = cursor.querySelector('svg');
+const cursorPoly   = cursor.querySelector('svg polygon');
 let mx = 0, my = 0;
 let prevMx = null, prevMy = null;
-let cursorAngle = 0;  // angolo corrente in gradi
+let cursorAngle = 0;
 let overlayOpen = false;
 let ovImages = [];
 let ovIndex  = 0;
 
+// Stato interno per evitare scritture DOM inutili
+let _lastPolyFill = '';
+let _rafPending   = false;
+// Cache per getBoundingClientRect dell'immagine overlay (aggiornata ogni 200ms)
+let _ovImgRect    = null;
+let _ovImgRectTs  = 0;
+// Cache per il rilevamento sfondo scuro (aggiornata ogni 80ms)
+let _isDarkBgCache = false;
+let _isDarkBgTs    = 0;
+// Cache larghezza label (aggiornata quando cambia il testo)
+let _labelWidth   = 0;
+
+// Aggiorna la cache del rect dell'immagine overlay
+function _refreshOvImgRect() {
+  const oImg = document.getElementById('overview-overlay-img');
+  _ovImgRect = oImg ? oImg.getBoundingClientRect() : null;
+  _ovImgRectTs = performance.now();
+}
+
+// Rileva sfondo scuro con cache — costoso, eseguito max ogni 80ms
+function _detectDarkBg(el) {
+  const now = performance.now();
+  if (now - _isDarkBgTs < 80) return _isDarkBgCache;
+  _isDarkBgTs = now;
+
+  let isDarkBg = false;
+  if (el && el !== cursor) {
+    let checkEl = el;
+    let depth = 0;
+    while (checkEl && checkEl !== document.body && depth < 6) {
+      const bg = window.getComputedStyle(checkEl).backgroundColor;
+      const m = bg.match(/rgba?\((\d+),\s*(\d+),\s*(\d+)(?:,\s*([\d.]+))?/);
+      if (m) {
+        const alpha = m[4] !== undefined ? parseFloat(m[4]) : 1;
+        if (alpha > 0.1) {
+          const lum = 0.299 * parseInt(m[1]) + 0.587 * parseInt(m[2]) + 0.114 * parseInt(m[3]);
+          if (lum < 128) { isDarkBg = true; break; }
+          if (lum > 200) { isDarkBg = false; break; }
+        }
+      }
+      checkEl = checkEl.parentElement;
+      depth++;
+    }
+    if (!isDarkBg) isDarkBg = document.documentElement.dataset.theme === 'dark';
+    if (!isDarkBg && el.closest && el.closest('.archive-expanded:not(.box-white)')) isDarkBg = true;
+  }
+  _isDarkBgCache = isDarkBg;
+  return isDarkBg;
+}
+
 document.addEventListener('mousemove', e => {
   mx = e.clientX; my = e.clientY;
 
-  // Snap alle 4 direzioni cardinali (0°=su, 90°=dx, 180°=giù, 270°=sx)
-  if (prevMx !== null && prevMy !== null) {
+  // Calcola angolo (snap 4 direzioni)
+  if (prevMx !== null) {
     const dx = mx - prevMx;
     const dy = my - prevMy;
-    const dist = Math.sqrt(dx * dx + dy * dy);
-    if (dist > 2) {
-      const absDx = Math.abs(dx);
-      const absDy = Math.abs(dy);
-      if (absDx > absDy) {
+    const dist = dx * dx + dy * dy; // evita sqrt
+    if (dist > 4) { // > 2px
+      if (Math.abs(dx) > Math.abs(dy)) {
         cursorAngle = dx > 0 ? 90 : 270;
       } else {
         cursorAngle = dy > 0 ? 180 : 0;
@@ -2392,86 +2445,66 @@ document.addEventListener('mousemove', e => {
   }
   prevMx = mx; prevMy = my;
 
-  // Freccia: posizionata esattamente sul punto mouse, ruota il solo SVG
-  cursor.style.left = mx + 'px';
-  cursor.style.top  = my + 'px';
-  cursor.style.transform = 'translate(0, -50%)';
-  cursor.querySelector('svg').style.transform = `rotate(${cursorAngle}deg)`;
+  // Aggiorna DOM una sola volta per frame con rAF
+  if (!_rafPending) {
+    _rafPending = true;
+    requestAnimationFrame(() => {
+      _rafPending = false;
 
-  // Label: posizionata vicino al cursore
-  // In overlay Overview: centrata sul punto mouse (Jack Davison style)
-  // Altrimenti: a destra della freccia
-  if (overlayOpen) {
-    cursorLabel.style.left = (mx - cursorLabel.offsetWidth / 2) + 'px';
-    cursorLabel.style.top  = (my + 24) + 'px';
-    cursorLabel.style.transform = 'translate(0, 0)';
-  } else {
-    cursorLabel.style.left = (mx + 22) + 'px';
-    cursorLabel.style.top  = my + 'px';
-    cursorLabel.style.transform = 'translate(0, -50%)';
-  }
+      // Posiziona cursore con transform (GPU, nessun reflow)
+      cursor.style.transform = `translate(${mx}px, calc(${my}px - 50%))`;
+      cursorSvg.style.transform = `rotate(${cursorAngle}deg)`;
 
-  // Se l'overlay Overview è aperto, aggiorna il cursore positivo/negativo in tempo reale
-  if (overlayOpen && ovImages.length) {
-    ovUpdateCursor(ovImages[ovIndex]);
-  }
-
-  // Colore triangolo: bianco su sfondo scuro, nero su sfondo chiaro
-  // Funziona anche dentro il box nero Archive e sull'overlay Overview
-  {
-    const el = document.elementFromPoint(mx, my);
-    let isDarkBg = false;
-    if (el && el !== cursor) {
-      // Controlla l'elemento e tutti i suoi antenati per trovare uno sfondo scuro
-      let checkEl = el;
-      while (checkEl && checkEl !== document.body) {
-        const bg = window.getComputedStyle(checkEl).backgroundColor;
-        const m = bg.match(/rgba?\((\d+),\s*(\d+),\s*(\d+)(?:,\s*([\d.]+))?/);
-        if (m) {
-          const alpha = m[4] !== undefined ? parseFloat(m[4]) : 1;
-          if (alpha > 0.1) {  // ignora trasparenti
-            const lum = 0.299 * parseInt(m[1]) + 0.587 * parseInt(m[2]) + 0.114 * parseInt(m[3]);
-            if (lum < 128) { isDarkBg = true; break; }
-            if (lum > 200) { isDarkBg = false; break; }  // sfondo chiaro trovato
-          }
-        }
-        checkEl = checkEl.parentElement;
-      }
-      // Controlla anche data-theme dark e archive-expanded (box nero)
-      if (!isDarkBg) isDarkBg = document.documentElement.dataset.theme === 'dark';
-      if (!isDarkBg && el.closest('.archive-expanded:not(.box-white)')) isDarkBg = true;
-      // Nell'overlay Overview: bianco sulla foto, nero sul bordo bianco
+      // Posiziona label con transform
       if (overlayOpen) {
-        const oImg = document.getElementById('overview-overlay-img');
-        if (oImg) {
-          const rect = oImg.getBoundingClientRect();
-          const onPhoto = mx >= rect.left && mx <= rect.right && my >= rect.top && my <= rect.bottom;
-          isDarkBg = onPhoto;  // bianco sulla foto (scura), nero sul bordo bianco
-        }
+        const lx = mx - _labelWidth / 2;
+        cursorLabel.style.transform = `translate(${lx}px, ${my + 24}px)`;
+      } else {
+        cursorLabel.style.transform = `translate(${mx + 22}px, calc(${my}px - 50%))`;
       }
-    }
-    const poly = cursor.querySelector('svg polygon');
-    if (poly) poly.setAttribute('fill', isDarkBg ? '#fff' : '#000');
+
+      // Aggiorna cursore positivo/negativo in overlay Overview
+      if (overlayOpen && ovImages.length) {
+        // Aggiorna rect ogni 200ms
+        if (performance.now() - _ovImgRectTs > 200) _refreshOvImgRect();
+        ovUpdateCursor(ovImages[ovIndex]);
+      }
+
+      // Colore triangolo: usa cache, rileva sfondo max ogni 80ms
+      const el = document.elementFromPoint(mx, my);
+      let isDarkBg = _detectDarkBg(el);
+      // Override per overlay Overview
+      if (overlayOpen && _ovImgRect) {
+        isDarkBg = mx >= _ovImgRect.left && mx <= _ovImgRect.right &&
+                   my >= _ovImgRect.top  && my <= _ovImgRect.bottom;
+      }
+      const fill = isDarkBg ? '#fff' : '#000';
+      if (fill !== _lastPolyFill) {
+        _lastPolyFill = fill;
+        cursorPoly.setAttribute('fill', fill);
+      }
+    });
   }
 });
 
+// Cache elementi interni del label
+const _clCat = cursorLabel.querySelector('.cl-cat');
+const _clSep = cursorLabel.querySelector('.cl-sep');
+const _clNum = cursorLabel.querySelector('.cl-num');
+
 function setCursorHover(label = '', num = '', darkHover = false) {
   cursor.classList.add('hover');
-  const clCat = cursorLabel.querySelector('.cl-cat');
-  const clSep = cursorLabel.querySelector('.cl-sep');
-  const clNum = cursorLabel.querySelector('.cl-num');
   if (label || num) {
-    if (clCat) clCat.textContent = label;
-    if (clNum) clNum.textContent = num;
-    // Mostra separatore solo se entrambi i testi sono presenti
-    if (clSep) clSep.style.display = (label && num) ? '' : 'none';
-    // Colore testo: bianco su hover scuro, nero su hover chiaro
+    if (_clCat) _clCat.textContent = label;
+    if (_clNum) _clNum.textContent = num;
+    if (_clSep) _clSep.style.display = (label && num) ? '' : 'none';
     const textColor = darkHover ? '#fff' : '#1a1a1a';
     const sepColor  = darkHover ? 'rgba(255,255,255,0.6)' : '#888';
     cursorLabel.style.color = textColor;
-    cursorLabel.style.textShadow = 'none';
-    if (clSep) clSep.style.color = sepColor;
+    if (_clSep) _clSep.style.color = sepColor;
     cursorLabel.classList.add('show');
+    // Aggiorna cache larghezza (usata nel mousemove per centrare il label)
+    requestAnimationFrame(() => { _labelWidth = cursorLabel.offsetWidth; });
   } else {
     cursorLabel.classList.remove('show');
   }
@@ -2479,8 +2512,8 @@ function setCursorHover(label = '', num = '', darkHover = false) {
 function resetCursor() {
   cursor.classList.remove('hover', 'drag');
   cursorLabel.classList.remove('show');
-  // Mantieni la rotazione corrente sull'SVG
-  cursor.querySelector('svg').style.transform = `rotate(${cursorAngle}deg)`;
+  // Mantieni la rotazione corrente sull'SVG (il posizionamento è gestito dal rAF)
+  cursorSvg.style.transform = `rotate(${cursorAngle}deg)`;
 }
 
 document.addEventListener('mouseover', e => {
