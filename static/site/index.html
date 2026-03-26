@@ -58,60 +58,67 @@
     /* ══════════════════════════════════════════════════════════════
        CURSORE CUSTOM (jackdavison + rizzi-web)
     ══════════════════════════════════════════════════════════════ */
-    /* Triangolo cursore — ruota in base alla direzione del mouse */
+    /* Cursore wrapper — contiene freccia + testo sulla stessa riga */
     #cursor {
       position: fixed;
-      width: 0;
-      height: 0;
       pointer-events: none;
       z-index: 9999;
-      /* Il triangolo è un SVG inline, centrato sul punto */
-      transform: translate(-50%, -50%) rotate(0deg);
-      transition: transform .18s var(--ease-out);
-      mix-blend-mode: difference;
+      transform: translate(0, -50%);
+      transition: none;   /* nessuna transizione sulla posizione */
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      white-space: nowrap;
     }
+    /* Freccia SVG */
     #cursor svg {
       display: block;
       width: 14px;
       height: 12px;
       overflow: visible;
+      flex-shrink: 0;
+      /* Rotazione con transizione snap — solo angoli netti */
+      transition: transform .15s steps(1);
     }
     #cursor svg polygon {
-      fill: #fff;
-      transition: transform .12s;
+      fill: #000;
     }
-    /* Hover: nessun ingrandimento — dimensione fissa */
-    #cursor.hover svg polygon {
-      transform: none;
+    /* Hover: freccia nascosta, testo visibile */
+    #cursor.hover svg {
+      display: none;
     }
+    /* Label testo — dentro il wrapper #cursor */
     #cursor-label {
       position: fixed;
       pointer-events: none;
       z-index: 9998;
-      transform: translate(18px, -50%);
+      transform: translate(0, -50%);
       opacity: 0;
       transition: opacity .2s;
       white-space: nowrap;
-      /* Stile Jack Davison: serif leggero, grigio scuro, spaziatura ampia */
       font-family: var(--font-nav);   /* EB Garamond */
       font-size: 15px;
       font-weight: 400;
       letter-spacing: 0.08em;
-      color: #3a3a3a;
+      color: #1a1a1a;
       display: flex;
       gap: 4px;
       align-items: baseline;
+      /* Ombra per visibilità su sfondi scuri */
+      text-shadow:
+        0 0 8px rgba(255,255,255,.9),
+        0 0 16px rgba(255,255,255,.6);
     }
     #cursor-label.show { opacity: 1; }
     #cursor-label .cl-cat {
       font-weight: 400;
       font-size: 15px;
       letter-spacing: 0.08em;
-      color: #3a3a3a;
+      color: #1a1a1a;
     }
     #cursor-label .cl-sep {
       font-weight: 300;
-      color: #999;
+      color: #888;
       font-size: 14px;
       letter-spacing: 0;
       padding: 0 2px;
@@ -120,7 +127,7 @@
       font-weight: 400;
       font-size: 15px;
       letter-spacing: 0.08em;
-      color: #3a3a3a;
+      color: #1a1a1a;
     }
 
     /* ══════════════════════════════════════════════════════════════
@@ -2301,32 +2308,32 @@ let cursorAngle = 0;  // angolo corrente in gradi
 document.addEventListener('mousemove', e => {
   mx = e.clientX; my = e.clientY;
 
-  // Calcola angolo di rotazione in base alla direzione del movimento
   // Snap alle 4 direzioni cardinali (0°=su, 90°=dx, 180°=giù, 270°=sx)
+  // Mai angoli obliqui
   if (prevMx !== null && prevMy !== null) {
     const dx = mx - prevMx;
     const dy = my - prevMy;
     const dist = Math.sqrt(dx * dx + dy * dy);
-    if (dist > 3) {  // soglia minima per evitare jitter
+    if (dist > 4) {
       const absDx = Math.abs(dx);
       const absDy = Math.abs(dy);
-      let snapAngle;
       if (absDx > absDy) {
-        // Movimento prevalentemente orizzontale
-        snapAngle = dx > 0 ? 90 : 270;
+        cursorAngle = dx > 0 ? 90 : 270;
       } else {
-        // Movimento prevalentemente verticale
-        snapAngle = dy > 0 ? 180 : 0;
+        cursorAngle = dy > 0 ? 180 : 0;
       }
-      cursorAngle = snapAngle;
     }
   }
   prevMx = mx; prevMy = my;
 
+  // Freccia: posizionata esattamente sul punto mouse, ruota il solo SVG
   cursor.style.left = mx + 'px';
   cursor.style.top  = my + 'px';
-  cursor.style.transform = `translate(-50%, -50%) rotate(${cursorAngle}deg)`;
-  cursorLabel.style.left = mx + 'px';
+  cursor.style.transform = 'translate(0, -50%)';
+  cursor.querySelector('svg').style.transform = `rotate(${cursorAngle}deg)`;
+
+  // Label: posizionata subito a destra della freccia (14px freccia + 8px gap)
+  cursorLabel.style.left = (mx + 22) + 'px';
   cursorLabel.style.top  = my + 'px';
 });
 
@@ -2348,8 +2355,8 @@ function setCursorHover(label = '', num = '') {
 function resetCursor() {
   cursor.classList.remove('hover', 'drag');
   cursorLabel.classList.remove('show');
-  // Mantieni la rotazione corrente
-  cursor.style.transform = `translate(-50%, -50%) rotate(${cursorAngle}deg)`;
+  // Mantieni la rotazione corrente sull'SVG
+  cursor.querySelector('svg').style.transform = `rotate(${cursorAngle}deg)`;
 }
 
 document.addEventListener('mouseover', e => {
@@ -2397,6 +2404,12 @@ function switchView(name) {
 document.querySelectorAll('[data-view]').forEach(el => {
   el.addEventListener('click', e => {
     e.preventDefault();
+    e.stopPropagation(); // impedisce che il click raggiunga la landing
+    // Se la landing è ancora visibile (band-up), rimuovila
+    const landing = document.getElementById('landing');
+    if (landing && !landing.classList.contains('gone')) {
+      landing.classList.add('gone');
+    }
     switchView(el.dataset.view);
   });
 });
@@ -2507,7 +2520,7 @@ function showOverview(img, idx, imageList) {
   oImg.src = img.url;
   ov.classList.add('open');
   overlayOpen = true;
-  cursor.style.display = 'none'; // nasconde il triangolo
+  cursor.querySelector('svg').style.visibility = 'hidden'; // nasconde solo la freccia
   // Mostra testo cursore con categoria + numero
   const catLabel = img.project ? (img.project.category || img.project.title || '') : '';
   const numLabel = String(ovIndex + 1).padStart(2,'0') + ' / ' + String(ovImages.length).padStart(2,'0');
@@ -2533,7 +2546,7 @@ function closeOverview() {
   const ov = document.getElementById('overview-overlay');
   ov.classList.remove('open');
   overlayOpen = false;
-  cursor.style.display = ''; // ripristina il triangolo
+  cursor.querySelector('svg').style.visibility = ''; // ripristina la freccia
   resetCursor();
 }
 
@@ -3070,13 +3083,13 @@ function openLightbox(idx) {
   const lb = document.getElementById('lightbox');
   lb.classList.add('open');
   setLightboxImg(idx);
-  cursor.style.display = 'none'; // nasconde il triangolo
+  cursor.querySelector('svg').style.visibility = 'hidden'; // nasconde solo la freccia
   lbUpdateCursor();
 }
 
 function closeLightbox() {
   document.getElementById('lightbox').classList.remove('open');
-  cursor.style.display = ''; // ripristina il triangolo
+  cursor.querySelector('svg').style.visibility = ''; // ripristina la freccia
   resetCursor();
 }
 
@@ -3806,7 +3819,7 @@ loadFromCMS();
       document.getElementById('lb-count').textContent =
         `${String(idx+1).padStart(2,'0')} / ${String(images.length).padStart(2,'0')}`;
       lbEl.classList.add('open');
-      cursor.style.display = 'none'; // nasconde il triangolo
+      cursor.querySelector('svg').style.visibility = 'hidden'; // nasconde solo la freccia
       svUpdateCursor();
     }
   }
@@ -3834,12 +3847,18 @@ loadFromCMS();
   // Chiudi overlay
   vaoClose.addEventListener('click', () => {
     overlay.classList.remove('open');
+    svImages = []; // reset per non interferire con Archive
+    cursor.querySelector('svg').style.visibility = ''; // ripristina freccia
+    resetCursor();
   });
 
   // ESC per chiudere
   document.addEventListener('keydown', e => {
     if (e.key === 'Escape' && overlay.classList.contains('open')) {
       overlay.classList.remove('open');
+      svImages = [];
+      cursor.querySelector('svg').style.visibility = '';
+      resetCursor();
     }
   });
 })();
