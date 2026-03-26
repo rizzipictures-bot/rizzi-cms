@@ -2383,24 +2383,45 @@ function _detectDarkBg(el) {
 
   let isDarkBg = false;
   if (el && el !== cursor) {
-    let checkEl = el;
-    let depth = 0;
-    while (checkEl && checkEl !== document.body && depth < 6) {
-      const bg = window.getComputedStyle(checkEl).backgroundColor;
-      const m = bg.match(/rgba?\((\d+),\s*(\d+),\s*(\d+)(?:,\s*([\d.]+))?/);
-      if (m) {
-        const alpha = m[4] !== undefined ? parseFloat(m[4]) : 1;
-        if (alpha > 0.1) {
-          const lum = 0.299 * parseInt(m[1]) + 0.587 * parseInt(m[2]) + 0.114 * parseInt(m[3]);
-          if (lum < 128) { isDarkBg = true; break; }
-          if (lum > 200) { isDarkBg = false; break; }
+    // Controllo rapido: riga Archive attiva (sfondo nero) o box espanso nero
+    if (el.closest) {
+      const activeRow = el.closest('.archive-row.active, .archive-row:hover');
+      if (activeRow) {
+        // Le righe Archive in stato attivo/hover hanno sfondo #000
+        const bg = window.getComputedStyle(activeRow).backgroundColor;
+        const m = bg.match(/rgba?\((\d+),\s*(\d+),\s*(\d+)(?:,\s*([\d.]+))?/);
+        if (m) {
+          const alpha = m[4] !== undefined ? parseFloat(m[4]) : 1;
+          if (alpha > 0.1) {
+            const lum = 0.299 * parseInt(m[1]) + 0.587 * parseInt(m[2]) + 0.114 * parseInt(m[3]);
+            if (lum < 128) { isDarkBg = true; }
+          }
         }
       }
-      checkEl = checkEl.parentElement;
-      depth++;
+      // Box espanso Archive nero (non box-white)
+      if (!isDarkBg && el.closest('.archive-expanded:not(.box-white)')) isDarkBg = true;
+    }
+
+    // Fallback: risali il DOM fino a 10 livelli cercando il primo sfondo opaco
+    if (!isDarkBg) {
+      let checkEl = el;
+      let depth = 0;
+      while (checkEl && checkEl !== document.body && depth < 10) {
+        const bg = window.getComputedStyle(checkEl).backgroundColor;
+        const m = bg.match(/rgba?\((\d+),\s*(\d+),\s*(\d+)(?:,\s*([\d.]+))?/);
+        if (m) {
+          const alpha = m[4] !== undefined ? parseFloat(m[4]) : 1;
+          if (alpha > 0.1) {
+            const lum = 0.299 * parseInt(m[1]) + 0.587 * parseInt(m[2]) + 0.114 * parseInt(m[3]);
+            if (lum < 128) { isDarkBg = true; break; }
+            if (lum > 200) { isDarkBg = false; break; }
+          }
+        }
+        checkEl = checkEl.parentElement;
+        depth++;
+      }
     }
     if (!isDarkBg) isDarkBg = document.documentElement.dataset.theme === 'dark';
-    if (!isDarkBg && el.closest && el.closest('.archive-expanded:not(.box-white)')) isDarkBg = true;
   }
   _isDarkBgCache = isDarkBg;
   return isDarkBg;
