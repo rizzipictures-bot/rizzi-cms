@@ -3025,7 +3025,7 @@ document.addEventListener('mouseover', e => {
     return;
   }
 
-  const t = e.target.closest('.grid-item, .archive-row, .thumb, .index-list li, .archive-expanded-viewall, .archive-expanded-toggle, .vao-close, .vao-grid-item');
+  const t = e.target.closest('.archive-row, .thumb, .index-list li, .archive-expanded-viewall, .archive-expanded-toggle, .vao-close');
   if (t) {
     const label = t.dataset.label || '';
     const num   = t.dataset.num   || '';
@@ -3137,11 +3137,7 @@ function buildOverviewGrid() {
     const item = document.createElement('div');
     item.className = 'thumb-item';
 
-    // Dati per il cursore: titolo specifico del progetto (Istanbul, Tokyo...) + numero progressivo
-    const catLabel = img.project.title || img.project.category || '';
-    const numLabel = String(photoCounter).padStart(2, '0') + ' / ' + String(imgs.length).padStart(2, '0');
-    item.dataset.label = catLabel;
-    item.dataset.num   = numLabel;
+    // Nessun label sul cursore per le foto dell'Overview grid
 
     const imgEl = document.createElement('img');
     imgEl.src     = img.url;
@@ -3167,15 +3163,13 @@ function buildOverviewGrid() {
 
     const nameEl = document.getElementById('overview-project-name');
     item.addEventListener('mouseenter', () => {
-      if (nameEl) nameEl.textContent = img.project.title || '';
-      // FIX 2: stesso comportamento dell'overlay — mix-blend-mode difference
-      // il testo appare leggibile sia sulla foto che sullo sfondo bianco
-      cursorLabel.style.mixBlendMode = 'difference';
-      setCursorHover(catLabel, numLabel, false, '#aaa');
+      if (nameEl) nameEl.innerHTML = '\u00a0';
+      // Nessun label: solo hover visivo
+      cursor.classList.add('hover');
     });
     item.addEventListener('mouseleave', () => {
       if (nameEl) nameEl.innerHTML = '\u00a0';
-      cursorLabel.style.mixBlendMode = 'normal';  // ripristina blend mode
+      cursorLabel.style.mixBlendMode = 'normal';
       resetCursor();
     });
     item.addEventListener('click', () => showOverview(img, photoCounter - 1, cells.filter(c => c.type === 'img').map(c => c.img)));
@@ -4701,11 +4695,7 @@ loadFromCMS();
       const img = cell.img;
       const item = document.createElement('div');
       item.className = 'vao-grid-item';
-      // Cursore: titolo specifico del progetto (Istanbul, Tokyo...) + numero progressivo
-      const catLabel = (img.project && (img.project.title || img.project.category)) || title || '';
-      const numLabel = String(vaoPhotoCounter).padStart(2, '0') + ' / ' + String(images.length).padStart(2, '0');
-      item.dataset.label = catLabel;
-      item.dataset.num   = numLabel;
+      // Nessun label sul cursore per le foto del View All
       const im = document.createElement('img');
       im.src = img.url;
       im.loading = 'lazy';
@@ -4724,10 +4714,8 @@ loadFromCMS();
       });
       item.appendChild(im);
       item.addEventListener('mouseenter', () => {
-        // Pannello bianco: hover grigio scuro → testo bianco; pannello nero: hover chiaro → testo nero
-        const overlayEl = document.getElementById('archive-viewall-overlay');
-        const isDarkPanel = overlayEl && overlayEl.classList.contains('theme-dark');
-        setCursorHover(catLabel, numLabel, !isDarkPanel);
+        // Nessun label: solo hover visivo
+        cursor.classList.add('hover');
       });
       item.addEventListener('mouseleave', () => resetCursor());
       item.addEventListener('click', e => {
