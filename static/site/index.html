@@ -4163,7 +4163,7 @@ function buildArchive() {
 
       row.addEventListener('mouseenter', () => {
         archiveRowClick();
-        document.body.classList.add('cursor-on-dark');  // pallino bianco sulla riga nera
+        // NON aggiungere cursor-on-dark: il cursore rimane rosso sulle righe chiuse
         // Mostra preview thumbnail al cursore
         const firstImg = (p.images || [])[0];
         if (firstImg) {
@@ -4174,7 +4174,6 @@ function buildArchive() {
         }
       });
       row.addEventListener('mouseleave', () => {
-        document.body.classList.remove('cursor-on-dark');
         // Nascondi preview
         document.getElementById('archive-cursor-preview').classList.remove('visible');
       });
@@ -4186,8 +4185,7 @@ function buildArchive() {
           if (activeExpanded._kwPanel) activeExpanded._kwPanel.remove();
           if (activeExpanded._scrollListener) window.removeEventListener('scroll', activeExpanded._scrollListener, true);
           activeExpanded.remove();
-          document.body.classList.remove('cursor-on-dark');  // reset triangolo
-          document.body.classList.add('cursor-red');          // ripristina rosso
+          document.body.classList.add('cursor-red');          // ripristina rosso (box chiuso)
           const prevRow = list.querySelector('.archive-row.is-open');
           if (prevRow) prevRow.classList.remove('is-open');
           if (activeExpanded._sourceRow === row) {
