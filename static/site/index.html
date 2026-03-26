@@ -255,13 +255,12 @@
     header {
       position: relative;
       height: var(--nav-h);
-      padding: 0 16px 0 12px;          /* 12px sx = allineato al padding griglia */
+      padding: 0 16px;
       display: flex;
       align-items: center;
-      justify-content: space-between;
+      justify-content: center;   /* navbar centrata */
       flex-shrink: 0;
       z-index: 100;
-      /* Nessuna linea separatrice — Miechowski style */
     }
     /* Navbar nascosta durante la landing — appare solo dopo */
     body.landing-active header {
