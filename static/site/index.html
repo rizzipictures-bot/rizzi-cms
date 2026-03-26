@@ -305,10 +305,10 @@
     header {
       position: relative;
       height: var(--nav-h);
-      padding: 0 16px;
+      padding: 0 32px;
       display: flex;
       align-items: center;
-      justify-content: center;   /* navbar centrata */
+      justify-content: space-between;   /* voci distribuite su tutta la larghezza */
       flex-shrink: 0;
       z-index: 100;
     }
@@ -331,13 +331,14 @@
     /* Nav — testo puro, nessun box/pill */
     nav.pill-nav {
       display: flex;
-      gap: 20px;
+      flex: 1;                    /* occupa tutto lo spazio disponibile */
+      justify-content: space-between;  /* voci distribuite uniformemente */
       align-items: center;
     }
     nav.pill-nav button,
     nav.pill-nav a {
       font-family: var(--font-nav);
-      font-size: 13px;
+      font-size: 15px;
       font-weight: 400;
       letter-spacing: 0.02em;
       text-transform: none;
