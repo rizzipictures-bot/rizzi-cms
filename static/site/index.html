@@ -173,12 +173,16 @@
     #cursor.hover #cursor-dot {
       display: none;
     }
-    /* ── Cursore ROSSO — Overview, Archive (lista chiusa), Cities ── */
-    body.cursor-red #cursor-dot {
+    /* ── Cursore ROSSO — Overview, Archive (lista chiusa), Cities ──
+       Ha priorità massima: sovrascrive cursor-on-dark anche sulle righe nere */
+    body.cursor-red #cursor-dot,
+    body.cursor-red.cursor-on-dark #cursor-dot {
       background: #e00 !important;
     }
     body.cursor-red #cursor-dot::before,
-    body.cursor-red #cursor-dot::after {
+    body.cursor-red #cursor-dot::after,
+    body.cursor-red.cursor-on-dark #cursor-dot::before,
+    body.cursor-red.cursor-on-dark #cursor-dot::after {
       background: rgba(255,255,255,0.9) !important;
     }
     /* ── In hover sulle foto di Overview: nero con croce bianca (visibile) ── */
