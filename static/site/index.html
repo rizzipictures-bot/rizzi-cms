@@ -3065,8 +3065,12 @@ function buildCitiesIndex() {
       <div class="cities-card-sub">${p.subtitle || p.place || ''}</div>
     `;
     card.addEventListener('click', () => {
-      openGallery(p);
       switchView('gallery');
+      openGallery(p);
+      requestAnimationFrame(() => {
+        const vg = document.getElementById('view-gallery');
+        if (vg) vg.scrollTop = 0;
+      });
     });
     grid.appendChild(card);
   });
@@ -3153,8 +3157,13 @@ function buildCitiesIndex() {
         }
       }
       if (target && target.images && target.images.length > 0) {
-        openGallery(target);
         switchView('gallery');
+        openGallery(target);
+        // Forza scroll in cima dopo che la vista è attiva
+        requestAnimationFrame(() => {
+          const vg = document.getElementById('view-gallery');
+          if (vg) vg.scrollTop = 0;
+        });
       }
     });
 
