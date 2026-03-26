@@ -377,8 +377,8 @@
       text-transform: none;
       background: none !important;
       background-color: transparent !important;
-      color: var(--black);
-      opacity: 0.55;              /* tono discreto di default */
+      color: #111;
+      opacity: 1;                 /* nero pieno di default */
       border: none !important;
       outline: none !important;
       box-shadow: none !important;
@@ -387,17 +387,17 @@
       padding: 0;
       margin: 0;
       cursor: none;
-      transition: opacity .2s;
+      transition: color .2s;
       display: inline-block;
       text-decoration: none;
       border-radius: 0 !important;
     }
     nav.pill-nav button:hover,
     nav.pill-nav a:hover {
-      opacity: 1;
+      color: #c00;                /* rosso al hover */
     }
     nav.pill-nav button.active {
-      opacity: 1;
+      color: #111;
       font-weight: 400;           /* active: leggibile ma non bold */
       letter-spacing: 0.1em;
     }
