@@ -611,10 +611,10 @@
     }
     .archive-expanded-text-body {
       font-family: var(--font-mono);
-      font-size: 12px;
+      font-size: 11px;
       color: #000;
       line-height: 1.7;
-      max-width: 780px;
+      max-width: none;   /* tutta la larghezza */
     }
     .archive-expanded-text-label {
       font-weight: 700;
@@ -855,30 +855,29 @@
       display: block;
     }
 
-    /* Pulsante "View all" — ASSOLUTO sul bordo destro del box, L allineata al bottom */
+    /* Pulsante "View all" — su 2 colonne, piccolo, angolo basso destra */
     .archive-expanded-viewall {
       font-family: var(--font-mono);
-      font-size: 14.55px;            /* +15% su 12.65px */
-      color: #fff;
+      font-size: 9px;
+      color: rgba(255,255,255,0.5);
       cursor: pointer;
       position: absolute;
-      right: 8px;
-      bottom: 8px;                   /* qualche pixel di stacco dal fondo */
-      display: flex;
-      align-items: flex-end;         /* L in basso */
-      justify-content: flex-end;
-      padding: 0 4px;
+      right: 10px;
+      bottom: 10px;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1px 3px;
+      padding: 0;
       transition: color .2s;
-      white-space: nowrap;
-      writing-mode: vertical-rl;
-      text-orientation: mixed;
-      letter-spacing: 0.14em;
-      height: 48px;
-      z-index: 50;                   /* sopra tutto dentro il box */
+      letter-spacing: 0.12em;
+      z-index: 50;
       pointer-events: all !important;
       isolation: isolate;
+      line-height: 1.4;
+      text-align: center;
+      width: 28px;
     }
-    .archive-expanded-viewall:hover { color: #aaa; }
+    .archive-expanded-viewall:hover { color: rgba(255,255,255,0.9); }
 
     /* Toggle stile Angelucci — centrato verticalmente rispetto alle thumbs (48px) */
     .archive-expanded-toggle {
@@ -1058,6 +1057,82 @@
     .archive-expanded.box-white .archive-kw-tag + .archive-kw-tag::before {
       color: rgba(0,0,0,0.15);
     }
+
+    /* Bottone keywords discreto nell'angolo alto destra del box */
+    .archive-kw-btn {
+      position: absolute;
+      top: 12px;
+      right: 10px;
+      width: 18px;
+      height: 18px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      z-index: 60;
+      opacity: 0.35;
+      transition: opacity .2s;
+    }
+    .archive-kw-btn:hover { opacity: 1; }
+    .archive-kw-btn svg { width: 14px; height: 14px; display: block; }
+
+    /* Overlay keywords spaziale — si apre sopra il box */
+    .archive-kw-overlay {
+      position: absolute;
+      inset: 0;
+      background: rgba(0,0,0,0.96);
+      z-index: 55;
+      display: none;
+      padding: 24px 32px;
+      box-sizing: border-box;
+      overflow: hidden;
+    }
+    .archive-kw-overlay.open { display: block; }
+    .archive-kw-overlay-close {
+      position: absolute;
+      top: 10px;
+      right: 12px;
+      font-family: var(--font-mono);
+      font-size: 10px;
+      color: rgba(255,255,255,0.3);
+      cursor: pointer;
+      letter-spacing: 0.1em;
+      transition: color .15s;
+    }
+    .archive-kw-overlay-close:hover { color: rgba(255,255,255,0.8); }
+    .archive-kw-overlay-tags {
+      width: 100%;
+      height: 100%;
+      position: relative;
+    }
+    /* Ogni keyword posizionata assolutamente in modo spaziale */
+    .archive-kw-overlay-tag {
+      position: absolute;
+      font-family: var(--font-mono);
+      font-size: 10px;
+      letter-spacing: 0.06em;
+      color: rgba(255,255,255,0.6);
+      cursor: pointer;
+      white-space: nowrap;
+      transition: color .15s, transform .15s;
+      transform-origin: center;
+    }
+    .archive-kw-overlay-tag:hover {
+      color: #fff;
+      transform: scale(1.08);
+    }
+    /* Tema bianco */
+    .archive-expanded.box-white .archive-kw-btn svg line,
+    .archive-expanded.box-white .archive-kw-btn svg circle {
+      stroke: #000;
+    }
+    .archive-expanded.box-white .archive-kw-overlay {
+      background: rgba(255,255,255,0.97);
+    }
+    .archive-expanded.box-white .archive-kw-overlay-close { color: rgba(0,0,0,0.3); }
+    .archive-expanded.box-white .archive-kw-overlay-close:hover { color: rgba(0,0,0,0.8); }
+    .archive-expanded.box-white .archive-kw-overlay-tag { color: rgba(0,0,0,0.55); }
+    .archive-expanded.box-white .archive-kw-overlay-tag:hover { color: #000; }
 
     /* ══════════════════════════════════════════════════════════════
        ARCHIVE — PREVIEW THUMBNAIL AL CURSORE
@@ -3134,10 +3209,10 @@ function buildArchive() {
             }, true);  /* capture: prima degli altri listener */
           });
 
-          // Pulsante View all (verticale, a destra)
+          // Pulsante View all (2 colonne, piccolo, angolo basso destra)
           const viewAll = document.createElement('div');
           viewAll.className = 'archive-expanded-viewall';
-          viewAll.textContent = 'View all';
+          viewAll.innerHTML = '<span>v</span><span>i</span><span>e</span><span>w</span>';
           viewAll.addEventListener('click', e => {
             e.stopPropagation();
             e.preventDefault();
@@ -3148,7 +3223,7 @@ function buildArchive() {
           inner.appendChild(right);
           inner.appendChild(viewAll);  /* viewAll dentro inner (position:relative), NON dentro right (overflow:hidden) */
 
-          // ── KEYWORDS PANEL (angolo alto destra, stile Angelucci) ──
+          // ── KEYWORDS: bottone discreto + overlay spaziale ──
           const allKws = new Set();
           images.forEach(img => {
             if (img.keywords) {
@@ -3160,31 +3235,71 @@ function buildArchive() {
           });
 
           if (allKws.size > 0) {
-            const kwPanel = document.createElement('div');
-            kwPanel.className = 'archive-kw-panel';
+            // Bottone discreto: 3 punti in griglia nell'angolo alto destra del box
+            const kwBtn = document.createElement('div');
+            kwBtn.className = 'archive-kw-btn';
+            kwBtn.title = 'Keywords';
+            kwBtn.innerHTML = `<svg viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <circle cx="3" cy="7" r="1" fill="white"/>
+              <circle cx="7" cy="7" r="1" fill="white"/>
+              <circle cx="11" cy="7" r="1" fill="white"/>
+            </svg>`;
 
-            const kwLabel = document.createElement('div');
-            kwLabel.className = 'archive-kw-label';
-            kwLabel.textContent = 'Keywords';
-            kwPanel.appendChild(kwLabel);
+            // Overlay spaziale: keywords distribuite nello spazio del box
+            const kwOverlay = document.createElement('div');
+            kwOverlay.className = 'archive-kw-overlay';
 
-            const kwTags = document.createElement('div');
-            kwTags.className = 'archive-kw-tags';
+            const kwClose = document.createElement('div');
+            kwClose.className = 'archive-kw-overlay-close';
+            kwClose.textContent = '× close';
+            kwClose.addEventListener('click', e => {
+              e.stopPropagation();
+              kwOverlay.classList.remove('open');
+            });
+            kwOverlay.appendChild(kwClose);
 
-            [...allKws].sort().forEach(kw => {
+            const kwTagsWrap = document.createElement('div');
+            kwTagsWrap.className = 'archive-kw-overlay-tags';
+
+            // Distribuzione spaziale: griglia pseudo-random con seed deterministico
+            const kwArr = [...allKws].sort();
+            const cols = Math.ceil(Math.sqrt(kwArr.length * 1.6));
+            const rows = Math.ceil(kwArr.length / cols);
+            kwArr.forEach((kw, i) => {
               const tag = document.createElement('span');
-              tag.className = 'archive-kw-tag';
+              tag.className = 'archive-kw-overlay-tag';
               tag.textContent = kw;
+              // Posizione: griglia con jitter leggero
+              const col = i % cols;
+              const row = Math.floor(i / cols);
+              const jx = ((i * 37 + 13) % 20) - 10;  /* jitter -10..+10 px */
+              const jy = ((i * 53 + 7)  % 16) - 8;
+              const left = 4 + (col / (cols - 1 || 1)) * 88 + jx / 10;
+              const top  = 8 + (row / (rows - 1 || 1)) * 80 + jy / 10;
+              tag.style.left = left + '%';
+              tag.style.top  = top  + '%';
+              // Dimensione leggermente variabile per effetto visivo
+              const sz = 9 + (i % 3);
+              tag.style.fontSize = sz + 'px';
               tag.addEventListener('click', e => {
                 e.stopPropagation();
+                kwOverlay.classList.remove('open');
                 openKeywordResults(kw);
               });
-              kwTags.appendChild(tag);
+              kwTagsWrap.appendChild(tag);
             });
 
-            kwPanel.appendChild(kwTags);
-            // Inserisci direttamente nella colonna destra (tra caption e bottomRow)
-            right.insertBefore(kwPanel, bottomRow);
+            kwOverlay.appendChild(kwTagsWrap);
+
+            // Apri overlay al click sul bottone
+            kwBtn.addEventListener('click', e => {
+              e.stopPropagation();
+              kwOverlay.classList.toggle('open');
+            });
+
+            // Inserisci bottone e overlay dentro inner (position:relative)
+            inner.appendChild(kwBtn);
+            inner.appendChild(kwOverlay);
           }
         }
 
