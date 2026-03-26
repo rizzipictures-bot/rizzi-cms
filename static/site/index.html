@@ -448,8 +448,8 @@
     #overview-overlay-img {
       position: relative;
       z-index: 1;
-      max-width: 55vw;   /* +12% rispetto a 49vw */
-      max-height: 69vh;  /* +12% rispetto a 62vh */
+      max-width: 69vw;   /* +25% rispetto a 55vw */
+      max-height: 86vh;  /* +25% rispetto a 69vh */
       object-fit: contain;
       display: block;
       /* Animazione jackdavison: si svolge dall'alto verso il basso */
@@ -2646,12 +2646,14 @@ function buildOverviewGrid() {
     const nameEl = document.getElementById('overview-project-name');
     item.addEventListener('mouseenter', () => {
       if (nameEl) nameEl.textContent = img.project.title || '';
-      // Pannello bianco: hover grigio scuro → testo bianco
-      const isDark = document.documentElement.dataset.theme === 'dark';
-      setCursorHover(catLabel, numLabel, !isDark);
+      // FIX 2: stesso comportamento dell'overlay — mix-blend-mode difference
+      // il testo appare leggibile sia sulla foto che sullo sfondo bianco
+      cursorLabel.style.mixBlendMode = 'difference';
+      setCursorHover(catLabel, numLabel, false, '#aaa');
     });
     item.addEventListener('mouseleave', () => {
       if (nameEl) nameEl.innerHTML = '\u00a0';
+      cursorLabel.style.mixBlendMode = 'normal';  // ripristina blend mode
       resetCursor();
     });
     item.addEventListener('click', () => showOverview(img, photoCounter - 1, cells.filter(c => c.type === 'img').map(c => c.img)));
@@ -2680,12 +2682,9 @@ function ovUpdateCursor(img) {
   // Usa mix-blend-mode difference: il testo appare sempre leggibile
   // sia sulla foto scura (appare chiaro) che sul bordo bianco (appare scuro)
   cursorLabel.style.mixBlendMode = 'difference';
-  cursorLabel.style.color = '#aaa';  // grigio chiaro — difference lo inverte sul bianco -> scuro, sulla foto -> chiaro
   setCursorHover(catLabel, numLabel, false, '#aaa');
-  // Triangolo sempre visibile nell'overlay, colore adattivo
-  const poly = cursor.querySelector('svg polygon');
-  if (poly) poly.setAttribute('fill', onPhoto ? '#fff' : '#000');
-  cursor.querySelector('svg').style.visibility = '';
+  // FIX 1: quando il testo flottante è visibile, nasconde il triangolo (ridondanza)
+  // cursor.classList.add('hover') già fatto da setCursorHover — il CSS #cursor.hover svg { display:none } lo nasconde
 }
 
 function showOverview(img, idx, imageList) {
@@ -2696,7 +2695,8 @@ function showOverview(img, idx, imageList) {
   oImg.src = img.url;
   ov.classList.add('open');
   overlayOpen = true;
-  cursor.querySelector('svg').style.visibility = '';  // triangolo sempre visibile
+  // FIX 1: non forzare la visibilità del triangolo — ovUpdateCursor gestisce il cursore
+  // (setCursorHover aggiunge .hover che nasconde l'SVG via CSS)
   ovUpdateCursor(img);
 }
 
@@ -2727,7 +2727,10 @@ function closeOverview() {
 document.getElementById('overview-overlay').addEventListener('click', e => {
   if (e.target.id === 'overview-overlay-close') return;
   if (e.target.id === 'overview-overlay-bg') { closeOverview(); return; }
-  const dir = e.clientX >= window.innerWidth / 2 ? 1 : -1;
+  // FIX 3: se il click è nella metà destra (anche solo 1px oltre il centro) → avanti
+  // se nella metà sinistra (anche solo 1px prima del centro) → indietro
+  const center = window.innerWidth / 2;
+  const dir = e.clientX >= center ? 1 : -1;
   ovNavigate(dir);
 });
 
