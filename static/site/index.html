@@ -1802,6 +1802,194 @@
     [data-theme="dark"] .cities-card-title { color: var(--white); }
     [data-theme="dark"] .cities-card-sub  { color: #888; }
 
+    /* ════════════════════════════════════════════════════════════════
+       SEZIONI COMUNI: titolo pagina
+    ════════════════════════════════════════════════════════════════ */
+    .section-page-title {
+      font-family: var(--font-nav);
+      font-size: 11px;
+      font-weight: 400;
+      letter-spacing: 0.08em;
+      color: var(--gray);
+      padding: 14px 40px 10px;
+      text-transform: none;
+    }
+
+    /* ════════════════════════════════════════════════════════════════
+       BOOKS
+    ════════════════════════════════════════════════════════════════ */
+    #view-books {
+      padding: var(--nav-h) 0 0 0;
+      overflow-y: auto;
+    }
+    .books-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+      gap: 28px;
+      padding: 32px 40px 60px;
+      align-items: start;
+    }
+    .book-item {
+      cursor: none;
+    }
+    .book-cover {
+      width: 100%;
+      aspect-ratio: 2 / 3;
+      overflow: hidden;
+      background: #e8e8e8;
+      position: relative;
+    }
+    .book-cover img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+    .book-cover-placeholder {
+      width: 100%;
+      height: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: var(--font-nav);
+      font-size: 9px;
+      letter-spacing: 0.08em;
+      color: #aaa;
+    }
+    .book-title {
+      font-family: var(--font-nav);
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--black);
+      margin-top: 10px;
+      line-height: 1.3;
+    }
+    .book-meta {
+      font-family: var(--font-mono);
+      font-size: 9px;
+      color: var(--gray);
+      margin-top: 4px;
+      line-height: 1.4;
+    }
+    .book-item:hover .book-cover img { opacity: .85; }
+    [data-theme="dark"] .book-cover { background: #222; }
+    [data-theme="dark"] .book-title  { color: var(--white); }
+
+    /* ════════════════════════════════════════════════════════════════
+       SCULPTURES PROJECT
+    ════════════════════════════════════════════════════════════════ */
+    #view-sculptures {
+      padding: var(--nav-h) 0 0 0;
+      overflow-y: auto;
+    }
+    #sculptures-list-view {
+      display: none;
+      padding: 36px 0 60px 0;
+    }
+    #sculptures-list-view.active { display: block; }
+    /* Cursor preview Sculptures */
+    #sculptures-cursor-preview {
+      position: fixed;
+      pointer-events: none;
+      z-index: 9000;
+      opacity: 0;
+      transition: opacity .15s;
+      transform: translate(-9999px, -9999px);
+    }
+    #sculptures-cursor-preview.visible { opacity: 1; }
+    #sculptures-cursor-preview img {
+      width: 120px;
+      height: 80px;
+      object-fit: cover;
+      display: block;
+      pointer-events: none;
+    }
+
+    /* ════════════════════════════════════════════════════════════════
+       BIOGRAPHY
+    ════════════════════════════════════════════════════════════════ */
+    #view-biography {
+      padding: var(--nav-h) 0 0 0;
+      overflow-y: auto;
+    }
+    .bio-wrap {
+      display: grid;
+      grid-template-columns: 1fr 320px;
+      gap: 60px;
+      padding: 32px 40px 60px;
+      align-items: start;
+    }
+    .bio-text {
+      font-family: var(--font-nav);
+      font-size: 13px;
+      line-height: 1.7;
+      color: var(--black);
+    }
+    .bio-text p { margin-bottom: 1.2em; }
+    .bio-text h2 {
+      font-family: var(--font-serif);
+      font-size: 22px;
+      font-weight: 400;
+      margin-bottom: 1em;
+      line-height: 1.2;
+    }
+    .bio-portrait img {
+      width: 100%;
+      display: block;
+    }
+    .bio-empty {
+      font-family: var(--font-mono);
+      font-size: 10px;
+      color: var(--gray);
+      letter-spacing: 0.06em;
+      padding: 40px 0;
+    }
+    [data-theme="dark"] .bio-text { color: var(--white); }
+
+    /* ════════════════════════════════════════════════════════════════
+       CONTACT
+    ════════════════════════════════════════════════════════════════ */
+    #view-contact {
+      padding: var(--nav-h) 0 0 0;
+      overflow-y: auto;
+    }
+    .contact-wrap {
+      padding: 32px 40px 60px;
+      max-width: 560px;
+    }
+    .contact-block {
+      margin-bottom: 32px;
+    }
+    .contact-label {
+      font-family: var(--font-mono);
+      font-size: 9px;
+      letter-spacing: 0.1em;
+      color: var(--gray);
+      text-transform: uppercase;
+      margin-bottom: 6px;
+    }
+    .contact-value {
+      font-family: var(--font-nav);
+      font-size: 14px;
+      color: var(--black);
+      line-height: 1.5;
+    }
+    .contact-value a {
+      color: var(--black);
+      text-decoration: none;
+      border-bottom: 1px solid currentColor;
+    }
+    .contact-value a:hover { opacity: 0.6; }
+    .contact-empty {
+      font-family: var(--font-mono);
+      font-size: 10px;
+      color: var(--gray);
+      letter-spacing: 0.06em;
+      padding: 40px 0;
+    }
+    [data-theme="dark"] .contact-value { color: var(--white); }
+    [data-theme="dark"] .contact-value a { color: var(--white); }
+
     .gallery-grid {
       display: grid;
       grid-template-columns: repeat(11, 1fr);  /* -20%: più colonne = celle più piccole */
@@ -2381,6 +2569,10 @@
       <button data-view="archive">Archive</button>
       <button data-view="interview">Interview</button>
       <button data-view="cities-index">Cities</button>
+      <button data-view="books">Books</button>
+      <button data-view="sculptures">Sculptures</button>
+      <button data-view="biography">Biography</button>
+      <button data-view="contact">Contact</button>
       <button id="btn-screensaver">Screensaver</button>
       <button id="btn-update" style="display:none" title="Aggiorna sito da GitHub">↻ Aggiorna</button>
     </nav>
@@ -2520,6 +2712,56 @@
         <div class="gallery-text-meta" id="gallery-text-meta"></div>
       </div>
 
+    </div>
+
+    <!-- ── VIEW: BOOKS ── -->
+    <div class="view" id="view-books">
+      <div class="section-page-title">Books</div>
+      <div class="books-grid" id="books-grid">
+        <!-- Generata via JS -->
+      </div>
+    </div>
+
+    <!-- ── VIEW: SCULPTURES PROJECT ── -->
+    <div class="view" id="view-sculptures" style="position:relative;">
+      <!-- Toggle lista / thumbs (stesso pattern Cities) -->
+      <div class="cities-view-toggle">
+        <button class="cities-toggle-btn active" id="sculptures-btn-list">lista</button>
+        <button class="cities-toggle-btn" id="sculptures-btn-thumbs">thumbs</button>
+      </div>
+      <!-- Vista Lista -->
+      <div id="sculptures-list-view" class="active">
+        <!-- Generata via JS -->
+      </div>
+      <!-- Vista Thumbs -->
+      <div id="sculptures-thumbs-view" style="display:none">
+        <div class="cities-index-grid" id="sculptures-index-grid">
+          <!-- Generata via JS -->
+        </div>
+      </div>
+    </div>
+    <!-- Preview thumbnail al cursore per Sculptures -->
+    <div id="sculptures-cursor-preview"><img id="sculptures-cursor-preview-img" src="" alt=""></div>
+
+    <!-- ── VIEW: BIOGRAPHY ── -->
+    <div class="view" id="view-biography">
+      <div class="section-page-title">Biography</div>
+      <div class="bio-wrap" id="bio-wrap">
+        <div class="bio-text" id="bio-text">
+          <!-- Generata via JS / CMS -->
+        </div>
+        <div class="bio-portrait" id="bio-portrait">
+          <!-- Foto ritratto opzionale -->
+        </div>
+      </div>
+    </div>
+
+    <!-- ── VIEW: CONTACT ── -->
+    <div class="view" id="view-contact">
+      <div class="section-page-title">Contact</div>
+      <div class="contact-wrap" id="contact-wrap">
+        <!-- Generata via JS / CMS -->
+      </div>
     </div>
 
   </main>
@@ -4279,12 +4521,14 @@ function updateFooter() {
   const status = document.getElementById('footer-status');
   const kw     = document.getElementById('footer-keyword');
   const labels = {
-    home:    `Overview — ${ALL_IMAGES.length} immagini`,
-    index:   `Index — ${PROJECTS.length} progetti`,
-    archive: `Archive — ${PROJECTS.length} serie`,
-    gallery: galleryProject
-      ? `${galleryProject.title} — ${galleryProject.images.length} immagini`
-      : 'Gallery',
+    home:        `Overview — ${ALL_IMAGES.length} immagini`,
+    index:       `Index — ${PROJECTS.length} progetti`,
+    archive:     `Archive — ${PROJECTS.length} serie`,
+    gallery:     galleryProject ? `${galleryProject.title} — ${galleryProject.images.length} immagini` : 'Gallery',
+    books:       'Books',
+    sculptures:  'Sculptures Project',
+    biography:   'Biography',
+    contact:     'Contact',
   };
   status.textContent = labels[currentView] || '';
 }
@@ -4326,6 +4570,229 @@ function buildInterview() {
     `;
     list.appendChild(item);
   });
+}
+
+// ════════════════════════════════════════════════════════════════
+// BOOKS
+// ════════════════════════════════════════════════════════════════
+function buildBooks() {
+  const grid = document.getElementById('books-grid');
+  if (!grid) return;
+  grid.innerHTML = '';
+
+  // Filtra i progetti con category_id === 'books'
+  const books = PROJECTS.filter(p => p.category_id === 'books');
+
+  if (books.length === 0) {
+    grid.innerHTML = '<div style="padding:40px;font-family:var(--font-mono);font-size:10px;color:var(--gray);letter-spacing:.06em">Nessun libro ancora. Aggiungilo dal CMS.</div>';
+    return;
+  }
+
+  books.forEach(p => {
+    const item = document.createElement('div');
+    item.className = 'book-item';
+    const coverUrl = p.images.length > 0 ? p.images[0].url : '';
+    item.innerHTML = `
+      <div class="book-cover">
+        ${coverUrl
+          ? `<img src="${coverUrl}" alt="${p.title}" loading="lazy">`
+          : `<div class="book-cover-placeholder">No cover</div>`}
+      </div>
+      <div class="book-title">${p.title || ''}</div>
+      <div class="book-meta">${[p.year, p.publication, p.place].filter(Boolean).join(' · ')}</div>
+    `;
+    if (p.images.length > 0) {
+      item.addEventListener('click', () => {
+        switchView('gallery');
+        openGallery(p);
+      });
+    }
+    grid.appendChild(item);
+  });
+}
+
+// ════════════════════════════════════════════════════════════════
+// SCULPTURES PROJECT
+// ════════════════════════════════════════════════════════════════
+function buildSculpturesIndex() {
+  const grid     = document.getElementById('sculptures-index-grid');
+  const listView = document.getElementById('sculptures-list-view');
+  if (!grid || !listView) return;
+  grid.innerHTML = '';
+  listView.innerHTML = '';
+
+  // Filtra i progetti con category_id === 'sculptures'
+  const projects = PROJECTS.filter(p => p.category_id === 'sculptures');
+
+  if (projects.length === 0) {
+    listView.innerHTML = '<div style="padding:40px;font-family:var(--font-mono);font-size:10px;color:var(--gray);letter-spacing:.06em">Nessun progetto ancora. Aggiungilo dal CMS.</div>';
+    grid.innerHTML = listView.innerHTML;
+    return;
+  }
+
+  // ── Vista Lista (stesso stile Cities) ──
+  projects.forEach((p, idx) => {
+    const coverUrl = p.images.length > 0 ? p.images[0].url : '';
+    const row = document.createElement('div');
+    row.className = 'cities-list-row';
+    const code = String.fromCharCode(65 + Math.floor(idx / 26)) + String(idx + 1).padStart(2, '0');
+    row.innerHTML = `
+      <span class="cities-list-code">${code}</span>
+      <span class="cities-list-name">${p.title || ''}</span>
+      <span class="cities-list-year">${p.year || ''}</span>
+    `;
+    // Preview al cursore
+    const previewEl  = document.getElementById('sculptures-cursor-preview');
+    const previewImg = document.getElementById('sculptures-cursor-preview-img');
+    row.addEventListener('mouseenter', () => {
+      if (coverUrl && previewImg) {
+        previewImg.src = coverUrl;
+        previewEl.classList.add('visible');
+      }
+    });
+    row.addEventListener('mouseleave', () => {
+      if (previewEl) previewEl.classList.remove('visible');
+    });
+    row.addEventListener('click', () => {
+      switchView('gallery');
+      openGallery(p);
+    });
+    listView.appendChild(row);
+  });
+
+  // ── Vista Thumbs (stesso stile Cities) ──
+  projects.forEach(p => {
+    const coverUrl = p.images.length > 0 ? p.images[0].url : '';
+    const card = document.createElement('div');
+    card.className = 'cities-card';
+    card.innerHTML = `
+      <div class="cities-card-cover">
+        ${coverUrl ? `<img src="${coverUrl}" alt="${p.title}" loading="lazy">` : ''}
+      </div>
+      <div class="cities-card-title">${p.title || ''}</div>
+      <div class="cities-card-sub">${p.subtitle || p.place || ''}</div>
+    `;
+    card.addEventListener('click', () => {
+      switchView('gallery');
+      openGallery(p);
+    });
+    grid.appendChild(card);
+  });
+
+  // Toggle lista/thumbs
+  const btnList   = document.getElementById('sculptures-btn-list');
+  const btnThumbs = document.getElementById('sculptures-btn-thumbs');
+  const thumbsView = document.getElementById('sculptures-thumbs-view');
+  if (btnList && btnThumbs) {
+    btnList.addEventListener('click', () => {
+      btnList.classList.add('active');
+      btnThumbs.classList.remove('active');
+      listView.style.display = '';
+      listView.classList.add('active');
+      thumbsView.style.display = 'none';
+    });
+    btnThumbs.addEventListener('click', () => {
+      btnThumbs.classList.add('active');
+      btnList.classList.remove('active');
+      thumbsView.style.display = '';
+      listView.classList.remove('active');
+      listView.style.display = 'none';
+    });
+  }
+
+  // Aggiorna preview al mousemove
+  const previewEl  = document.getElementById('sculptures-cursor-preview');
+  const previewImg = document.getElementById('sculptures-cursor-preview-img');
+  if (previewEl) {
+    document.addEventListener('mousemove', e => {
+      if (currentView !== 'sculptures') return;
+      previewEl.style.transform = `translate(${e.clientX + 16}px, ${e.clientY - 40}px)`;
+    });
+  }
+}
+
+// ════════════════════════════════════════════════════════════════
+// BIOGRAPHY
+// ════════════════════════════════════════════════════════════════
+function buildBiography() {
+  const textEl    = document.getElementById('bio-text');
+  const portraitEl = document.getElementById('bio-portrait');
+  if (!textEl) return;
+
+  // Cerca un progetto con category_id === 'biography'
+  const bioProj = PROJECTS.find(p => p.category_id === 'biography');
+
+  if (!bioProj) {
+    textEl.innerHTML = '<div class="bio-empty">Nessun testo ancora. Aggiungilo dal CMS.</div>';
+    return;
+  }
+
+  // Testo: usa i blocks di testo del progetto
+  let html = '';
+  if (bioProj.title) html += `<h2>${bioProj.title}</h2>`;
+  if (bioProj.description) html += `<p>${bioProj.description}</p>`;
+  if (bioProj.texts && bioProj.texts.length > 0) {
+    bioProj.texts.forEach(block => {
+      if (block.type === 'body' || block.type === 'text') {
+        html += `<p>${block.content || block.text || ''}</p>`;
+      } else if (block.type === 'pullquote') {
+        html += `<blockquote style="font-family:var(--font-serif);font-size:18px;font-style:italic;margin:1.5em 0;padding-left:1.5em;border-left:2px solid var(--gray)">${block.content || block.text || ''}</blockquote>`;
+      }
+    });
+  }
+  if (!html) html = '<div class="bio-empty">Testo non ancora inserito.</div>';
+  textEl.innerHTML = html;
+
+  // Foto ritratto: prima immagine del progetto biography
+  if (portraitEl && bioProj.images.length > 0) {
+    const img = document.createElement('img');
+    img.src = bioProj.images[0].url;
+    img.alt = bioProj.title || 'Portrait';
+    img.loading = 'lazy';
+    portraitEl.appendChild(img);
+  }
+}
+
+// ════════════════════════════════════════════════════════════════
+// CONTACT
+// ════════════════════════════════════════════════════════════════
+function buildContact() {
+  const wrap = document.getElementById('contact-wrap');
+  if (!wrap) return;
+
+  // Cerca un progetto con category_id === 'contact'
+  const contactProj = PROJECTS.find(p => p.category_id === 'contact');
+
+  if (!contactProj) {
+    wrap.innerHTML = '<div class="contact-empty">Nessun contatto ancora. Aggiungilo dal CMS.</div>';
+    return;
+  }
+
+  let html = '';
+  // Usa i testi del progetto contact come blocchi info
+  if (contactProj.texts && contactProj.texts.length > 0) {
+    contactProj.texts.forEach(block => {
+      const label = block.label || block.type || '';
+      const value = block.content || block.text || '';
+      if (!value) return;
+      // Rileva se il valore è un'email o URL
+      let valueHtml = value;
+      if (/^https?:\/\//.test(value)) {
+        valueHtml = `<a href="${value}" target="_blank" rel="noopener">${value}</a>`;
+      } else if (/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) {
+        valueHtml = `<a href="mailto:${value}">${value}</a>`;
+      }
+      html += `<div class="contact-block"><div class="contact-label">${label}</div><div class="contact-value">${valueHtml}</div></div>`;
+    });
+  }
+  // Fallback: usa description, place, publication come contatti
+  if (!html) {
+    if (contactProj.description) html += `<div class="contact-block"><div class="contact-label">Info</div><div class="contact-value">${contactProj.description}</div></div>`;
+    if (contactProj.place) html += `<div class="contact-block"><div class="contact-label">Studio</div><div class="contact-value">${contactProj.place}</div></div>`;
+    if (contactProj.publication) html += `<div class="contact-block"><div class="contact-label">Web</div><div class="contact-value"><a href="${contactProj.publication}" target="_blank">${contactProj.publication}</a></div></div>`;
+  }
+  if (!html) html = '<div class="contact-empty">Informazioni di contatto non ancora inserite.</div>';
+  wrap.innerHTML = html;
 }
 
 // Lightbox keyboard
@@ -4444,6 +4911,10 @@ async function loadFromCMS() {
   buildCitiesIndex();
   buildArchive();
   buildInterview();
+  buildBooks();
+  buildSculpturesIndex();
+  buildBiography();
+  buildContact();
 
   // Costruisce il menu: dinamico se CMS disponibile, statico altrimenti
   if (usedCMS && CMS_CATEGORIES.length > 0) {

@@ -652,6 +652,30 @@
       "name": "Tokyo",
       "order": 3,
       "visible": true
+    },
+    {
+      "id": "books",
+      "name": "Books",
+      "order": 4,
+      "visible": true
+    },
+    {
+      "id": "sculptures",
+      "name": "Sculptures Project",
+      "order": 5,
+      "visible": true
+    },
+    {
+      "id": "biography",
+      "name": "Biography",
+      "order": 6,
+      "visible": true
+    },
+    {
+      "id": "contact",
+      "name": "Contact",
+      "order": 7,
+      "visible": true
     }
   ]
 }
