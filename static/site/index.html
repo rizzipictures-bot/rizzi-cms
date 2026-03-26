@@ -86,8 +86,8 @@
     }
     #cursor-label {
       position: fixed;
-      font-size: 22px;
-      letter-spacing: 0;
+      font-size: 13px;
+      letter-spacing: 0.04em;
       color: var(--black);
       pointer-events: none;
       z-index: 9998;
@@ -95,9 +95,22 @@
       opacity: 0;
       transition: opacity .15s;
       white-space: nowrap;
-      font-weight: 300;
+      font-weight: 400;
+      font-family: var(--font-nav);
+      display: flex;
+      gap: 18px;
+      align-items: baseline;
     }
     #cursor-label.show { opacity: 1; }
+    #cursor-label .cl-cat {
+      font-weight: 400;
+    }
+    #cursor-label .cl-num {
+      font-weight: 300;
+      opacity: 0.6;
+      font-size: 11px;
+      letter-spacing: 0.06em;
+    }
 
     /* ══════════════════════════════════════════════════════════════
        LANDING PAGE HERO
@@ -1888,7 +1901,7 @@
 
 <!-- Cursore custom -->
 <div id="cursor"><svg viewBox="0 0 14 12" xmlns="http://www.w3.org/2000/svg"><polygon points="7,0 14,12 0,12" /></svg></div>
-<div id="cursor-label"></div>
+<div id="cursor-label"><span class="cl-cat"></span><span class="cl-num"></span></div>
 
 <!-- Landing page hero -->
 <div id="landing">
@@ -2296,11 +2309,16 @@ document.addEventListener('mousemove', e => {
   cursorLabel.style.top  = my + 'px';
 });
 
-function setCursorHover(label = '') {
+function setCursorHover(label = '', num = '') {
   cursor.classList.add('hover');
-  if (label) {
-    cursorLabel.textContent = label;
+  const clCat = cursorLabel.querySelector('.cl-cat');
+  const clNum = cursorLabel.querySelector('.cl-num');
+  if (label || num) {
+    if (clCat) clCat.textContent = label;
+    if (clNum) clNum.textContent = num;
     cursorLabel.classList.add('show');
+  } else {
+    cursorLabel.classList.remove('show');
   }
 }
 function resetCursor() {
@@ -2314,7 +2332,8 @@ document.addEventListener('mouseover', e => {
   const t = e.target.closest('button, a, .grid-item, .archive-row, .thumb, .index-list li, .archive-expanded-viewall, .archive-expanded-toggle, .vao-close, .vao-grid-item');
   if (t) {
     const label = t.dataset.label || '';
-    setCursorHover(label);
+    const num   = t.dataset.num   || '';
+    setCursorHover(label, num);
   } else {
     resetCursor();
   }
@@ -2363,32 +2382,42 @@ function buildOverviewGrid() {
   const imgs = [...ALL_IMAGES];
 
   // Costruiamo la sequenza di celle: foto + blank sparsi
-  // Regola: max 3 blank ogni 36 foto (proporzionale per serie più lunghe)
-  // I blank possono cadere in qualsiasi riga (anche piene), in posizione interna
+  // Regola: max 1 blank per riga, max 3 blank ogni 36 foto (proporzionale)
   const maxBlanks = Math.max(1, Math.round(imgs.length / 36 * 3));
   const cells = []; // ogni elemento: { type: 'img', img } oppure { type: 'blank' }
   let imgIdx = 0;
   let blanksInserted = 0;
 
   while (imgIdx < imgs.length) {
-    const posInRow = cells.length % COLS;
-    // Prova a inserire un blank in posizione interna (non prima, non ultima colonna)
-    // con probabilità proporzionale ai blank ancora disponibili
-    const blanksLeft = maxBlanks - blanksInserted;
+    // Costruisci riga per riga: per ogni riga decidi se inserire 1 solo blank
     const photosLeft = imgs.length - imgIdx;
-    const tryBlank = posInRow > 0 && posInRow < COLS - 1 &&
-                     blanksLeft > 0 &&
-                     photosLeft > 1 &&
-                     Math.random() < (blanksLeft / photosLeft) * 2.5;
-    if (tryBlank) {
-      cells.push({ type: 'blank' });
-      blanksInserted++;
-    } else {
-      cells.push({ type: 'img', img: imgs[imgIdx] });
-      imgIdx++;
+    const photosThisRow = Math.min(photosLeft, COLS);
+    // Inserisci blank solo se: quota non esaurita, riga ha almeno 2 foto,
+    // e c'è spazio (la riga con blank avrà photosThisRow foto + 1 blank = max COLS+1 celle,
+    // ma vogliamo che la riga rimanga visivamente a 9 colonne, quindi blank solo
+    // se la riga è già piena O se abbiamo almeno 2 foto)
+    const blanksLeft = maxBlanks - blanksInserted;
+    const useBlank = blanksLeft > 0 && photosThisRow >= 2 && Math.random() < 0.55;
+    // Posizione del blank: casuale tra colonna 1 e photosThisRow-1 (mai prima né ultima)
+    const blankCol = useBlank ? (1 + Math.floor(Math.random() * (photosThisRow - 1))) : -1;
+
+    let rowPhotoCount = 0;
+    for (let col = 0; col < photosThisRow + (useBlank ? 1 : 0); col++) {
+      if (useBlank && col === blankCol) {
+        cells.push({ type: 'blank' });
+        blanksInserted++;
+      } else {
+        if (imgIdx < imgs.length) {
+          cells.push({ type: 'img', img: imgs[imgIdx] });
+          imgIdx++;
+          rowPhotoCount++;
+        }
+      }
     }
   }
 
+  // Calcola numero progressivo per ogni foto (solo celle img)
+  let photoCounter = 0;
   cells.forEach((cell, i) => {
     if (cell.type === 'blank') {
       const blank = document.createElement('div');
@@ -2397,11 +2426,17 @@ function buildOverviewGrid() {
       return;
     }
 
+    photoCounter++;
     const img = cell.img;
     const item = document.createElement('div');
     item.className = 'thumb-item';
 
-    // alias per il forEach originale
+    // Dati per il cursore: categoria del progetto + numero progressivo
+    const catLabel = img.project.category || img.project.title || '';
+    const numLabel = String(photoCounter).padStart(2, '0') + ' / ' + String(imgs.length).padStart(2, '0');
+    item.dataset.label = catLabel;
+    item.dataset.num   = numLabel;
+
     const imgEl = document.createElement('img');
     imgEl.src     = img.url;
     imgEl.alt     = img.project.title;
@@ -2412,8 +2447,14 @@ function buildOverviewGrid() {
     item.appendChild(imgEl);
 
     const nameEl = document.getElementById('overview-project-name');
-    item.addEventListener('mouseenter', () => { if (nameEl) nameEl.textContent = img.project.title || ''; });
-    item.addEventListener('mouseleave', () => { if (nameEl) nameEl.innerHTML = '\u00a0'; });
+    item.addEventListener('mouseenter', () => {
+      if (nameEl) nameEl.textContent = img.project.title || '';
+      setCursorHover(catLabel, numLabel);
+    });
+    item.addEventListener('mouseleave', () => {
+      if (nameEl) nameEl.innerHTML = '\u00a0';
+      resetCursor();
+    });
     item.addEventListener('click', () => showOverview(img, i));
 
     grid.appendChild(item);
@@ -3578,29 +3619,31 @@ loadFromCMS();
     vaoSingle.classList.add('hidden');
     vaoSingleImg.src = '';
 
-    // Costruisci celle griglia: max 3 blank ogni 36 foto (proporzionale)
-    // I blank possono cadere in qualsiasi riga (anche piene), in posizione interna
+    // Costruisci celle griglia: max 1 blank per riga, max 3 blank ogni 36 foto
     const maxBlanks = Math.max(1, Math.round(images.length / 36 * 3));
     const cells = [];
     let imgIdx = 0;
     let blanksInserted = 0;
     while (imgIdx < images.length) {
-      const posInRow = cells.length % COLS;
-      const blanksLeft = maxBlanks - blanksInserted;
       const photosLeft = images.length - imgIdx;
-      const tryBlank = posInRow > 0 && posInRow < COLS - 1 &&
-                       blanksLeft > 0 &&
-                       photosLeft > 1 &&
-                       Math.random() < (blanksLeft / photosLeft) * 2.5;
-      if (tryBlank) {
-        cells.push({ type: 'blank' });
-        blanksInserted++;
-      } else {
-        cells.push({ type: 'img', img: images[imgIdx] });
-        imgIdx++;
+      const photosThisRow = Math.min(photosLeft, COLS);
+      const blanksLeft = maxBlanks - blanksInserted;
+      const useBlank = blanksLeft > 0 && photosThisRow >= 2 && Math.random() < 0.55;
+      const blankCol = useBlank ? (1 + Math.floor(Math.random() * (photosThisRow - 1))) : -1;
+      for (let col = 0; col < photosThisRow + (useBlank ? 1 : 0); col++) {
+        if (useBlank && col === blankCol) {
+          cells.push({ type: 'blank' });
+          blanksInserted++;
+        } else {
+          if (imgIdx < images.length) {
+            cells.push({ type: 'img', img: images[imgIdx] });
+            imgIdx++;
+          }
+        }
       }
     }
 
+    let vaoPhotoCounter = 0;
     cells.forEach((cell, i) => {
       if (cell.type === 'blank') {
         const blank = document.createElement('div');
@@ -3608,9 +3651,15 @@ loadFromCMS();
         vaoGrid.appendChild(blank);
         return;
       }
+      vaoPhotoCounter++;
       const img = cell.img;
       const item = document.createElement('div');
       item.className = 'vao-grid-item';
+      // Cursore: categoria del progetto + numero progressivo
+      const catLabel = (img.project && (img.project.category || img.project.title)) || title || '';
+      const numLabel = String(vaoPhotoCounter).padStart(2, '0') + ' / ' + String(images.length).padStart(2, '0');
+      item.dataset.label = catLabel;
+      item.dataset.num   = numLabel;
       const im = document.createElement('img');
       im.src = img.url;
       im.loading = 'lazy';
@@ -3619,6 +3668,8 @@ loadFromCMS();
         if (this.naturalWidth > this.naturalHeight) item.classList.add('is-landscape');
       });
       item.appendChild(im);
+      item.addEventListener('mouseenter', () => setCursorHover(catLabel, numLabel));
+      item.addEventListener('mouseleave', () => resetCursor());
       item.addEventListener('click', e => {
         e.stopPropagation();
         openSingleViewer(images, cells.filter(c=>c.type==='img').indexOf(cell), title);
