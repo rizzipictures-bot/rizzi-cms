@@ -3409,9 +3409,22 @@ document.addEventListener('mousemove', e => {
       cursor.style.transform = `translate(calc(${mx}px - 9px), calc(${my}px - 9px))`;  /* centrato sul punto — 18px/2 */
 
       // Posiziona preview archive al cursore
+      // Nasconde la preview se il cursore è entro 60px da un pallino media
       const _arcPreview = document.getElementById('archive-cursor-preview');
       if (_arcPreview && _arcPreview.classList.contains('visible')) {
-        _arcPreview.style.transform = `translate(${mx + 20}px, ${my - 70}px)`;
+        const _balls = document.querySelectorAll('.archive-row:hover .media-ball');
+        let _nearBall = false;
+        _balls.forEach(b => {
+          const r = b.getBoundingClientRect();
+          const cx = r.left + r.width / 2;
+          const cy = r.top  + r.height / 2;
+          if (Math.abs(mx - cx) < 60 && Math.abs(my - cy) < 60) _nearBall = true;
+        });
+        if (_nearBall) {
+          _arcPreview.classList.remove('visible');
+        } else {
+          _arcPreview.style.transform = `translate(${mx + 20}px, ${my - 70}px)`;
+        }
       }
 
       // Posiziona preview cities al cursore
@@ -4085,6 +4098,7 @@ function buildArchive() {
         });
         ball.addEventListener('mouseleave', e => {
           // Ripristina la preview solo se il cursore è ancora sulla riga
+          // e non è vicino ad altri pallini (il mousemove gestirà il re-hide se necessario)
           const firstImg = (p.images || [])[0];
           if (firstImg && row.matches(':hover')) {
             const previewImg = document.getElementById('archive-cursor-preview-img');
