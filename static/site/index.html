@@ -77,8 +77,8 @@
       height: 12px;
       overflow: visible;
       flex-shrink: 0;
-      /* Rotazione con transizione snap — solo angoli netti */
-      transition: transform .15s steps(1);
+      /* Rotazione snap istantanea — solo angoli netti, nessun ritardo */
+      transition: none;
     }
     #cursor svg polygon {
       fill: #000;
@@ -104,10 +104,7 @@
       display: flex;
       gap: 4px;
       align-items: baseline;
-      /* Ombra per visibilità su sfondi scuri */
-      text-shadow:
-        0 0 8px rgba(255,255,255,.9),
-        0 0 16px rgba(255,255,255,.6);
+      text-shadow: none;
     }
     #cursor-label.show { opacity: 1; }
     #cursor-label .cl-cat {
@@ -387,7 +384,7 @@
       height: 100%;
       object-fit: cover;
       object-position: center top;
-      transition: opacity .25s var(--ease-out);
+      transition: opacity .18s var(--ease-out);
     }
     /* Foto orizzontale: altezza ~58% della cella verticale, bordo inferiore allineato */
     #view-home .thumbs-grid .thumb-item.is-landscape {
@@ -398,8 +395,18 @@
       object-fit: cover;
       object-position: center center;
     }
-    #view-home .thumbs-grid .thumb-item:hover img {
-      opacity: .45;   /* -30% rispetto a 0.75 */
+    /* Hover Overview: overlay grigio scuro 60% su pannello bianco */
+    #view-home .thumbs-grid .thumb-item::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: rgba(40,40,40,0);
+      transition: background .18s var(--ease-out);
+      pointer-events: none;
+      z-index: 1;
+    }
+    #view-home .thumbs-grid .thumb-item:hover::after {
+      background: rgba(40,40,40,0.60);
     }
     /* Spazio vuoto Miechowski — cella bianca vuota */
     #view-home .thumbs-grid .thumb-blank {
@@ -1236,7 +1243,23 @@
       object-fit: cover;
       object-position: center center;
     }
-    .vao-grid-item:hover img { opacity: 0.45; /* -30% rispetto a 0.75 */ }
+    /* Hover View All: overlay grigio scuro 60% su pannello bianco */
+    .vao-grid-item::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: rgba(40,40,40,0);
+      transition: background .18s var(--ease-out);
+      pointer-events: none;
+      z-index: 1;
+    }
+    .vao-grid-item:hover::after {
+      background: rgba(40,40,40,0.60);
+    }
+    /* Hover View All dark: overlay bianco 30% */
+    #archive-viewall-overlay.theme-dark .vao-grid-item:hover::after {
+      background: rgba(255,255,255,0.30);
+    }
     .vao-grid-blank {
       background: #fff;
       opacity: 0;
@@ -1599,6 +1622,10 @@
     }
     [data-theme="dark"] #view-home .thumbs-grid .thumb-item {
       background: #000;
+    }
+    /* Hover dark mode: overlay bianco 30% */
+    [data-theme="dark"] #view-home .thumbs-grid .thumb-item:hover::after {
+      background: rgba(255,255,255,0.30);
     }
     [data-theme="dark"] #view-home .thumbs-grid .thumb-blank {
       background: #000;
@@ -2314,7 +2341,7 @@ document.addEventListener('mousemove', e => {
     const dx = mx - prevMx;
     const dy = my - prevMy;
     const dist = Math.sqrt(dx * dx + dy * dy);
-    if (dist > 4) {
+    if (dist > 2) {
       const absDx = Math.abs(dx);
       const absDy = Math.abs(dy);
       if (absDx > absDy) {
@@ -2337,7 +2364,7 @@ document.addEventListener('mousemove', e => {
   cursorLabel.style.top  = my + 'px';
 });
 
-function setCursorHover(label = '', num = '') {
+function setCursorHover(label = '', num = '', darkHover = false) {
   cursor.classList.add('hover');
   const clCat = cursorLabel.querySelector('.cl-cat');
   const clSep = cursorLabel.querySelector('.cl-sep');
@@ -2347,6 +2374,12 @@ function setCursorHover(label = '', num = '') {
     if (clNum) clNum.textContent = num;
     // Mostra separatore solo se entrambi i testi sono presenti
     if (clSep) clSep.style.display = (label && num) ? '' : 'none';
+    // Colore testo: bianco su hover scuro, nero su hover chiaro
+    const textColor = darkHover ? '#fff' : '#1a1a1a';
+    const sepColor  = darkHover ? 'rgba(255,255,255,0.6)' : '#888';
+    cursorLabel.style.color = textColor;
+    cursorLabel.style.textShadow = 'none';
+    if (clSep) clSep.style.color = sepColor;
     cursorLabel.classList.add('show');
   } else {
     cursorLabel.classList.remove('show');
@@ -2474,8 +2507,8 @@ function buildOverviewGrid() {
     const item = document.createElement('div');
     item.className = 'thumb-item';
 
-    // Dati per il cursore: categoria del progetto + numero progressivo
-    const catLabel = img.project.category || img.project.title || '';
+    // Dati per il cursore: titolo specifico del progetto (Istanbul, Tokyo...) + numero progressivo
+    const catLabel = img.project.title || img.project.category || '';
     const numLabel = String(photoCounter).padStart(2, '0') + ' / ' + String(imgs.length).padStart(2, '0');
     item.dataset.label = catLabel;
     item.dataset.num   = numLabel;
@@ -2492,7 +2525,9 @@ function buildOverviewGrid() {
     const nameEl = document.getElementById('overview-project-name');
     item.addEventListener('mouseenter', () => {
       if (nameEl) nameEl.textContent = img.project.title || '';
-      setCursorHover(catLabel, numLabel);
+      // Pannello bianco: hover grigio scuro → testo bianco
+      const isDark = document.documentElement.dataset.theme === 'dark';
+      setCursorHover(catLabel, numLabel, !isDark);
     });
     item.addEventListener('mouseleave', () => {
       if (nameEl) nameEl.innerHTML = '\u00a0';
@@ -3760,8 +3795,8 @@ loadFromCMS();
       const img = cell.img;
       const item = document.createElement('div');
       item.className = 'vao-grid-item';
-      // Cursore: categoria del progetto + numero progressivo
-      const catLabel = (img.project && (img.project.category || img.project.title)) || title || '';
+      // Cursore: titolo specifico del progetto (Istanbul, Tokyo...) + numero progressivo
+      const catLabel = (img.project && (img.project.title || img.project.category)) || title || '';
       const numLabel = String(vaoPhotoCounter).padStart(2, '0') + ' / ' + String(images.length).padStart(2, '0');
       item.dataset.label = catLabel;
       item.dataset.num   = numLabel;
@@ -3773,7 +3808,12 @@ loadFromCMS();
         if (this.naturalWidth > this.naturalHeight) item.classList.add('is-landscape');
       });
       item.appendChild(im);
-      item.addEventListener('mouseenter', () => setCursorHover(catLabel, numLabel));
+      item.addEventListener('mouseenter', () => {
+        // Pannello bianco: hover grigio scuro → testo bianco; pannello nero: hover chiaro → testo nero
+        const overlayEl = document.getElementById('archive-viewall-overlay');
+        const isDarkPanel = overlayEl && overlayEl.classList.contains('theme-dark');
+        setCursorHover(catLabel, numLabel, !isDarkPanel);
+      });
       item.addEventListener('mouseleave', () => resetCursor());
       item.addEventListener('click', e => {
         e.stopPropagation();
