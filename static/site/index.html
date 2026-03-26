@@ -373,6 +373,10 @@
       transition: opacity .25s var(--ease-out);
     }
     /* Foto orizzontale: base allineata alle verticali, spazio bianco in cima */
+    #view-home .thumbs-grid .thumb-item.is-landscape {
+      /* Altezza +10% rispetto alla cella standard (già +15% sul quadrato) */
+      height: calc((100vw - 24px) / 9 * 1.15 * 1.10);
+    }
     #view-home .thumbs-grid .thumb-item.is-landscape img {
       object-fit: contain;
       object-position: center bottom;
@@ -1205,6 +1209,10 @@
       object-fit: cover;
       object-position: center top;
       display: block;
+    }
+    .vao-grid-item.is-landscape {
+      /* Altezza +10% rispetto alla cella standard (già +15% sul quadrato) */
+      height: calc((100vw - 24px) / 9 * 1.15 * 1.10);
     }
     .vao-grid-item.is-landscape img {
       object-fit: contain;
