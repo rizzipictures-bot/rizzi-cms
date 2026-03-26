@@ -1546,10 +1546,10 @@
     #cities-list-view.active { display: block; }
     .cities-list-letter {
       font-family: var(--font-nav);
-      font-size: 28px;
+      font-size: 21px;  /* -25% da 28px */
       font-weight: 700;
       color: #000;
-      padding: 28px 16px 8px;
+      padding: 20px 16px 4px;
       line-height: 1;
     }
     .cities-list-row {
@@ -3023,15 +3023,19 @@ function buildCitiesIndex() {
     (a.title || '').localeCompare(b.title || '', 'it')
   );
 
-  // Foto Tokyo reali per la preview al cursore
+  // Foto Tokyo reali per la preview al cursore — path assoluto rispetto alla root del sito
+  const BASE = window.location.origin + window.location.pathname.replace(/\/[^/]*$/, '/');
   const TOKYO_IMAGES = [
-    REAL_IMAGES[23] ? REAL_IMAGES[23].file : null,
-    REAL_IMAGES[24] ? REAL_IMAGES[24].file : null,
-    REAL_IMAGES[25] ? REAL_IMAGES[25].file : null,
-    REAL_IMAGES[0]  ? REAL_IMAGES[0].file  : null,
-    REAL_IMAGES[1]  ? REAL_IMAGES[1].file  : null,
-    REAL_IMAGES[2]  ? REAL_IMAGES[2].file  : null,
+    REAL_IMAGES[23] ? BASE + REAL_IMAGES[23].file : null,
+    REAL_IMAGES[24] ? BASE + REAL_IMAGES[24].file : null,
+    REAL_IMAGES[25] ? BASE + REAL_IMAGES[25].file : null,
+    REAL_IMAGES[0]  ? BASE + REAL_IMAGES[0].file  : null,
+    REAL_IMAGES[1]  ? BASE + REAL_IMAGES[1].file  : null,
+    REAL_IMAGES[2]  ? BASE + REAL_IMAGES[2].file  : null,
   ].filter(Boolean);
+
+  // Progetto Tokyo statico con foto reali (per la gallery al click)
+  const TOKYO_PROJECT_STATIC = PROJECTS_STATIC.find(p => p.id === 'tokyo-2020');
 
   // ── VISTA THUMBS (esistente) ──────────────────────────────────
   const citiesProjects = PROJECTS.filter(p =>
@@ -3095,22 +3099,31 @@ function buildCitiesIndex() {
       <span class="cities-list-year">${p.year || ''}</span>
     `;
 
-    // Preview al cursore: solo se il progetto è Tokyo (o ha foto reali)
+    // Determina se è un progetto Tokyo/Giappone
     const isTokyoProject = (p.title || '').toLowerCase().includes('tokyo') ||
+                           (p.title || '').toLowerCase().includes('giappone') ||
                            (p.place || '').toLowerCase().includes('tokyo');
+
+    // Titolo da mostrare nella lista: rinomina Giappone → Tokyo
+    const displayTitle = isTokyoProject
+      ? (p.title.toLowerCase() === 'giappone' ? 'Tokyo' : p.title)
+      : p.title;
+    row.querySelector('.cities-list-name').textContent = displayTitle;
+
+    // Preview al cursore
     const previewImages = isTokyoProject ? TOKYO_IMAGES :
-                          (p.images && p.images.length > 0 ? [p.images[0].url] : []);
-    let previewIdx = 0;
+                          (p.images && p.images.length > 0
+                            ? p.images.map(i => i.url.startsWith('http') ? i.url : BASE + i.url)
+                            : []);
 
     const citiesPreview    = document.getElementById('cities-cursor-preview');
     const citiesPreviewImg = document.getElementById('cities-cursor-preview-img');
 
     row.addEventListener('mouseenter', () => {
       if (previewImages.length === 0) return;
-      previewIdx = Math.floor(Math.random() * previewImages.length);
-      citiesPreviewImg.src = previewImages[previewIdx];
+      const idx = Math.floor(Math.random() * previewImages.length);
+      citiesPreviewImg.src = previewImages[idx];
       citiesPreview.classList.add('visible');
-      // Nascondi pallino cursore
       document.getElementById('cursor').classList.add('hover');
     });
     row.addEventListener('mouseleave', () => {
@@ -3118,10 +3131,14 @@ function buildCitiesIndex() {
       document.getElementById('cursor').classList.remove('hover');
     });
 
-    // Click: apri gallery se ha immagini, altrimenti nulla
+    // Click: per Tokyo usa il progetto statico con foto reali
     row.addEventListener('click', () => {
-      if (p.images && p.images.length > 0) {
-        openGallery(p);
+      let target = p;
+      if (isTokyoProject && TOKYO_PROJECT_STATIC) {
+        target = TOKYO_PROJECT_STATIC;
+      }
+      if (target.images && target.images.length > 0) {
+        openGallery(target);
         switchView('gallery');
       }
     });
