@@ -2150,88 +2150,96 @@
       flex-direction: column;
     }
 
-    /* Sub-nav interno */
+    /* ── Sub-nav: All · Interview · Books · Sculptures · Biography · Contact ── */
     .index-subnav {
       display: flex;
-      gap: 32px;
-      padding: 32px 56px 28px;
+      gap: 40px;                    /* gap ampio come Jack Davison */
+      padding: 24px 24px 20px;     /* padding sx 24px, top 24px */
       flex-shrink: 0;
+      background: #fff;
     }
     .index-subnav-btn {
       font-family: var(--font-nav);
-      font-size: 14px;
+      font-size: 15px;              /* stesso del sub-nav Jack Davison */
       font-weight: 400;
-      letter-spacing: 0.01em;
-      color: #aaa;
+      letter-spacing: 0;
+      color: #999;                  /* grigio medio */
       background: none;
       border: none;
       padding: 0;
       cursor: none;
       transition: color .15s;
+      line-height: 1.4;
     }
-    .index-subnav-btn:hover { color: #333; }
+    .index-subnav-btn:hover { color: #444; }
     .index-subnav-btn.active {
-      color: #111;
+      color: #111;                  /* nero pieno */
       font-weight: 400;
       text-decoration: underline;
-      text-underline-offset: 4px;
+      text-underline-offset: 3px;
       text-decoration-thickness: 1px;
     }
 
-    /* Lista voci */
+    /* ── Lista voci ── */
     .index-entries {
       flex: 1;
       overflow-y: auto;
-      padding: 0 56px 60px;
+      padding: 0 24px 60px;        /* padding sx 24px come Jack Davison */
     }
 
-    /* Gruppo sezione */
+    /* ── Gruppo sezione ── */
     .index-section-group {
-      margin-top: 40px;
+      margin-top: 28px;             /* spazio tra sezioni */
     }
 
-    /* Voce singola — nessuna linea */
+    /* ── Voce singola: titolo sx · meta centro · numero dx ── */
     .index-entry {
-      display: flex;
-      justify-content: space-between;
+      display: grid;
+      grid-template-columns: 1fr auto auto;  /* nome | meta | count */
       align-items: baseline;
-      padding: 5px 0;
+      gap: 0 24px;
+      padding: 3px 0;              /* altezza riga compatta come JD */
       cursor: none;
       transition: opacity .15s;
     }
-    .index-entry:hover { opacity: 0.45; }
+    .index-entry:hover { opacity: 0.4; }
     .index-entry-name {
       font-family: var(--font-nav);
-      font-size: 16px;
+      font-size: 19px;              /* dimensione esatta Jack Davison */
       font-weight: 400;
-      letter-spacing: 0.01em;
+      letter-spacing: 0;
       color: #111;
+      line-height: 1.45;
     }
     .index-entry-meta {
       font-family: var(--font-nav);
-      font-size: 13px;
-      color: #aaa;
-      letter-spacing: 0.01em;
-      margin-left: 16px;
+      font-size: 14px;              /* meta più piccolo, grigio */
+      color: #999;
+      letter-spacing: 0;
       white-space: nowrap;
+      text-align: right;
     }
     .index-entry-count {
       font-family: var(--font-nav);
-      font-size: 16px;
+      font-size: 19px;              /* stesso del titolo */
+      font-weight: 400;
       color: #111;
-      letter-spacing: 0.01em;
+      letter-spacing: 0;
       flex-shrink: 0;
-      margin-left: 16px;
+      min-width: 24px;
+      text-align: right;
     }
 
-    /* Label sezione — uppercase piccolo, nessuna linea */
+    /* ── Label sezione: INTERVIEW, BOOKS, ecc. ── */
     .index-section-label {
       font-family: var(--font-nav);
-      font-size: 10px;
-      letter-spacing: 0.12em;
+      font-size: 10px;              /* piccolo uppercase come JD */
+      font-weight: 400;
+      letter-spacing: 0.10em;
       text-transform: uppercase;
-      color: #aaa;
-      padding: 0 0 10px;
+      color: #999;                  /* grigio chiaro */
+      padding: 0 0 4px;            /* spazio sotto label prima delle righe */
+      margin-top: 4px;
     }
 
     [data-theme="dark"] .index-entry-name { color: var(--white); }
