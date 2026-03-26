@@ -2475,12 +2475,15 @@ function showOverview(img, idx) {
   oImg.src = img.url;
   ov.classList.add('open');
   overlayOpen = true;
+  cursor.style.display = 'none'; // nasconde il triangolo
 }
 
 function closeOverview() {
   const ov = document.getElementById('overview-overlay');
   ov.classList.remove('open');
   overlayOpen = false;
+  cursor.style.display = ''; // ripristina il triangolo
+  resetCursor();
 }
 
 document.addEventListener('keydown', e => {
@@ -2995,10 +2998,13 @@ function openLightbox(idx) {
   const lb = document.getElementById('lightbox');
   lb.classList.add('open');
   setLightboxImg(idx);
+  cursor.style.display = 'none'; // nasconde il triangolo
 }
 
 function closeLightbox() {
   document.getElementById('lightbox').classList.remove('open');
+  cursor.style.display = ''; // ripristina il triangolo
+  resetCursor();
 }
 
 function setLightboxImg(idx) {
@@ -3707,6 +3713,7 @@ loadFromCMS();
       document.getElementById('lb-count').textContent =
         `${String(idx+1).padStart(2,'0')} / ${String(images.length).padStart(2,'0')}`;
       lbEl.classList.add('open');
+      cursor.style.display = 'none'; // nasconde il triangolo
     }
   }
 
