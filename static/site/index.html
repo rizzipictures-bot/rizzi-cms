@@ -3023,18 +3023,26 @@ function buildCitiesIndex() {
     (a.title || '').localeCompare(b.title || '', 'it')
   );
 
-  // Foto Tokyo reali per la preview al cursore — path assoluto rispetto alla root del sito
+  // Base URL per costruire path assoluti
   const BASE = window.location.origin + window.location.pathname.replace(/\/[^/]*$/, '/');
-  const TOKYO_IMAGES = [
-    REAL_IMAGES[23] ? BASE + REAL_IMAGES[23].file : null,
-    REAL_IMAGES[24] ? BASE + REAL_IMAGES[24].file : null,
-    REAL_IMAGES[25] ? BASE + REAL_IMAGES[25].file : null,
-    REAL_IMAGES[0]  ? BASE + REAL_IMAGES[0].file  : null,
-    REAL_IMAGES[1]  ? BASE + REAL_IMAGES[1].file  : null,
-    REAL_IMAGES[2]  ? BASE + REAL_IMAGES[2].file  : null,
-  ].filter(Boolean);
+  const CMS_BASE = window.location.origin;
 
-  // Progetto Tokyo statico con foto reali (per la gallery al click)
+  // Cerca il progetto Tokyo Untitle nel CMS (id: f4a12e01) — ha le foto reali
+  const TOKYO_CMS = PROJECTS.find(p => p.id === 'f4a12e01' || p.title === 'Tokyo Untitle');
+
+  // Preview Tokyo: usa le foto CMS se disponibili, altrimenti fallback sulle statiche
+  const TOKYO_IMAGES = TOKYO_CMS && TOKYO_CMS.images && TOKYO_CMS.images.length > 0
+    ? TOKYO_CMS.images.slice(0, 6).map(img => {
+        const u = img.url || img.thumb || '';
+        return u.startsWith('http') ? u : (u.startsWith('/') ? CMS_BASE + u : BASE + u);
+      }).filter(Boolean)
+    : [
+        REAL_IMAGES[23] ? BASE + REAL_IMAGES[23].file : null,
+        REAL_IMAGES[24] ? BASE + REAL_IMAGES[24].file : null,
+        REAL_IMAGES[25] ? BASE + REAL_IMAGES[25].file : null,
+      ].filter(Boolean);
+
+  // Progetto da aprire al click su Tokyo/Giappone: CMS se disponibile, statico altrimenti
   const TOKYO_PROJECT_STATIC = PROJECTS_STATIC.find(p => p.id === 'tokyo-2020');
 
   // ── VISTA THUMBS (esistente) ──────────────────────────────────
@@ -3131,13 +3139,20 @@ function buildCitiesIndex() {
       document.getElementById('cursor').classList.remove('hover');
     });
 
-    // Click: per Tokyo usa il progetto statico con foto reali
+    // Click: per Tokyo usa il progetto CMS (f4a12e01) se disponibile, altrimenti il progetto corrente
     row.addEventListener('click', () => {
       let target = p;
-      if (isTokyoProject && TOKYO_PROJECT_STATIC) {
-        target = TOKYO_PROJECT_STATIC;
+      if (isTokyoProject) {
+        // Priorità: CMS Tokyo Untitle > progetto corrente con immagini > statico
+        if (TOKYO_CMS && TOKYO_CMS.images && TOKYO_CMS.images.length > 0) {
+          target = TOKYO_CMS;
+        } else if (p.images && p.images.length > 0) {
+          target = p;
+        } else if (TOKYO_PROJECT_STATIC) {
+          target = TOKYO_PROJECT_STATIC;
+        }
       }
-      if (target.images && target.images.length > 0) {
+      if (target && target.images && target.images.length > 0) {
         openGallery(target);
         switchView('gallery');
       }
