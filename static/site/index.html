@@ -2457,7 +2457,7 @@ function buildOverviewGrid() {
       if (nameEl) nameEl.innerHTML = '\u00a0';
       resetCursor();
     });
-    item.addEventListener('click', () => showOverview(img, i));
+    item.addEventListener('click', () => showOverview(img, photoCounter - 1, cells.filter(c => c.type === 'img').map(c => c.img)));
 
     grid.appendChild(item);
   });
@@ -2465,17 +2465,40 @@ function buildOverviewGrid() {
 }
 
 // ══════════════════════════════════════════════════════════════════
-// OVERVIEW OVERLAY — jackdavison
+// OVERVIEW OVERLAY — jackdavison + navigazione click sx/dx
 // ══════════════════════════════════════════════════════════════════
 let overlayOpen = false;
+let ovImages = [];   // lista foto della griglia corrente
+let ovIndex  = 0;   // indice foto corrente
 
-function showOverview(img, idx) {
+function showOverview(img, idx, imageList) {
   const ov  = document.getElementById('overview-overlay');
   const oImg = document.getElementById('overview-overlay-img');
+  ovImages = imageList || [];
+  ovIndex  = idx;
   oImg.src = img.url;
   ov.classList.add('open');
   overlayOpen = true;
   cursor.style.display = 'none'; // nasconde il triangolo
+  // Mostra testo cursore con categoria + numero
+  const catLabel = img.project ? (img.project.category || img.project.title || '') : '';
+  const numLabel = String(ovIndex + 1).padStart(2,'0') + ' / ' + String(ovImages.length).padStart(2,'0');
+  setCursorHover(catLabel, numLabel);
+}
+
+function ovNavigate(dir) {
+  if (!ovImages.length) return;
+  ovIndex = (ovIndex + dir + ovImages.length) % ovImages.length;
+  const img = ovImages[ovIndex];
+  const oImg = document.getElementById('overview-overlay-img');
+  oImg.style.opacity = '0';
+  setTimeout(() => {
+    oImg.src = img.url;
+    oImg.style.opacity = '1';
+  }, 120);
+  const catLabel = img.project ? (img.project.category || img.project.title || '') : '';
+  const numLabel = String(ovIndex + 1).padStart(2,'0') + ' / ' + String(ovImages.length).padStart(2,'0');
+  setCursorHover(catLabel, numLabel);
 }
 
 function closeOverview() {
@@ -2486,8 +2509,20 @@ function closeOverview() {
   resetCursor();
 }
 
+// Click sull'overlay: metà destra = avanti, metà sinistra = indietro
+// (click sul pulsante Close è gestito separatamente)
+document.getElementById('overview-overlay').addEventListener('click', e => {
+  if (e.target.id === 'overview-overlay-close') return;
+  if (e.target.id === 'overview-overlay-bg') { closeOverview(); return; }
+  const dir = e.clientX >= window.innerWidth / 2 ? 1 : -1;
+  ovNavigate(dir);
+});
+
 document.addEventListener('keydown', e => {
-  if (overlayOpen && e.key === 'Escape') closeOverview();
+  if (!overlayOpen) return;
+  if (e.key === 'Escape')     closeOverview();
+  if (e.key === 'ArrowRight') ovNavigate(1);
+  if (e.key === 'ArrowLeft')  ovNavigate(-1);
 });
 
 // ════════════════════════════════════════════════════════════════
@@ -3701,10 +3736,19 @@ loadFromCMS();
   };
 
   // Viewer singolo per navigazione dentro la griglia
-  let svImages = [], svIndex = 0;
+  let svImages = [], svIndex = 0, svTitle = '';
+
+  function svUpdateCursor() {
+    const img = svImages[svIndex];
+    const catLabel = (img && img.project && (img.project.category || img.project.title)) || svTitle || '';
+    const numLabel = String(svIndex + 1).padStart(2,'0') + ' / ' + String(svImages.length).padStart(2,'0');
+    setCursorHover(catLabel, numLabel);
+  }
+
   function openSingleViewer(images, idx, title) {
     svImages = images;
     svIndex = idx;
+    svTitle = title;
     // Riusa il viewer del lightbox principale
     const lbEl = document.getElementById('lightbox');
     if (lbEl) {
@@ -3714,7 +3758,27 @@ loadFromCMS();
         `${String(idx+1).padStart(2,'0')} / ${String(images.length).padStart(2,'0')}`;
       lbEl.classList.add('open');
       cursor.style.display = 'none'; // nasconde il triangolo
+      svUpdateCursor();
     }
+  }
+
+  // Click sul lightbox: metà destra = avanti, metà sinistra = indietro
+  const lbClickEl = document.getElementById('lightbox');
+  if (lbClickEl) {
+    lbClickEl.addEventListener('click', e => {
+      // Ignora click su pulsanti close/nav
+      if (e.target.closest('.lightbox-close, .lightbox-nav')) return;
+      if (!svImages.length) return;
+      const dir = e.clientX >= window.innerWidth / 2 ? 1 : -1;
+      svIndex = (svIndex + dir + svImages.length) % svImages.length;
+      const img = svImages[svIndex];
+      const lbImg = document.getElementById('lightbox-img');
+      lbImg.style.opacity = '0';
+      setTimeout(() => { lbImg.src = img.url; lbImg.style.opacity = '1'; }, 120);
+      document.getElementById('lb-count').textContent =
+        `${String(svIndex+1).padStart(2,'0')} / ${String(svImages.length).padStart(2,'0')}`;
+      svUpdateCursor();
+    });
   }
 
   // Chiudi overlay
