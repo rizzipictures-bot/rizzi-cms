@@ -2336,7 +2336,6 @@ document.addEventListener('mousemove', e => {
   mx = e.clientX; my = e.clientY;
 
   // Snap alle 4 direzioni cardinali (0°=su, 90°=dx, 180°=giù, 270°=sx)
-  // Mai angoli obliqui
   if (prevMx !== null && prevMy !== null) {
     const dx = mx - prevMx;
     const dy = my - prevMy;
@@ -2359,9 +2358,27 @@ document.addEventListener('mousemove', e => {
   cursor.style.transform = 'translate(0, -50%)';
   cursor.querySelector('svg').style.transform = `rotate(${cursorAngle}deg)`;
 
-  // Label: posizionata subito a destra della freccia (14px freccia + 8px gap)
+  // Label: posizionata subito a destra della freccia
   cursorLabel.style.left = (mx + 22) + 'px';
   cursorLabel.style.top  = my + 'px';
+
+  // Colore triangolo: bianco su sfondo scuro, nero su sfondo chiaro
+  if (!cursor.classList.contains('hover')) {
+    const el = document.elementFromPoint(mx, my);
+    let isDarkBg = false;
+    if (el && el !== cursor) {
+      const bg = window.getComputedStyle(el).backgroundColor;
+      const m = bg.match(/rgba?\((\d+),(\s*\d+),(\s*\d+)/);
+      if (m) {
+        const lum = 0.299 * parseInt(m[1]) + 0.587 * parseInt(m[2]) + 0.114 * parseInt(m[3]);
+        isDarkBg = lum < 128;
+      }
+      // Controlla anche data-theme dark
+      if (!isDarkBg) isDarkBg = document.documentElement.dataset.theme === 'dark';
+    }
+    const poly = cursor.querySelector('svg polygon');
+    if (poly) poly.setAttribute('fill', isDarkBg ? '#fff' : '#000');
+  }
 });
 
 function setCursorHover(label = '', num = '', darkHover = false) {
