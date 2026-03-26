@@ -3598,6 +3598,8 @@ document.addEventListener('mouseover', e => {
 // NAVIGAZIONE VISTE
 // ══════════════════════════════════════════════════════════════════
 let currentView = 'home';
+// Cursore rosso di default (la view iniziale è Overview)
+document.body.classList.add('cursor-red');
 
 function switchView(name) {
   document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
@@ -3620,8 +3622,8 @@ function switchView(name) {
   // Chiudi box info Cities se si cambia vista
   if (name !== 'cities-index') closeCityInfoPanel();
 
-  // ── Cursore rosso per Overview, Archive, Cities ──
-  const RED_VIEWS = ['overview', 'archive', 'cities-index'];
+  // ── Cursore rosso per Overview (home), Archive, Cities ──
+  const RED_VIEWS = ['home', 'archive', 'cities-index'];
   document.body.classList.toggle('cursor-red', RED_VIEWS.includes(name));
 }
 
