@@ -101,6 +101,7 @@
       opacity: 0;
       transition: opacity .15s;
       will-change: transform;  /* GPU layer per il label */
+      mix-blend-mode: normal;  /* default; in overlay viene gestito via JS */
       white-space: nowrap;
       font-family: var(--font-nav);   /* EB Garamond */
       font-size: 14px;
@@ -314,13 +315,8 @@
     #btn-update.updating { opacity: 0.4 !important; pointer-events: none; }
     /* Menu, Theme e Screensaver — nero pieno */
     nav.pill-nav #btn-menu,
-    nav.pill-nav #btn-theme,
     nav.pill-nav #btn-screensaver {
       color: #000;
-    }
-    nav.pill-nav #btn-theme {
-      font-size: 13px;
-      margin-left: 4px;
     }
 
     /* ══════════════════════════════════════════════════════════════
@@ -421,23 +417,7 @@
     }
     /* Nome progetto — sovrapposto all'header, centrato */
     #overview-project-name {
-      position: fixed;
-      top: 0;
-      left: 0;
-      right: 0;
-      z-index: 99; /* sotto l'header (z-index 100) ma sopra il contenuto */
-      height: var(--nav-h);
-      display: flex;
-      align-items: center;
-      justify-content: flex-start;   /* allineato a sinistra come la navbar */
-      padding: 0 0 0 12px;           /* stesso padding-left dell'header */
-      font-family: var(--font-nav);
-      font-size: 11px;
-      font-weight: 400;
-      letter-spacing: 0.02em;
-      color: var(--black);
-      background: transparent;
-      pointer-events: none;
+      display: none !important;  /* rimosso per design */
     }
     [data-theme="dark"] #overview-project-name {
       color: #fff;
@@ -468,8 +448,8 @@
     #overview-overlay-img {
       position: relative;
       z-index: 1;
-      max-width: 49vw;   /* 65vw × 0.75 */
-      max-height: 62vh;  /* 82vh × 0.75 */
+      max-width: 55vw;   /* +12% rispetto a 49vw */
+      max-height: 69vh;  /* +12% rispetto a 62vh */
       object-fit: contain;
       display: block;
       /* Animazione jackdavison: si svolge dall'alto verso il basso */
@@ -547,7 +527,7 @@
     .archive-search {
       font-family: var(--font-mono);
       font-size: 13px;
-      font-weight: 600;
+      font-weight: 500;
       border: none;
       outline: none;
       width: 100%;
@@ -558,7 +538,7 @@
     }
     .archive-search::placeholder {
       color: var(--accent);   /* viola per il placeholder */
-      font-weight: 700;
+      font-weight: 500;
     }
     .archive-col-header {
       display: grid;
@@ -674,8 +654,8 @@
       justify-self: center;      /* centrato rispetto alla colonna Media */
     }
     .media-ball {
-      width: 8.5px;
-      height: 8.5px;
+      width: 6.4px;
+      height: 6.4px;
       border-radius: 50%;
       cursor: pointer;
       flex-shrink: 0;
@@ -690,8 +670,8 @@
     .media-ball.active  { transform: scale(1.5); }
     .media-ball.ball-photo { background: #000; }
     .media-ball.ball-text  { background: #999; }
-    .archive-row:not(.header):hover .media-ball.ball-photo { background: #fff; }
-    .archive-row:not(.header):hover .media-ball.ball-text  { background: rgba(255,255,255,0.5); }
+    .archive-row:not(.header):hover .media-ball.ball-photo { background: #c00; }
+    .archive-row:not(.header):hover .media-ball.ball-text  { background: rgba(180,0,0,0.5); }
 
     /* Popup box discreto */
     .media-popup {
@@ -1419,7 +1399,7 @@
     }
     .cities-index-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+      grid-template-columns: repeat(auto-fill, minmax(114px, 1fr));  /* -12% rispetto a 130px */
       gap: 20px;
       padding: 32px 40px 60px;
       align-items: start;
@@ -2037,7 +2017,6 @@
       <button data-view="interview">Interview</button>
       <button data-view="cities-index">Cities</button>
       <button id="btn-menu">Menu</button>
-      <button id="btn-theme">◐</button>
       <button id="btn-screensaver">Screensaver</button>
       <button id="btn-update" style="display:none" title="Aggiorna sito da GitHub">↻ Aggiorna</button>
     </nav>
@@ -2492,18 +2471,18 @@ const _clCat = cursorLabel.querySelector('.cl-cat');
 const _clSep = cursorLabel.querySelector('.cl-sep');
 const _clNum = cursorLabel.querySelector('.cl-num');
 
-function setCursorHover(label = '', num = '', darkHover = false) {
+function setCursorHover(label = '', num = '', darkHover = false, explicitColor = null) {
   cursor.classList.add('hover');
   if (label || num) {
     if (_clCat) _clCat.textContent = label;
     if (_clNum) _clNum.textContent = num;
     if (_clSep) _clSep.style.display = (label && num) ? '' : 'none';
-    const textColor = darkHover ? '#fff' : '#1a1a1a';
-    const sepColor  = darkHover ? 'rgba(255,255,255,0.6)' : '#888';
+    // Se viene passato un colore esplicito (es. grigio chiaro sulla foto), usalo
+    const textColor = explicitColor || (darkHover ? '#fff' : '#1a1a1a');
+    const sepColor  = darkHover ? 'rgba(200,200,200,0.7)' : '#888';
     cursorLabel.style.color = textColor;
     if (_clSep) _clSep.style.color = sepColor;
     cursorLabel.classList.add('show');
-    // Aggiorna cache larghezza (usata nel mousemove per centrare il label)
     requestAnimationFrame(() => { _labelWidth = cursorLabel.offsetWidth; });
   } else {
     cursorLabel.classList.remove('show');
@@ -2568,9 +2547,9 @@ function switchView(name) {
   currentView = name;
   updateFooter();
 
-  // Mostra/nascondi il nome progetto (solo nella view home)
+  // overview-project-name: nascosto permanentemente (rimosso per design)
   const pName = document.getElementById('overview-project-name');
-  if (pName) pName.style.display = (name === 'home') ? 'flex' : 'none';
+  if (pName) pName.style.display = 'none';
 
   // Chiudi menu se aperto
   document.getElementById('menu-overlay').classList.remove('open');
@@ -2698,8 +2677,11 @@ function ovUpdateCursor(img) {
   const oImg = document.getElementById('overview-overlay-img');
   const rect = oImg ? oImg.getBoundingClientRect() : null;
   const onPhoto = rect && mx >= rect.left && mx <= rect.right && my >= rect.top && my <= rect.bottom;
-  // Positivo (nero) su sfondo bianco, negativo (bianco) sulla foto
-  setCursorHover(catLabel, numLabel, onPhoto);
+  // Usa mix-blend-mode difference: il testo appare sempre leggibile
+  // sia sulla foto scura (appare chiaro) che sul bordo bianco (appare scuro)
+  cursorLabel.style.mixBlendMode = 'difference';
+  cursorLabel.style.color = '#aaa';  // grigio chiaro — difference lo inverte sul bianco -> scuro, sulla foto -> chiaro
+  setCursorHover(catLabel, numLabel, false, '#aaa');
   // Triangolo sempre visibile nell'overlay, colore adattivo
   const poly = cursor.querySelector('svg polygon');
   if (poly) poly.setAttribute('fill', onPhoto ? '#fff' : '#000');
@@ -2736,6 +2718,7 @@ function closeOverview() {
   ov.classList.remove('open');
   overlayOpen = false;
   cursor.querySelector('svg').style.visibility = ''; // ripristina la freccia
+  cursorLabel.style.mixBlendMode = 'normal';  // ripristina blend mode normale
   resetCursor();
 }
 
@@ -3486,10 +3469,7 @@ function buildMenuSubItems() {
 // ══════════════════════════════════════════════════════════════════
 // DARK MODE TOGGLE
 // ══════════════════════════════════════════════════════════════════
-document.getElementById('btn-theme').addEventListener('click', () => {
-  const html = document.documentElement;
-  html.dataset.theme = html.dataset.theme === 'dark' ? 'light' : 'dark';
-});
+// btn-theme rimosso dalla navbar
 
 // ══════════════════════════════════════════════════════════════════
 // SCREENSAVER — jackdavison
@@ -3570,7 +3550,7 @@ function buildInterview() {
     item.className = 'interview-item';
     const imgs = iw.images.map(i => REAL_IMAGES[i]);
     item.innerHTML = `
-      <div class="interview-item-head" onclick="this.parentElement.classList.toggle('open')">
+      <div class="interview-item-head" onclick="if(typeof archiveRowClick==='function')archiveRowClick(); this.parentElement.classList.toggle('open')">
         <span class="iw-title">${iw.title}</span>
         <div class="iw-meta">
           <span>${iw.publication}</span>
