@@ -3452,6 +3452,9 @@ document.addEventListener('mousemove', e => {
       const _onPhotoNow = (() => {
         const el = document.elementFromPoint(mx, my);
         if (!el) return false;
+        // Non attivare ring-mode su cities-card-cover quando cursor-red è attivo
+        const onCitiesCard = !!(el.closest('.cities-card-cover')) && document.body.classList.contains('cursor-red');
+        if (onCitiesCard) return false;
         return !!(el.closest('#view-home .grid-item, #view-gallery, #overview-overlay, #view-landing, .cities-card-cover, .gallery-main-img-wrap'));
       })();
       if (cursorDot) cursorDot.classList.toggle('ring-mode', _onPhotoNow);
@@ -3606,14 +3609,13 @@ document.addEventListener('mouseover', e => {
     return;
   }
 
-  const t = e.target.closest('.archive-row, .thumb, .index-list li, .archive-expanded-viewall, .archive-expanded-toggle, .vao-close');
+  const t = e.target.closest('.archive-row, .thumb, .index-list li, .archive-expanded-viewall, .archive-expanded-toggle, .vao-close, .cities-list-row');
   if (t) {
-    // Se cursor-red è attivo (Archive/Cities) e siamo su una riga chiusa,
-    // non aggiungere la classe hover che nasconderebbe il pallino rosso
-    const isClosedArchiveRow = t.classList.contains('archive-row') &&
-                               !t.classList.contains('is-open') &&
-                               document.body.classList.contains('cursor-red');
-    if (isClosedArchiveRow) {
+    // Se cursor-red è attivo (Archive/Cities), non aggiungere hover che nasconderebbe il pallino rosso
+    const isRedRow = (t.classList.contains('archive-row') && !t.classList.contains('is-open') ||
+                      t.classList.contains('cities-list-row')) &&
+                     document.body.classList.contains('cursor-red');
+    if (isRedRow) {
       resetCursor();  // pallino rosso visibile, nessun testo
     } else {
       const label = t.dataset.label || '';
@@ -3987,14 +3989,14 @@ function buildCitiesIndex() {
       const idx = Math.floor(Math.random() * previewImages.length);
       citiesPreviewImg.src = previewImages[idx];
       citiesPreview.classList.add('visible');
-      document.getElementById('cursor').classList.add('hover');
+      // NON aggiungere hover: il pallino rosso deve restare visibile
       // Popola il box info con i dati del progetto corrente
       const projectForPanel = isTokyoProject && TOKYO_CMS ? TOKYO_CMS : p;
       populateCityInfoPanel(projectForPanel, previewImages);
     });
     row.addEventListener('mouseleave', () => {
       citiesPreview.classList.remove('visible');
-      document.getElementById('cursor').classList.remove('hover');
+      // NON rimuovere hover qui (non è stato aggiunto)
       // Chiudi il box quando il cursore esce dalla riga
       if (_cipanel) {
         _cipanel.classList.remove('open');
