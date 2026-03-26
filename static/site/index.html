@@ -73,25 +73,22 @@
       transition: none;
       will-change: transform;  /* GPU layer — usa transform invece di left/top */
     }
-    /* Freccia SVG */
-    #cursor svg {
+    /* Pallino cursore */
+    #cursor-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #000;
       display: block;
-      width: 14px;
-      height: 12px;
-      overflow: visible;
       flex-shrink: 0;
-      /* Rotazione snap istantanea — solo angoli netti, nessun ritardo */
-      transition: none;
+      transition: background .15s;
     }
-    #cursor svg polygon {
-      fill: #000;
+    /* Pallino bianco quando il cursore è su sfondo scuro */
+    body.cursor-on-dark #cursor-dot {
+      background: #fff;
     }
-    /* Triangolo bianco quando il cursore è su sfondo nero (classe aggiunta via JS) */
-    body.cursor-on-dark #cursor svg polygon {
-      fill: #fff;
-    }
-    /* Hover: freccia nascosta, testo visibile */
-    #cursor.hover svg {
+    /* Hover: pallino nascosto, testo flottante visibile */
+    #cursor.hover #cursor-dot {
       display: none;
     }
     /* Label testo — Jack Davison style: testo flottante vicino al mouse */
@@ -1985,7 +1982,7 @@
 <body>
 
 <!-- Cursore custom -->
-<div id="cursor"><svg viewBox="0 0 14 12" xmlns="http://www.w3.org/2000/svg"><polygon points="7,0 14,12 0,12" /></svg></div>
+<div id="cursor"><div id="cursor-dot"></div></div>
 <div id="cursor-label"><span class="cl-cat"></span><span class="cl-sep"> - </span><span class="cl-num"></span></div>
 
 <!-- Landing page hero -->
@@ -2364,8 +2361,7 @@ window.addEventListener('resize', setVh);
 const cursor = document.getElementById('cursor');
 const cursorLabel = document.getElementById('cursor-label');
 // Cache elementi DOM usati frequentemente
-const cursorSvg    = cursor.querySelector('svg');
-const cursorPoly   = cursor.querySelector('svg polygon');
+const cursorDot    = document.getElementById('cursor-dot');
 let mx = 0, my = 0;
 let prevMx = null, prevMy = null;
 let cursorAngle = 0;
@@ -2469,8 +2465,7 @@ document.addEventListener('mousemove', e => {
       _rafPending = false;
 
       // Posiziona cursore con transform (GPU, nessun reflow)
-      cursor.style.transform = `translate(${mx}px, calc(${my}px - 50%))`;
-      cursorSvg.style.transform = `rotate(${cursorAngle}deg)`;
+      cursor.style.transform = `translate(calc(${mx}px - 4px), calc(${my}px - 4px))`;  /* centrato sul punto */
 
       // Posiziona label con transform
       if (overlayOpen) {
@@ -2522,8 +2517,7 @@ function setCursorHover(label = '', num = '', darkHover = false, explicitColor =
 function resetCursor() {
   cursor.classList.remove('hover', 'drag');
   cursorLabel.classList.remove('show');
-  // Mantieni la rotazione corrente sull'SVG (il posizionamento è gestito dal rAF)
-  cursorSvg.style.transform = `rotate(${cursorAngle}deg)`;
+  // noop — pallino non ruota
 }
 
 document.addEventListener('mouseover', e => {
@@ -2544,7 +2538,7 @@ document.addEventListener('mouseover', e => {
   const isSearchEl = e.target.closest('.archive-search-wrap, #archive-search');
   if (isSearchEl) {
     cursor.classList.remove('hover');
-    cursor.querySelector('svg').style.visibility = 'hidden';
+    cursorDot.style.visibility = 'hidden';
     cursorLabel.classList.remove('show');
     return;
   }
@@ -2556,7 +2550,7 @@ document.addEventListener('mouseover', e => {
     setCursorHover(label, num);
   } else {
     // Ripristina visibilità triangolo quando si esce dalla search
-    cursor.querySelector('svg').style.visibility = '';
+    cursorDot.style.visibility = '';
     resetCursor();
   }
 });
@@ -2761,7 +2755,7 @@ function closeOverview() {
   const ov = document.getElementById('overview-overlay');
   ov.classList.remove('open');
   overlayOpen = false;
-  cursor.querySelector('svg').style.visibility = ''; // ripristina la freccia
+  cursorDot.style.visibility = ''; // ripristina la freccia
   cursorLabel.style.mixBlendMode = 'normal';  // ripristina blend mode normale
   resetCursor();
 }
@@ -3315,13 +3309,13 @@ function openLightbox(idx) {
   const lb = document.getElementById('lightbox');
   lb.classList.add('open');
   setLightboxImg(idx);
-  cursor.querySelector('svg').style.visibility = 'hidden'; // nasconde solo la freccia
+  cursorDot.style.visibility = 'hidden'; // nasconde solo la freccia
   lbUpdateCursor();
 }
 
 function closeLightbox() {
   document.getElementById('lightbox').classList.remove('open');
-  cursor.querySelector('svg').style.visibility = ''; // ripristina la freccia
+  cursorDot.style.visibility = ''; // ripristina la freccia
   resetCursor();
 }
 
@@ -4066,7 +4060,7 @@ loadFromCMS();
       document.getElementById('lb-count').textContent =
         `${String(idx+1).padStart(2,'0')} / ${String(images.length).padStart(2,'0')}`;
       lbEl.classList.add('open');
-      cursor.querySelector('svg').style.visibility = 'hidden'; // nasconde solo la freccia
+      cursorDot.style.visibility = 'hidden'; // nasconde solo la freccia
       svUpdateCursor();
     }
   }
@@ -4095,7 +4089,7 @@ loadFromCMS();
   window.closeViewAllOverlay = function() {
     overlay.classList.remove('open');
     svImages = []; // reset per non interferire con Archive
-    cursor.querySelector('svg').style.visibility = ''; // ripristina freccia
+    cursorDot.style.visibility = ''; // ripristina freccia
     resetCursor();
   };
 
@@ -4109,7 +4103,7 @@ loadFromCMS();
     if (e.key === 'Escape' && overlay.classList.contains('open')) {
       overlay.classList.remove('open');
       svImages = [];
-      cursor.querySelector('svg').style.visibility = '';
+      cursorDot.style.visibility = '';
       resetCursor();
     }
   });
