@@ -140,101 +140,107 @@
     #landing {
       position: fixed; inset: 0;
       z-index: 1000;
-      background: transparent;
+      background: #000;
       cursor: none;
       overflow: hidden;
     }
-    /* Foto a tutto schermo — sempre visibile, copre tutto */
+    /* Foto a tutto schermo — sotto la banda, borderless */
     #landing-photo {
       position: absolute; inset: 0;
       background: url('images/landing-hero.webp') center center / cover no-repeat;
       z-index: 1;
     }
-    /* Banda bianca in cima alla foto (visibile quando la banda nera sale) */
-    #landing-photo::before {
-      content: '';
-      position: absolute;
-      top: 0; left: 0; right: 0;
-      height: 36px;
-      background: #fff;
-      z-index: 2;
-    }
-    /* Lettering in alto a sinistra — appare quando la banda sale */
-    #landing-text {
-      position: absolute;
-      top: 8px;
-      left: 16px;
-      font-family: var(--font-nav);
-      font-size: 11px;
-      font-weight: 400;
-      letter-spacing: 0.12em;
-      text-transform: uppercase;
-      color: var(--black);
-      opacity: 0;
-      transition: opacity 0.6s ease 0.5s;
-      pointer-events: none;
-      z-index: 4;
-    }
-    #landing.band-up #landing-text {
-      opacity: 1;
-    }
-    /* Banda nera — occupa metà schermo in alto, poi sale fuori */
+    /* Banda nera — a schermo intero all'inizio, poi sale */
     #landing-band {
       position: absolute;
       top: 0; left: 0; right: 0;
-      height: 50vh;
+      height: 100vh;
       background: #000;
       display: flex;
-      flex-direction: column;
-      justify-content: flex-start;
-      padding: 16px 16px 40px;
+      align-items: center;
+      padding: 0 56px;
       transform: translateY(0);
-      transition: transform 0.9s cubic-bezier(0.76, 0, 0.24, 1);
+      transition: transform 1.2s cubic-bezier(0.76, 0, 0.24, 1);
       z-index: 3;
+      overflow: hidden;
     }
     #landing.band-up #landing-band {
       transform: translateY(-100%);
     }
-    /* Nome in alto nella banda */
-    #landing-band .lband-name {
-      font-family: var(--font-nav);
-      font-size: 11px;
-      font-weight: 700;
-      color: #fff;
-      letter-spacing: 0.04em;
-      margin-bottom: 6px;
+    /* Riga unica: nome + separatore + fotografo */
+    .lband-line {
+      display: flex;
+      align-items: baseline;
+      gap: 10px;
+      transform: translateX(-80px);
+      opacity: 0;
+      transition: transform 0.9s cubic-bezier(0.22, 1, 0.36, 1) 0.25s,
+                  opacity 0.7s ease 0.25s;
     }
-    /* Sottotitolo nella banda */
-    #landing-band .lband-subtitle {
+    #landing.text-in .lband-line {
+      transform: translateX(0);
+      opacity: 1;
+    }
+    .lband-name {
       font-family: var(--font-nav);
-      font-size: 11px;
+      font-size: clamp(15px, 1.3vw, 22px);
       font-weight: 400;
+      color: #fff;
+      letter-spacing: 0.02em;
+      white-space: nowrap;
+    }
+    .lband-sep {
+      font-family: var(--font-nav);
+      font-size: clamp(15px, 1.3vw, 22px);
+      font-weight: 300;
+      color: rgba(255,255,255,0.35);
+      letter-spacing: 0;
+    }
+    .lband-subtitle {
+      font-family: var(--font-nav);
+      font-size: clamp(13px, 1.1vw, 18px);
+      font-weight: 300;
       color: rgba(255,255,255,0.7);
       letter-spacing: 0.06em;
+      white-space: nowrap;
     }
-    /* Quando la banda sale: la navbar torna accessibile */
+    /* Quando la banda sale: la landing non intercetta i click */
     #landing.band-up {
-      cursor: pointer;
-      /* Lascia passare i click nella zona header */
-      clip-path: inset(var(--nav-h) 0 0 0);
-      /* IMPORTANTE: pointer-events none sulla landing, solo la foto è cliccabile */
       pointer-events: none;
     }
-    /* La foto hero rimane cliccabile per andare all'Overview */
+    /* La foto hero rimane cliccabile */
     #landing.band-up #landing-photo {
       pointer-events: all;
-      cursor: pointer;
+      cursor: none;
+    }
+    /* Etichetta flottante al cursore — visibile solo dopo band-up */
+    #landing-cursor-label {
+      position: fixed;
+      pointer-events: none;
+      z-index: 1010;
+      font-family: var(--font-nav);
+      font-size: 13px;
+      font-weight: 400;
+      letter-spacing: 0.06em;
+      color: #fff;
+      white-space: nowrap;
+      opacity: 0;
+      transition: opacity 0.4s ease;
+      top: 0; left: 0;
+      will-change: transform;
+    }
+    #landing.band-up #landing-cursor-label {
+      opacity: 1;
+    }
+    /* Transizione foto verso l'alto al click */
+    #landing-photo.exit-up {
+      transform: translateY(-100%);
+      transition: transform 0.9s cubic-bezier(0.76, 0, 0.24, 1);
     }
     /* Nasconde la landing dopo l'uscita */
     #landing.gone {
       pointer-events: none;
       display: none;
-    }
-    @keyframes textIn {
-      0%   { opacity: 0; }
-      20%  { opacity: 1; }
-      70%  { opacity: 1; }
-      100% { opacity: 1; }
     }
 
     /* ══════════════════════════════════════════════════════════════
@@ -259,6 +265,11 @@
       flex-shrink: 0;
       z-index: 100;
       /* Nessuna linea separatrice — Miechowski style */
+    }
+    /* Navbar nascosta durante la landing — appare solo dopo */
+    body.landing-active header {
+      visibility: hidden;
+      pointer-events: none;
     }
     /* Nessuna riga separatrice — stile Miechowski/Angelucci */
     .logo {
@@ -1983,10 +1994,15 @@
 <div id="landing">
   <!-- Foto a tutto schermo (sotto la banda) -->
   <div id="landing-photo"></div>
-  <!-- Banda nera a tutto schermo -->
+  <!-- Etichetta flottante al cursore — segue il mouse, senza triangolo -->
+  <div id="landing-cursor-label">Alessandro Rizzi</div>
+  <!-- Banda nera — schermo intero all'inizio, poi sale -->
   <div id="landing-band">
-    <div class="lband-name">Alessandro Rizzi</div>
-    <div class="lband-subtitle">Index of the works</div>
+    <div class="lband-line">
+      <span class="lband-name">Alessandro Rizzi</span>
+      <span class="lband-sep">—</span>
+      <span class="lband-subtitle">fotografo</span>
+    </div>
   </div>
 </div>
 
@@ -3741,88 +3757,70 @@ loadFromCMS();
 // LANDING PAGE HERO
 // ══════════════════════════════════════════════════════════════════
 (function() {
-  const landing = document.getElementById('landing');
+  const landing      = document.getElementById('landing');
+  const landingPhoto = document.getElementById('landing-photo');
+  const cursorLabel  = document.getElementById('landing-cursor-label');
+  const cursorEl     = document.getElementById('cursor');
   if (!landing) return;
 
-  let bandUp = false;
-  let autoTimer = null;
+  let bandUp  = false;
+  let exiting = false;
 
+  // ── 1. Nascondi triangolo cursore e navbar durante la landing
+  if (cursorEl) cursorEl.style.display = 'none';
+  document.body.classList.add('landing-active');
+
+  // ── 2. Slide-in testo: dopo 300ms
+  setTimeout(() => landing.classList.add('text-in'), 300);
+
+  // ── 3. Etichetta flottante al cursore — centrata rispetto al mouse, senza offset triangolo
+  let rafLanding;
+  let lx = 0, ly = 0;
+  document.addEventListener('mousemove', e => {
+    lx = e.clientX;
+    ly = e.clientY;
+    if (!rafLanding) rafLanding = requestAnimationFrame(moveLandingLabel);
+  });
+  function moveLandingLabel() {
+    // Offset: leggermente sotto e a destra del cursore
+    cursorLabel.style.transform = 'translate(' + (lx + 14) + 'px,' + (ly + 10) + 'px)';
+    rafLanding = null;
+  }
+
+  // ── 4. Alza la banda
   function raiseBand() {
     if (bandUp) return;
     bandUp = true;
-    clearTimeout(autoTimer);
-    // Alza la banda nera, lascia la foto visibile
     landing.classList.add('band-up');
-    // Abilita il click sulla foto per andare all'Overview
-    landing.style.cursor = 'pointer';
   }
 
+  // ── 5. Click sulla foto: foto esce verso l'alto, poi Overview
   function goToOverview() {
-    // Chiudi la landing e vai all'Overview
-    landing.classList.add('gone');
-    switchView('home');
-  }
-
-  // Auto-alza la banda dopo 3 secondi
-  autoTimer = setTimeout(raiseBand, 3000);
-
-  // Click ovunque sulla landing
-  landing.addEventListener('click', e => {
-    if (e.target.tagName === 'A') return;
-    if (bandUp) {
-      // Banda già salita: vai all'Overview
-      goToOverview();
-    } else {
-      // Banda ancora visibile: alzala subito
-      raiseBand();
-    }
-  });
-
-  // Click sui link del menu nella banda
-  const lbOverview  = document.getElementById('lband-overview');
-  const lbCities    = document.getElementById('lband-cities');
-  const lbArchive   = document.getElementById('lband-archive');
-  const lbInterview = document.getElementById('lband-interview');
-
-  function goToView(view) {
-    raiseBand();
+    if (exiting) return;
+    exiting = true;
+    landingPhoto.classList.add('exit-up');
     setTimeout(() => {
       landing.classList.add('gone');
-      switchView(view);
-    }, 950);
+      // Ripristina triangolo cursore e navbar
+      if (cursorEl) cursorEl.style.display = '';
+      document.body.classList.remove('landing-active');
+      switchView('home');
+    }, 920);
   }
 
-  if (lbOverview)  lbOverview.addEventListener('click',  e => { e.preventDefault(); goToView('home'); });
-  if (lbCities)    lbCities.addEventListener('click',    e => { e.preventDefault(); goToView('cities-index'); });
-  if (lbArchive)   lbArchive.addEventListener('click',   e => { e.preventDefault(); goToView('archive'); });
-  if (lbInterview) lbInterview.addEventListener('click', e => { e.preventDefault(); goToView('interview'); });
+  // Auto-alza la banda dopo 2s
+  setTimeout(raiseBand, 2000);
 
-  // Popola la colonna progetti Cities nella banda
-  function populateLandingProjects() {
-    const col = document.getElementById('lband-col-projects');
-    if (!col) return;
-    col.innerHTML = '';
-    PROJECTS.forEach(p => {
-      const catId = (p.category_id || p.section || '').toLowerCase();
-      if (catId === 'cities' || catId === 'gallery') {
-        const a = document.createElement('a');
-        a.href = '#';
-        a.textContent = p.title + (p.year ? ', ' + p.year : '');
-        a.addEventListener('click', e => { e.preventDefault(); goToView('gallery'); });
-        col.appendChild(a);
-      }
-    });
-  }
+  // Click sulla foto (dopo che la banda è salita)
+  landingPhoto.addEventListener('click', () => {
+    if (!bandUp) { raiseBand(); return; }
+    goToOverview();
+  });
 
-  // Aspetta che il CMS carichi i progetti, poi popola
-  const origLoadFromCMS = window._onCMSLoaded;
-  window._onCMSLoaded = function() {
-    if (origLoadFromCMS) origLoadFromCMS();
-    populateLandingProjects();
-  };
-  // Fallback: prova subito e dopo 1s
-  populateLandingProjects();
-  setTimeout(populateLandingProjects, 1200);
+  // Click sulla banda (prima che salga) — alza subito
+  landing.addEventListener('click', () => {
+    if (!bandUp) raiseBand();
+  });
 })();
 
 // ══════════════════════════════════════════════════════════════════
