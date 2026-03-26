@@ -2008,6 +2008,158 @@
     [data-theme="dark"] .contact-value { color: var(--white); }
     [data-theme="dark"] .contact-value a { color: var(--white); }
 
+    /* ════════════════════════════════════════════════════════════════
+       VIEW: INDEX — Split layout (foto sx + lista dx)
+    ════════════════════════════════════════════════════════════════ */
+    #view-index {
+      padding: 0;
+      overflow: hidden;
+    }
+    .index-split {
+      display: grid;
+      grid-template-columns: 50% 50%;
+      height: 100%;
+      width: 100%;
+    }
+
+    /* ── Colonna sinistra: foto ── */
+    .index-photo-col {
+      position: relative;
+      height: 100%;
+      overflow: hidden;
+      background: #111;
+    }
+    .index-photo-wrap {
+      width: 100%;
+      height: 100%;
+    }
+    .index-photo-wrap img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      object-position: center;
+      display: block;
+      opacity: 0;
+      transition: opacity .6s var(--ease-out);
+    }
+    .index-photo-wrap img.loaded {
+      opacity: 1;
+    }
+    .index-photo-label {
+      position: absolute;
+      bottom: 20px;
+      right: 24px;
+      font-family: var(--font-nav);
+      font-size: 11px;
+      font-weight: 300;
+      letter-spacing: 0.12em;
+      color: rgba(255,255,255,.5);
+      text-transform: none;
+    }
+
+    /* ── Colonna destra: lista ── */
+    .index-list-col {
+      height: 100%;
+      overflow-y: auto;
+      padding: 0;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* Sub-nav interno */
+    .index-subnav {
+      display: flex;
+      gap: 24px;
+      padding: 28px 48px 20px;
+      border-bottom: 1px solid var(--light);
+      flex-shrink: 0;
+    }
+    .index-subnav-btn {
+      font-family: var(--font-nav);
+      font-size: 13px;
+      font-weight: 300;
+      letter-spacing: 0.06em;
+      color: var(--black);
+      opacity: 0.4;
+      background: none;
+      border: none;
+      padding: 0;
+      cursor: none;
+      transition: opacity .15s;
+    }
+    .index-subnav-btn:hover { opacity: 0.8; }
+    .index-subnav-btn.active {
+      opacity: 1;
+      font-weight: 400;
+      text-decoration: underline;
+      text-underline-offset: 3px;
+    }
+
+    /* Lista voci */
+    .index-entries {
+      flex: 1;
+      overflow-y: auto;
+      padding: 0 48px 60px;
+    }
+
+    /* Gruppo sezione (es. "Interview", "Books") */
+    .index-section-group {
+      margin-top: 32px;
+    }
+    .index-section-group[data-section="biography"],
+    .index-section-group[data-section="contact"] {
+      /* sezioni singole: nessun gruppo visivo speciale */
+    }
+
+    /* Voce singola */
+    .index-entry {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      padding: 9px 0;
+      border-bottom: 1px solid var(--light);
+      cursor: none;
+      transition: opacity .15s;
+    }
+    .index-entry:hover { opacity: 0.55; }
+    .index-entry-name {
+      font-family: var(--font-nav);
+      font-size: 14px;
+      font-weight: 300;
+      letter-spacing: 0.03em;
+      color: var(--black);
+    }
+    .index-entry-meta {
+      font-family: var(--font-mono);
+      font-size: 10px;
+      color: var(--gray);
+      letter-spacing: 0.04em;
+      margin-left: 16px;
+      white-space: nowrap;
+    }
+    .index-entry-count {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      color: var(--gray);
+      letter-spacing: 0.04em;
+      flex-shrink: 0;
+    }
+
+    /* Separatore sezione con label */
+    .index-section-label {
+      font-family: var(--font-mono);
+      font-size: 9px;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--gray);
+      opacity: 0.6;
+      padding: 28px 0 6px;
+      border-bottom: 1px solid var(--light);
+    }
+
+    [data-theme="dark"] .index-entry-name { color: var(--white); }
+    [data-theme="dark"] .index-subnav-btn { color: var(--white); }
+
     .gallery-grid {
       display: grid;
       grid-template-columns: repeat(11, 1fr);  /* -20%: più colonne = celle più piccole */
@@ -2587,10 +2739,7 @@
       <button data-view="archive">Archive</button>
       <button data-view="interview">Interview</button>
       <button data-view="cities-index">Cities</button>
-      <button data-view="books">Books</button>
-      <button data-view="sculptures">Sculptures</button>
-      <button data-view="biography">Biography</button>
-      <button data-view="contact">Contact</button>
+      <button data-view="index">Index</button>
       <button id="btn-screensaver">Screensaver</button>
       <button id="btn-update" style="display:none" title="Aggiorna sito da GitHub">↻ Aggiorna</button>
     </nav>
@@ -2779,6 +2928,40 @@
       <div class="section-page-title">Contact</div>
       <div class="contact-wrap" id="contact-wrap">
         <!-- Generata via JS / CMS -->
+      </div>
+    </div>
+
+    <!-- ── VIEW: INDEX — Layout split foto sx + lista sezioni dx ── -->
+    <div class="view" id="view-index">
+      <div class="index-split">
+
+        <!-- Colonna sinistra: foto da CMS -->
+        <div class="index-photo-col">
+          <div class="index-photo-wrap">
+            <img id="index-photo" src="" alt="" loading="lazy">
+          </div>
+          <div class="index-photo-label">Index</div>
+        </div>
+
+        <!-- Colonna destra: lista sezioni aggregate -->
+        <div class="index-list-col">
+
+          <!-- Sub-nav interno -->
+          <div class="index-subnav">
+            <button class="index-subnav-btn active" data-section="all">All</button>
+            <button class="index-subnav-btn" data-section="interview">Interview</button>
+            <button class="index-subnav-btn" data-section="books">Books</button>
+            <button class="index-subnav-btn" data-section="sculptures">Sculptures</button>
+            <button class="index-subnav-btn" data-section="biography">Biography</button>
+            <button class="index-subnav-btn" data-section="contact">Contact</button>
+          </div>
+
+          <!-- Lista voci -->
+          <div class="index-entries" id="index-entries">
+            <!-- Generata via JS -->
+          </div>
+
+        </div>
       </div>
     </div>
 
@@ -4813,6 +4996,117 @@ function buildContact() {
   wrap.innerHTML = html;
 }
 
+// ════════════════════════════════════════════════════════════════
+// INDEX — pagina aggregata
+// ════════════════════════════════════════════════════════════════
+function buildIndex() {
+  const entriesEl = document.getElementById('index-entries');
+  const photoEl   = document.getElementById('index-photo');
+  if (!entriesEl) return;
+
+  // ── Foto laterale: cerca un progetto con category_id === 'index' ──
+  const indexProj = PROJECTS.find(p => p.category_id === 'index');
+  if (photoEl && indexProj && indexProj.images.length > 0) {
+    photoEl.src = indexProj.images[0].url;
+    photoEl.onload = () => photoEl.classList.add('loaded');
+    if (photoEl.complete) photoEl.classList.add('loaded');
+  }
+
+  // ── Definizione sezioni aggregate ──
+  const SECTIONS = [
+    { id: 'interview',  label: 'Interview',  filter: p => p.category_id === 'interview' || (p.publication && !['books','sculptures','biography','contact','index'].includes(p.category_id)) },
+    { id: 'books',      label: 'Books',      filter: p => p.category_id === 'books' },
+    { id: 'sculptures', label: 'Sculptures', filter: p => p.category_id === 'sculptures' },
+    { id: 'biography',  label: 'Biography',  filter: p => p.category_id === 'biography' },
+    { id: 'contact',    label: 'Contact',    filter: p => p.category_id === 'contact' },
+  ];
+
+  // Filtra i progetti Interview dal db (category_id === 'interview')
+  // e usa INTERVIEWS se disponibile
+  const interviewItems = typeof INTERVIEWS !== 'undefined' && INTERVIEWS.length > 0
+    ? INTERVIEWS
+    : PROJECTS.filter(p => p.category_id === 'interview');
+
+  // ── Render funzione ──
+  function renderEntries(filterSection) {
+    entriesEl.innerHTML = '';
+
+    SECTIONS.forEach(sec => {
+      if (filterSection !== 'all' && filterSection !== sec.id) return;
+
+      // Ottieni le voci per questa sezione
+      let items = [];
+      if (sec.id === 'interview') {
+        items = interviewItems;
+      } else {
+        items = PROJECTS.filter(sec.filter);
+      }
+
+      // Label sezione
+      const labelEl = document.createElement('div');
+      labelEl.className = 'index-section-label';
+      labelEl.textContent = sec.label;
+      entriesEl.appendChild(labelEl);
+
+      if (items.length === 0) {
+        const empty = document.createElement('div');
+        empty.className = 'index-entry';
+        empty.innerHTML = `<span class="index-entry-name" style="opacity:.4;font-style:italic">Nessun contenuto</span>`;
+        entriesEl.appendChild(empty);
+        return;
+      }
+
+      items.forEach(item => {
+        const row = document.createElement('div');
+        row.className = 'index-entry';
+        row.dataset.section = sec.id;
+
+        // Nome: title del progetto o dell'interview
+        const name = item.title || item.name || '—';
+        // Meta: anno + pubblicazione
+        const meta = [item.year, item.publication || item.author].filter(Boolean).join(' · ');
+        // Count: numero immagini (per interview: n/a)
+        const count = item.images ? item.images.length : (item.imgs ? item.imgs.length : '');
+
+        row.innerHTML = `
+          <span class="index-entry-name">${name}</span>
+          <span class="index-entry-meta">${meta}</span>
+          <span class="index-entry-count">${count || ''}</span>
+        `;
+
+        // Click: naviga alla sezione corrispondente
+        row.addEventListener('click', () => {
+          if (sec.id === 'interview') {
+            switchView('interview');
+          } else if (sec.id === 'books') {
+            switchView('books');
+          } else if (sec.id === 'sculptures') {
+            switchView('sculptures');
+          } else if (sec.id === 'biography') {
+            switchView('biography');
+          } else if (sec.id === 'contact') {
+            switchView('contact');
+          }
+        });
+
+        entriesEl.appendChild(row);
+      });
+    });
+  }
+
+  // Render iniziale: tutto
+  renderEntries('all');
+
+  // ── Sub-nav filtro ──
+  document.querySelectorAll('.index-subnav-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.index-subnav-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      renderEntries(btn.dataset.section);
+    });
+  });
+}
+
 // Lightbox keyboard
 document.addEventListener('keydown', e => {
   const lb = document.getElementById('lightbox');
@@ -4933,6 +5227,7 @@ async function loadFromCMS() {
   buildSculpturesIndex();
   buildBiography();
   buildContact();
+  buildIndex();
 
   // Costruisce il menu: dinamico se CMS disponibile, statico altrimenti
   if (usedCMS && CMS_CATEGORIES.length > 0) {
