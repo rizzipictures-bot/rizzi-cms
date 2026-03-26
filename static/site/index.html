@@ -173,6 +173,24 @@
     #cursor.hover #cursor-dot {
       display: none;
     }
+    /* ── Cursore ROSSO — Overview, Archive (lista chiusa), Cities ── */
+    body.cursor-red #cursor-dot {
+      background: #e00 !important;
+    }
+    body.cursor-red #cursor-dot::before,
+    body.cursor-red #cursor-dot::after {
+      background: rgba(255,255,255,0.9) !important;
+    }
+    /* ── In hover sulle foto di Overview: nero con croce bianca (visibile) ── */
+    body.cursor-red #cursor.hover #cursor-dot {
+      display: flex !important;    /* non sparisce — rimane visibile */
+      background: #111 !important;
+    }
+    body.cursor-red #cursor.hover #cursor-dot::before,
+    body.cursor-red #cursor.hover #cursor-dot::after {
+      background: rgba(255,255,255,0.9) !important;
+      opacity: 1 !important;
+    }
     /* Label testo — Jack Davison style: testo flottante vicino al mouse */
     #cursor-label {
       position: fixed;
@@ -3601,6 +3619,10 @@ function switchView(name) {
   document.getElementById('menu-overlay').classList.remove('open');
   // Chiudi box info Cities se si cambia vista
   if (name !== 'cities-index') closeCityInfoPanel();
+
+  // ── Cursore rosso per Overview, Archive, Cities ──
+  const RED_VIEWS = ['overview', 'archive', 'cities-index'];
+  document.body.classList.toggle('cursor-red', RED_VIEWS.includes(name));
 }
 
 document.querySelectorAll('[data-view]').forEach(el => {
@@ -3703,13 +3725,15 @@ function buildOverviewGrid() {
     const nameEl = document.getElementById('overview-project-name');
     item.addEventListener('mouseenter', () => {
       if (nameEl) nameEl.innerHTML = '\u00a0';
-      // Nessun label: solo hover visivo
+      // Hover foto: cursore nero con croce bianca (visibile grazie a body.cursor-red CSS)
       cursor.classList.add('hover');
     });
     item.addEventListener('mouseleave', () => {
       if (nameEl) nameEl.innerHTML = '\u00a0';
       cursorLabel.style.mixBlendMode = 'normal';
       resetCursor();
+      // Ripristina cursore rosso uscendo dalla foto
+      cursor.classList.remove('hover');
     });
     item.addEventListener('click', () => showOverview(img, photoCounter - 1, cells.filter(c => c.type === 'img').map(c => c.img)));
 
@@ -4163,6 +4187,7 @@ function buildArchive() {
           if (activeExpanded._scrollListener) window.removeEventListener('scroll', activeExpanded._scrollListener, true);
           activeExpanded.remove();
           document.body.classList.remove('cursor-on-dark');  // reset triangolo
+          document.body.classList.add('cursor-red');          // ripristina rosso
           const prevRow = list.querySelector('.archive-row.is-open');
           if (prevRow) prevRow.classList.remove('is-open');
           if (activeExpanded._sourceRow === row) {
@@ -4398,6 +4423,9 @@ function buildArchive() {
         row.insertAdjacentElement('afterend', textBlock);
         activeExpanded = panel;
         activeExpanded._textBlock = textBlock;
+
+        // Box aperto: cursore bianco (rimuovi rosso)
+        document.body.classList.remove('cursor-red');
 
         // kwPanel è già inserito nella colonna destra, nessun posizionamento extra necessario
         if (false && activeExpanded._kwPanel) {
