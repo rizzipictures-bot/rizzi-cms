@@ -3578,12 +3578,18 @@ document.addEventListener('mouseover', e => {
     return;
   }
 
-  // Campo di ricerca Archive: nasconde il triangolo (si sta per digitare)
+  // Campo di ricerca Archive: nasconde il triangolo solo se cursor-red NON è attivo
   const isSearchEl = e.target.closest('.archive-search-wrap, #archive-search');
   if (isSearchEl) {
-    cursor.classList.remove('hover');
-    cursorDot.style.visibility = 'hidden';
-    cursorLabel.classList.remove('show');
+    if (document.body.classList.contains('cursor-red')) {
+      // In Archive: mantieni il pallino rosso visibile anche sulla search
+      cursorDot.style.visibility = '';
+      resetCursor();
+    } else {
+      cursor.classList.remove('hover');
+      cursorDot.style.visibility = 'hidden';
+      cursorLabel.classList.remove('show');
+    }
     return;
   }
 
