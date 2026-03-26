@@ -86,30 +86,32 @@
     }
     #cursor-label {
       position: fixed;
-      font-size: 13px;
-      letter-spacing: 0.04em;
-      color: var(--black);
+      font-size: 22px;
+      letter-spacing: 0.02em;
+      color: #000;
       pointer-events: none;
       z-index: 9998;
-      transform: translate(14px, -50%);
+      transform: translate(16px, -50%);
       opacity: 0;
       transition: opacity .15s;
       white-space: nowrap;
-      font-weight: 400;
+      font-weight: 500;
       font-family: var(--font-nav);
       display: flex;
-      gap: 18px;
+      gap: 24px;
       align-items: baseline;
     }
     #cursor-label.show { opacity: 1; }
     #cursor-label .cl-cat {
-      font-weight: 400;
+      font-weight: 500;
+      font-size: 22px;
+      letter-spacing: 0.02em;
     }
     #cursor-label .cl-num {
-      font-weight: 300;
-      opacity: 0.6;
-      font-size: 11px;
-      letter-spacing: 0.06em;
+      font-weight: 400;
+      font-size: 18px;
+      letter-spacing: 0.04em;
+      opacity: 0.75;
     }
 
     /* ══════════════════════════════════════════════════════════════
