@@ -3452,9 +3452,8 @@ document.addEventListener('mousemove', e => {
       const _onPhotoNow = (() => {
         const el = document.elementFromPoint(mx, my);
         if (!el) return false;
-        // Non attivare ring-mode su cities-card-cover quando cursor-red è attivo
-        const onCitiesCard = !!(el.closest('.cities-card-cover')) && document.body.classList.contains('cursor-red');
-        if (onCitiesCard) return false;
+        // Se cursor-red è attivo (Overview hover foto, Archive, Cities), non usare ring-mode
+        if (document.body.classList.contains('cursor-red')) return false;
         return !!(el.closest('#view-home .grid-item, #view-gallery, #overview-overlay, #view-landing, .cities-card-cover, .gallery-main-img-wrap'));
       })();
       if (cursorDot) cursorDot.classList.toggle('ring-mode', _onPhotoNow);
