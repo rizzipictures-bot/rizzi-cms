@@ -717,14 +717,15 @@
 
     /* Contenuto interno del box nero */
     .archive-expanded-inner {
-      padding: 0 52px 0 0;           /* spazio a dx per View all in absolute */
+      padding: 0;                    /* nessun padding — il padding-right è sulla colonna destra */
       display: flex;
       flex-direction: row;
-      align-items: flex-end;         /* tutto allineato al bottom */
+      align-items: stretch;          /* colonne si estendono a tutta l'altezza */
       height: 500px;                 /* box più alto */
       gap: 0;
       box-sizing: border-box;
       position: relative;            /* contesto per View all absolute */
+      overflow: hidden;              /* evita overflow orizzontale */
     }
 
     /* Foto hero grande a sinistra — BORDERLESS, altezza fissa, larghezza automatica */
@@ -762,14 +763,17 @@
     /* Colonna destra: caption sopra, thumbs+toggle sotto */
     .archive-expanded-right {
       flex: 1;
+      min-width: 0;                  /* fondamentale: evita che flex-item superi il container */
       display: flex;
       flex-direction: column;
       justify-content: flex-start;   /* caption in cima, poi keywords, poi bottomRow in fondo */
-      overflow: visible;
+      overflow: hidden;              /* taglia il contenuto che eccede la larghezza */
       padding-left: 32px;            /* stacco dalla hero */
+      padding-right: 52px;           /* spazio per View all assoluto a destra */
       height: 500px;                 /* stessa altezza del box */
       padding-top: 18px;             /* stacco dal bordo superiore del box */
       padding-bottom: 0;
+      box-sizing: border-box;
     }
 
     /* Riga inferiore: thumbs + toggle affiancati */
@@ -779,6 +783,8 @@
       align-items: flex-end;
       overflow: hidden;
       margin-top: auto;              /* spinge la riga in fondo alla colonna */
+      padding-right: 0;              /* nessun padding — il right ha già padding-right gestito dall'inner */
+      max-width: 100%;               /* non supera la larghezza della colonna destra */
     }
     .archive-expanded-thumbs {
       display: flex;
@@ -942,8 +948,8 @@
       overflow: hidden;              /* nasconde overflow verticale */
       pointer-events: all;
       background: transparent;
-      max-height: 340px;             /* altezza massima: spazio disponibile tra caption e thumbs */
-      min-height: 60px;
+      flex: 1;                       /* occupa tutto lo spazio disponibile tra caption e bottomRow */
+      min-height: 0;                 /* fondamentale: permette a flex di ridursi */
     }
     /* Linea separatrice sottile in cima */
     .archive-kw-panel::before {
@@ -972,7 +978,9 @@
       gap: 5px 8px;
       overflow-y: auto;              /* scroll verticale se troppi tag */
       overflow-x: hidden;
-      max-height: 260px;             /* altezza massima per i tag */
+      flex: 1;                       /* occupa tutto lo spazio disponibile nel pannello */
+      min-height: 0;                 /* fondamentale: permette a flex di ridursi */
+      align-content: flex-start;     /* tag partono dall'alto */
     }
     .archive-kw-tags::-webkit-scrollbar { display: none; }
     /* Singolo tag */
@@ -2066,8 +2074,11 @@
 
 <!-- View All Overlay — stile Miechowski -->
 <div id="archive-viewall-overlay">
-  <!-- Close button fisso in alto a destra -->
-  <div class="vao-close" id="vao-close">← chiudi</div>
+  <!-- Header con titolo e close -->
+  <div class="vao-header">
+    <span id="vao-title" class="vao-title"></span>
+    <div class="vao-close" id="vao-close">← chiudi</div>
+  </div>
   <!-- Fase 1: foto singola centrata -->
   <div id="vao-single">
     <img id="vao-single-img" src="" alt="">
@@ -2352,36 +2363,33 @@ function buildOverviewGrid() {
   const COLS = 9;
   const imgs = [...ALL_IMAGES];
 
-  // Costruiamo la sequenza di celle: foto + blank interni
-  // Strategia: inseriamo blank solo quando la posizione nella riga
-  // risultante è interna (colonna 2..8) e non è l'ultima cella dell'ultima riga
+  // Costruiamo la sequenza di celle: foto + max 1 blank per riga
+  // Strategia: per ogni riga, decidiamo casualmente se inserire 1 blank
+  // in una posizione interna (colonne 1..7). L'ultima riga può avere al
+  // massimo 1 cella vuota in coda (la posizione dopo l'ultima foto).
   const cells = []; // ogni elemento: { type: 'img', img } oppure { type: 'blank' }
   let imgIdx = 0;
-  let blanksInserted = 0;
-  const maxBlanks = Math.floor(imgs.length / 6); // ~1 blank ogni 6 foto
 
   while (imgIdx < imgs.length) {
-    const posInRow = cells.length % COLS; // 0-based colonna corrente
-    // Inserisci blank solo se:
-    // - non siamo in colonna 0 (prima) o colonna 8 (ultima)
-    // - non è la prima cella in assoluto
-    // - non è l'ultima foto rimasta (evita bordo destro vuoto)
-    // - quota non esaurita
-    const remainingImgs = imgs.length - imgIdx;
-    const canBlank =
-      posInRow > 0 &&
-      posInRow < COLS - 1 &&
-      cells.length > 0 &&
-      remainingImgs > 1 &&
-      blanksInserted < maxBlanks &&
-      Math.random() < 0.15;
+    // Quante foto rimangono?
+    const remaining = imgs.length - imgIdx;
+    // Quante foto mettiamo in questa riga? (al massimo COLS)
+    const photosInRow = Math.min(remaining, COLS);
+    // Decidiamo se inserire 1 blank in questa riga
+    // (solo se ci sono almeno 2 foto nella riga e non è l'ultima riga con 1 sola foto)
+    const canBlank = photosInRow >= 2 && photosInRow < COLS && Math.random() < 0.4;
+    // Posizione del blank: casuale tra 1 e photosInRow-1 (mai prima o dopo)
+    const blankPos = canBlank ? (1 + Math.floor(Math.random() * (photosInRow - 1))) : -1;
 
-    if (canBlank) {
-      cells.push({ type: 'blank' });
-      blanksInserted++;
-    } else {
-      cells.push({ type: 'img', img: imgs[imgIdx] });
-      imgIdx++;
+    for (let col = 0; col < (canBlank ? photosInRow + 1 : photosInRow); col++) {
+      if (col === blankPos) {
+        cells.push({ type: 'blank' });
+      } else {
+        if (imgIdx < imgs.length) {
+          cells.push({ type: 'img', img: imgs[imgIdx] });
+          imgIdx++;
+        }
+      }
     }
   }
 
@@ -2754,8 +2762,9 @@ function buildArchive() {
           viewAll.textContent = 'View all';
           viewAll.addEventListener('click', e => {
             e.stopPropagation();
+            e.preventDefault();
             const isDark = !panel.classList.contains('box-white');
-            openViewAllOverlay(images, p.title || '', isDark);
+            window.openViewAllOverlay(images, p.title || '', isDark);
           });
 
           inner.appendChild(right);
@@ -3558,6 +3567,7 @@ loadFromCMS();
   // Apri overlay: griglia diretta stile Overview (no animazione foto singola)
   window.openViewAllOverlay = function(images, title, isDark) {
     if (!images || images.length === 0) return;
+    if (!overlay) return;
 
     const COLS = 9;
 
@@ -3572,24 +3582,24 @@ loadFromCMS();
     vaoSingle.classList.add('hidden');
     vaoSingleImg.src = '';
 
-    // Costruisci celle griglia stile Overview (con blank casuali)
+    // Costruisci celle griglia: max 1 blank per riga
     const cells = [];
     let imgIdx = 0;
-    let blanksInserted = 0;
-    const maxBlanks = Math.floor(images.length / 6);
     while (imgIdx < images.length) {
-      const posInRow = cells.length % COLS;
       const remaining = images.length - imgIdx;
-      const canBlank =
-        posInRow > 0 && posInRow < COLS - 1 &&
-        cells.length > 0 && remaining > 1 &&
-        blanksInserted < maxBlanks && Math.random() < 0.15;
-      if (canBlank) {
-        cells.push({ type: 'blank' });
-        blanksInserted++;
-      } else {
-        cells.push({ type: 'img', img: images[imgIdx] });
-        imgIdx++;
+      const photosInRow = Math.min(remaining, COLS);
+      // Inserisci 1 blank casuale solo se la riga non è piena e ha almeno 2 foto
+      const canBlank = photosInRow >= 2 && photosInRow < COLS && Math.random() < 0.4;
+      const blankPos = canBlank ? (1 + Math.floor(Math.random() * (photosInRow - 1))) : -1;
+      for (let col = 0; col < (canBlank ? photosInRow + 1 : photosInRow); col++) {
+        if (col === blankPos) {
+          cells.push({ type: 'blank' });
+        } else {
+          if (imgIdx < images.length) {
+            cells.push({ type: 'img', img: images[imgIdx] });
+            imgIdx++;
+          }
+        }
       }
     }
 
