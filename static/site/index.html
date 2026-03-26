@@ -31,6 +31,13 @@
       font-weight: 400;
       font-style: normal;
     }
+    @font-face {
+      font-family: 'Untitled Sans';
+      src: url('fonts/UntitledSansMedium-Regular.woff2') format('woff2'),
+           url('fonts/UntitledSansMedium-Regular.woff') format('woff');
+      font-weight: 500;
+      font-style: normal;
+    }
     /* ABCWalterNeue — stesso font di maxmiechowski.com */
     @font-face {
       font-family: 'ABCWalterNeue';
@@ -379,6 +386,7 @@
       background-color: transparent !important;
       color: #111;
       opacity: 1;                 /* nero pieno di default */
+      font-weight: 500;           /* Medium — come voce active Jack Davison */
       border: none !important;
       outline: none !important;
       box-shadow: none !important;
@@ -394,12 +402,12 @@
     }
     nav.pill-nav button:hover,
     nav.pill-nav a:hover {
-      color: #c00;                /* rosso al hover */
+      color: #e00;                /* rosso acceso al hover */
     }
     nav.pill-nav button.active {
       color: #111;
-      font-weight: 400;           /* active: leggibile ma non bold */
-      letter-spacing: 0.1em;
+      font-weight: 500;
+      letter-spacing: 0.08em;
     }
     /* Pulsante Aggiorna — solo localhost */
     #btn-update {
