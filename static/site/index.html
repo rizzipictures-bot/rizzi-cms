@@ -568,6 +568,7 @@
       transition: background .1s;
       cursor: none;
       font-family: var(--font-mono);
+      overflow: hidden;  /* impedisce al pallino di uscire dai bordi della riga */
     }
     .archive-row:not(.header):hover,
     .archive-row.is-open {
@@ -661,13 +662,9 @@
       flex-shrink: 0;
       transition: transform .18s cubic-bezier(.34,1.56,.64,1), opacity .18s;
       position: relative;
-      /* Area hit espansa: padding invisibile attorno al pallino */
-      padding: 8px;
-      margin: -8px;
-      background-clip: content-box;  /* il colore rimane solo sul cerchio */
     }
-    .media-ball:hover { transform: scale(1.5); }
-    .media-ball.active  { transform: scale(1.5); }
+    .media-ball:hover { transform: scale(1.2); }
+    .media-ball.active  { transform: scale(1.2); }
     .media-ball.ball-photo { background: #000; }
     .media-ball.ball-text  { background: #999; }
     .archive-row:not(.header):hover .media-ball.ball-photo { background: #c00; }
