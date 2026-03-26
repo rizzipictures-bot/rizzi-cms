@@ -339,12 +339,13 @@
     nav.pill-nav a {
       font-family: var(--font-nav);
       font-size: 15px;
-      font-weight: 400;
-      letter-spacing: 0.02em;
+      font-weight: 300;           /* leggero ed elegante */
+      letter-spacing: 0.08em;    /* spaziatura più ariosa */
       text-transform: none;
       background: none !important;
       background-color: transparent !important;
       color: var(--black);
+      opacity: 0.55;              /* tono discreto di default */
       border: none !important;
       outline: none !important;
       box-shadow: none !important;
@@ -353,19 +354,19 @@
       padding: 0;
       margin: 0;
       cursor: none;
-      transition: color .15s;
+      transition: opacity .2s;
       display: inline-block;
       text-decoration: none;
       border-radius: 0 !important;
     }
     nav.pill-nav button:hover,
     nav.pill-nav a:hover {
-      color: #000;
-      opacity: 0.6;
+      opacity: 1;
     }
     nav.pill-nav button.active {
-      color: #000;
-      font-weight: 700;
+      opacity: 1;
+      font-weight: 400;           /* active: leggibile ma non bold */
+      letter-spacing: 0.1em;
     }
     /* Pulsante Aggiorna — solo localhost */
     #btn-update {
