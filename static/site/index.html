@@ -86,32 +86,40 @@
     }
     #cursor-label {
       position: fixed;
-      font-size: 22px;
-      letter-spacing: 0.02em;
-      color: #000;
       pointer-events: none;
       z-index: 9998;
-      transform: translate(16px, -50%);
+      transform: translate(18px, -50%);
       opacity: 0;
-      transition: opacity .15s;
+      transition: opacity .2s;
       white-space: nowrap;
-      font-weight: 500;
-      font-family: var(--font-nav);
+      /* Stile Jack Davison: serif leggero, grigio scuro, spaziatura ampia */
+      font-family: var(--font-nav);   /* EB Garamond */
+      font-size: 13px;
+      font-weight: 400;
+      letter-spacing: 0.08em;
+      color: #3a3a3a;
       display: flex;
-      gap: 24px;
+      gap: 10px;
       align-items: baseline;
     }
     #cursor-label.show { opacity: 1; }
     #cursor-label .cl-cat {
-      font-weight: 500;
-      font-size: 22px;
-      letter-spacing: 0.02em;
+      font-weight: 400;
+      font-size: 13px;
+      letter-spacing: 0.08em;
+      color: #3a3a3a;
+    }
+    #cursor-label .cl-sep {
+      font-weight: 300;
+      color: #999;
+      font-size: 12px;
+      letter-spacing: 0;
     }
     #cursor-label .cl-num {
       font-weight: 400;
-      font-size: 18px;
-      letter-spacing: 0.04em;
-      opacity: 0.75;
+      font-size: 13px;
+      letter-spacing: 0.08em;
+      color: #3a3a3a;
     }
 
     /* ══════════════════════════════════════════════════════════════
@@ -1911,7 +1919,7 @@
 
 <!-- Cursore custom -->
 <div id="cursor"><svg viewBox="0 0 14 12" xmlns="http://www.w3.org/2000/svg"><polygon points="7,0 14,12 0,12" /></svg></div>
-<div id="cursor-label"><span class="cl-cat"></span><span class="cl-num"></span></div>
+<div id="cursor-label"><span class="cl-cat"></span><span class="cl-sep"> - </span><span class="cl-num"></span></div>
 
 <!-- Landing page hero -->
 <div id="landing">
@@ -2322,10 +2330,13 @@ document.addEventListener('mousemove', e => {
 function setCursorHover(label = '', num = '') {
   cursor.classList.add('hover');
   const clCat = cursorLabel.querySelector('.cl-cat');
+  const clSep = cursorLabel.querySelector('.cl-sep');
   const clNum = cursorLabel.querySelector('.cl-num');
   if (label || num) {
     if (clCat) clCat.textContent = label;
     if (clNum) clNum.textContent = num;
+    // Mostra separatore solo se entrambi i testi sono presenti
+    if (clSep) clSep.style.display = (label && num) ? '' : 'none';
     cursorLabel.classList.add('show');
   } else {
     cursorLabel.classList.remove('show');
@@ -3002,6 +3013,7 @@ function buildArchive() {
 // ══════════════════════════════════════════════════════════════════
 let lightboxImages = [];
 let lightboxIndex  = 0;
+let lightboxProject = null;
 
 function openArchiveProject(p) {
   const projIdx = PROJECTS.indexOf(p) + 1;
@@ -3019,6 +3031,7 @@ function openArchiveProject(p) {
   // Griglia thumbnail
   lightboxImages = p.images;
   lightboxIndex  = 0;
+  lightboxProject = p;
   const grid = document.getElementById('ap-grid');
   grid.innerHTML = '';
   p.images.forEach((img, i) => {
@@ -3036,12 +3049,20 @@ function closeArchiveProject() {
   switchView('archive');
 }
 
+function lbUpdateCursor() {
+  const img = lightboxImages[lightboxIndex];
+  const catLabel = (lightboxProject && (lightboxProject.category || lightboxProject.title)) || '';
+  const numLabel = String(lightboxIndex + 1).padStart(2,'0') + ' / ' + String(lightboxImages.length).padStart(2,'0');
+  setCursorHover(catLabel, numLabel);
+}
+
 function openLightbox(idx) {
   lightboxIndex = idx;
   const lb = document.getElementById('lightbox');
   lb.classList.add('open');
   setLightboxImg(idx);
   cursor.style.display = 'none'; // nasconde il triangolo
+  lbUpdateCursor();
 }
 
 function closeLightbox() {
@@ -3064,7 +3085,18 @@ function setLightboxImg(idx) {
 
 function lightboxNav(dir) {
   setLightboxImg((lightboxIndex + dir + lightboxImages.length) % lightboxImages.length);
+  lbUpdateCursor();
 }
+
+// Click sul lightbox Archive: metà destra = avanti, metà sinistra = indietro
+document.getElementById('lightbox').addEventListener('click', function(e) {
+  // Ignora se viene da View All (svImages.length > 0) — gestito separatamente
+  if (typeof svImages !== 'undefined' && svImages.length > 0) return;
+  if (e.target.closest('.lightbox-close, .lightbox-nav')) return;
+  if (!lightboxImages.length) return;
+  const dir = e.clientX >= window.innerWidth / 2 ? 1 : -1;
+  lightboxNav(dir);
+});
 
 // ════════════════════════════════════════════════════════════════
 // GALLERY — Nadav Kander style
@@ -3770,13 +3802,14 @@ loadFromCMS();
     }
   }
 
-  // Click sul lightbox: metà destra = avanti, metà sinistra = indietro
+  // Click sul lightbox View All: metà destra = avanti, metà sinistra = indietro
   const lbClickEl = document.getElementById('lightbox');
   if (lbClickEl) {
     lbClickEl.addEventListener('click', e => {
       // Ignora click su pulsanti close/nav
       if (e.target.closest('.lightbox-close, .lightbox-nav')) return;
-      if (!svImages.length) return;
+      if (!svImages.length) return; // non gestire se non siamo in View All
+      e.stopImmediatePropagation(); // blocca il handler Archive
       const dir = e.clientX >= window.innerWidth / 2 ? 1 : -1;
       svIndex = (svIndex + dir + svImages.length) % svImages.length;
       const img = svImages[svIndex];
