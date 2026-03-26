@@ -380,15 +380,14 @@
       object-position: center top;
       transition: opacity .25s var(--ease-out);
     }
-    /* Foto orizzontale: base allineata alle verticali, spazio bianco in cima */
+    /* Foto orizzontale: altezza ~58% della cella verticale (metà + 15%) */
     #view-home .thumbs-grid .thumb-item.is-landscape {
-      /* Altezza +10% rispetto alla cella standard (già +15% sul quadrato) */
-      height: calc((100vw - 24px) / 9 * 1.15 * 1.10);
+      /* Cella verticale = (100vw-24px)/9 * 1.15 — orizzontale = metà + 15% = * 0.575 */
+      height: calc((100vw - 24px) / 9 * 1.15 * 0.575);
     }
     #view-home .thumbs-grid .thumb-item.is-landscape img {
-      object-fit: contain;
-      object-position: center bottom;
-      background: #fff;
+      object-fit: cover;
+      object-position: center center;
     }
     #view-home .thumbs-grid .thumb-item:hover img {
       opacity: .45;   /* -30% rispetto a 0.75 */
@@ -1219,12 +1218,12 @@
       display: block;
     }
     .vao-grid-item.is-landscape {
-      /* Altezza +10% rispetto alla cella standard (già +15% sul quadrato) */
-      height: calc((100vw - 24px) / 9 * 1.15 * 1.10);
+      /* Altezza ~58% della cella verticale (metà + 15%) */
+      height: calc((100vw - 24px) / 9 * 1.15 * 0.575);
     }
     .vao-grid-item.is-landscape img {
-      object-fit: contain;
-      object-position: center bottom;
+      object-fit: cover;
+      object-position: center center;
     }
     .vao-grid-item:hover img { opacity: 0.45; /* -30% rispetto a 0.75 */ }
     .vao-grid-blank {
