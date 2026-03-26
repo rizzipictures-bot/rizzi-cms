@@ -551,7 +551,7 @@
     }
     .archive-search::placeholder {
       color: #5a1fd1;        /* viola più intenso */
-      font-weight: 500;     /* leggermente bold */
+      font-weight: 700;     /* bold */
     }
     .archive-col-header {
       display: grid;
@@ -589,7 +589,7 @@
       font-size: 12px;
       line-height: 1.3;
       font-family: var(--font-mono);
-      letter-spacing: 0;
+      letter-spacing: -0.03em;
       color: #000;
     }
     .archive-row > div:first-child { padding-left: 0; }
@@ -679,8 +679,8 @@
     .media-ball.active  { transform: scale(1.5); }
     .media-ball.ball-photo { background: #000; }
     .media-ball.ball-text  { background: #999; }
-    .archive-row:not(.header):hover .media-ball.ball-photo { background: #fff; }
-    .archive-row:not(.header):hover .media-ball.ball-text  { background: rgba(255,255,255,0.5); }
+    .archive-row:not(.header):hover .media-ball.ball-photo { background: #e00; }
+    .archive-row:not(.header):hover .media-ball.ball-text  { background: rgba(220,0,0,0.5); }
 
     /* Popup box discreto */
     .media-popup {
@@ -3711,38 +3711,69 @@ loadFromCMS();
 
 // ══════════════════════════════════════════════════════════════
 // ARCHIVE ROW CLICK SOUND — tastiera telefono
+// Cross-browser: Safari, Chrome, Edge, Firefox
 // ══════════════════════════════════════════════════════════════
 (function() {
   let audioCtx = null;
+  let _unlocked = false;
+
+  // Safari richiede che l'AudioContext venga creato/ripreso
+  // all'interno di un evento utente (click, touchstart, keydown)
   function getCtx() {
-    if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    if (!audioCtx) {
+      audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    }
+    // Safari: riprendi il contesto se sospeso
+    if (audioCtx.state === 'suspended') {
+      audioCtx.resume();
+    }
     return audioCtx;
   }
+
+  // Sblocca l'AudioContext al primo gesto utente (necessario per Safari)
+  function unlockAudio() {
+    if (_unlocked) return;
+    _unlocked = true;
+    try {
+      const ctx = getCtx();
+      // Crea e riproduce un buffer silenzioso per sbloccare il contesto
+      const buf = ctx.createBuffer(1, 1, ctx.sampleRate);
+      const src = ctx.createBufferSource();
+      src.buffer = buf;
+      src.connect(ctx.destination);
+      src.start(0);
+      src.disconnect();
+    } catch(e) {}
+  }
+
+  // Sblocca al primo click o touchstart ovunque nella pagina
+  document.addEventListener('click', unlockAudio, { once: false, passive: true });
+  document.addEventListener('touchstart', unlockAudio, { once: false, passive: true });
+  document.addEventListener('keydown', unlockAudio, { once: false, passive: true });
+
   window.archiveRowClick = function() {
     try {
       const ctx = getCtx();
-      // Click secco: impulso brevissimo (4ms) + oscillatore ad alta frequenza
+      // Click secco: impulso brevissimo (4ms) + filtro high-pass
       const sr = ctx.sampleRate;
-      const bufLen = Math.floor(sr * 0.004); // 4ms — molto più secco
+      const bufLen = Math.floor(sr * 0.004); // 4ms
       const buf = ctx.createBuffer(1, bufLen, sr);
       const d = buf.getChannelData(0);
       for (let i = 0; i < bufLen; i++) {
-        // Decadimento esponenziale rapidissimo
         d[i] = (Math.random() * 2 - 1) * Math.exp(-i / (bufLen * 0.15));
       }
       const src = ctx.createBufferSource();
       src.buffer = buf;
-      // Filtro high-pass per eliminare le basse frequenze (suono più "click")
       const hp = ctx.createBiquadFilter();
       hp.type = 'highpass';
       hp.frequency.value = 2800;
       hp.Q.value = 1.2;
       const gain = ctx.createGain();
-      gain.gain.value = 0.12;
+      gain.gain.value = 0.14;
       src.connect(hp);
       hp.connect(gain);
       gain.connect(ctx.destination);
-      src.start();
+      src.start(ctx.currentTime);
     } catch(e) {}
   };
 })();
