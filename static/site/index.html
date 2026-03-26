@@ -2101,48 +2101,66 @@
     .info-link-btn:hover { opacity: 0.55; }
 
     /* ════════════════════════════════════════════════════════════════
-       VIEW: INDEX — Full-width layout come Jack Davison
+       VIEW: INDEX — Split layout esatto Jack Davison
+       Sinistra 55%: foto grande su sfondo scuro
+       Destra 45%: sub-nav + lista voci per gruppo
     ════════════════════════════════════════════════════════════════ */
     #view-index {
       padding: 0;
-      overflow-y: auto;
+      overflow: hidden;            /* nessuno scroll esterno */
       background: #fff;
     }
     .index-split {
-      max-width: 960px;            /* larghezza massima come JD */
-      margin: 0 auto;
-      padding: 0 56px;             /* padding laterale */
-      min-height: 100%;
-      display: flex;
-      flex-direction: column;
-    }
-
-    /* ── Colonna foto: nascosta in modalità full-width ── */
-    .index-photo-col {
-      display: none;
-    }
-    .index-photo-wrap { display: none; }
-    .index-photo-label { display: none; }
-
-    /* ── Lista: full-width ── */
-    .index-list-col {
-      flex: 1;
-      display: flex;
-      flex-direction: column;
+      display: grid;
+      grid-template-columns: 55% 45%;
+      height: 100%;                /* occupa tutta l'altezza disponibile */
       width: 100%;
     }
 
-    /* ── Sub-nav: All · Interview · Books · Sculptures · Biography · Contact ── */
+    /* ── Colonna sinistra: foto su sfondo scuro ── */
+    .index-photo-col {
+      display: block;
+      position: relative;
+      background: #2d2d2d;         /* sfondo grigio scuro come JD */
+      overflow: hidden;
+      height: 100%;
+    }
+    .index-photo-wrap {
+      width: 100%;
+      height: 100%;
+    }
+    .index-photo-wrap img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      object-position: center;
+      display: block;
+      opacity: 0;
+      transition: opacity .6s;
+    }
+    .index-photo-wrap img.loaded { opacity: 1; }
+    .index-photo-label { display: none; }
+
+    /* ── Colonna destra: lista scrollabile ── */
+    .index-list-col {
+      height: 100%;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      padding: 0 56px 0 52px;      /* padding laterale come JD */
+      background: #fff;
+    }
+
+    /* ── Sub-nav: Works · Info · Helions (in JD) → qui: All · Interview · Books … ── */
     .index-subnav {
       display: flex;
-      gap: 32px;                    /* gap come Jack Davison */
-      padding: 56px 0 0;           /* ampio spazio sopra, allineato a sx */
+      gap: 20px;
+      padding: 52px 0 0;           /* spazio sopra prima del sub-nav */
       flex-shrink: 0;
-      background: #fff;
     }
     .index-subnav-btn {
       font-family: var(--font-nav);
-      font-size: 15px;
+      font-size: 14px;
       font-weight: 400;
       letter-spacing: 0;
       color: #999;
@@ -2153,65 +2171,51 @@
       transition: color .15s;
       line-height: 1.4;
     }
-    .index-subnav-btn:hover { color: #444; }
+    .index-subnav-btn:hover { color: #555; }
     .index-subnav-btn.active {
       color: #111;
-      font-weight: 500;
-      text-decoration: underline;
-      text-underline-offset: 3px;
-      text-decoration-thickness: 1px;
+      font-weight: 700;            /* bold per la voce attiva come JD (Works è bold) */
     }
 
     /* ── Lista voci ── */
     .index-entries {
       flex: 1;
-      padding: 0 0 80px;           /* nessun padding sx — allineato al container */
+      padding: 0 0 80px;
     }
 
-    /* ── Gruppo sezione: ampio spazio bianco tra gruppi ── */
+    /* ── Gruppo sezione: spazio bianco tra gruppi ── */
     .index-section-group {
-      margin-top: 52px;             /* spazio bianco generoso tra sezioni */
+      margin-top: 48px;            /* gap tra gruppi come JD */
     }
 
-    /* ── Voce singola: titolo sx · numero dx · nessuna meta ── */
+    /* ── Voce singola: solo testo, nessun numero, nessuna meta ── */
     .index-entry {
-      display: flex;
-      justify-content: space-between;
-      align-items: baseline;
-      padding: 1px 0;              /* righe molto compatte come JD */
+      display: block;              /* solo il nome, niente flex */
+      padding: 0;
       cursor: none;
       transition: opacity .15s;
+      line-height: 1.65;           /* interlinea generosa come JD */
     }
-    .index-entry:hover { opacity: 0.4; }
+    .index-entry:hover { opacity: 0.45; }
     .index-entry-name {
       font-family: var(--font-nav);
-      font-size: 18px;              /* dimensione Jack Davison */
+      font-size: 16px;             /* dimensione come JD */
       font-weight: 400;
       letter-spacing: 0;
       color: #111;
-      line-height: 1.5;
+      line-height: 1.65;
     }
-    .index-entry-meta {
-      display: none;               /* nascosta — non appare in JD */
-    }
-    .index-entry-count {
-      font-family: var(--font-nav);
-      font-size: 18px;
-      font-weight: 400;
-      color: #111;
-      letter-spacing: 0;
-      flex-shrink: 0;
-      min-width: 32px;
-      text-align: right;
-    }
+    .index-entry-meta { display: none; }
+    .index-entry-count { display: none; }  /* nessun numero come JD */
 
-    /* ── Label sezione: nessuna — in JD non c'è label ── */
-    .index-section-label {
-      display: none;               /* rimossa come in Jack Davison */
-    }
+    /* ── Label sezione: nessuna ── */
+    .index-section-label { display: none; }
 
-    [data-theme="dark"] .index-entry-name { color: var(--white); }
-    [data-theme="dark"] .index-subnav-btn { color: var(--white); }
+    [data-theme="dark"] .index-photo-col { background: #1a1a1a; }
+    [data-theme="dark"] .index-list-col { background: #111; }
+    [data-theme="dark"] .index-entry-name { color: #eee; }
+    [data-theme="dark"] .index-subnav-btn { color: #666; }
+    [data-theme="dark"] .index-subnav-btn.active { color: #eee; }
 
     .gallery-grid {
       display: grid;
@@ -5219,17 +5223,22 @@ function buildIndex() {
         items = PROJECTS.filter(sec.filter);
       }
 
-      // Label sezione
+      // Gruppo sezione con spazio bianco sopra (come JD)
+      const group = document.createElement('div');
+      group.className = 'index-section-group';
+      entriesEl.appendChild(group);
+
+      // Label sezione (nascosta via CSS)
       const labelEl = document.createElement('div');
       labelEl.className = 'index-section-label';
       labelEl.textContent = sec.label;
-      entriesEl.appendChild(labelEl);
+      group.appendChild(labelEl);
 
       if (items.length === 0) {
         const empty = document.createElement('div');
         empty.className = 'index-entry';
         empty.innerHTML = `<span class="index-entry-name" style="opacity:.4;font-style:italic">Nessun contenuto</span>`;
-        entriesEl.appendChild(empty);
+        group.appendChild(empty);
         return;
       }
 
@@ -5238,18 +5247,10 @@ function buildIndex() {
         row.className = 'index-entry';
         row.dataset.section = sec.id;
 
-        // Nome: title del progetto o dell'interview
+        // Solo il nome — nessun numero, nessuna meta (come JD)
         const name = item.title || item.name || '—';
-        // Meta: anno + pubblicazione
-        const meta = [item.year, item.publication || item.author].filter(Boolean).join(' · ');
-        // Count: numero immagini (per interview: n/a)
-        const count = item.images ? item.images.length : (item.imgs ? item.imgs.length : '');
 
-        row.innerHTML = `
-          <span class="index-entry-name">${name}</span>
-          <span class="index-entry-meta">${meta}</span>
-          <span class="index-entry-count">${count || ''}</span>
-        `;
+        row.innerHTML = `<span class="index-entry-name">${name}</span>`;
 
         // Click: naviga alla sezione corrispondente
         row.addEventListener('click', () => {
@@ -5266,7 +5267,7 @@ function buildIndex() {
           }
         });
 
-        entriesEl.appendChild(row);
+        group.appendChild(row);
       });
     });
   }
