@@ -86,6 +86,10 @@
     #cursor svg polygon {
       fill: #000;
     }
+    /* Triangolo bianco quando il cursore è su sfondo nero (classe aggiunta via JS) */
+    body.cursor-on-dark #cursor svg polygon {
+      fill: #fff;
+    }
     /* Hover: freccia nascosta, testo visibile */
     #cursor.hover svg {
       display: none;
@@ -655,16 +659,18 @@
       justify-self: center;      /* centrato rispetto alla colonna Media */
     }
     .media-ball {
-      width: 6.4px;
-      height: 6.4px;
+      width: 10px;
+      height: 10px;
       border-radius: 50%;
       cursor: pointer;
       flex-shrink: 0;
-      transition: transform .18s cubic-bezier(.34,1.56,.64,1), opacity .18s;
+      transition: width .18s cubic-bezier(.34,1.56,.64,1),
+                  height .18s cubic-bezier(.34,1.56,.64,1),
+                  opacity .18s;
       position: relative;
     }
-    .media-ball:hover { transform: scale(1.2); }
-    .media-ball.active  { transform: scale(1.2); }
+    .media-ball:hover { width: 14px; height: 14px; }
+    .media-ball.active  { width: 14px; height: 14px; }
     .media-ball.ball-photo { background: #000; }
     .media-ball.ball-text  { background: #999; }
     .archive-row:not(.header):hover .media-ball.ball-photo { background: #c00; }
@@ -2467,18 +2473,11 @@ document.addEventListener('mousemove', e => {
         ovUpdateCursor(ovImages[ovIndex]);
       }
 
-      // Colore triangolo: usa cache, rileva sfondo max ogni 80ms
-      const el = document.elementFromPoint(mx, my);
-      let isDarkBg = _detectDarkBg(el);
-      // Override per overlay Overview
+      // Colore triangolo in overlay Overview (foto vs bordo bianco)
       if (overlayOpen && _ovImgRect) {
-        isDarkBg = mx >= _ovImgRect.left && mx <= _ovImgRect.right &&
-                   my >= _ovImgRect.top  && my <= _ovImgRect.bottom;
-      }
-      const fill = isDarkBg ? '#fff' : '#000';
-      if (fill !== _lastPolyFill) {
-        _lastPolyFill = fill;
-        cursorPoly.setAttribute('fill', fill);
+        const onPhoto = mx >= _ovImgRect.left && mx <= _ovImgRect.right &&
+                        my >= _ovImgRect.top  && my <= _ovImgRect.bottom;
+        document.body.classList.toggle('cursor-on-dark', onPhoto);
       }
     });
   }
@@ -2741,15 +2740,17 @@ function closeOverview() {
 }
 
 // Click sull'overlay: metà destra = avanti, metà sinistra = indietro
-// (click sul pulsante Close è gestito separatamente)
 document.getElementById('overview-overlay').addEventListener('click', e => {
-  if (e.target.id === 'overview-overlay-close') return;
+  // Pulsante Close: chiude
+  if (e.target.id === 'overview-overlay-close') { closeOverview(); return; }
+  // Click sul background (fuori dalla foto): chiude
   if (e.target.id === 'overview-overlay-bg') { closeOverview(); return; }
-  // FIX 3: se il click è nella metà destra (anche solo 1px oltre il centro) → avanti
-  // se nella metà sinistra (anche solo 1px prima del centro) → indietro
+  // Click su qualsiasi altro elemento (foto, bordo bianco, ecc.): naviga
+  // Metà destra (anche 1px oltre centro) = avanti; metà sinistra = indietro
   const center = window.innerWidth / 2;
   const dir = e.clientX >= center ? 1 : -1;
   ovNavigate(dir);
+  e.stopPropagation();
 });
 
 document.addEventListener('keydown', e => {
@@ -2924,7 +2925,13 @@ function buildArchive() {
         });
       });
 
-      row.addEventListener('mouseenter', () => archiveRowClick());
+      row.addEventListener('mouseenter', () => {
+        archiveRowClick();
+        document.body.classList.add('cursor-on-dark');  // triangolo bianco sulla riga nera
+      });
+      row.addEventListener('mouseleave', () => {
+        document.body.classList.remove('cursor-on-dark');
+      });
 
       row.addEventListener('click', () => {
         // Se c'è già una espansione aperta, rimuovila
@@ -2933,6 +2940,7 @@ function buildArchive() {
           if (activeExpanded._kwPanel) activeExpanded._kwPanel.remove();
           if (activeExpanded._scrollListener) window.removeEventListener('scroll', activeExpanded._scrollListener, true);
           activeExpanded.remove();
+          document.body.classList.remove('cursor-on-dark');  // reset triangolo
           const prevRow = list.querySelector('.archive-row.is-open');
           if (prevRow) prevRow.classList.remove('is-open');
           if (activeExpanded._sourceRow === row) {
@@ -3146,6 +3154,10 @@ function buildArchive() {
           window.addEventListener('scroll', onScroll, true);
           activeExpanded._scrollListener = onScroll;
         }
+
+        // Triangolo bianco nel box nero espanso
+        panel.addEventListener('mouseenter', () => document.body.classList.add('cursor-on-dark'));
+        panel.addEventListener('mouseleave', () => document.body.classList.remove('cursor-on-dark'));
 
         // Animazione Ink Drop: trigger dopo un frame
         requestAnimationFrame(() => {
