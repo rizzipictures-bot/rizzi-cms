@@ -356,14 +356,14 @@
       flex-direction: column;
     }
     #view-home .thumbs-grid {
-      /* Miechowski: 9 colonne, gap 16px, celle alte come foto verticale */
+      /* Miechowski: 9 colonne, gap 16px */
       display: grid;
       grid-template-columns: repeat(9, 1fr);
       grid-auto-rows: calc((100vw - 24px) / 9 * 1.15);
       gap: 16px;
       padding: 20px 12px 0;
       margin-top: 0;
-      align-items: end;   /* tutte le celle si allineano al bordo inferiore della riga */
+      /* align-items: stretch (default) — le celle verticali occupano tutta la riga */
     }
     #view-home .thumbs-grid .thumb-item {
       display: block;
@@ -371,7 +371,7 @@
       overflow: hidden;
       cursor: none;
       background: #fff;
-      align-self: end;    /* allineamento in basso nella riga */
+      /* Le celle verticali si estendono per tutta l'altezza della riga (stretch default) */
     }
     #view-home .thumbs-grid .thumb-item img {
       display: block;
@@ -381,10 +381,10 @@
       object-position: center top;
       transition: opacity .25s var(--ease-out);
     }
-    /* Foto orizzontale: altezza ~58% della cella verticale (metà + 15%), allineata in basso */
+    /* Foto orizzontale: altezza ~58% della cella verticale, bordo inferiore allineato */
     #view-home .thumbs-grid .thumb-item.is-landscape {
       height: calc((100vw - 24px) / 9 * 1.15 * 0.575);
-      align-self: end;
+      align-self: end;   /* bordo inferiore allineato con le celle verticali */
     }
     #view-home .thumbs-grid .thumb-item.is-landscape img {
       object-fit: cover;
@@ -446,8 +446,8 @@
     #overview-overlay-img {
       position: relative;
       z-index: 1;
-      max-width: 65vw;
-      max-height: 82vh;
+      max-width: 49vw;   /* 65vw × 0.75 */
+      max-height: 62vh;  /* 82vh × 0.75 */
       object-fit: contain;
       display: block;
       /* Animazione jackdavison: si svolge dall'alto verso il basso */
@@ -1188,7 +1188,7 @@
       grid-template-columns: repeat(9, 1fr);
       grid-auto-rows: calc((100vw - 24px) / 9 * 1.15);
       gap: 16px;
-      align-items: end;   /* Miechowski: celle allineate in basso */
+      /* align-items: stretch (default) — celle verticali a tutta altezza */
       align-content: start;
       opacity: 0;
       pointer-events: none;
@@ -1207,7 +1207,6 @@
       opacity: 0;
       transform: scale(0.92);
       transition: opacity .35s ease, transform .35s ease;
-      align-self: end;   /* Miechowski: allineamento in basso */
     }
     .vao-grid-item.appeared {
       opacity: 1;
@@ -1221,8 +1220,9 @@
       display: block;
     }
     .vao-grid-item.is-landscape {
-      /* Altezza ~58% della cella verticale (metà + 15%) */
+      /* Altezza ~58% della cella verticale, bordo inferiore allineato */
       height: calc((100vw - 24px) / 9 * 1.15 * 0.575);
+      align-self: end;   /* bordo inferiore allineato con le celle verticali */
     }
     .vao-grid-item.is-landscape img {
       object-fit: cover;
@@ -1753,8 +1753,8 @@
     }
     #lightbox.open { display: flex; }
     #lightbox-img {
-      max-width: 62vw;             /* 88vw × 0.70 ≈ 62vw */
-      max-height: 56vh;            /* 80vh × 0.70 ≈ 56vh */
+      max-width: 47vw;             /* 62vw × 0.75 */
+      max-height: 42vh;            /* 56vh × 0.75 */
       object-fit: contain;
       display: block;
       transition: opacity .3s;
@@ -2352,6 +2352,12 @@ function resetCursor() {
 }
 
 document.addEventListener('mouseover', e => {
+  // Se overlay o lightbox sono aperti, il cursore testo è gestito da showOverview/lbUpdateCursor
+  // Non resettare mai il cursore in questi stati
+  const lbOpen = document.getElementById('lightbox').classList.contains('open');
+  const ovOpen = document.getElementById('overview-overlay').classList.contains('open');
+  if (lbOpen || ovOpen) return;
+
   const t = e.target.closest('button, a, .grid-item, .archive-row, .thumb, .index-list li, .archive-expanded-viewall, .archive-expanded-toggle, .vao-close, .vao-grid-item');
   if (t) {
     const label = t.dataset.label || '';
