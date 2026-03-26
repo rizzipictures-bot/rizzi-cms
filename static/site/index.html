@@ -356,14 +356,14 @@
       flex-direction: column;
     }
     #view-home .thumbs-grid {
-      /* Miechowski: 9 colonne fisse, celle +15% più alte, gap minimo, padding laterale */
+      /* Miechowski: 9 colonne, gap 16px, celle alte come foto verticale */
       display: grid;
       grid-template-columns: repeat(9, 1fr);
-      /* Altezza +15% rispetto al quadrato: 1/9 * 1.15 */
       grid-auto-rows: calc((100vw - 24px) / 9 * 1.15);
-      gap: 2px;
-      padding: 20px 12px 0;           /* stacco dalla navbar */
+      gap: 16px;
+      padding: 20px 12px 0;
       margin-top: 0;
+      align-items: end;   /* tutte le celle si allineano al bordo inferiore della riga */
     }
     #view-home .thumbs-grid .thumb-item {
       display: block;
@@ -371,6 +371,7 @@
       overflow: hidden;
       cursor: none;
       background: #fff;
+      align-self: end;    /* allineamento in basso nella riga */
     }
     #view-home .thumbs-grid .thumb-item img {
       display: block;
@@ -380,10 +381,10 @@
       object-position: center top;
       transition: opacity .25s var(--ease-out);
     }
-    /* Foto orizzontale: altezza ~58% della cella verticale (metà + 15%) */
+    /* Foto orizzontale: altezza ~58% della cella verticale (metà + 15%), allineata in basso */
     #view-home .thumbs-grid .thumb-item.is-landscape {
-      /* Cella verticale = (100vw-24px)/9 * 1.15 — orizzontale = metà + 15% = * 0.575 */
       height: calc((100vw - 24px) / 9 * 1.15 * 0.575);
+      align-self: end;
     }
     #view-home .thumbs-grid .thumb-item.is-landscape img {
       object-fit: cover;
@@ -1182,11 +1183,12 @@
     #vao-grid {
       flex: 1;
       overflow-y: auto;
-      padding: 8px 12px 12px;       /* Miechowski: 8px top, 12px laterali */
+      padding: 8px 12px 12px;
       display: grid;
       grid-template-columns: repeat(9, 1fr);
       grid-auto-rows: calc((100vw - 24px) / 9 * 1.15);
       gap: 16px;
+      align-items: end;   /* Miechowski: celle allineate in basso */
       align-content: start;
       opacity: 0;
       pointer-events: none;
@@ -1205,6 +1207,7 @@
       opacity: 0;
       transform: scale(0.92);
       transition: opacity .35s ease, transform .35s ease;
+      align-self: end;   /* Miechowski: allineamento in basso */
     }
     .vao-grid-item.appeared {
       opacity: 1;
