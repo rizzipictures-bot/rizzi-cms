@@ -50,8 +50,12 @@
       letter-spacing: 0.4px;
       background: var(--white);
       color: var(--black);
-      cursor: none;
+      cursor: none !important;
       overflow: hidden;
+    }
+    /* Forza cursor:none anche su elementi interattivi che il browser potrebbe sovrascrivere */
+    a, button, input, select, textarea, [role="button"], [tabindex] {
+      cursor: none !important;
     }
     a { text-decoration: none; color: inherit; }
 
@@ -87,44 +91,40 @@
     #cursor.hover svg {
       display: none;
     }
-    /* Label testo — dentro il wrapper #cursor */
+    /* Label testo — Jack Davison style: testo flottante vicino al mouse */
     #cursor-label {
       position: fixed;
       pointer-events: none;
       z-index: 9998;
       transform: translate(0, -50%);
       opacity: 0;
-      transition: opacity .2s;
+      transition: opacity .15s;
       white-space: nowrap;
       font-family: var(--font-nav);   /* EB Garamond */
-      font-size: 15px;
+      font-size: 14px;
       font-weight: 400;
-      letter-spacing: 0.08em;
+      letter-spacing: 0.04em;
       color: #1a1a1a;
       display: flex;
-      gap: 4px;
+      gap: 6px;
       align-items: baseline;
-      text-shadow: none;
     }
     #cursor-label.show { opacity: 1; }
     #cursor-label .cl-cat {
       font-weight: 400;
-      font-size: 15px;
-      letter-spacing: 0.08em;
-      color: #1a1a1a;
+      font-size: 14px;
+      letter-spacing: 0.04em;
     }
     #cursor-label .cl-sep {
       font-weight: 300;
-      color: #888;
-      font-size: 14px;
+      font-size: 13px;
       letter-spacing: 0;
-      padding: 0 2px;
+      opacity: 0.6;
     }
     #cursor-label .cl-num {
       font-weight: 400;
-      font-size: 15px;
-      letter-spacing: 0.08em;
-      color: #1a1a1a;
+      font-size: 14px;
+      letter-spacing: 0.04em;
     }
 
     /* ══════════════════════════════════════════════════════════════
@@ -551,11 +551,11 @@
       width: 100%;
       padding: 4px 0 8px;
       background: transparent;
-      color: #c00;            /* rosso quando si digita */
+      color: var(--accent);   /* viola quando si digita */
       letter-spacing: 0;
     }
     .archive-search::placeholder {
-      color: #c00;            /* rosso anche il placeholder */
+      color: var(--accent);   /* viola per il placeholder */
       font-weight: 700;
     }
     .archive-col-header {
@@ -571,6 +571,10 @@
       color: #000;
       letter-spacing: 0;
       padding: 0;
+    }
+    /* Ultima colonna header (Media) centrata come i pallini */
+    .archive-col-header span:last-child {
+      text-align: center;
     }
     .archive-row {
       display: grid;
@@ -1153,26 +1157,54 @@
     }
     #archive-viewall-overlay.open { display: flex; }
 
-    /* Header overlay — nascosto */
-    .vao-header { display: none; }
-    .vao-title { display: none; }
-
-    /* Close button fisso in alto a destra — sempre visibile */
-    .vao-close {
-      position: fixed;
-      top: 14px;
-      right: 20px;
-      font-family: var(--font-mono);
-      font-size: 12px;
-      color: #888;
-      cursor: none;
-      transition: color .2s;
+    /* Navbar View All — stessa altezza della navbar principale */
+    .vao-header {
+      display: flex !important;
+      align-items: center;
+      justify-content: space-between;
+      height: var(--nav-h);
+      padding: 0 16px 0 12px;
+      flex-shrink: 0;
       z-index: 2100;
-      letter-spacing: 0.05em;
+      position: relative;
     }
-    .vao-close:hover { color: #000; }
-    #archive-viewall-overlay.theme-dark .vao-close { color: #666; }
-    #archive-viewall-overlay.theme-dark .vao-close:hover { color: #fff; }
+    .vao-title {
+      display: block !important;
+      font-family: var(--font-nav);
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: 0.02em;
+      color: #000;
+    }
+    #archive-viewall-overlay.theme-dark .vao-title { color: #fff; }
+
+    /* Back button a sinistra nella navbar */
+    .vao-back {
+      font-family: var(--font-nav);
+      font-size: 13px;
+      font-weight: 400;
+      color: #000;
+      cursor: none;
+      transition: opacity .15s;
+      letter-spacing: 0.02em;
+    }
+    .vao-back:hover { opacity: 0.5; }
+    #archive-viewall-overlay.theme-dark .vao-back { color: #fff; }
+
+    /* Close button a destra nella navbar */
+    .vao-close {
+      font-family: var(--font-nav);
+      font-size: 13px;
+      font-weight: 400;
+      color: #000;
+      cursor: none;
+      transition: opacity .2s;
+      z-index: 2100;
+      letter-spacing: 0.02em;
+    }
+    .vao-close:hover { opacity: 0.5; }
+    #archive-viewall-overlay.theme-dark .vao-close { color: #fff; }
+    #archive-viewall-overlay.theme-dark .vao-close:hover { opacity: 0.5; }
 
     /* Fase 1: foto singola centrata (come Miechowski) */
     #vao-single {
@@ -1384,29 +1416,27 @@
       overflow-y: auto;
     }
     .cities-index-grid {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 0;
-      padding: 24px 16px 40px;
-      align-items: flex-start;
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+      gap: 20px;
+      padding: 32px 40px 60px;
+      align-items: start;
     }
     .cities-card {
-      width: 175px;
-      margin-right: 24px;
-      margin-bottom: 32px;
       cursor: none;
     }
     .cities-card-cover {
-      width: 175px;
-      height: 175px;
+      width: 100%;
+      aspect-ratio: 1 / 1;
       overflow: hidden;
-      background: #eee;
+      background: #f0f0f0;
     }
     .cities-card-cover img {
       width: 100%;
       height: 100%;
       object-fit: cover;
       display: block;
+      opacity: 1;            /* nessuna opacità ridotta */
       transition: opacity .2s;
     }
     .cities-card:hover .cities-card-cover img { opacity: .85; }
@@ -1448,7 +1478,7 @@
       display: block;
       object-fit: cover;
       object-position: center top;
-      opacity: .65;
+      opacity: 1;   /* nessuna opacità ridotta */
       transition: opacity .25s var(--ease-out);
     }
     .gallery-grid-item.is-landscape img {
@@ -1633,6 +1663,7 @@
       background: rgba(255,255,255,0.30);
     }
     [data-theme="dark"] #view-home .thumbs-grid .thumb-blank {
+      pointer-events: none !important;
       background: #000;
     }
     [data-theme="dark"] #view-home .thumbs-grid .thumb-item.is-landscape img {
@@ -2146,10 +2177,11 @@
 
 <!-- View All Overlay — stile Miechowski -->
 <div id="archive-viewall-overlay">
-  <!-- Header con titolo e close -->
+  <!-- Navbar View All: back a sinistra, titolo al centro, close a destra -->
   <div class="vao-header">
+    <div class="vao-back" id="vao-back" onclick="closeViewAllOverlay()">← Back</div>
     <span id="vao-title" class="vao-title"></span>
-    <div class="vao-close" id="vao-close">← chiudi</div>
+    <div class="vao-close" id="vao-close" onclick="closeViewAllOverlay()">Close</div>
   </div>
   <!-- Fase 1: foto singola centrata -->
   <div id="vao-single">
@@ -2366,9 +2398,18 @@ document.addEventListener('mousemove', e => {
   cursor.style.transform = 'translate(0, -50%)';
   cursor.querySelector('svg').style.transform = `rotate(${cursorAngle}deg)`;
 
-  // Label: posizionata subito a destra della freccia
-  cursorLabel.style.left = (mx + 22) + 'px';
-  cursorLabel.style.top  = my + 'px';
+  // Label: posizionata vicino al cursore
+  // In overlay Overview: centrata sul punto mouse (Jack Davison style)
+  // Altrimenti: a destra della freccia
+  if (overlayOpen) {
+    cursorLabel.style.left = (mx - cursorLabel.offsetWidth / 2) + 'px';
+    cursorLabel.style.top  = (my + 24) + 'px';
+    cursorLabel.style.transform = 'translate(0, 0)';
+  } else {
+    cursorLabel.style.left = (mx + 22) + 'px';
+    cursorLabel.style.top  = my + 'px';
+    cursorLabel.style.transform = 'translate(0, -50%)';
+  }
 
   // Se l'overlay Overview è aperto, aggiorna il cursore positivo/negativo in tempo reale
   if (overlayOpen && ovImages.length) {
@@ -2456,12 +2497,23 @@ document.addEventListener('mouseover', e => {
     return;
   }
 
+  // Campo di ricerca Archive: nasconde il triangolo (si sta per digitare)
+  const isSearchEl = e.target.closest('.archive-search-wrap, #archive-search');
+  if (isSearchEl) {
+    cursor.classList.remove('hover');
+    cursor.querySelector('svg').style.visibility = 'hidden';
+    cursorLabel.classList.remove('show');
+    return;
+  }
+
   const t = e.target.closest('.grid-item, .archive-row, .thumb, .index-list li, .archive-expanded-viewall, .archive-expanded-toggle, .vao-close, .vao-grid-item');
   if (t) {
     const label = t.dataset.label || '';
     const num   = t.dataset.num   || '';
     setCursorHover(label, num);
   } else {
+    // Ripristina visibilità triangolo quando si esce dalla search
+    cursor.querySelector('svg').style.visibility = '';
     resetCursor();
   }
 });
@@ -2603,17 +2655,22 @@ function buildOverviewGrid() {
 // overlayOpen, ovImages, ovIndex dichiarati sopra nel blocco cursore
 
 // Aggiorna il cursore nell'overlay Overview in base alla posizione del mouse
-// (positivo = testo nero su sfondo bianco, negativo = testo bianco sopra la foto)
+// Positivo = testo nero su sfondo bianco | Negativo = testo bianco sulla foto
 function ovUpdateCursor(img) {
   if (!img) return;
-  const catLabel = img.project ? (img.project.category || img.project.title || '') : '';
-  const numLabel = String(ovIndex + 1).padStart(2,'0') + ' / ' + String(ovImages.length).padStart(2,'0');
+  // Formato Jack Davison: "Categoria - N/Totale"
+  const catLabel = img.project ? (img.project.category || img.project.title || 'Work') : 'Work';
+  const numLabel = (ovIndex + 1) + ' / ' + ovImages.length;
   // Determina se il cursore è sopra la foto o sul bordo bianco
   const oImg = document.getElementById('overview-overlay-img');
-  const rect = oImg.getBoundingClientRect();
-  const onPhoto = mx >= rect.left && mx <= rect.right && my >= rect.top && my <= rect.bottom;
+  const rect = oImg ? oImg.getBoundingClientRect() : null;
+  const onPhoto = rect && mx >= rect.left && mx <= rect.right && my >= rect.top && my <= rect.bottom;
   // Positivo (nero) su sfondo bianco, negativo (bianco) sulla foto
   setCursorHover(catLabel, numLabel, onPhoto);
+  // Triangolo sempre visibile nell'overlay, colore adattivo
+  const poly = cursor.querySelector('svg polygon');
+  if (poly) poly.setAttribute('fill', onPhoto ? '#fff' : '#000');
+  cursor.querySelector('svg').style.visibility = '';
 }
 
 function showOverview(img, idx, imageList) {
@@ -3979,13 +4036,18 @@ loadFromCMS();
     });
   }
 
-  // Chiudi overlay
-  vaoClose.addEventListener('click', () => {
+  // Funzione globale di chiusura (usata anche da onclick nel HTML)
+  window.closeViewAllOverlay = function() {
     overlay.classList.remove('open');
     svImages = []; // reset per non interferire con Archive
     cursor.querySelector('svg').style.visibility = ''; // ripristina freccia
     resetCursor();
-  });
+  };
+
+  // Chiudi overlay via click su close o back
+  vaoClose.addEventListener('click', window.closeViewAllOverlay);
+  const vaoBackBtn = document.getElementById('vao-back');
+  if (vaoBackBtn) vaoBackBtn.addEventListener('click', window.closeViewAllOverlay);
 
   // ESC per chiudere
   document.addEventListener('keydown', e => {
