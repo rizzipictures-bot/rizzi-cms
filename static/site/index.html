@@ -3602,8 +3602,7 @@ document.addEventListener('mouseover', e => {
 // NAVIGAZIONE VISTE
 // ══════════════════════════════════════════════════════════════════
 let currentView = 'home';
-// Cursore rosso di default (la view iniziale è Overview)
-document.body.classList.add('cursor-red');
+// Nessun cursor-red all'avvio — Overview usa il cursore nero standard
 
 function switchView(name) {
   document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
@@ -3626,8 +3625,8 @@ function switchView(name) {
   // Chiudi box info Cities se si cambia vista
   if (name !== 'cities-index') closeCityInfoPanel();
 
-  // ── Cursore rosso per Overview (home), Archive, Cities ──
-  const RED_VIEWS = ['home', 'archive', 'cities-index'];
+  // ── Cursore rosso solo per Archive e Cities ──
+  const RED_VIEWS = ['archive', 'cities-index'];
   document.body.classList.toggle('cursor-red', RED_VIEWS.includes(name));
 }
 
@@ -3731,15 +3730,15 @@ function buildOverviewGrid() {
     const nameEl = document.getElementById('overview-project-name');
     item.addEventListener('mouseenter', () => {
       if (nameEl) nameEl.innerHTML = '\u00a0';
-      // Hover foto: cursore nero con croce bianca (visibile grazie a body.cursor-red CSS)
-      cursor.classList.add('hover');
+      // Hover foto: cursore diventa bianco (sfondo scuro della foto)
+      document.body.classList.add('cursor-on-dark');
     });
     item.addEventListener('mouseleave', () => {
       if (nameEl) nameEl.innerHTML = '\u00a0';
+      // Fuori dalla foto: torna nero
+      document.body.classList.remove('cursor-on-dark');
       cursorLabel.style.mixBlendMode = 'normal';
       resetCursor();
-      // Ripristina cursore rosso uscendo dalla foto
-      cursor.classList.remove('hover');
     });
     item.addEventListener('click', () => showOverview(img, photoCounter - 1, cells.filter(c => c.type === 'img').map(c => c.img)));
 
