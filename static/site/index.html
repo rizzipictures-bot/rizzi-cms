@@ -1060,6 +1060,27 @@
     }
 
     /* ══════════════════════════════════════════════════════════════
+       ARCHIVE — PREVIEW THUMBNAIL AL CURSORE
+    ══════════════════════════════════════════════════════════════ */
+    #archive-cursor-preview {
+      position: fixed;
+      pointer-events: none;
+      z-index: 800;
+      width: 196px;   /* 280px * 0.70 */
+      height: 140px;  /* 200px * 0.70 */
+      overflow: hidden;
+      opacity: 0;
+      transition: opacity .2s;
+      top: 0; left: 0;
+      will-change: transform;
+    }
+    #archive-cursor-preview.visible { opacity: 1; }
+    #archive-cursor-preview img {
+      width: 100%; height: 100%;
+      object-fit: cover; display: block;
+    }
+
+    /* ══════════════════════════════════════════════════════════════
        KEYWORD RESULTS OVERLAY — griglia foto filtrate
     ══════════════════════════════════════════════════════════════ */
     #kw-results-overlay {
@@ -2065,6 +2086,8 @@
       <div id="archive-list">
         <!-- Generata via JS -->
       </div>
+      <!-- Preview thumbnail al cursore per le righe archive -->
+      <div id="archive-cursor-preview"><img id="archive-cursor-preview-img" src="" alt=""></div>
     </div>
 
     <!-- ── VIEW: ARCHIVE PROGETTO ── -->
@@ -2465,6 +2488,12 @@ document.addEventListener('mousemove', e => {
 
       // Posiziona cursore con transform (GPU, nessun reflow)
       cursor.style.transform = `translate(calc(${mx}px - 4px), calc(${my}px - 4px))`;  /* centrato sul punto */
+
+      // Posiziona preview archive al cursore
+      const _arcPreview = document.getElementById('archive-cursor-preview');
+      if (_arcPreview && _arcPreview.classList.contains('visible')) {
+        _arcPreview.style.transform = `translate(${mx + 20}px, ${my - 70}px)`;
+      }
 
       // Posiziona label con transform
       if (overlayOpen) {
@@ -2947,10 +2976,20 @@ function buildArchive() {
 
       row.addEventListener('mouseenter', () => {
         archiveRowClick();
-        document.body.classList.add('cursor-on-dark');  // triangolo bianco sulla riga nera
+        document.body.classList.add('cursor-on-dark');  // pallino bianco sulla riga nera
+        // Mostra preview thumbnail al cursore
+        const firstImg = (p.images || [])[0];
+        if (firstImg) {
+          const previewImg = document.getElementById('archive-cursor-preview-img');
+          const preview    = document.getElementById('archive-cursor-preview');
+          previewImg.src = firstImg.thumb || firstImg.url;
+          preview.classList.add('visible');
+        }
       });
       row.addEventListener('mouseleave', () => {
         document.body.classList.remove('cursor-on-dark');
+        // Nascondi preview
+        document.getElementById('archive-cursor-preview').classList.remove('visible');
       });
 
       row.addEventListener('click', () => {
