@@ -2364,29 +2364,28 @@ function buildOverviewGrid() {
 
   // Costruiamo la sequenza di celle: foto + blank sparsi
   // Regola: max 3 blank ogni 36 foto (proporzionale per serie più lunghe)
-  const maxBlanks = Math.floor(imgs.length / 36 * 3);
+  // I blank possono cadere in qualsiasi riga (anche piene), in posizione interna
+  const maxBlanks = Math.max(1, Math.round(imgs.length / 36 * 3));
   const cells = []; // ogni elemento: { type: 'img', img } oppure { type: 'blank' }
   let imgIdx = 0;
   let blanksInserted = 0;
 
   while (imgIdx < imgs.length) {
-    const remaining = imgs.length - imgIdx;
-    const photosInRow = Math.min(remaining, COLS);
-    // Inserisci 1 blank solo se: riga non piena, almeno 2 foto, quota non esaurita
-    const canBlank = photosInRow >= 2 && photosInRow < COLS &&
-                     blanksInserted < maxBlanks && Math.random() < 0.4;
-    const blankPos = canBlank ? (1 + Math.floor(Math.random() * (photosInRow - 1))) : -1;
-
-    for (let col = 0; col < (canBlank ? photosInRow + 1 : photosInRow); col++) {
-      if (col === blankPos) {
-        cells.push({ type: 'blank' });
-        blanksInserted++;
-      } else {
-        if (imgIdx < imgs.length) {
-          cells.push({ type: 'img', img: imgs[imgIdx] });
-          imgIdx++;
-        }
-      }
+    const posInRow = cells.length % COLS;
+    // Prova a inserire un blank in posizione interna (non prima, non ultima colonna)
+    // con probabilità proporzionale ai blank ancora disponibili
+    const blanksLeft = maxBlanks - blanksInserted;
+    const photosLeft = imgs.length - imgIdx;
+    const tryBlank = posInRow > 0 && posInRow < COLS - 1 &&
+                     blanksLeft > 0 &&
+                     photosLeft > 1 &&
+                     Math.random() < (blanksLeft / photosLeft) * 2.5;
+    if (tryBlank) {
+      cells.push({ type: 'blank' });
+      blanksInserted++;
+    } else {
+      cells.push({ type: 'img', img: imgs[imgIdx] });
+      imgIdx++;
     }
   }
 
@@ -3580,27 +3579,25 @@ loadFromCMS();
     vaoSingleImg.src = '';
 
     // Costruisci celle griglia: max 3 blank ogni 36 foto (proporzionale)
-    const maxBlanks = Math.floor(images.length / 36 * 3);
+    // I blank possono cadere in qualsiasi riga (anche piene), in posizione interna
+    const maxBlanks = Math.max(1, Math.round(images.length / 36 * 3));
     const cells = [];
     let imgIdx = 0;
     let blanksInserted = 0;
     while (imgIdx < images.length) {
-      const remaining = images.length - imgIdx;
-      const photosInRow = Math.min(remaining, COLS);
-      // Inserisci 1 blank solo se: riga non piena, almeno 2 foto, quota non esaurita
-      const canBlank = photosInRow >= 2 && photosInRow < COLS &&
-                       blanksInserted < maxBlanks && Math.random() < 0.4;
-      const blankPos = canBlank ? (1 + Math.floor(Math.random() * (photosInRow - 1))) : -1;
-      for (let col = 0; col < (canBlank ? photosInRow + 1 : photosInRow); col++) {
-        if (col === blankPos) {
-          cells.push({ type: 'blank' });
-          blanksInserted++;
-        } else {
-          if (imgIdx < images.length) {
-            cells.push({ type: 'img', img: images[imgIdx] });
-            imgIdx++;
-          }
-        }
+      const posInRow = cells.length % COLS;
+      const blanksLeft = maxBlanks - blanksInserted;
+      const photosLeft = images.length - imgIdx;
+      const tryBlank = posInRow > 0 && posInRow < COLS - 1 &&
+                       blanksLeft > 0 &&
+                       photosLeft > 1 &&
+                       Math.random() < (blanksLeft / photosLeft) * 2.5;
+      if (tryBlank) {
+        cells.push({ type: 'blank' });
+        blanksInserted++;
+      } else {
+        cells.push({ type: 'img', img: images[imgIdx] });
+        imgIdx++;
       }
     }
 
