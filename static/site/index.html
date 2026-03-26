@@ -348,11 +348,11 @@
       flex-direction: column;
     }
     #view-home .thumbs-grid {
-      /* Miechowski: 9 colonne fisse, celle quadrate, gap minimo, padding laterale */
+      /* Miechowski: 9 colonne fisse, celle +15% più alte, gap minimo, padding laterale */
       display: grid;
       grid-template-columns: repeat(9, 1fr);
-      /* Righe quadrate: altezza = 1/9 della larghezza disponibile */
-      grid-auto-rows: calc((100vw - 24px) / 9);
+      /* Altezza +15% rispetto al quadrato: 1/9 * 1.15 */
+      grid-auto-rows: calc((100vw - 24px) / 9 * 1.15);
       gap: 2px;
       padding: 20px 12px 0;           /* stacco dalla navbar */
       margin-top: 0;
@@ -1167,14 +1167,14 @@
       transition: clip-path .7s cubic-bezier(.77, 0, .175, 1);
     }
 
-    /* Fase 2: griglia identica a Overview (9 colonne, celle quadrate) */
+    /* Fase 2: griglia identica a Overview (9 colonne, celle +15% più alte) */
     #vao-grid {
       flex: 1;
       overflow-y: auto;
       padding: 8px 12px 12px;       /* Miechowski: 8px top, 12px laterali */
       display: grid;
       grid-template-columns: repeat(9, 1fr);
-      grid-auto-rows: calc((100vw - 24px) / 9);
+      grid-auto-rows: calc((100vw - 24px) / 9 * 1.15);
       gap: 16px;
       align-content: start;
       opacity: 0;
