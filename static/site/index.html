@@ -2957,6 +2957,20 @@ function buildArchive() {
       // ── POPUP MEDIA TYPE ──
       let activePopup = null;
       row.querySelectorAll('.media-ball').forEach(ball => {
+        // Nasconde la preview thumbnail quando si passa sopra il pallino
+        ball.addEventListener('mouseenter', e => {
+          e.stopPropagation();
+          document.getElementById('archive-cursor-preview').classList.remove('visible');
+        });
+        ball.addEventListener('mouseleave', e => {
+          // Ripristina la preview solo se il cursore è ancora sulla riga
+          const firstImg = (p.images || [])[0];
+          if (firstImg && row.matches(':hover')) {
+            const previewImg = document.getElementById('archive-cursor-preview-img');
+            previewImg.src = firstImg.thumb || firstImg.url;
+            document.getElementById('archive-cursor-preview').classList.add('visible');
+          }
+        });
         ball.addEventListener('click', e => {
           e.stopPropagation();
           const type = ball.dataset.type;
