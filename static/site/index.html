@@ -4821,7 +4821,8 @@ function stopScreensaver() {
   clearInterval(ssInterval);
 }
 
-document.getElementById('btn-screensaver').addEventListener('click', () => {
+const btnSS = document.getElementById('btn-screensaver');
+if (btnSS) btnSS.addEventListener('click', () => {
   if (ssActive) stopScreensaver(); else startScreensaver();
 });
 ss.addEventListener('click', stopScreensaver);
