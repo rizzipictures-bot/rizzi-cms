@@ -195,6 +195,35 @@
       background: rgba(255,255,255,0.9) !important;
       opacity: 1 !important;
     }
+    /* ── Cursore FRECCIA BIANCA — vicino ai pallini media ──
+       Sostituisce il pallino con una freccia → bianca */
+    body.cursor-arrow-white #cursor-dot {
+      background: transparent !important;
+      border: none !important;
+      width: 20px !important;
+      height: 20px !important;
+    }
+    body.cursor-arrow-white #cursor-dot::before {
+      content: '→';
+      position: absolute;
+      background: none !important;
+      color: #fff;
+      font-size: 16px;
+      font-weight: 400;
+      width: auto;
+      height: auto;
+      top: 50%; left: 50%;
+      transform: translate(-50%, -50%);
+      border-radius: 0;
+    }
+    body.cursor-arrow-white #cursor-dot::after {
+      opacity: 0 !important;
+    }
+    /* Freccia bianca su sfondo bianco (fuori dal box): freccia nera */
+    body.cursor-red.cursor-arrow-white #cursor-dot::before {
+      color: #fff;
+    }
+
     /* Label testo — Jack Davison style: testo flottante vicino al mouse */
     #cursor-label {
       position: fixed;
@@ -794,8 +823,8 @@
     .media-ball.active  { width: 14px; height: 14px; }
     .media-ball.ball-photo { background: #000; }
     .media-ball.ball-text  { background: #999; }
-    .archive-row:not(.header):hover .media-ball.ball-photo { background: #c00; }
-    .archive-row:not(.header):hover .media-ball.ball-text  { background: rgba(180,0,0,0.5); }
+    .archive-row:not(.header):hover .media-ball.ball-photo { background: #e00; }
+    .archive-row:not(.header):hover .media-ball.ball-text  { background: rgba(220,0,0,0.5); }
 
     /* Popup box discreto */
     .media-popup {
@@ -3446,6 +3475,21 @@ document.addEventListener('mousemove', e => {
             cipanel.classList.remove('open');
           }
         }
+      }
+
+      // Puntatore vicino ai pallini media: diventa freccia bianca
+      if (currentView === 'archive') {
+        const _allBalls = document.querySelectorAll('.archive-row:hover .media-ball');
+        let _nearAnyBall = false;
+        _allBalls.forEach(b => {
+          const r = b.getBoundingClientRect();
+          const cx = r.left + r.width / 2;
+          const cy = r.top  + r.height / 2;
+          if (Math.abs(mx - cx) < 60 && Math.abs(my - cy) < 60) _nearAnyBall = true;
+        });
+        document.body.classList.toggle('cursor-arrow-white', _nearAnyBall);
+      } else {
+        document.body.classList.remove('cursor-arrow-white');
       }
 
       // Archive box aperto: rosso fuori dal box, bianco dentro il box
