@@ -1771,19 +1771,21 @@
     }
     .cip-close {
       position: absolute;
-      top: 16px;
+      top: 12px;
       right: 14px;
-      font-family: var(--font-mono);
-      font-size: 10px;
-      color: #cc0000;
+      font-family: var(--font-nav);
+      font-size: 22px;
+      font-weight: 700;
+      color: #e00;
       background: none;
       border: none;
       cursor: pointer;
       padding: 0;
       line-height: 1;
-      letter-spacing: 0.04em;
+      letter-spacing: 0;
+      transition: color .15s, transform .15s;
     }
-    .cip-close:hover { color: #ff0000; }
+    .cip-close:hover { color: #ff2222; transform: scale(1.2); }
     .cip-meta {
       padding: 10px 18px;
       border-bottom: 1px solid #444;
@@ -2947,7 +2949,7 @@
       <div class="cip-header">
         <p class="cip-title" id="cip-title">—</p>
         <p class="cip-subtitle" id="cip-subtitle"></p>
-        <button class="cip-close" id="cip-close">Chiudi</button>
+        <button class="cip-close" id="cip-close">&#x2715;</button>
       </div>
       <div class="cip-meta" id="cip-meta"></div>
       <div class="cip-body">
