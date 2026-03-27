@@ -3578,16 +3578,17 @@ document.addEventListener('mousemove', e => {
         // Thumbs deve stare a sinistra del box: (innerWidth - cipW) - thumbW - gap
         const _maxBoxX  = window.innerWidth - _cipW - _thumbW - _gap;
 
-        // Soglia apertura: thumbs ha raggiunto il clamp libero (bordo dx)
-        const _thumbAtClamp = (mx + 20 >= _maxFreeX);
-        // Soglia chiusura: molto a sinistra (20% schermo) — non chiude mai per errore
+        // Soglia apertura: il mouse supera il 30% della larghezza schermo
+        const _openAt   = window.innerWidth * 0.30;
+        const _thumbAtClamp = (mx >= _openAt);
+        // Soglia chiusura: molto a sinistra (20% schermo)
         const _closeAt = window.innerWidth * 0.20;
 
         const _boxOpen = cipanel && cipanel.classList.contains('open');
 
-        // ── LOCK MODE: thumbs al clamp o box già aperto
-        // In lock mode: thumbs ancorata in X (no sovrapposizione), su/giù scrollano box
-        // Si esce dal lock SOLO tornando molto a sx (<20%)
+        // ── LOCK MODE: mouse oltre il 30% o box già aperto
+        // In lock mode: thumbs ancorata in X, su/giù scrollano box
+        // Si esce dal lock SOLO tornando a sx (<20%)
         const _lockMode = _boxOpen || (cipanel && cipanel._activeProject && _thumbAtClamp);
 
         if (cipanel && cipanel._activeProject) {
