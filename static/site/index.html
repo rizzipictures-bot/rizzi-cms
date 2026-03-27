@@ -3941,6 +3941,18 @@ function closeCityInfoPanel() {
     _cipanel._currentProject = null;
   }
   if (_cipPhotoViewer) _cipPhotoViewer.classList.remove('open');
+  window._citLock = false;
+  window._citBoxW = null;
+}
+
+// Click sulla pagina bianca (view cities-index) → chiude entrambi i box
+const _viewCitiesIndex = document.getElementById('view-cities-index');
+if (_viewCitiesIndex) {
+  _viewCitiesIndex.addEventListener('click', e => {
+    // Ignora click sui box stessi, sui pulsanti di toggle e sulle righe città
+    if (e.target.closest('#cities-info-panel, #cip-photo-viewer, .cities-view-toggle, .city-row, .cities-thumbs-item')) return;
+    closeCityInfoPanel();
+  });
 }
 
 document.addEventListener('mouseover', e => {
