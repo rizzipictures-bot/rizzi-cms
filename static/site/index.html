@@ -114,8 +114,8 @@
     }
     /* ── CURSORE RIDISEGNATO: pallino + croce bianca ── */
     #cursor-dot {
-      width: 18px;
-      height: 18px;
+      width: 24px;
+      height: 24px;
       border-radius: 50%;
       background: #111;
       display: flex;
@@ -136,12 +136,12 @@
     }
     #cursor-dot::before {
       width: 1px;
-      height: 9px;
+      height: 12px;
       top: 50%; left: 50%;
       transform: translate(-50%, -50%);
     }
     #cursor-dot::after {
-      width: 9px;
+      width: 12px;
       height: 1px;
       top: 50%; left: 50%;
       transform: translate(-50%, -50%);
@@ -150,8 +150,8 @@
     #cursor-dot.ring-mode {
       background: transparent !important;
       border: 1.5px solid #111;
-      width: 22px;
-      height: 22px;
+      width: 30px;
+      height: 30px;
     }
     #cursor-dot.ring-mode::before,
     #cursor-dot.ring-mode::after {
@@ -200,8 +200,8 @@
     body.cursor-arrow-white #cursor-dot {
       background: transparent !important;
       border: none !important;
-      width: 20px !important;
-      height: 20px !important;
+      width: 27px !important;
+      height: 27px !important;
     }
     body.cursor-arrow-white #cursor-dot::before {
       content: '→';
@@ -809,8 +809,8 @@
       justify-self: center;      /* centrato rispetto alla colonna Media */
     }
     .media-ball {
-      width: 10px;
-      height: 10px;
+      width: 14px;
+      height: 14px;
       border-radius: 50%;
       cursor: none;
       flex-shrink: 0;
@@ -819,8 +819,8 @@
                   opacity .18s;
       position: relative;
     }
-    .media-ball:hover { width: 14px; height: 14px; }
-    .media-ball.active  { width: 14px; height: 14px; }
+    .media-ball:hover { width: 19px; height: 19px; }
+    .media-ball.active  { width: 19px; height: 19px; }
     .media-ball.ball-photo { background: #000; }
     .media-ball.ball-text  { background: #999; }
     .archive-row:not(.header):hover .media-ball.ball-photo { background: #e00; }
@@ -3493,7 +3493,7 @@ document.addEventListener('mousemove', e => {
       _rafPending = false;
 
       // Posiziona cursore con transform (GPU, nessun reflow)
-      cursor.style.transform = `translate(calc(${mx}px - 9px), calc(${my}px - 9px))`;  /* centrato sul punto — 18px/2 */
+      cursor.style.transform = `translate(calc(${mx}px - 12px), calc(${my}px - 12px))`;  /* centrato sul punto — 24px/2 */
 
       // Posiziona preview archive al cursore
       // Nasconde la preview se il cursore è entro 60px da un pallino media
