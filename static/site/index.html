@@ -676,6 +676,42 @@
     }
     #overview-overlay.open #overview-overlay-label { opacity: 1; }
     /* Tasto chiudi in basso al centro — jackdavison */
+
+    /* ── PULSANTE CHIUSURA CERCHIO ──────────────────────────────────────── */
+    .btn-circle-close {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      background: var(--close-color, #111);
+      border: none;
+      cursor: pointer;
+      padding: 0;
+      flex-shrink: 0;
+      transition: transform .15s, opacity .15s;
+      position: relative;
+    }
+    .btn-circle-close:hover { opacity: .75; transform: scale(1.08); }
+    .btn-circle-close::before,
+    .btn-circle-close::after {
+      content: '';
+      position: absolute;
+      width: 11px;
+      height: 1.5px;
+      background: #fff;
+      border-radius: 1px;
+      top: 50%; left: 50%;
+    }
+    .btn-circle-close::before { transform: translate(-50%, -50%) rotate(45deg); }
+    .btn-circle-close::after  { transform: translate(-50%, -50%) rotate(-45deg); }
+    .btn-circle-close.red   { --close-color: #e00; }
+    .btn-circle-close.black { --close-color: #111; }
+    .btn-circle-close.white { --close-color: #fff; }
+    .btn-circle-close.white::before,
+    .btn-circle-close.white::after { background: #111; }
+
     #overview-overlay-close {
       position: absolute;
       bottom: 24px; left: 50%;
@@ -1470,18 +1506,12 @@
 
     /* Close button a destra nella navbar */
     .vao-close {
-      font-family: var(--font-nav);
-      font-size: 13px;
-      font-weight: 400;
-      color: #000;
-      cursor: none;
-      transition: opacity .2s;
+      cursor: pointer;
       z-index: 2100;
-      letter-spacing: 0.02em;
     }
-    .vao-close:hover { opacity: 0.5; }
-    #archive-viewall-overlay.theme-dark .vao-close { color: #fff; }
-    #archive-viewall-overlay.theme-dark .vao-close:hover { opacity: 0.5; }
+    #archive-viewall-overlay.theme-dark .vao-close { --close-color: #fff; }
+    #archive-viewall-overlay.theme-dark .vao-close::before,
+    #archive-viewall-overlay.theme-dark .vao-close::after { background: #111; }
 
     /* Fase 1: foto singola centrata (come Miechowski) */
     #vao-single {
@@ -1821,19 +1851,8 @@
       position: absolute;
       top: 12px;
       right: 14px;
-      font-family: var(--font-nav);
-      font-size: 22px;
-      font-weight: 700;
-      color: #e00;
-      background: none;
-      border: none;
-      cursor: pointer;
-      padding: 0;
-      line-height: 1;
-      letter-spacing: 0;
-      transition: color .15s, transform .15s;
+      --close-color: #e00;
     }
-    .cip-close:hover { color: #ff2222; transform: scale(1.2); }
     .cip-meta {
       padding: 10px 18px;
       border-bottom: 1px solid #d0cec9;
@@ -2761,14 +2780,9 @@
     }
     .lightbox-close {
       position: absolute; top: 20px; right: 24px;
-      background: none; border: none;
-      font-family: var(--font);
-      font-size: 11px; letter-spacing: 0.4px;
-      color: rgba(255,255,255,.4);
-      cursor: none;
-      transition: color .15s;
+      --close-color: #fff;
+      cursor: pointer;
     }
-    .lightbox-close:hover { color: rgba(255,255,255,.9); }
     .lightbox-nav {
       position: absolute; top: 50%; transform: translateY(-50%);
       background: none; border: none;
@@ -3053,7 +3067,7 @@
       <div class="cip-header">
         <p class="cip-title" id="cip-title">—</p>
         <p class="cip-subtitle" id="cip-subtitle"></p>
-        <button class="cip-close" id="cip-close">&#x2715;</button>
+        <button class="cip-close btn-circle-close red" id="cip-close"></button>
       </div>
       <div class="cip-meta" id="cip-meta"></div>
       <div class="cip-body">
@@ -3231,12 +3245,12 @@
 <div id="overview-overlay">
   <div id="overview-overlay-bg" onclick="closeOverview()"></div>
   <img id="overview-overlay-img" src="" alt="">
-  <button id="overview-overlay-close" onclick="closeOverview()">Work — Close</button>
+  <button id="overview-overlay-close" class="btn-circle-close black" onclick="closeOverview()"></button>
 </div>
 
 <!-- Lightbox esistente -->
 <div id="lightbox">
-  <button class="lightbox-close" onclick="closeLightbox()">Close ×</button>
+  <button class="lightbox-close btn-circle-close white" onclick="closeLightbox()"></button>
   <button class="lightbox-nav prev" onclick="lightboxNav(-1)">←</button>
   <img id="lightbox-img" src="" alt="">
   <button class="lightbox-nav next" onclick="lightboxNav(1)">→</button>
@@ -3252,7 +3266,7 @@
   <div class="vao-header">
     <div class="vao-back" id="vao-back" onclick="closeViewAllOverlay()">← Back</div>
     <span id="vao-title" class="vao-title"></span>
-    <div class="vao-close" id="vao-close" onclick="closeViewAllOverlay()">Close</div>
+    <button class="vao-close btn-circle-close black" id="vao-close" onclick="closeViewAllOverlay()"></button>
   </div>
   <!-- Fase 1: foto singola centrata -->
   <div id="vao-single">
