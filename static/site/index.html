@@ -1287,8 +1287,8 @@
       position: fixed;
       pointer-events: none;
       z-index: 800;
-      width: 196px;   /* 280px * 0.70 */
-      height: 140px;  /* 200px * 0.70 */
+      width: 235px;   /* 196px * 1.20 */
+      height: 168px;  /* 140px * 1.20 */
       overflow: hidden;
       opacity: 0;
       transition: opacity .2s;
@@ -3512,7 +3512,7 @@ document.addEventListener('mousemove', e => {
         } else {
           // Limita la X massima: la preview (196px) non deve mai coprire i pallini media a destra
           // I pallini si trovano circa a window.innerWidth - 120px; lasciamo 60px di margine
-          const _arcMaxX = window.innerWidth - 196 - 120;
+          const _arcMaxX = window.innerWidth - 235 - 120;
           const _arcX = Math.min(mx + 20, _arcMaxX);
           _arcPreview.style.transform = `translate(${_arcX}px, ${my - 70}px)`;
         }
