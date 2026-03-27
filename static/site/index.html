@@ -3522,29 +3522,32 @@ document.addEventListener('mousemove', e => {
       const _citPreview = document.getElementById('cities-cursor-preview');
       if (_citPreview && _citPreview.classList.contains('visible')) {
         const cipanel = document.getElementById('cities-info-panel');
-        const _cipW = 408; // larghezza box info
-        const _thumbW = 196; // larghezza thumbs
+        const _cipW   = 408;  // larghezza box info
+        const _thumbW = 196;  // larghezza thumbs
+        // X massima della thumbs senza box aperto (bordo dx schermo - thumbW - margine)
+        const _maxFreeX = window.innerWidth - _thumbW - 16;
+        // X massima della thumbs con box aperto (si ancora a sx del box)
+        const _maxBoxX  = window.innerWidth - _cipW - _thumbW - 16;
 
-        if (cipanel && cipanel._currentProject) {
-          // ── SOGLIA APERTURA: thumbs deve arrivare quasi al bordo dx (≥85%) ────────
-          // La thumbs è larga 196px; il suo bordo destro tocca il bordo schermo
-          // quando mx + 20 + 196 ≈ innerWidth, cioè mx ≈ innerWidth - 216.
-          // Usiamo come soglia il punto in cui la thumbs è già al clamp (ferma).
-          const _clampStopX = window.innerWidth - _thumbW - 16; // X dove la thumbs si ferma
-          const _openThreshold  = _clampStopX - 20;  // apre quando mx supera questo punto
-          const _closeThreshold = _clampStopX - 100; // chiude con isteresi 80px
+        const _boxOpen = cipanel && cipanel.classList.contains('open');
 
-          if (mx + 20 >= _clampStopX) {
-            // La thumbs è ferma al clamp: apri il box
+        if (cipanel && cipanel._activeProject) {
+          // ── 1. APERTURA BOX: dal centro schermo verso destra ─────────────────
+          // Il box si apre quando mx supera il 50% della larghezza schermo.
+          // Si chiude con isteresi: solo quando mx torna sotto il 40%.
+          const _openAt  = window.innerWidth * 0.50;
+          const _closeAt = window.innerWidth * 0.40;
+
+          if (!_boxOpen && mx > _openAt) {
             cipanel.classList.add('open');
-          } else if (mx + 20 < _clampStopX - 80) {
-            // Mouse si è allontanato abbastanza: chiudi il box
+          } else if (_boxOpen && mx < _closeAt) {
             cipanel.classList.remove('open');
           }
 
-          // ── SCROLL VERTICALE: attivo appena la thumbs è ferma al clamp ────────
-          // Condizione: thumbs ferma (mx + 20 >= _clampStopX) oppure box già aperto
-          const _thumbAtClamp = (mx + 20 >= _clampStopX);
+          // ── 2. SCROLL VERTICALE ────────────────────────────────────────
+          // Attivo quando la thumbs è ferma al clamp (mx > _maxFreeX - 20)
+          // oppure quando il box è già aperto.
+          const _thumbAtClamp = (mx + 20 >= _maxFreeX);
           if (_thumbAtClamp || cipanel.classList.contains('open')) {
             const _cipBody = cipanel.querySelector('.cip-body');
             if (_cipBody) {
@@ -3557,13 +3560,18 @@ document.addEventListener('mousemove', e => {
           }
         }
 
-        // ── POSIZIONE THUMBS: clamp al bordo sinistro del box quando aperto ──────
-        const _boxCurrentlyOpen = cipanel && cipanel.classList.contains('open');
-        const _maxThumbX = _boxCurrentlyOpen
-          ? (window.innerWidth - _cipW - _thumbW - 16)
-          : (window.innerWidth - _thumbW - 16);
-        const _clampedX = Math.min(mx + 20, _maxThumbX);
-        _citPreview.style.transform = `translate(${_clampedX}px, ${my - 70}px)`;
+        // ── 3. POSIZIONE THUMBS ──────────────────────────────────────────
+        // Quando il box è aperto la thumbs si ancora al bordo sinistro del box
+        // e NON segue più il mouse in X (pallino statico in X).
+        // In Y continua a seguire il mouse.
+        const _nowOpen = cipanel && cipanel.classList.contains('open');
+        let _thumbX;
+        if (_nowOpen) {
+          _thumbX = _maxBoxX; // ancorata, non segue il mouse
+        } else {
+          _thumbX = Math.min(mx + 20, _maxFreeX); // segue il mouse fino al clamp
+        }
+        _citPreview.style.transform = `translate(${_thumbX}px, ${my - 70}px)`;
       }
 
       // Puntatore vicino ai pallini media: diventa freccia bianca
@@ -4130,26 +4138,34 @@ function buildCitiesIndex() {
                             ? p.images.map(i => i.url.startsWith('http') ? i.url : BASE + i.url)
                             : []);
 
+    // ── FOTO FISSA PER PROGETTO ─────────────────────────────────────────
+    // Memoizza l'indice casuale una volta sola per questo progetto.
+    // La stessa foto appare ogni volta che si torna su questa riga.
+    if (previewImages.length > 0 && p._fixedImgIdx === undefined) {
+      p._fixedImgIdx = Math.floor(Math.random() * previewImages.length);
+    }
+
     const citiesPreview    = document.getElementById('cities-cursor-preview');
     const citiesPreviewImg = document.getElementById('cities-cursor-preview-img');
 
     row.addEventListener('mouseenter', () => {
       if (previewImages.length === 0) return;
-      // Immagine fissa: scelta casuale una volta sola al mouseenter,
-      // non cambia mentre la thumbs si avvicina al box
-      const idx = Math.floor(Math.random() * previewImages.length);
-      citiesPreviewImg.src = previewImages[idx];
+      // Usa sempre la foto memoizzata — non cambia mai
+      citiesPreviewImg.src = previewImages[p._fixedImgIdx];
       citiesPreview.classList.add('visible');
       // Popola il box info con i dati del progetto corrente
       const projectForPanel = isTokyoProject && TOKYO_CMS ? TOKYO_CMS : p;
       populateCityInfoPanel(projectForPanel, previewImages);
+      // Segnala il progetto attivo al mousemove
+      if (_cipanel) _cipanel._activeProject = projectForPanel;
     });
     row.addEventListener('mouseleave', () => {
       citiesPreview.classList.remove('visible');
-      // Chiudi il box quando il cursore esce dalla riga
+      // Chiudi il box e azzera il progetto attivo
       if (_cipanel) {
         _cipanel.classList.remove('open');
         _cipanel._currentProject = null;
+        _cipanel._activeProject  = null;
       }
     });
 
