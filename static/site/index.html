@@ -3524,31 +3524,29 @@ document.addEventListener('mousemove', e => {
         const cipanel = document.getElementById('cities-info-panel');
         const _cipW   = 408;  // larghezza box info
         const _thumbW = 196;  // larghezza thumbs
-        // X massima della thumbs senza box aperto (bordo dx schermo - thumbW - margine)
-        const _maxFreeX = window.innerWidth - _thumbW - 16;
-        // X massima della thumbs con box aperto (si ancora a sx del box)
-        const _maxBoxX  = window.innerWidth - _cipW - _thumbW - 16;
+        const _maxFreeX = window.innerWidth - _thumbW - 16; // X clamp thumbs libera
+        const _maxBoxX  = window.innerWidth - _cipW - _thumbW - 16; // X clamp con box aperto
+        const _openAt   = window.innerWidth * 0.50; // soglia apertura box
+        const _closeAt  = window.innerWidth * 0.40; // soglia chiusura box (isteresi)
 
         const _boxOpen = cipanel && cipanel.classList.contains('open');
 
-        if (cipanel && cipanel._activeProject) {
-          // ── 1. APERTURA BOX: dal centro schermo verso destra ─────────────────
-          // Il box si apre quando mx supera il 50% della larghezza schermo.
-          // Si chiude con isteresi: solo quando mx torna sotto il 40%.
-          const _openAt  = window.innerWidth * 0.50;
-          const _closeAt = window.innerWidth * 0.40;
+        // ── MODALITÀ LOCK: attiva quando mx > 50% oppure box già aperto ──────────
+        // In lock mode: il pallino è bloccato in X, su/giù scrollano il box,
+        // destra non fa nulla. Solo tornare a sx (<40%) esce dal lock.
+        const _lockMode = _boxOpen || (cipanel && cipanel._activeProject && mx > _openAt);
 
+        if (cipanel && cipanel._activeProject) {
           if (!_boxOpen && mx > _openAt) {
+            // Entra in lock mode e apre il box
             cipanel.classList.add('open');
           } else if (_boxOpen && mx < _closeAt) {
+            // Esce dal lock mode: chiude il box
             cipanel.classList.remove('open');
           }
 
-          // ── 2. SCROLL VERTICALE ────────────────────────────────────────
-          // Attivo quando la thumbs è ferma al clamp (mx > _maxFreeX - 20)
-          // oppure quando il box è già aperto.
-          const _thumbAtClamp = (mx + 20 >= _maxFreeX);
-          if (_thumbAtClamp || cipanel.classList.contains('open')) {
+          // ── SCROLL VERTICALE: attivo in lock mode (mx > 50% o box aperto) ────────
+          if (_lockMode) {
             const _cipBody = cipanel.querySelector('.cip-body');
             if (_cipBody) {
               const _scrollH = _cipBody.scrollHeight - _cipBody.clientHeight;
@@ -3560,16 +3558,15 @@ document.addEventListener('mousemove', e => {
           }
         }
 
-        // ── 3. POSIZIONE THUMBS ──────────────────────────────────────────
-        // Quando il box è aperto la thumbs si ancora al bordo sinistro del box
-        // e NON segue più il mouse in X (pallino statico in X).
-        // In Y continua a seguire il mouse.
-        const _nowOpen = cipanel && cipanel.classList.contains('open');
+        // ── POSIZIONE THUMBS ──────────────────────────────────────────
+        // In lock mode: X bloccata (pallino fermo), solo Y segue il mouse
+        // Fuori da lock mode: X segue il mouse fino al clamp
         let _thumbX;
-        if (_nowOpen) {
-          _thumbX = _maxBoxX; // ancorata, non segue il mouse
+        if (_lockMode) {
+          // X ancorata: se box aperto va al bordo sx del box, altrimenti al clamp
+          _thumbX = _boxOpen ? _maxBoxX : _maxFreeX;
         } else {
-          _thumbX = Math.min(mx + 20, _maxFreeX); // segue il mouse fino al clamp
+          _thumbX = Math.min(mx + 20, _maxFreeX);
         }
         _citPreview.style.transform = `translate(${_thumbX}px, ${my - 70}px)`;
       }
