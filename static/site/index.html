@@ -287,15 +287,15 @@
       object-position: center center;
       display: block;
     }
-    /* Croce bianca centrale — appare dopo 1s, più piccola del pallino */
+    /* Croce bianca centrale — sulla banda nera, appare dopo 1s */
     #landing-cross {
       position: absolute;
       top: 50%; left: 50%;
       transform: translate(-50%, -50%);
       z-index: 5;
       pointer-events: none;
-      width: 20px;
-      height: 20px;
+      width: 16px;
+      height: 16px;
       opacity: 0;
       transition: opacity 0.5s ease;
     }
@@ -312,21 +312,20 @@
     }
     #landing-cross::before {
       width: 1px;
-      height: 12px;
+      height: 10px;
       transform: translate(-50%, -50%);
     }
     #landing-cross::after {
-      width: 12px;
+      width: 10px;
       height: 1px;
       transform: translate(-50%, -50%);
     }
-    /* Nome — su riga unica, sale dal basso fino a quasi toccare la croce */
+    /* Nome — su riga unica, sale dal basso fino a quasi toccare la croce (sulla banda) */
     #landing-name {
       position: absolute;
-      /* Si posiziona appena sotto il centro (dove sta la croce) + metà croce + 8px */
-      top: calc(50% + 10px + 8px);
+      top: calc(50% + 8px + 6px);
       left: 50%;
-      transform: translateX(-50%) translateY(60px);
+      transform: translateX(-50%) translateY(50px);
       z-index: 5;
       pointer-events: none;
       text-align: center;
@@ -342,10 +341,10 @@
     #landing-name .ln-full {
       display: block;
       font-family: 'ABCWalterNeue', Georgia, serif;
-      font-size: clamp(11px, 0.98vw, 15px);  /* -30% rispetto a clamp(16,1.4vw,22) */
+      font-size: clamp(9px, 0.72vw, 11px);
       font-weight: 300;
       color: #fff;
-      letter-spacing: 0.14em;
+      letter-spacing: 0.18em;
       white-space: nowrap;
     }
     /* Banda nera — a schermo intero, poi sale */
@@ -363,51 +362,54 @@
     #landing.band-up #landing-band {
       transform: translateY(-100%);
     }
-    /* Quando la banda sale: la landing non intercetta i click */
-    #landing.band-up {
-      pointer-events: none;
-    }
-    /* La foto hero rimane cliccabile */
-    #landing.band-up #landing-photo {
-      pointer-events: all;
-      cursor: none;
-    }
-    /* Cursore grigio su foto (dopo band-up) */
-    #landing-cursor-dot {
-      position: fixed;
-      pointer-events: none;
-      z-index: 1010;
-      width: 18px;
-      height: 18px;
-      border-radius: 50%;
-      background: rgba(180,180,180,0.85);
+    /* Croce e nome sulla FOTO (dopo band-up) — fluttuano al centro */
+    #landing-photo-overlay {
+      position: absolute; inset: 0;
+      z-index: 2;
       display: flex;
+      flex-direction: column;
       align-items: center;
       justify-content: center;
-      top: 0; left: 0;
-      will-change: transform;
+      pointer-events: none;
       opacity: 0;
-      transition: opacity 0.4s ease;
+      transition: opacity 0.8s ease 0.4s;
     }
-    #landing-cursor-dot::before,
-    #landing-cursor-dot::after {
+    #landing.band-up #landing-photo-overlay {
+      opacity: 1;
+    }
+    #landing-photo-overlay .lpo-cross {
+      width: 16px; height: 16px;
+      position: relative;
+      flex-shrink: 0;
+    }
+    #landing-photo-overlay .lpo-cross::before,
+    #landing-photo-overlay .lpo-cross::after {
       content: '';
       position: absolute;
-      background: rgba(0,0,0,0.6);
+      background: #fff;
       border-radius: 1px;
-    }
-    #landing-cursor-dot::before {
-      width: 1px; height: 9px;
       top: 50%; left: 50%;
+    }
+    #landing-photo-overlay .lpo-cross::before {
+      width: 1px; height: 10px;
       transform: translate(-50%, -50%);
     }
-    #landing-cursor-dot::after {
-      width: 9px; height: 1px;
-      top: 50%; left: 50%;
+    #landing-photo-overlay .lpo-cross::after {
+      width: 10px; height: 1px;
       transform: translate(-50%, -50%);
     }
-    #landing.band-up #landing-cursor-dot {
-      opacity: 1;
+    #landing-photo-overlay .lpo-name {
+      margin-top: 6px;
+      font-family: 'ABCWalterNeue', Georgia, serif;
+      font-size: clamp(9px, 0.72vw, 11px);
+      font-weight: 300;
+      color: #fff;
+      letter-spacing: 0.18em;
+      white-space: nowrap;
+    }
+    /* Landing cliccabile ovunque dopo band-up */
+    #landing.band-up {
+      cursor: none;
     }
     /* Transizione foto verso l'alto al click */
     #landing-photo.exit-up {
@@ -419,7 +421,8 @@
       pointer-events: none;
       display: none;
     }
-    /* Etichetta flottante legacy — non usata nella nuova landing */
+    /* Nessun pallino nella landing */
+    #landing-cursor-dot { display: none; }
     #landing-cursor-label { display: none; }
 
     /* ══════════════════════════════════════════════════════════════
@@ -2907,18 +2910,19 @@
 <div id="landing">
   <!-- Foto a tutto schermo (sotto la banda) -->
   <div id="landing-photo"><img src="site/images/B0000771_M_openWith.webp" alt="" /></div>
-  <!-- Croce bianca centrale — appare dopo 1s -->
+  <!-- Overlay sulla foto: croce + nome fluttuanti (visibili dopo band-up) -->
+  <div id="landing-photo-overlay">
+    <div class="lpo-cross"></div>
+    <div class="lpo-name">Alessandro Rizzi</div>
+  </div>
+  <!-- Croce bianca centrale — sulla banda nera, appare dopo 1s -->
   <div id="landing-cross"></div>
-  <!-- Nome su riga unica — sale dal basso fino a quasi toccare la croce -->
+  <!-- Nome su riga unica — sale dal basso fino a quasi toccare la croce (sulla banda) -->
   <div id="landing-name">
     <span class="ln-full">Alessandro Rizzi</span>
   </div>
-  <!-- Banda nera — schermo intero, poi sale dopo 2s -->
+  <!-- Banda nera — schermo intero, poi sale automaticamente -->
   <div id="landing-band"></div>
-  <!-- Cursore grigio — visibile dopo band-up -->
-  <div id="landing-cursor-dot"></div>
-  <!-- Legacy: etichetta flottante (nascosta) -->
-  <div id="landing-cursor-label"></div>
 </div>
 
 <!-- Menu overlay — griglia 4 colonne -->
@@ -5754,28 +5758,33 @@ loadFromCMS();
 
 // ══════════════════════════════════════════════════════════════════
 // LANDING PAGE HERO
+// Sequenza:
+//  0s    — schermata nera (nessun pallino, cursor:none)
+//  +1s   — croce bianca appare al centro della banda
+//  +2s   — nome sale dal basso fino a quasi toccare la croce
+//  +3.5s — banda nera sale automaticamente, rivelando la foto
+//  foto  — croce + nome fluttuano al centro; click ovunque → Overview
 // ══════════════════════════════════════════════════════════════════
 (function() {
   const landing      = document.getElementById('landing');
-  const landingPhoto   = document.getElementById('landing-photo');
-  const landingCursorDot = document.getElementById('landing-cursor-dot');
-  const cursorEl        = document.getElementById('cursor');
+  const landingPhoto = document.getElementById('landing-photo');
+  const cursorEl     = document.getElementById('cursor');
   if (!landing) return;
 
   let bandUp  = false;
   let exiting = false;
 
-  // ── 1. Nascondi cursore di sistema e navbar durante la landing
+  // Nascondi cursore principale durante tutta la landing
   if (cursorEl) cursorEl.style.display = 'none';
   document.body.classList.add('landing-active');
 
-  // ── 2. Dopo 1s: croce appare al centro
+  // 1s: croce appare sulla banda nera
   setTimeout(() => landing.classList.add('cross-in'), 1000);
 
-  // ── 3. Dopo 2s: nome sale dal basso fino a quasi toccare la croce
+  // 2s: nome sale dal basso
   setTimeout(() => landing.classList.add('name-in'), 2000);
 
-  // ── 4. Dopo 3.5s: banda nera sale, rivelando la foto
+  // 3.5s: banda sale automaticamente (nessun click necessario)
   function raiseBand() {
     if (bandUp) return;
     bandUp = true;
@@ -5783,21 +5792,7 @@ loadFromCMS();
   }
   setTimeout(raiseBand, 3500);
 
-  // ── 4. Cursore grigio segue il mouse (visibile solo dopo band-up)
-  let rafLanding;
-  let lx = 0, ly = 0;
-  document.addEventListener('mousemove', e => {
-    lx = e.clientX;
-    ly = e.clientY;
-    if (!rafLanding) rafLanding = requestAnimationFrame(moveLandingCursor);
-  });
-  function moveLandingCursor() {
-    // Centrato sul punto — 18px/2 = 9px
-    landingCursorDot.style.transform = 'translate(calc(' + lx + 'px - 9px), calc(' + ly + 'px - 9px))';
-    rafLanding = null;
-  }
-
-  // ── 5. Click sulla foto: foto esce verso l'alto, poi Overview
+  // Uscita: foto sale verso l'alto, poi Overview
   function goToOverview() {
     if (exiting) return;
     exiting = true;
@@ -5810,15 +5805,10 @@ loadFromCMS();
     }, 920);
   }
 
-  // Click sulla foto (dopo band-up) → Overview
-  landingPhoto.addEventListener('click', () => {
-    if (!bandUp) { raiseBand(); return; }
-    goToOverview();
-  });
-
-  // Click sulla banda (prima che salga) — alza subito
+  // Click ovunque sulla landing (dopo band-up) → Overview
   landing.addEventListener('click', () => {
-    if (!bandUp) raiseBand();
+    if (!bandUp) return;
+    goToOverview();
   });
 })();
 
