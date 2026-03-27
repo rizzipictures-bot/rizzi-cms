@@ -2924,10 +2924,9 @@
 <div id="landing">
   <!-- Foto a tutto schermo (sotto la banda) -->
   <div id="landing-photo"><img src="site/images/B0000771_M_openWith.webp" alt="" /></div>
-  <!-- Overlay sulla foto: croce + nome fluttuanti (visibili dopo band-up) -->
+  <!-- Overlay sulla foto: solo croce fluttuante (visibile dopo band-up) -->
   <div id="landing-photo-overlay">
     <div class="lpo-cross"></div>
-    <div class="lpo-name">Alessandro Rizzi</div>
   </div>
   <!-- Croce bianca centrale — sulla banda nera, appare dopo 1s -->
   <div id="landing-cross"></div>
@@ -5798,32 +5797,33 @@ loadFromCMS();
   // 2s: nome sale dal basso
   setTimeout(() => landing.classList.add('name-in'), 2000);
 
-  // 3.5s: banda sale automaticamente (nessun click necessario)
+  // 3.5s: banda sale automaticamente
   function raiseBand() {
     if (bandUp) return;
     bandUp = true;
     landing.classList.add('band-up');
+    // 2s dopo che la foto è visibile, la foto sale e va all'Overview
+    setTimeout(goToOverview, 2000);
   }
   setTimeout(raiseBand, 3500);
 
-  // Uscita: foto sale verso l'alto, poi Overview
+  // Uscita: attiva Overview subito (già sotto), poi foto sale, poi landing sparisce
   function goToOverview() {
     if (exiting) return;
     exiting = true;
+    // Attiva Overview subito — è già visibile sotto la foto
+    if (cursorEl) cursorEl.style.display = '';
+    document.body.classList.remove('landing-active');
+    switchView('home');
+    // Abbassa z-index landing così l'Overview è davanti
+    landing.style.zIndex = '0';
+    // Poi la foto sale
     landingPhoto.classList.add('exit-up');
     setTimeout(() => {
       landing.classList.add('gone');
-      if (cursorEl) cursorEl.style.display = '';
-      document.body.classList.remove('landing-active');
-      switchView('home');
-    }, 920);
+      landing.style.zIndex = '';
+    }, 950);
   }
-
-  // Click ovunque sulla landing (dopo band-up) → Overview
-  landing.addEventListener('click', () => {
-    if (!bandUp) return;
-    goToOverview();
-  });
 })();
 
 // ══════════════════════════════════════════════════════════════════
