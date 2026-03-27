@@ -3524,27 +3524,28 @@ document.addEventListener('mousemove', e => {
         const cipanel = document.getElementById('cities-info-panel');
         const _cipW = 408; // larghezza box info
         const _thumbW = 196; // larghezza thumbs
-        // Legge se il box è visibile PRIMA di aggiornarlo
-        const _boxOpen = cipanel && cipanel.classList.contains('open');
 
         if (cipanel && cipanel._currentProject) {
-          const _triggerX = window.innerWidth * 0.6; // soglia apertura: 60% della larghezza
+          // ── LOGICA APERTURA/CHIUSURA ─────────────────────────────────
+          // Il box si apre SOLO quando la thumbs viene trascinata a sinistra
+          // oltre la soglia (30% della larghezza schermo).
+          // Si chiude quando il mouse torna a destra della soglia + isteresi.
+          const _openThreshold  = window.innerWidth * 0.30; // apre se mx < 30%
+          const _closeThreshold = window.innerWidth * 0.38; // chiude se mx > 38%
 
-          if (mx > _triggerX) {
-            // Apre il box quando il mouse supera il 60% della larghezza
+          if (mx < _openThreshold) {
             cipanel.classList.add('open');
-          } else if (mx < _triggerX - 60) {
-            // Chiude il box solo quando il mouse torna abbastanza a sinistra (isteresi 60px)
+          } else if (mx > _closeThreshold) {
             cipanel.classList.remove('open');
           }
 
-          // Scroll verticale: mappa my → scroll del box (solo quando box è aperto)
+          // ── SCROLL VERTICALE DEL BOX GOVERNATO DAL MOUSE ─────────────
+          // Funziona anche quando il puntatore è sulla thumbs (box già aperto)
           if (cipanel.classList.contains('open')) {
             const _cipBody = cipanel.querySelector('.cip-body');
             if (_cipBody) {
               const _scrollH = _cipBody.scrollHeight - _cipBody.clientHeight;
               if (_scrollH > 0) {
-                // Mappa my (0..innerHeight) → scrollTop (0..scrollH)
                 const _ratio = Math.max(0, Math.min(1, my / window.innerHeight));
                 _cipBody.scrollTop = _ratio * _scrollH;
               }
@@ -3552,15 +3553,18 @@ document.addEventListener('mousemove', e => {
           }
         }
 
-        // Clamp X thumbs: la thumbs non può mai entrare nello spazio del box
-        // Il box è largo 408px e parte dal bordo destro
-        // La thumbs (196px) deve fermarsi a sinistra del box con 16px di margine
+        // ── POSIZIONE THUMBS ─────────────────────────────────────────
+        // Quando il box è aperto la thumbs si ancora al bordo sinistro del box
+        // (non segue più il mouse in X, solo in Y)
         const _boxCurrentlyOpen = cipanel && cipanel.classList.contains('open');
-        const _maxThumbX = _boxCurrentlyOpen
-          ? (window.innerWidth - _cipW - _thumbW - 16)
-          : (window.innerWidth - _thumbW - 16);
-        const _clampedX = Math.min(mx + 20, _maxThumbX);
-        _citPreview.style.transform = `translate(${_clampedX}px, ${my - 70}px)`;
+        let _thumbX;
+        if (_boxCurrentlyOpen) {
+          // Ancora la thumbs al bordo sinistro del box con 16px di margine
+          _thumbX = window.innerWidth - _cipW - _thumbW - 16;
+        } else {
+          _thumbX = Math.min(mx + 20, window.innerWidth - _thumbW - 16);
+        }
+        _citPreview.style.transform = `translate(${_thumbX}px, ${my - 70}px)`;
       }
 
       // Puntatore vicino ai pallini media: diventa freccia bianca
@@ -4132,20 +4136,24 @@ function buildCitiesIndex() {
 
     row.addEventListener('mouseenter', () => {
       if (previewImages.length === 0) return;
-      const idx = Math.floor(Math.random() * previewImages.length);
-      citiesPreviewImg.src = previewImages[idx];
+      // Imposta un'immagine fissa casuale — non cambia mai mentre si è sulla riga
+      if (!citiesPreviewImg._fixedForRow) {
+        const idx = Math.floor(Math.random() * previewImages.length);
+        citiesPreviewImg.src = previewImages[idx];
+        citiesPreviewImg._fixedForRow = true;
+      }
       citiesPreview.classList.add('visible');
-      // NON aggiungere hover: il pallino rosso deve restare visibile
       // Popola il box info con i dati del progetto corrente
       const projectForPanel = isTokyoProject && TOKYO_CMS ? TOKYO_CMS : p;
       populateCityInfoPanel(projectForPanel, previewImages);
     });
     row.addEventListener('mouseleave', () => {
+      // Resetta il flag immagine fissa per la prossima riga
+      citiesPreviewImg._fixedForRow = false;
       citiesPreview.classList.remove('visible');
-      // NON rimuovere hover qui (non è stato aggiunto)
-      // Chiudi il box quando il cursore esce dalla riga
-      if (_cipanel) {
-        _cipanel.classList.remove('open');
+      // Chiudi il box solo se non è già stato aperto dal gesto a sinistra
+      // (il box rimane aperto finché il mouse non torna a destra della soglia)
+      if (_cipanel && !_cipanel.classList.contains('open')) {
         _cipanel._currentProject = null;
       }
     });
