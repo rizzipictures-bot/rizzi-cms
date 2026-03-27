@@ -1942,6 +1942,50 @@
       object-fit: cover;
     }
 
+    /* ── BOX FOTO SECONDARIO — si apre a sx del box Cities al click su una foto ── */
+    #cip-photo-viewer {
+      position: fixed;
+      top: 48px;
+      right: 408px;          /* attaccato al bordo sx del box Cities */
+      bottom: 48px;
+      width: 0;
+      background: #2a2a2a;   /* grigio scuro */
+      z-index: 690;          /* sotto il box Cities (700) */
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: width .35s cubic-bezier(.4,0,.2,1);
+      pointer-events: none;
+    }
+    #cip-photo-viewer.open {
+      width: 265px;          /* 408 * 0.65 ≈ 265px (−35% rispetto all'esempio) */
+      pointer-events: auto;
+    }
+    #cip-photo-viewer img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      padding: 16px;
+      box-sizing: border-box;
+      display: block;
+    }
+    /* Pulsante chiudi il viewer */
+    #cip-photo-viewer-close {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      --close-color: #fff;
+      width: 16px;
+      height: 16px;
+    }
+    /* Le foto nel box Cities diventano cliccabili */
+    .cip-img {
+      cursor: none;
+      transition: opacity .15s;
+    }
+    .cip-img:hover { opacity: 0.85; }
+
     /* Preview cursor cities */
     #cities-cursor-preview {
       position: fixed;
@@ -3101,6 +3145,12 @@
     <!-- Preview thumbnail al cursore per Cities Lista -->
     <div id="cities-cursor-preview"><img id="cities-cursor-preview-img" src="" alt=""></div>
 
+    <!-- Box foto secondario Cities (slide da sx del box) -->
+    <div id="cip-photo-viewer">
+      <img id="cip-photo-viewer-img" src="" alt="">
+      <button class="btn-circle-close" id="cip-photo-viewer-close" style="--close-color:#fff"></button>
+    </div>
+
     <!-- Box info fisso Cities (slide da destra) -->
     <div id="cities-info-panel">
       <div class="cip-header">
@@ -3849,6 +3899,31 @@ if (_cipClose) {
       _cipanel.classList.remove('open');
       _cipanel._currentProject = null;
     }
+    // Chiudi anche il photo-viewer
+    const _pv = document.getElementById('cip-photo-viewer');
+    if (_pv) _pv.classList.remove('open');
+  });
+}
+
+// ── BOX FOTO SECONDARIO CITIES ──
+const _cipPhotoViewer    = document.getElementById('cip-photo-viewer');
+const _cipPhotoViewerImg = document.getElementById('cip-photo-viewer-img');
+const _cipPhotoViewerClose = document.getElementById('cip-photo-viewer-close');
+
+// Apri il viewer al click su una foto del box
+if (_cipImages) {
+  _cipImages.addEventListener('click', e => {
+    const img = e.target.closest('.cip-img');
+    if (!img || !_cipPhotoViewer) return;
+    _cipPhotoViewerImg.src = img.src;
+    _cipPhotoViewer.classList.add('open');
+  });
+}
+
+// Chiudi il viewer
+if (_cipPhotoViewerClose) {
+  _cipPhotoViewerClose.addEventListener('click', () => {
+    if (_cipPhotoViewer) _cipPhotoViewer.classList.remove('open');
   });
 }
 
@@ -3858,6 +3933,7 @@ function closeCityInfoPanel() {
     _cipanel.classList.remove('open');
     _cipanel._currentProject = null;
   }
+  if (_cipPhotoViewer) _cipPhotoViewer.classList.remove('open');
 }
 
 document.addEventListener('mouseover', e => {
