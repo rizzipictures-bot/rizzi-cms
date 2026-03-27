@@ -3593,7 +3593,10 @@ document.addEventListener('mousemove', e => {
       //   window._citBoxW  = larghezza reale del box (misurata al primo open)
       const _citPreview = document.getElementById('cities-cursor-preview');
       const _cipanel    = document.getElementById('cities-info-panel');
-      if (_citPreview && _citPreview.classList.contains('visible') && _cipanel && _cipanel._activeProject) {
+      // Il box vale solo in modalità lista — in modalità thumbs non si apre mai
+      const _citThumbsActive = document.getElementById('cities-thumbs-view') &&
+                               document.getElementById('cities-thumbs-view').style.display !== 'none';
+      if (!_citThumbsActive && _citPreview && _citPreview.classList.contains('visible') && _cipanel && _cipanel._activeProject) {
         const W      = window.innerWidth;
         const THUMBW = 196;   // larghezza thumbs
         const GAP    = 16;    // gap tra thumbs e bordo / box
@@ -4293,6 +4296,8 @@ function buildCitiesIndex() {
       listView.style.display = 'none';
       // Nascondi preview se visibile
       document.getElementById('cities-cursor-preview').classList.remove('visible');
+      // Chiudi il box info (vale solo in modalità lista)
+      closeCityInfoPanel();
     });
   }
 }
