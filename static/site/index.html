@@ -1955,6 +1955,7 @@
       display: flex;
       align-items: center;
       justify-content: center;
+      border-radius: 4px 0 0 4px;
       transition: width .35s cubic-bezier(.4,0,.2,1);
       pointer-events: none;
     }
@@ -1962,11 +1963,16 @@
       width: 265px;          /* 408 * 0.65 ≈ 265px (−35% rispetto all'esempio) */
       pointer-events: auto;
     }
+    /* Se il box Cities è chiuso, il viewer si sposta a destra */
+    #cities-info-panel:not(.open) ~ #cip-photo-viewer,
+    #cip-photo-viewer:not(.open) {
+      /* già width:0 gestisce la visibilità */
+    }
     #cip-photo-viewer img {
       width: 100%;
       height: 100%;
       object-fit: contain;
-      padding: 16px;
+      padding: 0;
       box-sizing: border-box;
       display: block;
     }
@@ -1978,6 +1984,7 @@
       --close-color: #fff;
       width: 16px;
       height: 16px;
+      z-index: 2;
     }
     /* Le foto nel box Cities diventano cliccabili */
     .cip-img {
