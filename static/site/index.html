@@ -975,7 +975,7 @@
     .archive-expanded-viewall {
       font-family: var(--font-mono);
       font-size: 9px;
-      color: rgba(255,255,255,0.5);
+      color: rgba(255,255,255,0.85);
       cursor: pointer;
       position: absolute;
       right: 10px;
@@ -993,7 +993,7 @@
       text-align: center;
       width: 28px;
     }
-    .archive-expanded-viewall:hover { color: rgba(255,255,255,0.9); }
+    .archive-expanded-viewall:hover { color: #fff; }
 
     /* Toggle stile Angelucci — centrato verticalmente rispetto alle thumbs (48px) */
     .archive-expanded-toggle {
@@ -1003,13 +1003,14 @@
       cursor: pointer;
       align-self: flex-end;          /* allineato al bottom */
       margin-left: 14px;
-      opacity: 0.75;
+      opacity: 0.9;
       transition: opacity .2s;
       display: flex;
       align-items: center;           /* SVG centrato verticalmente nei 48px */
       justify-content: center;
     }
     .archive-expanded-toggle:hover { opacity: 1; }
+
     .archive-expanded-toggle svg {
       width: 26px;
       height: 26px;
