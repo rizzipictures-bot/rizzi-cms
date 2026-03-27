@@ -1695,7 +1695,7 @@
       display: grid;
       grid-template-columns: 48px 1fr 1fr 80px;
       align-items: center;
-      padding: 2px 16px;           /* compattato da 4px a 2px */
+      padding: 8px 16px;
       border-top: 1px solid #e8e8e8;
       cursor: none;
       transition: background .12s;
@@ -2052,43 +2052,96 @@
     #view-contact {
       padding: var(--nav-h) 0 0 0;
       overflow-y: auto;
+      background: #111;
+      min-height: 100vh;
+      color: #fff;
     }
-    .contact-wrap {
-      padding: 32px 40px 60px;
-      max-width: 560px;
+    .contact-page {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 0;
+      padding: 48px 40px 80px;
+      min-height: calc(100vh - var(--nav-h));
+    }
+    .contact-col {
+      padding: 0 32px 0 0;
+      border-right: 1px solid #333;
+    }
+    .contact-col:last-child { border-right: none; padding-right: 0; padding-left: 32px; }
+    .contact-col:first-child { padding-left: 0; padding-right: 32px; }
+    .contact-col:nth-child(2) { padding-left: 32px; padding-right: 32px; }
+    .contact-col-title {
+      font-family: var(--font-mono);
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: #fff;
+      margin: 0 0 24px;
     }
     .contact-block {
-      margin-bottom: 32px;
+      margin-bottom: 20px;
     }
     .contact-label {
       font-family: var(--font-mono);
       font-size: 9px;
       letter-spacing: 0.1em;
-      color: var(--gray);
+      color: #666;
       text-transform: uppercase;
-      margin-bottom: 6px;
+      margin-bottom: 4px;
     }
     .contact-value {
       font-family: var(--font-nav);
-      font-size: 14px;
-      color: var(--black);
-      line-height: 1.5;
+      font-size: 13px;
+      color: #fff;
+      line-height: 1.6;
     }
     .contact-value a {
-      color: var(--black);
+      color: #fff;
       text-decoration: none;
-      border-bottom: 1px solid currentColor;
+      border-bottom: 1px solid rgba(255,255,255,0.3);
     }
-    .contact-value a:hover { opacity: 0.6; }
+    .contact-value a:hover { border-bottom-color: #fff; }
+    .contact-divider {
+      border: none;
+      border-top: 1px solid #333;
+      margin: 20px 0;
+    }
+    .contact-social-list {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+    .contact-social-list li {
+      font-family: var(--font-nav);
+      font-size: 13px;
+      color: #fff;
+      line-height: 2;
+      cursor: none;
+    }
+    .contact-social-list li:hover { opacity: 0.6; }
+    .contact-gdpr {
+      font-family: var(--font-nav);
+      font-size: 11px;
+      color: #555;
+      line-height: 1.65;
+      margin-top: 24px;
+    }
     .contact-empty {
       font-family: var(--font-mono);
       font-size: 10px;
-      color: var(--gray);
+      color: #555;
       letter-spacing: 0.06em;
       padding: 40px 0;
     }
-    [data-theme="dark"] .contact-value { color: var(--white); }
-    [data-theme="dark"] .contact-value a { color: var(--white); }
+    .contact-sub-region {
+      font-family: var(--font-mono);
+      font-size: 9px;
+      letter-spacing: 0.1em;
+      color: #555;
+      text-transform: uppercase;
+      margin: 16px 0 6px;
+    }
 
     /* ════════════════════════════════════════════════════════════════
        VIEW: INFORMATION
@@ -3037,8 +3090,7 @@
 
     <!-- ── VIEW: CONTACT ── -->
     <div class="view" id="view-contact">
-      <div class="section-page-title">Contact</div>
-      <div class="contact-wrap" id="contact-wrap">
+      <div class="contact-page" id="contact-wrap">
         <!-- Generata via JS / CMS -->
       </div>
     </div>
@@ -5210,36 +5262,87 @@ function buildContact() {
   // Cerca un progetto con category_id === 'contact'
   const contactProj = PROJECTS.find(p => p.category_id === 'contact');
 
-  if (!contactProj) {
-    wrap.innerHTML = '<div class="contact-empty">Nessun contatto ancora. Aggiungilo dal CMS.</div>';
-    return;
+  // Dati fissi dallo screenshot (usati come fallback se il CMS non ha dati)
+  const studioHtml = `
+    <div class="contact-col">
+      <p class="contact-col-title">Studio</p>
+      <div class="contact-block">
+        <div class="contact-value">T: + 39 370 3260981<br>
+          <a href="mailto:studio@alessandrorizzi.com">studio@alessandrorizzi.com</a><br>
+          <a href="https://www.alessandrorizzi.com" target="_blank">www.alessandrorizzi.com</a>
+        </div>
+      </div>
+      <hr class="contact-divider">
+      <ul class="contact-social-list">
+        <li>INSTAGRAM</li>
+        <li>FACEBOOK</li>
+        <li>LINKEDIN</li>
+        <li>TWITTER</li>
+      </ul>
+      <hr class="contact-divider">
+      <p class="contact-gdpr">We comply with the GDPR and any data held by us is held on the following basis provided in the GDP: Consent, Contract, Legal Obligation, Vital interests, Public task or legitimate interest and is only such data typically name, email, phone number and address - necessary for us to contact you and payment details if we pay money to you. If you have any issues or would like to read our data protection policy or object to us holding your data and would like to contact us to delete it please e-mail: <a href="mailto:studio@alessandrorizzi.com">studio@alessandrorizzi.com</a></p>
+    </div>`;
+
+  const printsHtml = `
+    <div class="contact-col">
+      <p class="contact-col-title">Prints</p>
+      <p class="contact-sub-region">Europe / USA / Asia :</p>
+      <div class="contact-block">
+        <div class="contact-value">T: +39 370 3260981<br>
+          <a href="mailto:studio@alessandrorizzi.com">studio@alessandrorizzi.com</a><br>
+          <a href="https://www.alessandrorizzi.com" target="_blank">www.alessandrorizzi.com</a>
+        </div>
+      </div>
+      <p class="contact-sub-region">UK :</p>
+      <div class="contact-block">
+        <div class="contact-value">STEWART MUNGEAM</div>
+      </div>
+    </div>`;
+
+  const licensingHtml = `
+    <div class="contact-col">
+      <p class="contact-col-title">Archive Licensing</p>
+      <p class="contact-sub-region">Europe :</p>
+      <div class="contact-block">
+        <div class="contact-value">For assignments, licensing of reproduction rights please contact <a href="https://www.laif.de" target="_blank"><strong>www.laif.de</strong></a></div>
+      </div>
+      <p class="contact-sub-region">Italy :</p>
+      <div class="contact-block">
+        <div class="contact-value">For assignments, licensing of reproduction rights please contact <a href="https://www.contrasto.it" target="_blank"><strong>www.contrasto.it</strong></a></div>
+      </div>
+    </div>`;
+
+  // Se il CMS ha dati strutturati per colonne, usali; altrimenti usa i dati fissi
+  if (contactProj && contactProj.texts && contactProj.texts.length > 0) {
+    // Raggruppa i testi per colonna (label: studio, prints, licensing)
+    const cols = { studio: [], prints: [], licensing: [] };
+    contactProj.texts.forEach(block => {
+      const col = (block.label || '').toLowerCase();
+      if (col.includes('print')) cols.prints.push(block);
+      else if (col.includes('licens') || col.includes('archiv')) cols.licensing.push(block);
+      else cols.studio.push(block);
+    });
+    // Se ci sono dati per almeno una colonna, costruisci dinamicamente
+    const hasData = cols.studio.length || cols.prints.length || cols.licensing.length;
+    if (hasData) {
+      const makeCol = (title, blocks) => {
+        let inner = blocks.map(b => {
+          const v = b.content || b.text || '';
+          if (!v) return '';
+          let vHtml = v.replace(/\n/g, '<br>');
+          if (/^https?:\/\//.test(v)) vHtml = `<a href="${v}" target="_blank">${v}</a>`;
+          else if (/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v)) vHtml = `<a href="mailto:${v}">${v}</a>`;
+          return `<div class="contact-block"><div class="contact-value">${vHtml}</div></div>`;
+        }).join('');
+        return `<div class="contact-col"><p class="contact-col-title">${title}</p>${inner}</div>`;
+      };
+      wrap.innerHTML = makeCol('Studio', cols.studio) + makeCol('Prints', cols.prints) + makeCol('Archive Licensing', cols.licensing);
+      return;
+    }
   }
 
-  let html = '';
-  // Usa i testi del progetto contact come blocchi info
-  if (contactProj.texts && contactProj.texts.length > 0) {
-    contactProj.texts.forEach(block => {
-      const label = block.label || block.type || '';
-      const value = block.content || block.text || '';
-      if (!value) return;
-      // Rileva se il valore è un'email o URL
-      let valueHtml = value;
-      if (/^https?:\/\//.test(value)) {
-        valueHtml = `<a href="${value}" target="_blank" rel="noopener">${value}</a>`;
-      } else if (/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) {
-        valueHtml = `<a href="mailto:${value}">${value}</a>`;
-      }
-      html += `<div class="contact-block"><div class="contact-label">${label}</div><div class="contact-value">${valueHtml}</div></div>`;
-    });
-  }
-  // Fallback: usa description, place, publication come contatti
-  if (!html) {
-    if (contactProj.description) html += `<div class="contact-block"><div class="contact-label">Info</div><div class="contact-value">${contactProj.description}</div></div>`;
-    if (contactProj.place) html += `<div class="contact-block"><div class="contact-label">Studio</div><div class="contact-value">${contactProj.place}</div></div>`;
-    if (contactProj.publication) html += `<div class="contact-block"><div class="contact-label">Web</div><div class="contact-value"><a href="${contactProj.publication}" target="_blank">${contactProj.publication}</a></div></div>`;
-  }
-  if (!html) html = '<div class="contact-empty">Informazioni di contatto non ancora inserite.</div>';
-  wrap.innerHTML = html;
+  // Fallback: dati fissi dallo screenshot
+  wrap.innerHTML = studioHtml + printsHtml + licensingHtml;
 }
 
 // ════════════════════════════════════════════════════════════════
