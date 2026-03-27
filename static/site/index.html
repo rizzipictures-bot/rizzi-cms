@@ -3944,15 +3944,6 @@ function buildCitiesIndex() {
     const idx = letterCounts[firstLetter];
     const code = firstLetter + String(idx).padStart(2, '0');
 
-    // Intestazione lettera
-    if (firstLetter !== currentLetter) {
-      currentLetter = firstLetter;
-      const letterEl = document.createElement('div');
-      letterEl.className = 'cities-list-letter';
-      letterEl.textContent = firstLetter;
-      listView.appendChild(letterEl);
-    }
-
     // Riga
     const row = document.createElement('div');
     row.className = 'cities-list-row';
