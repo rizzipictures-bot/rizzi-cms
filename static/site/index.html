@@ -3524,31 +3524,40 @@ document.addEventListener('mousemove', e => {
         const cipanel = document.getElementById('cities-info-panel');
         const _cipW = 408; // larghezza box info
         const _thumbW = 196; // larghezza thumbs
-        // Legge se il box è visibile PRIMA di aggiornarlo
-        const _boxOpen = cipanel && cipanel.classList.contains('open');
+
         if (cipanel && cipanel._currentProject) {
-          const _triggerX = window.innerWidth * 0.6; // soglia apertura: 60% della larghezza
-          if (mx > _triggerX) {
-            // Apre il box quando il mouse supera il 60% della larghezza
+          // ── SOGLIA APERTURA: thumbs deve arrivare quasi al bordo dx (≥85%) ────────
+          // La thumbs è larga 196px; il suo bordo destro tocca il bordo schermo
+          // quando mx + 20 + 196 ≈ innerWidth, cioè mx ≈ innerWidth - 216.
+          // Usiamo come soglia il punto in cui la thumbs è già al clamp (ferma).
+          const _clampStopX = window.innerWidth - _thumbW - 16; // X dove la thumbs si ferma
+          const _openThreshold  = _clampStopX - 20;  // apre quando mx supera questo punto
+          const _closeThreshold = _clampStopX - 100; // chiude con isteresi 80px
+
+          if (mx + 20 >= _clampStopX) {
+            // La thumbs è ferma al clamp: apri il box
             cipanel.classList.add('open');
-          } else if (mx < _triggerX - 60) {
-            // Chiude il box solo quando il mouse torna abbastanza a sinistra (isteresi 60px)
+          } else if (mx + 20 < _clampStopX - 80) {
+            // Mouse si è allontanato abbastanza: chiudi il box
             cipanel.classList.remove('open');
           }
-          // Scroll verticale: mappa my → scroll del box (solo quando box è aperto)
-          if (cipanel.classList.contains('open')) {
+
+          // ── SCROLL VERTICALE: attivo appena la thumbs è ferma al clamp ────────
+          // Condizione: thumbs ferma (mx + 20 >= _clampStopX) oppure box già aperto
+          const _thumbAtClamp = (mx + 20 >= _clampStopX);
+          if (_thumbAtClamp || cipanel.classList.contains('open')) {
             const _cipBody = cipanel.querySelector('.cip-body');
             if (_cipBody) {
               const _scrollH = _cipBody.scrollHeight - _cipBody.clientHeight;
               if (_scrollH > 0) {
-                // Mappa my (0..innerHeight) → scrollTop (0..scrollH)
                 const _ratio = Math.max(0, Math.min(1, my / window.innerHeight));
                 _cipBody.scrollTop = _ratio * _scrollH;
               }
             }
           }
         }
-        // Clamp X thumbs: la thumbs non può mai entrare nello spazio del box
+
+        // ── POSIZIONE THUMBS: clamp al bordo sinistro del box quando aperto ──────
         const _boxCurrentlyOpen = cipanel && cipanel.classList.contains('open');
         const _maxThumbX = _boxCurrentlyOpen
           ? (window.innerWidth - _cipW - _thumbW - 16)
@@ -4126,17 +4135,17 @@ function buildCitiesIndex() {
 
     row.addEventListener('mouseenter', () => {
       if (previewImages.length === 0) return;
+      // Immagine fissa: scelta casuale una volta sola al mouseenter,
+      // non cambia mentre la thumbs si avvicina al box
       const idx = Math.floor(Math.random() * previewImages.length);
       citiesPreviewImg.src = previewImages[idx];
       citiesPreview.classList.add('visible');
-      // NON aggiungere hover: il pallino rosso deve restare visibile
       // Popola il box info con i dati del progetto corrente
       const projectForPanel = isTokyoProject && TOKYO_CMS ? TOKYO_CMS : p;
       populateCityInfoPanel(projectForPanel, previewImages);
     });
     row.addEventListener('mouseleave', () => {
       citiesPreview.classList.remove('visible');
-      // NON rimuovere hover qui (non è stato aggiunto)
       // Chiudi il box quando il cursore esce dalla riga
       if (_cipanel) {
         _cipanel.classList.remove('open');
