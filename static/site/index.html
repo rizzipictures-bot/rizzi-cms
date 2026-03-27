@@ -224,6 +224,40 @@
       color: #fff;
     }
 
+    /* ── Cursore FRECCIA CHIUDI — vicino ai btn-circle-close ──
+       Freccia nera su box chiaro, bianca su box scuro */
+    body.cursor-near-close #cursor-dot {
+      background: transparent !important;
+      border: none !important;
+      width: 20px !important;
+      height: 20px !important;
+    }
+    body.cursor-near-close #cursor-dot::before {
+      content: '\2190'; /* ← freccia sinistra */
+      position: absolute;
+      background: none !important;
+      color: #111;
+      font-size: 16px;
+      font-weight: 400;
+      width: auto;
+      height: auto;
+      top: 50%; left: 50%;
+      transform: translate(-50%, -50%);
+      border-radius: 0;
+    }
+    body.cursor-near-close #cursor-dot::after {
+      opacity: 0 !important;
+    }
+    /* Su sfondo scuro: freccia bianca */
+    body.cursor-near-close.cursor-on-dark #cursor-dot::before,
+    body.cursor-near-close [data-theme="dark"] #cursor-dot::before {
+      color: #fff;
+    }
+    /* Su box chiaro (Cities, Archive): freccia nera */
+    body.cursor-near-close.cursor-red #cursor-dot::before {
+      color: #111;
+    }
+
     /* Label testo — Jack Davison style: testo flottante vicino al mouse */
     #cursor-label {
       position: fixed;
@@ -3662,6 +3696,20 @@ document.addEventListener('mousemove', e => {
         document.body.classList.toggle('cursor-arrow-white', _nearAnyBall);
       } else {
         document.body.classList.remove('cursor-arrow-white');
+      }
+
+      // Puntatore vicino a btn-circle-close: diventa freccia ← (nera su chiaro, bianca su scuro)
+      {
+        const _closeBtns = document.querySelectorAll('.btn-circle-close');
+        let _nearClose = false;
+        _closeBtns.forEach(btn => {
+          const r = btn.getBoundingClientRect();
+          if (r.width === 0) return; // non visibile
+          const cx = r.left + r.width / 2;
+          const cy = r.top  + r.height / 2;
+          if (Math.abs(mx - cx) < 50 && Math.abs(my - cy) < 50) _nearClose = true;
+        });
+        document.body.classList.toggle('cursor-near-close', _nearClose);
       }
 
       // Archive box aperto: rosso fuori dal box, bianco dentro il box
