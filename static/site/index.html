@@ -287,15 +287,20 @@
       object-position: center center;
       display: block;
     }
-    /* Croce bianca centrale — visibile subito, leggermente più grande del pallino */
+    /* Croce bianca centrale — appare dopo 1s, più piccola del pallino */
     #landing-cross {
       position: absolute;
       top: 50%; left: 50%;
       transform: translate(-50%, -50%);
       z-index: 5;
       pointer-events: none;
-      width: 28px;
-      height: 28px;
+      width: 20px;
+      height: 20px;
+      opacity: 0;
+      transition: opacity 0.5s ease;
+    }
+    #landing.cross-in #landing-cross {
+      opacity: 1;
     }
     #landing-cross::before,
     #landing-cross::after {
@@ -307,41 +312,40 @@
     }
     #landing-cross::before {
       width: 1px;
-      height: 16px;
+      height: 12px;
       transform: translate(-50%, -50%);
     }
     #landing-cross::after {
-      width: 16px;
+      width: 12px;
       height: 1px;
       transform: translate(-50%, -50%);
     }
-    /* Nome/cognome — sale dal basso dopo 1s */
+    /* Nome — su riga unica, sale dal basso fino a quasi toccare la croce */
     #landing-name {
       position: absolute;
-      bottom: 0;
+      /* Si posiziona appena sotto il centro (dove sta la croce) + metà croce + 8px */
+      top: calc(50% + 10px + 8px);
       left: 50%;
-      transform: translateX(-50%) translateY(100%);
+      transform: translateX(-50%) translateY(60px);
       z-index: 5;
       pointer-events: none;
       text-align: center;
       opacity: 0;
-      transition: transform 0.9s cubic-bezier(0.22, 1, 0.36, 1),
-                  opacity 0.7s ease;
-      padding-bottom: 48px;
+      transition: transform 1s cubic-bezier(0.22, 1, 0.36, 1),
+                  opacity 0.8s ease;
+      white-space: nowrap;
     }
     #landing.name-in #landing-name {
       transform: translateX(-50%) translateY(0);
       opacity: 1;
     }
-    #landing-name .ln-first,
-    #landing-name .ln-last {
+    #landing-name .ln-full {
       display: block;
-      font-family: var(--font-nav);
-      font-size: clamp(18px, 1.6vw, 26px);
+      font-family: 'ABCWalterNeue', Georgia, serif;
+      font-size: clamp(16px, 1.4vw, 22px);
       font-weight: 400;
       color: #fff;
-      letter-spacing: 0.04em;
-      line-height: 1.3;
+      letter-spacing: 0.12em;
       white-space: nowrap;
     }
     /* Banda nera — a schermo intero, poi sale */
@@ -2902,13 +2906,12 @@
 <!-- Landing page hero -->
 <div id="landing">
   <!-- Foto a tutto schermo (sotto la banda) -->
-  <div id="landing-photo"><img src="images/landing-hero.webp" alt="" /></div>
-  <!-- Croce bianca centrale — visibile subito -->
+  <div id="landing-photo"><img src="images/B0000771_M_openWith.webp" alt="" /></div>
+  <!-- Croce bianca centrale — appare dopo 1s -->
   <div id="landing-cross"></div>
-  <!-- Nome/cognome — sale dal basso dopo 1s -->
+  <!-- Nome su riga unica — sale dal basso fino a quasi toccare la croce -->
   <div id="landing-name">
-    <span class="ln-first">Alessandro</span>
-    <span class="ln-last">Rizzi</span>
+    <span class="ln-full">Alessandro Rizzi</span>
   </div>
   <!-- Banda nera — schermo intero, poi sale dopo 2s -->
   <div id="landing-band"></div>
@@ -5763,16 +5766,19 @@ loadFromCMS();
   if (cursorEl) cursorEl.style.display = 'none';
   document.body.classList.add('landing-active');
 
-  // ── 2. Dopo 1s: nome/cognome sale dal basso
-  setTimeout(() => landing.classList.add('name-in'), 1000);
+  // ── 2. Dopo 1s: croce appare al centro
+  setTimeout(() => landing.classList.add('cross-in'), 1000);
 
-  // ── 3. Dopo 2s: banda nera sale, rivelando la foto
+  // ── 3. Dopo 2s: nome sale dal basso fino a quasi toccare la croce
+  setTimeout(() => landing.classList.add('name-in'), 2000);
+
+  // ── 4. Dopo 3.5s: banda nera sale, rivelando la foto
   function raiseBand() {
     if (bandUp) return;
     bandUp = true;
     landing.classList.add('band-up');
   }
-  setTimeout(raiseBand, 2000);
+  setTimeout(raiseBand, 3500);
 
   // ── 4. Cursore grigio segue il mouse (visibile solo dopo band-up)
   let rafLanding;
