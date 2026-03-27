@@ -1731,15 +1731,17 @@
     /* ── BOX INFO FISSO CITIES ─────────────────────────────────── */
     #cities-info-panel {
       position: fixed;
-      top: 0;
+      top: 48px;
       right: 0;
+      bottom: 48px;
       width: 408px;
-      height: 100vh;
-      background: #2a2a2a;
+      height: auto;
+      background: #383838;
       z-index: 700;
       display: flex;
       flex-direction: column;
       overflow: hidden;
+      border-radius: 4px 0 0 4px;
       transform: translateX(100%);
       transition: transform .35s cubic-bezier(.4,0,.2,1);
       pointer-events: none;
@@ -1755,7 +1757,7 @@
       position: relative;
     }
     .cip-title {
-      font-family: var(--font-nav);
+      font-family: 'Georgia', 'Times New Roman', serif;
       font-size: 13px;
       font-weight: 700;
       color: #f0f0f0;
@@ -1764,7 +1766,7 @@
       padding-right: 20px;
     }
     .cip-subtitle {
-      font-family: var(--font-mono);
+      font-family: 'Georgia', 'Times New Roman', serif;
       font-size: 10px;
       color: #999;
       margin: 0;
@@ -1799,7 +1801,7 @@
     }
     .cip-meta-row:last-child { border-bottom: none; }
     .cip-meta-label {
-      font-family: var(--font-mono);
+      font-family: 'Georgia', 'Times New Roman', serif;
       font-size: 9px;
       color: #777;
       letter-spacing: 0.06em;
@@ -1807,7 +1809,7 @@
       padding-top: 1px;
     }
     .cip-meta-value {
-      font-family: var(--font-mono);
+      font-family: 'Georgia', 'Times New Roman', serif;
       font-size: 10px;
       color: #ddd;
     }
@@ -1818,7 +1820,7 @@
       -webkit-overflow-scrolling: touch;
     }
     .cip-description {
-      font-family: var(--font-nav);
+      font-family: 'Georgia', 'Times New Roman', serif;
       font-size: 11px;
       color: #ccc;
       line-height: 1.55;
@@ -3469,39 +3471,43 @@ document.addEventListener('mousemove', e => {
         const cipanel = document.getElementById('cities-info-panel');
         const _cipW = 408; // larghezza box info
         const _thumbW = 196; // larghezza thumbs
+        // Legge se il box è visibile PRIMA di aggiornarlo
         const _boxOpen = cipanel && cipanel.classList.contains('open');
 
-        // 1) Clamp X thumbs: se il box è aperto, la thumbs non supera il bordo sinistro del box
-        const _maxThumbX = _boxOpen
-          ? (window.innerWidth - _cipW - _thumbW - 20)
-          : (window.innerWidth - _thumbW - 20);
-        const _clampedX = Math.min(mx + 20, _maxThumbX);
-        _citPreview.style.transform = `translate(${_clampedX}px, ${my - 70}px)`;
-
         if (cipanel && cipanel._currentProject) {
-          const _triggerX = window.innerWidth / 2;
+          const _triggerX = window.innerWidth * 0.6; // soglia apertura: 60% della larghezza
 
-          // 3) Movimento verso sinistra: agisce solo sulla thumbs, chiude il box
-          if (mx < _triggerX) {
-            cipanel.classList.remove('open');
-          } else if (mx > _triggerX) {
-            // Apre il box quando la thumbs supera la metà destra
+          if (mx > _triggerX) {
+            // Apre il box quando il mouse supera il 60% della larghezza
             cipanel.classList.add('open');
+          } else if (mx < _triggerX - 60) {
+            // Chiude il box solo quando il mouse torna abbastanza a sinistra (isteresi 60px)
+            cipanel.classList.remove('open');
           }
 
-          // 2) Movimento verticale: scorre il contenuto del box quando è aperto
-          if (_boxOpen) {
+          // Scroll verticale: mappa my → scroll del box (solo quando box è aperto)
+          if (cipanel.classList.contains('open')) {
             const _cipBody = cipanel.querySelector('.cip-body');
             if (_cipBody) {
-              // Mappa my (0..innerHeight) → scroll del box
               const _scrollH = _cipBody.scrollHeight - _cipBody.clientHeight;
               if (_scrollH > 0) {
-                const _ratio = my / window.innerHeight;
+                // Mappa my (0..innerHeight) → scrollTop (0..scrollH)
+                const _ratio = Math.max(0, Math.min(1, my / window.innerHeight));
                 _cipBody.scrollTop = _ratio * _scrollH;
               }
             }
           }
         }
+
+        // Clamp X thumbs: la thumbs non può mai entrare nello spazio del box
+        // Il box è largo 408px e parte dal bordo destro
+        // La thumbs (196px) deve fermarsi a sinistra del box con 16px di margine
+        const _boxCurrentlyOpen = cipanel && cipanel.classList.contains('open');
+        const _maxThumbX = _boxCurrentlyOpen
+          ? (window.innerWidth - _cipW - _thumbW - 16)
+          : (window.innerWidth - _thumbW - 16);
+        const _clampedX = Math.min(mx + 20, _maxThumbX);
+        _citPreview.style.transform = `translate(${_clampedX}px, ${my - 70}px)`;
       }
 
       // Puntatore vicino ai pallini media: diventa freccia bianca
