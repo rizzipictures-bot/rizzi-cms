@@ -3566,67 +3566,63 @@ document.addEventListener('mousemove', e => {
         }
       }
 
-      // Posiziona preview cities al cursore
+      // ── CITIES: thumbs + box ─────────────────────────────────────────
+      // Stato globale (su window per persistenza tra frame):
+      //   window._citLock  = true quando box è aperto (lock mode)
+      //   window._citBoxW  = larghezza reale del box (misurata al primo open)
       const _citPreview = document.getElementById('cities-cursor-preview');
-      if (_citPreview && _citPreview.classList.contains('visible')) {
-        const cipanel = document.getElementById('cities-info-panel');
-        const _cipW   = 408;  // larghezza box info (fisso a destra)
-        const _thumbW = 196;  // larghezza thumbs
-        const _gap    = 12;   // gap tra thumbs e bordo / box
+      const _cipanel    = document.getElementById('cities-info-panel');
+      if (_citPreview && _citPreview.classList.contains('visible') && _cipanel && _cipanel._activeProject) {
+        const W      = window.innerWidth;
+        const THUMBW = 196;   // larghezza thumbs
+        const GAP    = 16;    // gap tra thumbs e bordo / box
+        const OPEN_X = W * 0.30;   // soglia apertura: 30% schermo
+        const CLOSE_X = W * 0.20;  // soglia chiusura: 20% schermo
 
-        // Clamp thumbs LIBERA: bordo dx schermo - thumbW - gap
-        const _maxFreeX = window.innerWidth - _thumbW - _gap;
-        // Clamp thumbs con BOX APERTO: bordo sx del box - thumbW - gap
-        // Il box è position:fixed a destra, larghezza _cipW
-        // Bordo sx box = window.innerWidth - _cipW
-        // Thumbs deve stare a sinistra del box: (innerWidth - cipW) - thumbW - gap
-        const _maxBoxX  = window.innerWidth - _cipW - _thumbW - _gap;
+        // Misura la larghezza reale del box al primo open
+        if (!window._citBoxW) {
+          const r = _cipanel.getBoundingClientRect();
+          window._citBoxW = r.width > 0 ? r.width : 420;
+        }
+        const BOXW = window._citBoxW;
 
-        // Soglia apertura: il mouse supera il 30% della larghezza schermo
-        const _openAt   = window.innerWidth * 0.30;
-        const _thumbAtClamp = (mx >= _openAt);
-        // Soglia chiusura: molto a sinistra (20% schermo)
-        const _closeAt = window.innerWidth * 0.20;
+        // X massima thumbs libera (bordo dx schermo)
+        const maxFreeX = W - THUMBW - GAP;
+        // X massima thumbs con box aperto (a sinistra del box, senza sovrapposizione)
+        const maxBoxX  = W - BOXW - THUMBW - GAP;
 
-        const _boxOpen = cipanel && cipanel.classList.contains('open');
+        const boxOpen = _cipanel.classList.contains('open');
 
-        // ── LOCK MODE: mouse oltre il 30% o box già aperto
-        // In lock mode: thumbs ancorata in X, su/giù scrollano box
-        // Si esce dal lock SOLO tornando a sx (<20%)
-        const _lockMode = _boxOpen || (cipanel && cipanel._activeProject && _thumbAtClamp);
+        // ── APERTURA: mouse supera 30% → box esce
+        if (!boxOpen && mx >= OPEN_X) {
+          _cipanel.classList.add('open');
+          window._citLock = true;
+        }
+        // ── CHIUSURA: mouse torna sotto 20% → box rientra
+        if (boxOpen && mx < CLOSE_X) {
+          _cipanel.classList.remove('open');
+          window._citLock = false;
+          window._citBoxW = null; // reset misura per prossima apertura
+        }
 
-        if (cipanel && cipanel._activeProject) {
-          if (!_boxOpen && _thumbAtClamp) {
-            cipanel.classList.add('open');
-          } else if (_boxOpen && mx < _closeAt) {
-            cipanel.classList.remove('open');
-          }
+        const locked = _cipanel.classList.contains('open');
 
-          // ── SCROLL VERTICALE in lock mode ────────────────────────────
-          if (_lockMode) {
-            const _cipBody = cipanel.querySelector('.cip-body');
-            if (_cipBody) {
-              const _scrollH = _cipBody.scrollHeight - _cipBody.clientHeight;
-              if (_scrollH > 0) {
-                const _ratio = Math.max(0, Math.min(1, my / window.innerHeight));
-                _cipBody.scrollTop = _ratio * _scrollH;
-              }
+        // ── SCROLL VERTICALE: attivo sempre in lock mode
+        if (locked) {
+          const body = _cipanel.querySelector('.cip-body');
+          if (body) {
+            const sh = body.scrollHeight - body.clientHeight;
+            if (sh > 0) {
+              body.scrollTop = Math.max(0, Math.min(1, my / window.innerHeight)) * sh;
             }
           }
         }
 
-        // ── POSIZIONE THUMBS ──────────────────────────────────────────
-        // In lock mode: X ancorata al clamp corretto (mai dentro il box)
-        // Fuori da lock mode: X segue il mouse fino al clamp libero
-        let _thumbX;
-        if (_lockMode) {
-          // Con box aperto: thumbs si ancora a sinistra del box (mai sovrapposta)
-          // Senza box ancora aperto ma al clamp: resta al bordo dx
-          _thumbX = _boxOpen ? _maxBoxX : _maxFreeX;
-        } else {
-          _thumbX = Math.min(mx + 20, _maxFreeX);
-        }
-        _citPreview.style.transform = `translate(${_thumbX}px, ${my - 70}px)`;
+        // ── POSIZIONE THUMBS
+        // Libera: segue il mouse in X (fino al bordo dx)
+        // Locked: ancorata a sinistra del box (mai sovrapposta)
+        const thumbX = locked ? maxBoxX : Math.min(mx + 20, maxFreeX);
+        _citPreview.style.transform = `translate(${thumbX}px, ${my - 70}px)`;
       }
 
       // Puntatore vicino ai pallini media: diventa freccia bianca
@@ -4216,11 +4212,15 @@ function buildCitiesIndex() {
     });
     row.addEventListener('mouseleave', () => {
       citiesPreview.classList.remove('visible');
-      // Chiudi il box e azzera il progetto attivo
+      // Azzera il progetto attivo — il box si chiude solo quando il mouse
+      // torna a sinistra del 20% (gestito nel mousemove)
       if (_cipanel) {
-        _cipanel.classList.remove('open');
         _cipanel._currentProject = null;
         _cipanel._activeProject  = null;
+        // Chiudi il box solo se NON siamo in lock mode
+        if (!_cipanel.classList.contains('open')) {
+          _cipanel.classList.remove('open');
+        }
       }
     });
 
