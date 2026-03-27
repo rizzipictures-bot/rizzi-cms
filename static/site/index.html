@@ -287,59 +287,77 @@
       object-position: center center;
       display: block;
     }
-    /* Banda nera — a schermo intero all'inizio, poi sale */
+    /* Croce bianca centrale — visibile subito, leggermente più grande del pallino */
+    #landing-cross {
+      position: absolute;
+      top: 50%; left: 50%;
+      transform: translate(-50%, -50%);
+      z-index: 5;
+      pointer-events: none;
+      width: 28px;
+      height: 28px;
+    }
+    #landing-cross::before,
+    #landing-cross::after {
+      content: '';
+      position: absolute;
+      background: #fff;
+      border-radius: 1px;
+      top: 50%; left: 50%;
+    }
+    #landing-cross::before {
+      width: 1px;
+      height: 16px;
+      transform: translate(-50%, -50%);
+    }
+    #landing-cross::after {
+      width: 16px;
+      height: 1px;
+      transform: translate(-50%, -50%);
+    }
+    /* Nome/cognome — sale dal basso dopo 1s */
+    #landing-name {
+      position: absolute;
+      bottom: 0;
+      left: 50%;
+      transform: translateX(-50%) translateY(100%);
+      z-index: 5;
+      pointer-events: none;
+      text-align: center;
+      opacity: 0;
+      transition: transform 0.9s cubic-bezier(0.22, 1, 0.36, 1),
+                  opacity 0.7s ease;
+      padding-bottom: 48px;
+    }
+    #landing.name-in #landing-name {
+      transform: translateX(-50%) translateY(0);
+      opacity: 1;
+    }
+    #landing-name .ln-first,
+    #landing-name .ln-last {
+      display: block;
+      font-family: var(--font-nav);
+      font-size: clamp(18px, 1.6vw, 26px);
+      font-weight: 400;
+      color: #fff;
+      letter-spacing: 0.04em;
+      line-height: 1.3;
+      white-space: nowrap;
+    }
+    /* Banda nera — a schermo intero, poi sale */
     #landing-band {
       position: absolute;
       top: 0; left: 0; right: 0;
       height: 100vh;
       background: #000;
-      display: flex;
-      align-items: center;
-      padding: 0 56px;
       transform: translateY(0);
       transition: transform 1.2s cubic-bezier(0.76, 0, 0.24, 1);
       z-index: 3;
       overflow: hidden;
+      pointer-events: none;
     }
     #landing.band-up #landing-band {
       transform: translateY(-100%);
-    }
-    /* Riga unica: nome + separatore + fotografo */
-    .lband-line {
-      display: flex;
-      align-items: baseline;
-      gap: 10px;
-      transform: translateX(-80px);
-      opacity: 0;
-      transition: transform 0.9s cubic-bezier(0.22, 1, 0.36, 1) 0.25s,
-                  opacity 0.7s ease 0.25s;
-    }
-    #landing.text-in .lband-line {
-      transform: translateX(0);
-      opacity: 1;
-    }
-    .lband-name {
-      font-family: var(--font-nav);
-      font-size: clamp(15px, 1.3vw, 22px);
-      font-weight: 400;
-      color: #fff;
-      letter-spacing: 0.02em;
-      white-space: nowrap;
-    }
-    .lband-sep {
-      font-family: var(--font-nav);
-      font-size: clamp(15px, 1.3vw, 22px);
-      font-weight: 300;
-      color: rgba(255,255,255,0.35);
-      letter-spacing: 0;
-    }
-    .lband-subtitle {
-      font-family: var(--font-nav);
-      font-size: clamp(13px, 1.1vw, 18px);
-      font-weight: 300;
-      color: rgba(255,255,255,0.7);
-      letter-spacing: 0.06em;
-      white-space: nowrap;
     }
     /* Quando la banda sale: la landing non intercetta i click */
     #landing.band-up {
@@ -350,23 +368,41 @@
       pointer-events: all;
       cursor: none;
     }
-    /* Etichetta flottante al cursore — visibile solo dopo band-up */
-    #landing-cursor-label {
+    /* Cursore grigio su foto (dopo band-up) */
+    #landing-cursor-dot {
       position: fixed;
       pointer-events: none;
       z-index: 1010;
-      font-family: var(--font-nav);
-      font-size: 13px;
-      font-weight: 400;
-      letter-spacing: 0.06em;
-      color: #fff;
-      white-space: nowrap;
-      opacity: 0;
-      transition: opacity 0.4s ease;
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      background: rgba(180,180,180,0.85);
+      display: flex;
+      align-items: center;
+      justify-content: center;
       top: 0; left: 0;
       will-change: transform;
+      opacity: 0;
+      transition: opacity 0.4s ease;
     }
-    #landing.band-up #landing-cursor-label {
+    #landing-cursor-dot::before,
+    #landing-cursor-dot::after {
+      content: '';
+      position: absolute;
+      background: rgba(0,0,0,0.6);
+      border-radius: 1px;
+    }
+    #landing-cursor-dot::before {
+      width: 1px; height: 9px;
+      top: 50%; left: 50%;
+      transform: translate(-50%, -50%);
+    }
+    #landing-cursor-dot::after {
+      width: 9px; height: 1px;
+      top: 50%; left: 50%;
+      transform: translate(-50%, -50%);
+    }
+    #landing.band-up #landing-cursor-dot {
       opacity: 1;
     }
     /* Transizione foto verso l'alto al click */
@@ -379,6 +415,8 @@
       pointer-events: none;
       display: none;
     }
+    /* Etichetta flottante legacy — non usata nella nuova landing */
+    #landing-cursor-label { display: none; }
 
     /* ══════════════════════════════════════════════════════════════
        LAYOUT SHELL
@@ -2865,16 +2903,19 @@
 <div id="landing">
   <!-- Foto a tutto schermo (sotto la banda) -->
   <div id="landing-photo"><img src="images/landing-hero.webp" alt="" /></div>
-  <!-- Etichetta flottante al cursore — segue il mouse, senza triangolo -->
-  <div id="landing-cursor-label">Alessandro Rizzi</div>
-  <!-- Banda nera — schermo intero all'inizio, poi sale -->
-  <div id="landing-band">
-    <div class="lband-line">
-      <span class="lband-name">Alessandro Rizzi</span>
-      <span class="lband-sep">—</span>
-      <span class="lband-subtitle">fotografo</span>
-    </div>
+  <!-- Croce bianca centrale — visibile subito -->
+  <div id="landing-cross"></div>
+  <!-- Nome/cognome — sale dal basso dopo 1s -->
+  <div id="landing-name">
+    <span class="ln-first">Alessandro</span>
+    <span class="ln-last">Rizzi</span>
   </div>
+  <!-- Banda nera — schermo intero, poi sale dopo 2s -->
+  <div id="landing-band"></div>
+  <!-- Cursore grigio — visibile dopo band-up -->
+  <div id="landing-cursor-dot"></div>
+  <!-- Legacy: etichetta flottante (nascosta) -->
+  <div id="landing-cursor-label"></div>
 </div>
 
 <!-- Menu overlay — griglia 4 colonne -->
@@ -5705,40 +5746,41 @@ loadFromCMS();
 // ══════════════════════════════════════════════════════════════════
 (function() {
   const landing      = document.getElementById('landing');
-  const landingPhoto = document.getElementById('landing-photo');
-  const cursorLabel  = document.getElementById('landing-cursor-label');
-  const cursorEl     = document.getElementById('cursor');
+  const landingPhoto   = document.getElementById('landing-photo');
+  const landingCursorDot = document.getElementById('landing-cursor-dot');
+  const cursorEl        = document.getElementById('cursor');
   if (!landing) return;
 
   let bandUp  = false;
   let exiting = false;
 
-  // ── 1. Nascondi triangolo cursore e navbar durante la landing
+  // ── 1. Nascondi cursore di sistema e navbar durante la landing
   if (cursorEl) cursorEl.style.display = 'none';
   document.body.classList.add('landing-active');
 
-  // ── 2. Slide-in testo: dopo 300ms
-  setTimeout(() => landing.classList.add('text-in'), 300);
+  // ── 2. Dopo 1s: nome/cognome sale dal basso
+  setTimeout(() => landing.classList.add('name-in'), 1000);
 
-  // ── 3. Etichetta flottante al cursore — centrata rispetto al mouse, senza offset triangolo
+  // ── 3. Dopo 2s: banda nera sale, rivelando la foto
+  function raiseBand() {
+    if (bandUp) return;
+    bandUp = true;
+    landing.classList.add('band-up');
+  }
+  setTimeout(raiseBand, 2000);
+
+  // ── 4. Cursore grigio segue il mouse (visibile solo dopo band-up)
   let rafLanding;
   let lx = 0, ly = 0;
   document.addEventListener('mousemove', e => {
     lx = e.clientX;
     ly = e.clientY;
-    if (!rafLanding) rafLanding = requestAnimationFrame(moveLandingLabel);
+    if (!rafLanding) rafLanding = requestAnimationFrame(moveLandingCursor);
   });
-  function moveLandingLabel() {
-    // Offset: leggermente sotto e a destra del cursore
-    cursorLabel.style.transform = 'translate(' + (lx + 14) + 'px,' + (ly + 10) + 'px)';
+  function moveLandingCursor() {
+    // Centrato sul punto — 18px/2 = 9px
+    landingCursorDot.style.transform = 'translate(calc(' + lx + 'px - 9px), calc(' + ly + 'px - 9px))';
     rafLanding = null;
-  }
-
-  // ── 4. Alza la banda
-  function raiseBand() {
-    if (bandUp) return;
-    bandUp = true;
-    landing.classList.add('band-up');
   }
 
   // ── 5. Click sulla foto: foto esce verso l'alto, poi Overview
@@ -5748,17 +5790,13 @@ loadFromCMS();
     landingPhoto.classList.add('exit-up');
     setTimeout(() => {
       landing.classList.add('gone');
-      // Ripristina triangolo cursore e navbar
       if (cursorEl) cursorEl.style.display = '';
       document.body.classList.remove('landing-active');
       switchView('home');
     }, 920);
   }
 
-  // Auto-alza la banda dopo 2s
-  setTimeout(raiseBand, 2000);
-
-  // Click sulla foto (dopo che la banda è salita)
+  // Click sulla foto (dopo band-up) → Overview
   landingPhoto.addEventListener('click', () => {
     if (!bandUp) { raiseBand(); return; }
     goToOverview();
