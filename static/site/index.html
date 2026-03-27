@@ -3448,6 +3448,18 @@ document.addEventListener('mousemove', e => {
         }
       }
 
+      // Archive box aperto: rosso fuori dal box, bianco dentro il box
+      if (currentView === 'archive' && activeExpanded) {
+        const _boxRect = activeExpanded.getBoundingClientRect();
+        const _insideBox = mx >= _boxRect.left && mx <= _boxRect.right &&
+                           my >= _boxRect.top  && my <= _boxRect.bottom;
+        if (_insideBox) {
+          document.body.classList.remove('cursor-red');
+        } else {
+          document.body.classList.add('cursor-red');
+        }
+      }
+
       // Ring-mode cursore: attivo su foto, overlay, landing, gallery
       const _isOnPhoto = e => {
         const el = document.elementFromPoint(mx, my);
