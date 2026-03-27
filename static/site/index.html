@@ -188,11 +188,11 @@
     /* ── In hover sulle foto di Overview: nero con croce bianca (visibile) ── */
     body.cursor-red #cursor.hover #cursor-dot {
       display: flex !important;    /* non sparisce — rimane visibile */
-      background: #111 !important;
+      background: #fff !important; /* bianco su foto in Overview */
     }
     body.cursor-red #cursor.hover #cursor-dot::before,
     body.cursor-red #cursor.hover #cursor-dot::after {
-      background: rgba(255,255,255,0.9) !important;
+      background: rgba(0,0,0,0.75) !important;
       opacity: 1 !important;
     }
     /* ── Cursore FRECCIA BIANCA — vicino ai pallini media ──
