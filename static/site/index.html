@@ -3520,46 +3520,47 @@ document.addEventListener('mousemove', e => {
 
       // Posiziona preview cities al cursore
       const _citPreview = document.getElementById('cities-cursor-preview');
-      if (_citPreview && _citPreview.classList.contains('visible')) {
-        const cipanel = document.getElementById('cities-info-panel');
-        const _cipW = 408; // larghezza box info
-        const _thumbW = 196; // larghezza thumbs
+      const _cipanelEl  = document.getElementById('cities-info-panel');
+      const _cipW = 408;
+      const _thumbW = 196;
 
-        if (cipanel && cipanel._currentProject) {
-          // ── LOGICA APERTURA/CHIUSURA ─────────────────────────────────
-          // Il box si apre SOLO quando la thumbs viene trascinata a sinistra
-          // oltre la soglia (30% della larghezza schermo).
-          // Si chiude quando il mouse torna a destra della soglia + isteresi.
-          const _openThreshold  = window.innerWidth * 0.30; // apre se mx < 30%
-          const _closeThreshold = window.innerWidth * 0.38; // chiude se mx > 38%
+      // ── LOGICA APERTURA/CHIUSURA BOX ────────────────────────────────
+      // Usa _pendingProject (impostato al mouseenter della riga) come flag
+      // indipendente dalla visibilità della preview.
+      // Il box si apre trascinando il mouse a sinistra (<30% schermo).
+      // Si chiude tornando a destra (>38%).
+      if (_cipanelEl && _cipanelEl._pendingProject) {
+        const _openThreshold  = window.innerWidth * 0.30;
+        const _closeThreshold = window.innerWidth * 0.38;
 
-          if (mx < _openThreshold) {
-            cipanel.classList.add('open');
-          } else if (mx > _closeThreshold) {
-            cipanel.classList.remove('open');
-          }
+        if (mx < _openThreshold) {
+          _cipanelEl.classList.add('open');
+        } else if (mx > _closeThreshold) {
+          _cipanelEl.classList.remove('open');
+        }
+      } else if (_cipanelEl && !_cipanelEl._pendingProject) {
+        // Nessuna riga attiva: chiudi il box
+        _cipanelEl.classList.remove('open');
+      }
 
-          // ── SCROLL VERTICALE DEL BOX GOVERNATO DAL MOUSE ─────────────
-          // Funziona anche quando il puntatore è sulla thumbs (box già aperto)
-          if (cipanel.classList.contains('open')) {
-            const _cipBody = cipanel.querySelector('.cip-body');
-            if (_cipBody) {
-              const _scrollH = _cipBody.scrollHeight - _cipBody.clientHeight;
-              if (_scrollH > 0) {
-                const _ratio = Math.max(0, Math.min(1, my / window.innerHeight));
-                _cipBody.scrollTop = _ratio * _scrollH;
-              }
-            }
+      // ── SCROLL VERTICALE DEL BOX ───────────────────────────────────
+      // Attivo sempre quando il box è aperto (anche con mouse sulla thumbs)
+      if (_cipanelEl && _cipanelEl.classList.contains('open')) {
+        const _cipBody = _cipanelEl.querySelector('.cip-body');
+        if (_cipBody) {
+          const _scrollH = _cipBody.scrollHeight - _cipBody.clientHeight;
+          if (_scrollH > 0) {
+            const _ratio = Math.max(0, Math.min(1, my / window.innerHeight));
+            _cipBody.scrollTop = _ratio * _scrollH;
           }
         }
+      }
 
-        // ── POSIZIONE THUMBS ─────────────────────────────────────────
-        // Quando il box è aperto la thumbs si ancora al bordo sinistro del box
-        // (non segue più il mouse in X, solo in Y)
-        const _boxCurrentlyOpen = cipanel && cipanel.classList.contains('open');
+      // ── POSIZIONE THUMBS ─────────────────────────────────────────
+      if (_citPreview && _citPreview.classList.contains('visible')) {
+        const _boxOpen = _cipanelEl && _cipanelEl.classList.contains('open');
         let _thumbX;
-        if (_boxCurrentlyOpen) {
-          // Ancora la thumbs al bordo sinistro del box con 16px di margine
+        if (_boxOpen) {
           _thumbX = window.innerWidth - _cipW - _thumbW - 16;
         } else {
           _thumbX = Math.min(mx + 20, window.innerWidth - _thumbW - 16);
@@ -4143,17 +4144,18 @@ function buildCitiesIndex() {
         citiesPreviewImg._fixedForRow = true;
       }
       citiesPreview.classList.add('visible');
-      // Popola il box info con i dati del progetto corrente
+      // Popola il box info e imposta il flag _pendingProject
       const projectForPanel = isTokyoProject && TOKYO_CMS ? TOKYO_CMS : p;
       populateCityInfoPanel(projectForPanel, previewImages);
+      if (_cipanel) _cipanel._pendingProject = projectForPanel;
     });
     row.addEventListener('mouseleave', () => {
       // Resetta il flag immagine fissa per la prossima riga
       citiesPreviewImg._fixedForRow = false;
       citiesPreview.classList.remove('visible');
-      // Chiudi il box solo se non è già stato aperto dal gesto a sinistra
-      // (il box rimane aperto finché il mouse non torna a destra della soglia)
-      if (_cipanel && !_cipanel.classList.contains('open')) {
+      // Azzera il progetto pendente: il mousemove chiuderà il box
+      if (_cipanel) {
+        _cipanel._pendingProject = null;
         _cipanel._currentProject = null;
       }
     });
