@@ -342,10 +342,10 @@
     #landing-name .ln-full {
       display: block;
       font-family: 'ABCWalterNeue', Georgia, serif;
-      font-size: clamp(16px, 1.4vw, 22px);
-      font-weight: 400;
+      font-size: clamp(11px, 0.98vw, 15px);  /* -30% rispetto a clamp(16,1.4vw,22) */
+      font-weight: 300;
       color: #fff;
-      letter-spacing: 0.12em;
+      letter-spacing: 0.14em;
       white-space: nowrap;
     }
     /* Banda nera — a schermo intero, poi sale */
@@ -2906,7 +2906,7 @@
 <!-- Landing page hero -->
 <div id="landing">
   <!-- Foto a tutto schermo (sotto la banda) -->
-  <div id="landing-photo"><img src="images/B0000771_M_openWith.webp" alt="" /></div>
+  <div id="landing-photo"><img src="site/images/B0000771_M_openWith.webp" alt="" /></div>
   <!-- Croce bianca centrale — appare dopo 1s -->
   <div id="landing-cross"></div>
   <!-- Nome su riga unica — sale dal basso fino a quasi toccare la croce -->
