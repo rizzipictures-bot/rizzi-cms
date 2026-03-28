@@ -1766,20 +1766,46 @@
       padding: 14px 0 16px;
       color: var(--black);
     }
-    /* ── CITIES INDEX ── */
+    /* ══════════════════════════════════════════════════════════════
+       VIEW: CITIES INDEX — estetica identica ad Archive
+    ══════════════════════════════════════════════════════════════ */
     #view-cities-index {
-      padding: var(--nav-h) 0 0 0;
+      font-family: var(--font-mono);
       overflow-y: auto;
+      overflow-x: hidden;
+      padding: 0 40px;
     }
+    #view-cities-index::-webkit-scrollbar { display: none; }
+
+    /* Titolo pagina — identico a .archive-page-title */
+    .cities-page-title {
+      font-family: var(--font-mono);
+      font-size: 32px;
+      font-weight: 700;
+      letter-spacing: 0;
+      padding: 40px 0 32px;
+      color: #000;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+    .cities-page-title .title-sep {
+      display: inline-block;
+      width: 1px;
+      height: 1.1em;
+      background: #000;
+      vertical-align: middle;
+      flex-shrink: 0;
+    }
+
     /* ── TOGGLE VISTA CITIES ─────────────────────────────────────── */
     .cities-view-toggle {
       display: flex;
       align-items: center;
       gap: 0;
-      position: absolute;
-      top: 12px;
-      left: 16px;
-      z-index: 10;
+      padding: 0 0 12px;
+      border-bottom: 1px solid var(--light);
+      margin-bottom: 0;
     }
     .cities-toggle-btn {
       font-family: var(--font-mono);
@@ -1795,64 +1821,97 @@
     }
     .cities-toggle-btn:first-child { border-right: none; }
     .cities-toggle-btn.active {
-      color: #000;
+      color: #fff;
       border-color: #000;
       background: #000;
-      color: #fff;
     }
     .cities-toggle-btn:hover:not(.active) { color: #000; border-color: #aaa; }
+
+    /* Intestazione colonne — identica ad .archive-col-header */
+    .cities-col-header {
+      display: grid;
+      grid-template-columns: 100px 1fr 1fr 80px;
+      border-bottom: 1px solid var(--light);
+      padding: 8px 0 4px;
+    }
+    .cities-col-header span {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      font-weight: 400;
+      color: #000;
+      letter-spacing: 0;
+      padding: 0;
+    }
+    .cities-col-header span:last-child { text-align: right; }
 
     /* ── VISTA LISTA CITIES ──────────────────────────────────────── */
     #cities-list-view {
       display: none;
-      padding: 36px 0 60px 0;
     }
     #cities-list-view.active { display: block; }
+
+    /* Lettera alfabetica — stessa dimensione di archive-page-title ma più piccola */
     .cities-list-letter {
-      font-family: 'Georgia', 'Times New Roman', serif;
-      font-size: 26px;
-      font-weight: 700;
-      color: #000;
-      padding: 20px 16px 4px;
-      line-height: 1;
-      letter-spacing: -0.01em;
-    }
-    .cities-list-row {
-      display: grid;
-      grid-template-columns: 48px 1fr 1fr 80px;
-      align-items: center;
-      padding: 10px 16px;
-      border-top: 1px solid #e8e8e8;
-      cursor: none;
-      transition: background .12s;
-    }
-    .cities-list-row:hover { background: #f7f7f7; }
-    .cities-list-code {
-      font-family: var(--font-mono);
-      font-size: 10px;
-      color: #bbb;
-      letter-spacing: 0.04em;
-    }
-    .cities-list-name {
       font-family: var(--font-mono);
       font-size: 11px;
       font-weight: 700;
       color: #000;
+      padding: 14px 0 4px;
+      line-height: 1;
+      letter-spacing: 0;
+      border-bottom: 1px solid var(--light);
+    }
+
+    /* Riga città — identica ad .archive-row */
+    .cities-list-row {
+      display: grid;
+      grid-template-columns: 100px 1fr 1fr 80px;
+      gap: 0;
+      border-bottom: 1px solid var(--light);
+      align-items: center;
+      min-height: 22px;
+      transition: background .1s;
+      cursor: none;
+      font-family: var(--font-mono);
+      overflow: hidden;
+    }
+    .cities-list-row:hover {
+      background: var(--black);
+    }
+    .cities-list-row:hover * { color: var(--white) !important; }
+    .cities-list-code {
+      font-family: var(--font-mono);
+      font-size: 12px;
+      color: #000;
+      font-weight: 600;
+      letter-spacing: -0.03em;
+      padding: 2px 16px 2px 0;
+    }
+    .cities-list-name {
+      font-family: var(--font-mono);
+      font-size: 12px;
+      font-weight: 400;
+      color: #000;
+      letter-spacing: -0.03em;
+      padding: 2px 16px 2px 0;
     }
     .cities-list-place {
       font-family: var(--font-mono);
-      font-size: 10px;
-      color: #999;
+      font-size: 12px;
+      color: #000;
+      letter-spacing: -0.03em;
+      padding: 2px 16px 2px 0;
     }
     .cities-list-year {
       font-family: var(--font-mono);
-      font-size: 10px;
+      font-size: 12px;
       font-weight: 400;
-      color: #bbb;
+      color: #000;
       text-align: right;
-      letter-spacing: 0.04em;
+      letter-spacing: -0.03em;
       font-variant-numeric: tabular-nums;
       font-feature-settings: 'tnum' 1;
+      padding: 2px 0;
     }
     /* ── BOX INFO FISSO CITIES ─────────────────────────────────── */
     #cities-info-panel {
@@ -2022,8 +2081,7 @@
       font-weight: 700;
       color: #111;
       line-height: 1.2;
-      padding: 18px 18px 10px;
-      border-bottom: 1px solid #b5b3b0;
+      padding: 14px 18px 10px;
       flex-shrink: 0;
     }
 
@@ -2043,7 +2101,7 @@
       gap: 0;
     }
     .cpv-meta-row:first-child {
-      border-top: none;
+      border-top: 1px solid #b5b3b0;
     }
     .cpv-meta-label {
       font-family: 'Georgia', 'Times New Roman', serif;
@@ -3246,17 +3304,26 @@
 
 
     <!-- ── VIEW: CITIES INDEX ── -->
-    <div class="view" id="view-cities-index" style="position:relative;">
+    <div class="view" id="view-cities-index">
+      <!-- Titolo pagina — identico ad Archive -->
+      <div class="cities-page-title">Cities<span class="title-sep"></span>Works by Location</div>
       <!-- Toggle lista / thumbs -->
       <div class="cities-view-toggle">
         <button class="cities-toggle-btn active" id="cities-btn-list">lista</button>
         <button class="cities-toggle-btn" id="cities-btn-thumbs">thumbs</button>
       </div>
-      <!-- Vista Lista (nuova) -->
+      <!-- Intestazione colonne (visibile solo in lista) -->
+      <div class="cities-col-header" id="cities-col-header">
+        <span>Code</span>
+        <span>City</span>
+        <span>Place</span>
+        <span>Year</span>
+      </div>
+      <!-- Vista Lista -->
       <div id="cities-list-view" class="active">
         <!-- Generata via JS -->
       </div>
-      <!-- Vista Thumbs (esistente) -->
+      <!-- Vista Thumbs -->
       <div id="cities-thumbs-view" style="display:none">
         <div class="cities-index-grid" id="cities-index-grid">
           <!-- Generata via JS -->
@@ -3295,6 +3362,7 @@
         <button class="cip-close btn-circle-close black" id="cip-close"></button>
       </div>
       <div class="cip-meta" id="cip-meta"></div>
+      <!-- Riga sotto il testo header box 2 rimossa (border-bottom già nell'header) -->
       <div class="cip-body">
         <p class="cip-description" id="cip-description"></p>
         <div class="cip-images" id="cip-images"></div>
@@ -4556,6 +4624,8 @@ function buildCitiesIndex() {
     const citiesPreviewImg = document.getElementById('cities-cursor-preview-img');
 
     row.addEventListener('mouseenter', () => {
+      // Suono click identico ad Archive
+      if (typeof archiveRowClick === 'function') archiveRowClick();
       if (previewImages.length === 0) return;
       // Usa sempre la foto memoizzata — non cambia mai
       citiesPreviewImg.src = previewImages[p._fixedImgIdx];
@@ -4612,6 +4682,7 @@ function buildCitiesIndex() {
   const btnThumbs = document.getElementById('cities-btn-thumbs');
   const thumbsView = document.getElementById('cities-thumbs-view');
 
+  const colHeader = document.getElementById('cities-col-header');
   if (btnList && btnThumbs) {
     btnList.addEventListener('click', () => {
       btnList.classList.add('active');
@@ -4619,6 +4690,7 @@ function buildCitiesIndex() {
       listView.classList.add('active');
       listView.style.display = 'block';
       thumbsView.style.display = 'none';
+      if (colHeader) colHeader.style.display = '';
     });
     btnThumbs.addEventListener('click', () => {
       btnThumbs.classList.add('active');
@@ -4626,6 +4698,7 @@ function buildCitiesIndex() {
       thumbsView.style.display = 'block';
       listView.classList.remove('active');
       listView.style.display = 'none';
+      if (colHeader) colHeader.style.display = 'none';
       // Nascondi preview se visibile
       document.getElementById('cities-cursor-preview').classList.remove('visible');
       // Chiudi il box info (vale solo in modalità lista)
