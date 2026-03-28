@@ -1919,9 +1919,9 @@
     /* ── BOX INFO FISSO CITIES ─────────────────────────────────── */
     #cities-info-panel {
       position: fixed;
-      top: 48px;
+      top: 48px;               /* JS sovrascrive con bordo inferiore titolo Cities */
       right: 0;
-      bottom: 0;               /* default; JS lo sovrascrive con bottom della foto */
+      bottom: 35px;            /* 35px prima della fine pagina */
       width: 408px;
       height: auto;
       background: #d1cfcc;     /* grigio medio 18% */
@@ -2031,8 +2031,8 @@
       position: fixed;
       right: 408px;            /* attaccato al bordo sinistro del box 1 */
       /* left calcolato via JS per non coprire l'alfabeto */
-      top: 48px;               /* JS sovrascrive con bottom del titolo Cities */
-      bottom: 0;               /* default; JS lo sovrascrive con bottom della foto */
+      top: 48px;               /* JS sovrascrive con bordo inferiore titolo Cities */
+      bottom: 35px;            /* 35px prima della fine pagina */
       background: #bcb9b6;     /* box 1 #d1cfcc scurito ~10% */
       z-index: 695;
       flex-direction: column;
@@ -4191,21 +4191,7 @@ if (_cipImages) {
         _cipPhotoViewerImg.classList.add('is-vertical');
       }
 
-      // Calcola il bottom dei box = top_box2 + header + title + meta + foto
-      // Usiamo requestAnimationFrame per aspettare che il DOM si aggiorni
-      requestAnimationFrame(() => {
-        requestAnimationFrame(() => {
-          const pvRect    = _cipPhotoViewer.getBoundingClientRect();
-          const imgRect   = _cipPhotoViewerImg.getBoundingClientRect();
-          // bottom assoluto dalla cima del viewport
-          const imgBottom = Math.round(imgRect.bottom);
-          // Converti in valore CSS bottom (distanza dal fondo del viewport)
-          const bottomVal = Math.round(window.innerHeight - imgBottom);
-          // Applica a entrambi i box
-          _cipPhotoViewer.style.bottom = bottomVal + 'px';
-          if (_cipanel) _cipanel.style.bottom = bottomVal + 'px';
-        });
-      });
+      // bottom fisso 35px gestito via CSS — nessun override JS necessario
     };
     _tmpImg2.src = img.src;
     _cipPhotoViewerImg.src = img.src;
