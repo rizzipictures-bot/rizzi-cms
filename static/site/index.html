@@ -1968,10 +1968,10 @@
       display: none;           /* nascosto di default su TUTTE le pagine */
       position: fixed;
       right: 408px;            /* attaccato al bordo sinistro del box 1 */
-      left: 0;                 /* si estende fino al bordo sinistro dello schermo */
-      top: 48px;               /* sotto la navbar */
-      height: 0;               /* impostato via JS */
-      background: #f5f4f2;     /* bianco/grigio chiarissimo come il reference */
+      /* left calcolato via JS per non coprire l'alfabeto */
+      top: 48px;               /* stesso top del box 1 */
+      height: 0;               /* impostato via JS (≈50% altezza box 1) */
+      background: #f5f4f2;
       z-index: 695;
       flex-direction: column;
       overflow-y: auto;
@@ -4045,13 +4045,23 @@ if (_cipImages) {
       _descDiv.classList.toggle('has-text', !!desc);
     }
 
-    // Posizionamento: stesso top/bottom del box 1 (Cities info panel)
+    // Posizionamento:
+    // - top: stesso del box 1 (48px)
+    // - height: ~55% dell'altezza del box 1 (arriva circa alla fine della 2a foto)
+    // - left: rispetta l'alfabeto (minimo 60px dal bordo sinistro)
     const panelRect = _cipanel.getBoundingClientRect();
     const topY  = Math.round(panelRect.top);
     const boxH  = Math.round(panelRect.height);
+    const viewerH = Math.round(boxH * 0.55); // ~55% = arriva alla fine della 2a foto
+
+    // Calcola left: lo spazio disponibile tra alfabeto (60px) e bordo sinistro del box 1
+    const rightEdge = Math.round(panelRect.left); // bordo sinistro del box 1
+    const minLeft   = 60; // spazio minimo per non coprire l'alfabeto
+    const leftVal   = Math.max(minLeft, rightEdge - 600); // larghezza max ~600px
 
     _cipPhotoViewer.style.top    = topY + 'px';
-    _cipPhotoViewer.style.height = boxH + 'px';
+    _cipPhotoViewer.style.height = viewerH + 'px';
+    _cipPhotoViewer.style.left   = leftVal + 'px';
 
     // Imposta altezza immagine proporzionale all'aspect ratio reale
     _cipPhotoViewerImg.style.height = '';
