@@ -1731,6 +1731,30 @@
     }
     #view-gallery::-webkit-scrollbar { display: none; }
 
+    /* Back button — in alto a sinistra nella gallery */
+    #gallery-back-btn {
+      position: sticky;
+      top: 0;
+      left: 0;
+      z-index: 10;
+      display: none;
+      align-items: center;
+      gap: 6px;
+      background: none;
+      border: none;
+      cursor: none;
+      font-family: var(--font);
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+      color: #111;
+      padding: 18px 20px 0;
+      text-transform: uppercase;
+      opacity: 0.75;
+      transition: opacity .2s;
+    }
+    #gallery-back-btn:hover { opacity: 1; }
+
     /* Foto principale centrata */
     .gallery-main-wrap {
       display: flex;
@@ -3430,6 +3454,9 @@
     <!-- ── VIEW: GALLERY — Nadav Kander style ── -->
     <div class="view" id="view-gallery">
 
+      <!-- Back button — visibile solo se si arriva da Cities Thumbs -->
+      <button id="gallery-back-btn" onclick="galleryGoBack()" style="display:none">&#8592;&nbsp;&nbsp;Back</button>
+
       <!-- Sezione 1: foto principale + didascalia -->
       <div class="gallery-main-wrap" id="gallery-main-wrap">
         <div class="gallery-main-img-wrap" id="gallery-stage">
@@ -4731,11 +4758,15 @@ function buildCitiesIndex() {
       <div class="cities-card-sub">${p.subtitle || p.place || ''}</div>
     `;
     card.addEventListener('click', () => {
+      window._galleryOrigin = 'cities-thumbs';
       switchView('gallery');
       openGallery(p);
       requestAnimationFrame(() => {
         const vg = document.getElementById('view-gallery');
         if (vg) vg.scrollTop = 0;
+        // Mostra il back button
+        const bb = document.getElementById('gallery-back-btn');
+        if (bb) bb.style.display = 'flex';
       });
     });
     grid.appendChild(card);
@@ -5455,6 +5486,32 @@ document.getElementById('lightbox').addEventListener('click', function(e) {
 // ════════════════════════════════════════════════════════════════
 let galleryProject = null;
 let galleryIndex   = 0;
+
+// Torna alla vista di origine (cities-thumbs o altra)
+function galleryGoBack() {
+  const bb = document.getElementById('gallery-back-btn');
+  if (bb) bb.style.display = 'none';
+  if (window._galleryOrigin === 'cities-thumbs') {
+    window._galleryOrigin = null;
+    switchView('cities-index');
+    // Assicura che sia attiva la tab thumbs
+    requestAnimationFrame(() => {
+      const thumbsView = document.getElementById('cities-thumbs-view');
+      const listView   = document.getElementById('cities-list-view');
+      const btnList    = document.getElementById('cities-btn-list');
+      const btnThumbs  = document.getElementById('cities-btn-thumbs');
+      if (thumbsView && listView) {
+        thumbsView.style.display = '';
+        listView.style.display   = 'none';
+      }
+      if (btnList)   btnList.classList.remove('active');
+      if (btnThumbs) btnThumbs.classList.add('active');
+    });
+  } else {
+    window._galleryOrigin = null;
+    switchView('cities-index');
+  }
+}
 
 function openGallery(project) {
   galleryProject = project;
