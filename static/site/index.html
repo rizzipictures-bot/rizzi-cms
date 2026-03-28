@@ -4658,28 +4658,9 @@ function buildCitiesIndex() {
       }
     });
 
-    // Click: per Tokyo usa il progetto CMS (f4a12e01) se disponibile, altrimenti il progetto corrente
+    // Click sulla riga: chiude i box (non naviga alla gallery)
     row.addEventListener('click', () => {
-      let target = p;
-      if (isTokyoProject) {
-        // Priorità: CMS Tokyo Untitle > progetto corrente con immagini > statico
-        if (TOKYO_CMS && TOKYO_CMS.images && TOKYO_CMS.images.length > 0) {
-          target = TOKYO_CMS;
-        } else if (p.images && p.images.length > 0) {
-          target = p;
-        } else if (TOKYO_PROJECT_STATIC) {
-          target = TOKYO_PROJECT_STATIC;
-        }
-      }
-      if (target && target.images && target.images.length > 0) {
-        switchView('gallery');
-        openGallery(target);
-        // Forza scroll in cima dopo che la vista è attiva
-        requestAnimationFrame(() => {
-          const vg = document.getElementById('view-gallery');
-          if (vg) vg.scrollTop = 0;
-        });
-      }
+      closeCityInfoPanel();
     });
 
     listView.appendChild(row);
