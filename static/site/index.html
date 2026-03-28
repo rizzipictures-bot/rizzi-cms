@@ -1963,27 +1963,25 @@
       object-fit: cover;
     }
 
-    /* ── BOX FOTO SECONDARIO (box 2) — orizzontale, a SINISTRA del box 1, SOLO in cities-index ── */
+    /* ── BOX FOTO SECONDARIO (box 2) — stile reference USI, a SINISTRA del box 1, SOLO in cities-index ── */
     #cip-photo-viewer {
       display: none;           /* nascosto di default su TUTTE le pagine */
       position: fixed;
-      /* Parte dal bordo sinistro del box 1 (408px) e arriva al bordo sinistro dello schermo */
-      right: 408px;
-      left: 0;
-      /* top e height impostati via JS */
-      top: 48px;
-      height: 0;
-      background: #dedad5;     /* grigio medio, più scuro di #f0efed del box 1 */
-      z-index: 695;            /* sotto il box 1 (z-index 700) */
+      right: 408px;            /* attaccato al bordo sinistro del box 1 */
+      left: 0;                 /* si estende fino al bordo sinistro dello schermo */
+      top: 48px;               /* sotto la navbar */
+      height: 0;               /* impostato via JS */
+      background: #f5f4f2;     /* bianco/grigio chiarissimo come il reference */
+      z-index: 695;
       flex-direction: column;
-      overflow: hidden;
-      border-radius: 4px 0 0 4px;
+      overflow-y: auto;
+      overflow-x: hidden;
       opacity: 0;
-      transform: translateX(-20px);
-      transition: opacity .3s ease, transform .3s cubic-bezier(.4,0,.2,1), height .3s cubic-bezier(.4,0,.2,1);
+      transform: translateX(-16px);
+      transition: opacity .32s ease, transform .32s cubic-bezier(.4,0,.2,1);
       pointer-events: none;
+      border-right: 1px solid #ddd;
     }
-    /* Visibile SOLO quando cities-index è attiva */
     body.cities-active #cip-photo-viewer {
       display: flex;
     }
@@ -1992,64 +1990,86 @@
       transform: translateX(0);
       pointer-events: auto;
     }
-    /* Header: titolo + close */
+
+    /* Sezione titolo (in alto, sfondo leggermente più scuro come il reference) */
     #cip-photo-viewer-header {
       flex-shrink: 0;
-      padding: 14px 18px 10px;
-      border-bottom: 1px solid #c8c4be;
+      padding: 18px 24px 14px;
+      background: #eceae6;     /* grigio leggermente più scuro per la sezione titolo */
       display: flex;
       align-items: flex-start;
       justify-content: space-between;
-      gap: 10px;
+      gap: 12px;
+      border-bottom: 1px solid #d8d5d0;
     }
     #cip-photo-viewer-title {
       font-family: var(--font-nav);
-      font-size: 14px;
-      font-weight: 600;
-      color: #111;
+      font-size: 15px;
+      font-weight: 400;
+      color: #000;
       margin: 0;
       flex: 1;
       min-width: 0;
-      line-height: 1.3;
+      line-height: 1.4;
     }
-    /* Righe meta: Luogo / Anno con separatori */
+
+    /* Tabella meta: label sinistra, valore destra, separatori orizzontali */
     #cip-photo-viewer-meta {
       flex-shrink: 0;
+      background: #f5f4f2;
     }
     .cpv-meta-row {
       display: grid;
-      grid-template-columns: 80px 1fr;
-      border-top: 1px solid #c8c4be;
-      padding: 6px 18px;
+      grid-template-columns: 160px 1fr;
+      border-top: 1px solid #d8d5d0;
+      padding: 7px 24px;
+      align-items: baseline;
+    }
+    .cpv-meta-row:last-child {
+      border-bottom: 1px solid #d8d5d0;
     }
     .cpv-meta-label {
       font-family: var(--font-nav);
-      font-size: 9px;
-      color: #666;
-      letter-spacing: 0.08em;
-      text-transform: uppercase;
-      padding-top: 2px;
+      font-size: 10px;
+      color: #555;
+      letter-spacing: 0.04em;
     }
     .cpv-meta-value {
       font-family: var(--font-nav);
-      font-size: 11px;
-      color: #111;
-      font-weight: 500;
+      font-size: 10px;
+      color: #000;
+      font-weight: 400;
     }
-    /* Foto a tutta larghezza — occupa tutto lo spazio rimanente */
+
+    /* Area testo descrittivo sotto la tabella */
+    #cip-photo-viewer-desc {
+      flex-shrink: 0;
+      padding: 18px 24px;
+      font-family: var(--font-nav);
+      font-size: 11px;
+      line-height: 1.7;
+      color: #222;
+      display: none;           /* nascosto se non c'è testo */
+    }
+    #cip-photo-viewer-desc.has-text {
+      display: block;
+    }
+
+    /* Foto a tutta larghezza in basso */
     #cip-photo-viewer-img {
       width: 100%;
       display: block;
-      object-fit: contain;     /* mostra la foto intera senza ritaglio */
-      flex: 1;
-      min-height: 0;
-      background: #dedad5;
+      object-fit: contain;
+      flex-shrink: 0;
+      background: #f5f4f2;
     }
+
     /* Pulsante chiudi */
     #cip-photo-viewer-close {
       flex-shrink: 0;
-      margin-top: 1px;
+      margin-top: 2px;
     }
+
     /* Le foto nel box Cities diventano cliccabili */
     .cip-img {
       cursor: pointer;
@@ -3223,6 +3243,7 @@
         <button class="btn-circle-close black" id="cip-photo-viewer-close"></button>
       </div>
       <div id="cip-photo-viewer-meta"></div>
+      <div id="cip-photo-viewer-desc"></div>
       <img id="cip-photo-viewer-img" src="" alt="">
     </div>
 
@@ -4004,15 +4025,24 @@ if (_cipImages) {
     if (_metaDiv) {
       _metaDiv.innerHTML = '';
       const metas = [];
-      if (proj && proj.place)       metas.push(['Luogo', proj.place]);
-      if (proj && proj.year)        metas.push(['Anno',  proj.year]);
-      if (proj && proj.publication) metas.push(['Pub.',  proj.publication]);
+      if (proj && proj.place)       metas.push(['Luogo',       proj.place]);
+      if (proj && proj.year)        metas.push(['Anno',        proj.year]);
+      if (proj && proj.publication) metas.push(['Pubblicazione', proj.publication]);
+      if (proj && proj.technique)   metas.push(['Tecnica',     proj.technique]);
       metas.forEach(([k, v]) => {
         const row = document.createElement('div');
         row.className = 'cpv-meta-row';
         row.innerHTML = `<span class="cpv-meta-label">${k}</span><span class="cpv-meta-value">${v}</span>`;
         _metaDiv.appendChild(row);
       });
+    }
+
+    // Testo descrittivo
+    const _descDiv = document.getElementById('cip-photo-viewer-desc');
+    if (_descDiv) {
+      const desc = (proj && proj.description) || '';
+      _descDiv.textContent = desc;
+      _descDiv.classList.toggle('has-text', !!desc);
     }
 
     // Posizionamento: stesso top/bottom del box 1 (Cities info panel)
@@ -4023,8 +4053,15 @@ if (_cipImages) {
     _cipPhotoViewer.style.top    = topY + 'px';
     _cipPhotoViewer.style.height = boxH + 'px';
 
-    // Resetta altezza img (il flex:1 la gestisce)
+    // Imposta altezza immagine proporzionale all'aspect ratio reale
     _cipPhotoViewerImg.style.height = '';
+    const _tmpImg = new Image();
+    _tmpImg.onload = () => {
+      const boxW = _cipPhotoViewer.offsetWidth;
+      const imgH = Math.round(boxW * _tmpImg.naturalHeight / _tmpImg.naturalWidth);
+      _cipPhotoViewerImg.style.height = imgH + 'px';
+    };
+    _tmpImg.src = img.src;
 
     _cipPhotoViewerImg.src = img.src;
     _cipPhotoViewer.classList.add('open');
