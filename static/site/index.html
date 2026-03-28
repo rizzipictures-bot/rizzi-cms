@@ -1885,10 +1885,13 @@
     .cities-list-code {
       font-family: var(--font-mono);
       font-size: 12px;
-      color: #7b2fff;
+      color: #111;
       font-weight: 600;
       letter-spacing: -0.03em;
       padding: 2px 16px 2px 0;
+    }
+    .cities-list-code .code-letter {
+      color: #6b3fa0;  /* viola tenue */
     }
     .cities-list-name {
       font-family: var(--font-mono);
@@ -4598,7 +4601,7 @@ function buildCitiesIndex() {
     const row = document.createElement('div');
     row.className = 'cities-list-row';
     row.innerHTML = `
-      <span class="cities-list-code">${code}</span>
+      <span class="cities-list-code"><span class="code-letter">${code[0]}</span>${code.slice(1)}</span>
       <span class="cities-list-name">${p.title || ''}</span>
       <span class="cities-list-place">${p.place || p.subtitle || ''}</span>
       <span class="cities-list-year">${p.year || ''}</span>
@@ -5640,7 +5643,7 @@ function buildSculpturesIndex() {
     row.className = 'cities-list-row';
     const code = String.fromCharCode(65 + Math.floor(idx / 26)) + String(idx + 1).padStart(2, '0');
     row.innerHTML = `
-      <span class="cities-list-code">${code}</span>
+      <span class="cities-list-code"><span class="code-letter">${code[0]}</span>${code.slice(1)}</span>
       <span class="cities-list-name">${p.title || ''}</span>
       <span class="cities-list-year">${p.year || ''}</span>
     `;
