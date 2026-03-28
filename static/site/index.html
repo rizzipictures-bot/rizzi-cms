@@ -2056,7 +2056,7 @@
     }
     .cip-img {
       width: 100%;
-      aspect-ratio: 3/2;
+      aspect-ratio: 4/3;
       display: block;
       object-fit: cover;
       cursor: pointer;
@@ -4223,6 +4223,10 @@ const _cipPhotoViewerImg   = document.getElementById('cip-photo-viewer-img');
 const _cipPhotoViewerClose = document.getElementById('cip-photo-viewer-close');
 const _cipPhotoViewerTitle = document.getElementById('cip-photo-viewer-title');
 
+// Stato navigazione Box 2
+let _cipCurrentUrls  = [];   // array url foto del progetto aperto
+let _cipCurrentIndex = 0;    // indice foto mostrata
+
 // Apri il viewer al click su una foto del box
 if (_cipImages) {
   _cipImages.addEventListener('click', e => {
@@ -4300,10 +4304,59 @@ if (_cipImages) {
         _cipPhotoViewerImg.classList.add('anim-drop');
       }
     };
+    // Memorizza array e indice corrente per navigazione dx/sx
+    const allImgs = Array.from(_cipImages.querySelectorAll('.cip-img'));
+    _cipCurrentUrls  = allImgs.map(i => i.src);
+    _cipCurrentIndex = allImgs.indexOf(img);
+
     _tmpImg2.src = img.src;
     _cipPhotoViewerImg.src = img.src;
 
     _cipPhotoViewer.classList.add('open');
+  });
+}
+
+// Funzione riutilizzabile per mostrare una foto per indice nel Box 2
+function _cipShowIndex(idx) {
+  if (!_cipCurrentUrls.length) return;
+  _cipCurrentIndex = (idx + _cipCurrentUrls.length) % _cipCurrentUrls.length;
+  const url = _cipCurrentUrls[_cipCurrentIndex];
+
+  _cipPhotoViewerImg.classList.remove('is-vertical', 'anim-drop', 'anim-slide');
+  void _cipPhotoViewerImg.offsetWidth;
+
+  const t = new Image();
+  t.onload = () => {
+    const isV = t.naturalHeight > t.naturalWidth;
+    if (isV) {
+      const boxTop = _cipPhotoViewer.getBoundingClientRect().top;
+      const headerH = (_cipPhotoViewer.querySelector('#cip-photo-viewer-header') || {}).offsetHeight || 80;
+      const titleH  = (_cipPhotoViewer.querySelector('#cip-photo-viewer-title')  || {}).offsetHeight || 40;
+      const metaH   = (_cipPhotoViewer.querySelector('#cip-photo-viewer-meta')   || {}).offsetHeight || 120;
+      const available = Math.round(window.innerHeight - boxTop - headerH - titleH - metaH - 8);
+      _cipPhotoViewer.style.setProperty('--img-max-h', available + 'px');
+      _cipPhotoViewerImg.classList.add('is-vertical', 'anim-slide');
+    } else {
+      _cipPhotoViewerImg.classList.add('anim-drop');
+    }
+  };
+  t.src = url;
+  _cipPhotoViewerImg.src = url;
+}
+
+// Click sul Box 2: metà destra → foto successiva, metà sinistra → foto precedente
+// Ignora click sul pulsante chiudi
+if (_cipPhotoViewer) {
+  _cipPhotoViewer.addEventListener('click', e => {
+    if (e.target.closest('#cip-photo-viewer-close')) return;
+    if (!_cipCurrentUrls.length) return;
+    const rect = _cipPhotoViewer.getBoundingClientRect();
+    const midX = rect.left + rect.width / 2;
+    if (e.clientX >= midX) {
+      _cipShowIndex(_cipCurrentIndex + 1);
+    } else {
+      _cipShowIndex(_cipCurrentIndex - 1);
+    }
   });
 }
 
