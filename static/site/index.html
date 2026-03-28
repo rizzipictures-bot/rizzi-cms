@@ -1953,7 +1953,7 @@
       top: 0;                  /* JS sovrascrive con bordo inferiore titolo Cities */
       right: 0;
       bottom: 45px;            /* 45px prima della fine pagina */
-      width: 408px;
+      width: 300px;
       height: auto;
       background: #111;          /* variante 05: nero */
       color: #e0e0e0;
@@ -2033,40 +2033,37 @@
     }
     .cip-body {
       flex: 1;
-      overflow-y: auto;
-      padding: 14px 18px 24px;
-      -webkit-overflow-scrolling: touch;
+      overflow: hidden;
+      padding: 8px;
     }
     .cip-description {
-      font-family: 'Georgia', 'Times New Roman', serif;
-      font-size: 11px;
-      color: #ccc;
-      line-height: 1.55;
-      margin: 0 0 16px;
+      display: none; /* nascosta nel nuovo layout thumbs */
     }
+    /* Griglia 2 colonne di thumbs nel Box 1 */
     .cip-images {
-      display: flex;
-      flex-direction: column;
-      gap: 6px;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 3px;
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
     }
     .cip-img {
       width: 100%;
+      aspect-ratio: 3/2;
       display: block;
       object-fit: cover;
+      cursor: pointer;
+      border-radius: 1px;
+      transition: opacity .15s;
     }
-    /* Prima foto: visibile per intero */
-    .cip-img:first-child {
-      object-fit: contain;
-      background: #000;
-      height: auto;
-      max-height: none;
-    }
+    .cip-img:hover { opacity: 0.8; }
 
     /* ── BOX FOTO SECONDARIO (box 2) — stile reference USI, a SINISTRA del box 1, SOLO in cities-index ── */
     #cip-photo-viewer {
       display: none;           /* nascosto di default su TUTTE le pagine */
       position: fixed;
-      right: 408px;            /* attaccato al bordo sinistro del box 1 */
+      right: 300px;            /* attaccato al bordo sinistro del box 1 */
       /* left calcolato via JS per non coprire l'alfabeto */
       top: 0;                  /* JS sovrascrive con bordo inferiore titolo Cities */
       bottom: 45px;            /* 45px prima della fine pagina */
@@ -2207,12 +2204,7 @@
       margin-top: 2px;
     }
 
-    /* Le foto nel box Cities diventano cliccabili */
-    .cip-img {
-      cursor: pointer;
-      transition: opacity .15s;
-    }
-    .cip-img:hover { opacity: 0.85; }
+    /* Le foto nel box Cities diventano cliccabili — stile definito sopra in .cip-img */
 
     /* Preview cursor cities */
     #cities-cursor-preview {
@@ -4160,10 +4152,10 @@ function populateCityInfoPanel(project, imageUrls) {
     _cipDesc.style.display = _cipDesc.textContent ? '' : 'none';
   }
 
-  // Immagini (max 8)
+  // Immagini (max 6 thumbs in griglia 2x3)
   if (_cipImages) {
     _cipImages.innerHTML = '';
-    const imgs = imageUrls.slice(0, 8);
+    const imgs = imageUrls.slice(0, 6);
     imgs.forEach(url => {
       const img = document.createElement('img');
       img.src = url;
@@ -4234,9 +4226,10 @@ if (_cipImages) {
     }
 
     // Calcola left: rispetta l'alfabeto (min 60px)
+    // Il Box 2 occupa lo spazio tra la lista e il Box 1 (300px)
     const rightEdge = Math.round(panelRect.left);
     const minLeft   = 60;
-    const leftVal   = Math.max(minLeft, rightEdge - 600);
+    const leftVal   = Math.max(minLeft, rightEdge - 700);
     const boxW      = rightEdge - leftVal;
 
     // Imposta subito left e larghezza, poi calcola altezza dopo caricamento immagine
