@@ -4020,7 +4020,18 @@ document.addEventListener('mousemove', e => {
         let _nearCipClose = false;
         _closeBtns.forEach(btn => {
           const r = btn.getBoundingClientRect();
-          if (r.width === 0) return; // non visibile
+          if (r.width === 0 || r.height === 0) return; // non visibile
+          // Salta i pulsanti il cui box padre non è aperto (es. cip-photo-viewer-close quando box 2 è chiuso)
+          const parentBox = btn.closest('#cip-photo-viewer, #cities-info-panel, #overview-overlay, #lightbox, #archive-viewall-overlay');
+          if (parentBox) {
+            // Per i box con classe 'open': salta se non aperto
+            if (parentBox.id === 'cip-photo-viewer' || parentBox.id === 'cities-info-panel') {
+              if (!parentBox.classList.contains('open')) return;
+            }
+            // Per overlay/lightbox: salta se display:none o opacity:0
+            const style = window.getComputedStyle(parentBox);
+            if (style.display === 'none' || style.opacity === '0' || style.visibility === 'hidden') return;
+          }
           const cx = r.left + r.width / 2;
           const cy = r.top  + r.height / 2;
           if (Math.abs(mx - cx) < 50 && Math.abs(my - cy) < 50) {
