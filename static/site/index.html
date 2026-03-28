@@ -4618,14 +4618,14 @@ function buildOverviewGrid() {
 
     const nameEl = document.getElementById('overview-project-name');
     item.addEventListener('mouseenter', () => {
-      if (nameEl) nameEl.innerHTML = ' ';
-      // Hover foto Overview: cursore diventa rosso
-      document.body.classList.add('cursor-red');
-      document.body.classList.remove('cursor-on-dark');
+      if (nameEl) nameEl.innerHTML = ' ';
+      // Hover foto Overview: cursore diventa bianco (su sfondo scuro)
+      document.body.classList.remove('cursor-red');
+      document.body.classList.add('cursor-on-dark');
     });
     item.addEventListener('mouseleave', () => {
-      if (nameEl) nameEl.innerHTML = ' ';
-      // Fuori dalla foto: torna nero (rimuovi cursor-red)
+      if (nameEl) nameEl.innerHTML = ' ';
+      // Fuori dalla foto: torna nero standard
       document.body.classList.remove('cursor-red');
       document.body.classList.remove('cursor-on-dark');
       cursorLabel.style.mixBlendMode = 'normal';
