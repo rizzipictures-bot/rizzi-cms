@@ -1859,7 +1859,7 @@
       position: fixed;
       top: 48px;
       right: 0;
-      bottom: 48px;
+      bottom: 0;               /* arriva fino in fondo alla pagina */
       width: 408px;
       height: auto;
       background: #d1cfcc;     /* grigio medio 18% */
@@ -1970,11 +1970,11 @@
       right: 408px;            /* attaccato al bordo sinistro del box 1 */
       /* left calcolato via JS per non coprire l'alfabeto */
       top: 48px;               /* stesso top del box 1 */
-      height: auto;            /* adattativo — cresce con la foto */
+      bottom: 0;               /* arriva fino in fondo alla pagina */
       background: #bcb9b6;     /* box 1 #d1cfcc scurito ~10% */
       z-index: 695;
       flex-direction: column;
-      overflow-y: visible;
+      overflow-y: auto;        /* scroll interno se contenuto supera */
       overflow-x: hidden;
       opacity: 0;
       transform: translateX(-16px);
@@ -2076,15 +2076,22 @@
       display: block;
     }
 
-    /* Foto a tutta larghezza — sempre intera, no clip */
+    /* Foto nel box 2 — orizzontale: larghezza 100%, verticale: altezza max disponibile allineata a sx */
     #cip-photo-viewer-img {
-      width: 100%;
       display: block;
       object-fit: contain;
       flex-shrink: 0;
-      height: auto !important;
       background: #bcb9b6;
       margin-top: 0;
+      /* default orizzontale */
+      width: 100%;
+      height: auto;
+    }
+    #cip-photo-viewer-img.is-vertical {
+      width: auto;             /* larghezza proporzionale */
+      height: var(--img-max-h, 60vh); /* altezza calcolata via JS */
+      max-height: var(--img-max-h, 60vh);
+      align-self: flex-start; /* allineata a sinistra */
     }
 
     /* Pulsante chiudi */
@@ -4080,9 +4087,26 @@ if (_cipImages) {
     _cipPhotoViewer.style.left  = leftVal + 'px';
     _cipPhotoViewer.style.width = boxW + 'px';
 
-    // Altezza completamente adattativa: la foto si mostra tutta, il box cresce
-    _cipPhotoViewerImg.style.height = 'auto';
+    // Gestione foto verticali vs orizzontali
+    _cipPhotoViewerImg.classList.remove('is-vertical');
     _cipPhotoViewerImg.style.width  = '100%';
+    _cipPhotoViewerImg.style.height = 'auto';
+
+    const _tmpImg2 = new Image();
+    _tmpImg2.onload = () => {
+      const isVertical = _tmpImg2.naturalHeight > _tmpImg2.naturalWidth;
+      if (isVertical) {
+        // Calcola altezza massima disponibile nel box (viewport - top - header/meta)
+        const boxTop    = _cipPhotoViewer.getBoundingClientRect().top;
+        const headerH   = (_cipPhotoViewer.querySelector('#cip-photo-viewer-header')  || {}).offsetHeight || 80;
+        const titleH    = (_cipPhotoViewer.querySelector('#cip-photo-viewer-title')   || {}).offsetHeight || 40;
+        const metaH     = (_cipPhotoViewer.querySelector('#cip-photo-viewer-meta')    || {}).offsetHeight || 120;
+        const available = Math.round(window.innerHeight - boxTop - headerH - titleH - metaH - 8);
+        _cipPhotoViewer.style.setProperty('--img-max-h', available + 'px');
+        _cipPhotoViewerImg.classList.add('is-vertical');
+      }
+    };
+    _tmpImg2.src = img.src;
     _cipPhotoViewerImg.src = img.src;
 
     _cipPhotoViewer.classList.add('open');
