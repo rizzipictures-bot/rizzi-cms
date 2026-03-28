@@ -1,0 +1,549 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Rizzi — Palette Mockup Cities Boxes</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;900&family=EB+Garamond:ital,wght@0,400;1,400&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background: #f0ede8;
+      font-family: 'Courier New', Courier, monospace;
+      padding: 60px 40px;
+      min-height: 100vh;
+    }
+
+    /* ── INTESTAZIONE ── */
+    .page-title {
+      font-family: 'Inter', sans-serif;
+      font-size: 11px;
+      font-weight: 400;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: #888;
+      margin-bottom: 8px;
+    }
+    .page-heading {
+      font-family: 'Inter', sans-serif;
+      font-size: 28px;
+      font-weight: 900;
+      letter-spacing: 0.01em;
+      color: #111;
+      margin-bottom: 6px;
+    }
+    .page-sub {
+      font-family: 'EB Garamond', serif;
+      font-size: 14px;
+      font-style: italic;
+      color: #666;
+      margin-bottom: 56px;
+    }
+
+    /* ── GRIGLIA 4 COLONNE ── */
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 32px;
+      align-items: start;
+    }
+
+    /* ── ETICHETTA VARIANTE ── */
+    .variant-label {
+      font-family: 'Inter', sans-serif;
+      font-size: 10px;
+      font-weight: 900;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: #aaa;
+      margin-bottom: 10px;
+    }
+    .variant-name {
+      font-family: 'Inter', sans-serif;
+      font-size: 15px;
+      font-weight: 900;
+      color: #111;
+      margin-bottom: 4px;
+    }
+    .variant-desc {
+      font-family: 'EB Garamond', serif;
+      font-size: 12px;
+      font-style: italic;
+      color: #888;
+      margin-bottom: 20px;
+      line-height: 1.5;
+    }
+
+    /* ── BOX GENERICO ── */
+    .box-wrap {
+      display: flex;
+      flex-direction: column;
+      gap: 0;
+      border-radius: 3px;
+      overflow: hidden;
+      box-shadow: 0 2px 18px rgba(0,0,0,0.10), 0 1px 4px rgba(0,0,0,0.06);
+    }
+
+    /* BOX 2 (sinistra) */
+    .box2 {
+      display: flex;
+      flex-direction: column;
+    }
+    .box2-header {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 10px;
+      padding: 10px 14px;
+    }
+    .box2-header-text {
+      font-family: 'EB Garamond', serif;
+      font-size: 10.5px;
+      line-height: 1.55;
+      flex: 1;
+    }
+    .close-dot {
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      flex-shrink: 0;
+      margin-top: 1px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 9px;
+      font-weight: 700;
+      color: #fff;
+      cursor: pointer;
+    }
+    .meta-row {
+      display: grid;
+      grid-template-columns: 72px 1fr;
+      padding: 3px 14px;
+      align-items: baseline;
+    }
+    .meta-label {
+      font-family: 'Courier New', monospace;
+      font-size: 8px;
+      font-weight: 400;
+      letter-spacing: 0.07em;
+      text-transform: uppercase;
+    }
+    .meta-value {
+      font-family: 'Courier New', monospace;
+      font-size: 9px;
+      font-weight: 700;
+    }
+    .box2-img {
+      width: 100%;
+      aspect-ratio: 16/9;
+      object-fit: cover;
+      display: block;
+    }
+    .box2-img-placeholder {
+      width: 100%;
+      aspect-ratio: 16/9;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: 'EB Garamond', serif;
+      font-size: 11px;
+      font-style: italic;
+    }
+
+    /* BOX 1 (destra) */
+    .box1 {
+      display: flex;
+      flex-direction: column;
+    }
+    .box1-header {
+      padding: 14px 14px 8px;
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+    }
+    .box1-title {
+      font-family: 'Inter', sans-serif;
+      font-size: 14px;
+      font-weight: 900;
+      letter-spacing: 0.01em;
+    }
+    .box1-sub {
+      font-family: 'EB Garamond', serif;
+      font-size: 10px;
+      font-style: italic;
+      margin-top: 2px;
+    }
+    .cip-meta-row {
+      display: grid;
+      grid-template-columns: 60px 1fr;
+      padding: 4px 14px;
+      align-items: baseline;
+    }
+    .cip-meta-label {
+      font-family: 'Courier New', monospace;
+      font-size: 8px;
+      letter-spacing: 0.07em;
+      text-transform: uppercase;
+    }
+    .cip-meta-value {
+      font-family: 'Courier New', monospace;
+      font-size: 9px;
+      font-weight: 700;
+    }
+    .thumb-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 3px;
+      padding: 10px 10px 10px;
+    }
+    .thumb {
+      aspect-ratio: 3/2;
+      border-radius: 1px;
+      overflow: hidden;
+    }
+    .thumb-placeholder {
+      width: 100%;
+      height: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: 'EB Garamond', serif;
+      font-size: 9px;
+      font-style: italic;
+    }
+
+    /* ─────────────────────────────────────────────────────
+       PALETTE 1 — CARTA ANTICA
+       Box2: #e8e2d9 (carta invecchiata)  Box1: #d4cdc3 (lino)
+       Accent: #8b6f47 (seppia)  Close: #c0392b (rosso mattone)
+    ───────────────────────────────────────────────────── */
+    .p1 .box2 { background: #e8e2d9; }
+    .p1 .box2-header { border-bottom: 1px solid #c9c2b8; }
+    .p1 .box2-header-text { color: #5a4e42; }
+    .p1 .close-dot { background: #c0392b; }
+    .p1 .meta-row { border-bottom: 1px solid #c9c2b8; }
+    .p1 .meta-row:first-of-type { border-top: 1px solid #c9c2b8; }
+    .p1 .meta-label { color: #8b7e72; }
+    .p1 .meta-value { color: #2c2420; }
+    .p1 .box2-img-placeholder { background: #d6cfc5; color: #8b7e72; }
+    .p1 .box1 { background: #d4cdc3; }
+    .p1 .box1-header { border-bottom: 1px solid #bbb4aa; }
+    .p1 .box1-title { color: #2c2420; }
+    .p1 .box1-sub { color: #8b7e72; }
+    .p1 .cip-meta-row { border-bottom: 1px solid #bbb4aa; }
+    .p1 .cip-meta-label { color: #8b7e72; }
+    .p1 .cip-meta-value { color: #2c2420; }
+    .p1 .thumb-placeholder { background: #c8c1b7; color: #8b7e72; }
+
+    /* ─────────────────────────────────────────────────────
+       PALETTE 2 — NEBBIA NORDICA
+       Box2: #dde4e8 (grigio azzurro ghiaccio)  Box1: #ccd4d9 (ardesia chiara)
+       Accent: #4a7fa5 (blu acciaio)  Close: #7b2fff (viola)
+    ───────────────────────────────────────────────────── */
+    .p2 .box2 { background: #dde4e8; }
+    .p2 .box2-header { border-bottom: 1px solid #c0cdd4; }
+    .p2 .box2-header-text { color: #3d5260; }
+    .p2 .close-dot { background: #7b2fff; }
+    .p2 .meta-row { border-bottom: 1px solid #c0cdd4; }
+    .p2 .meta-row:first-of-type { border-top: 1px solid #c0cdd4; }
+    .p2 .meta-label { color: #6a8596; }
+    .p2 .meta-value { color: #1a2d38; }
+    .p2 .box2-img-placeholder { background: #ccd4d9; color: #6a8596; }
+    .p2 .box1 { background: #ccd4d9; }
+    .p2 .box1-header { border-bottom: 1px solid #b0bec7; }
+    .p2 .box1-title { color: #1a2d38; }
+    .p2 .box1-sub { color: #6a8596; }
+    .p2 .cip-meta-row { border-bottom: 1px solid #b0bec7; }
+    .p2 .cip-meta-label { color: #6a8596; }
+    .p2 .cip-meta-value { color: #1a2d38; }
+    .p2 .thumb-placeholder { background: #bcc8cf; color: #6a8596; }
+
+    /* ─────────────────────────────────────────────────────
+       PALETTE 3 — VERDE SALVIA
+       Box2: #dde5de (salvia chiarissimo)  Box1: #ccd6cd (salvia medio)
+       Accent: #4a7c59 (verde muschio)  Close: #e05c4b (terracotta)
+    ───────────────────────────────────────────────────── */
+    .p3 .box2 { background: #dde5de; }
+    .p3 .box2-header { border-bottom: 1px solid #bfcfc1; }
+    .p3 .box2-header-text { color: #3a5040; }
+    .p3 .close-dot { background: #e05c4b; }
+    .p3 .meta-row { border-bottom: 1px solid #bfcfc1; }
+    .p3 .meta-row:first-of-type { border-top: 1px solid #bfcfc1; }
+    .p3 .meta-label { color: #6a8c72; }
+    .p3 .meta-value { color: #1e3025; }
+    .p3 .box2-img-placeholder { background: #cdd8ce; color: #6a8c72; }
+    .p3 .box1 { background: #ccd6cd; }
+    .p3 .box1-header { border-bottom: 1px solid #b4c4b6; }
+    .p3 .box1-title { color: #1e3025; }
+    .p3 .box1-sub { color: #6a8c72; }
+    .p3 .cip-meta-row { border-bottom: 1px solid #b4c4b6; }
+    .p3 .cip-meta-label { color: #6a8c72; }
+    .p3 .cip-meta-value { color: #1e3025; }
+    .p3 .thumb-placeholder { background: #bdc9be; color: #6a8c72; }
+
+    /* ─────────────────────────────────────────────────────
+       PALETTE 4 — OSSIDIANA
+       Box2: #1e1e1e (nero grafite)  Box1: #141414 (nero profondo)
+       Testo: bianco/grigio argento  Close: #7b2fff (viola)
+       Separatori: #333  — eleganza estrema, archivio notturno
+    ───────────────────────────────────────────────────── */
+    .p4 .box2 { background: #1e1e1e; }
+    .p4 .box2-header { border-bottom: 1px solid #333; }
+    .p4 .box2-header-text { color: #a0a0a0; }
+    .p4 .close-dot { background: #7b2fff; }
+    .p4 .meta-row { border-bottom: 1px solid #2c2c2c; }
+    .p4 .meta-row:first-of-type { border-top: 1px solid #2c2c2c; }
+    .p4 .meta-label { color: #555; }
+    .p4 .meta-value { color: #e8e8e8; }
+    .p4 .box2-img-placeholder { background: #161616; color: #444; }
+    .p4 .box1 { background: #141414; }
+    .p4 .box1-header { border-bottom: 1px solid #2a2a2a; }
+    .p4 .box1-title { color: #f0f0f0; }
+    .p4 .box1-sub { color: #555; }
+    .p4 .cip-meta-row { border-bottom: 1px solid #2a2a2a; }
+    .p4 .cip-meta-label { color: #555; }
+    .p4 .cip-meta-value { color: #e8e8e8; }
+    .p4 .thumb-placeholder { background: #111; color: #444; }
+
+    /* ── SWATCH ── */
+    .swatches {
+      display: flex;
+      gap: 6px;
+      margin-bottom: 16px;
+    }
+    .swatch {
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.15);
+    }
+    .swatch-label {
+      font-family: 'Courier New', monospace;
+      font-size: 8px;
+      color: #aaa;
+      text-align: center;
+      margin-top: 3px;
+    }
+    .swatch-wrap {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    /* ── FOOTER ── */
+    .footer {
+      margin-top: 64px;
+      padding-top: 24px;
+      border-top: 1px solid #d0ccc6;
+      font-family: 'Courier New', monospace;
+      font-size: 9px;
+      color: #aaa;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="page-title">Rizzi CMS — Cities</div>
+  <div class="page-heading">Palette Proposals — Box 1 &amp; Box 2</div>
+  <div class="page-sub">Quattro varianti cromatiche per i pannelli laterali. Scegli il numero preferito.</div>
+
+  <div class="grid">
+
+    <!-- ══════════════════════════════════════════
+         VARIANTE 1 — CARTA ANTICA
+    ══════════════════════════════════════════ -->
+    <div>
+      <div class="variant-label">Variante 01</div>
+      <div class="variant-name">Carta Antica</div>
+      <div class="variant-desc">Toni caldi di carta invecchiata e lino. Evoca l'archivio fotografico fisico, la stampa in camera oscura.</div>
+      <div class="swatches">
+        <div class="swatch-wrap"><div class="swatch" style="background:#e8e2d9"></div><div class="swatch-label">#e8e2d9</div></div>
+        <div class="swatch-wrap"><div class="swatch" style="background:#d4cdc3"></div><div class="swatch-label">#d4cdc3</div></div>
+        <div class="swatch-wrap"><div class="swatch" style="background:#c0392b"></div><div class="swatch-label">#c0392b</div></div>
+        <div class="swatch-wrap"><div class="swatch" style="background:#8b6f47"></div><div class="swatch-label">#8b6f47</div></div>
+      </div>
+      <div class="box-wrap p1">
+        <!-- Box 2 -->
+        <div class="box2">
+          <div class="box2-header">
+            <div class="box2-header-text">Fotografie realizzate durante il reportage urbano. La serie esplora la relazione tra architettura industriale e luce naturale.</div>
+            <div class="close-dot">✕</div>
+          </div>
+          <div class="meta-row"><span class="meta-label">Cities</span><span class="meta-value">Istanbul</span></div>
+          <div class="meta-row"><span class="meta-label">Country</span><span class="meta-value">Turkey</span></div>
+          <div class="meta-row"><span class="meta-label">Media</span><span class="meta-value">35mm B&amp;W</span></div>
+          <div class="meta-row"><span class="meta-label">Prints</span><span class="meta-value">12</span></div>
+          <div class="box2-img-placeholder">— fotografia —</div>
+        </div>
+        <!-- Box 1 -->
+        <div class="box1">
+          <div class="box1-header">
+            <div>
+              <div class="box1-title">Istanbul</div>
+              <div class="box1-sub">Personal</div>
+            </div>
+            <div class="close-dot" style="background:#c0392b">✕</div>
+          </div>
+          <div class="cip-meta-row"><span class="cip-meta-label">Luogo</span><span class="cip-meta-value">Istanbul</span></div>
+          <div class="cip-meta-row"><span class="cip-meta-label">Anno</span><span class="cip-meta-value">2003</span></div>
+          <div class="cip-meta-row"><span class="cip-meta-label">Pub.</span><span class="cip-meta-value">Io Donna</span></div>
+          <div class="thumb-grid">
+            <div class="thumb"><div class="thumb-placeholder">foto 1</div></div>
+            <div class="thumb"><div class="thumb-placeholder">foto 2</div></div>
+            <div class="thumb"><div class="thumb-placeholder">foto 3</div></div>
+            <div class="thumb"><div class="thumb-placeholder">foto 4</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══════════════════════════════════════════
+         VARIANTE 2 — NEBBIA NORDICA
+    ══════════════════════════════════════════ -->
+    <div>
+      <div class="variant-label">Variante 02</div>
+      <div class="variant-name">Nebbia Nordica</div>
+      <div class="variant-desc">Grigio azzurro ghiaccio e ardesia. Freddo, preciso, fotografico. Evoca la nebbia di Tokyo o Berlino.</div>
+      <div class="swatches">
+        <div class="swatch-wrap"><div class="swatch" style="background:#dde4e8"></div><div class="swatch-label">#dde4e8</div></div>
+        <div class="swatch-wrap"><div class="swatch" style="background:#ccd4d9"></div><div class="swatch-label">#ccd4d9</div></div>
+        <div class="swatch-wrap"><div class="swatch" style="background:#7b2fff"></div><div class="swatch-label">#7b2fff</div></div>
+        <div class="swatch-wrap"><div class="swatch" style="background:#4a7fa5"></div><div class="swatch-label">#4a7fa5</div></div>
+      </div>
+      <div class="box-wrap p2">
+        <div class="box2">
+          <div class="box2-header">
+            <div class="box2-header-text">Fotografie realizzate durante il reportage urbano. La serie esplora la relazione tra architettura industriale e luce naturale.</div>
+            <div class="close-dot">✕</div>
+          </div>
+          <div class="meta-row"><span class="meta-label">Cities</span><span class="meta-value">Istanbul</span></div>
+          <div class="meta-row"><span class="meta-label">Country</span><span class="meta-value">Turkey</span></div>
+          <div class="meta-row"><span class="meta-label">Media</span><span class="meta-value">35mm B&amp;W</span></div>
+          <div class="meta-row"><span class="meta-label">Prints</span><span class="meta-value">12</span></div>
+          <div class="box2-img-placeholder">— fotografia —</div>
+        </div>
+        <div class="box1">
+          <div class="box1-header">
+            <div>
+              <div class="box1-title">Istanbul</div>
+              <div class="box1-sub">Personal</div>
+            </div>
+            <div class="close-dot" style="background:#4a7fa5">✕</div>
+          </div>
+          <div class="cip-meta-row"><span class="cip-meta-label">Luogo</span><span class="cip-meta-value">Istanbul</span></div>
+          <div class="cip-meta-row"><span class="cip-meta-label">Anno</span><span class="cip-meta-value">2003</span></div>
+          <div class="cip-meta-row"><span class="cip-meta-label">Pub.</span><span class="cip-meta-value">Io Donna</span></div>
+          <div class="thumb-grid">
+            <div class="thumb"><div class="thumb-placeholder">foto 1</div></div>
+            <div class="thumb"><div class="thumb-placeholder">foto 2</div></div>
+            <div class="thumb"><div class="thumb-placeholder">foto 3</div></div>
+            <div class="thumb"><div class="thumb-placeholder">foto 4</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══════════════════════════════════════════
+         VARIANTE 3 — VERDE SALVIA
+    ══════════════════════════════════════════ -->
+    <div>
+      <div class="variant-label">Variante 03</div>
+      <div class="variant-name">Verde Salvia</div>
+      <div class="variant-desc">Salvia e muschio chiarissimi. Organico, botanico, elegante. Richiama la carta da parati degli archivi europei.</div>
+      <div class="swatches">
+        <div class="swatch-wrap"><div class="swatch" style="background:#dde5de"></div><div class="swatch-label">#dde5de</div></div>
+        <div class="swatch-wrap"><div class="swatch" style="background:#ccd6cd"></div><div class="swatch-label">#ccd6cd</div></div>
+        <div class="swatch-wrap"><div class="swatch" style="background:#e05c4b"></div><div class="swatch-label">#e05c4b</div></div>
+        <div class="swatch-wrap"><div class="swatch" style="background:#4a7c59"></div><div class="swatch-label">#4a7c59</div></div>
+      </div>
+      <div class="box-wrap p3">
+        <div class="box2">
+          <div class="box2-header">
+            <div class="box2-header-text">Fotografie realizzate durante il reportage urbano. La serie esplora la relazione tra architettura industriale e luce naturale.</div>
+            <div class="close-dot">✕</div>
+          </div>
+          <div class="meta-row"><span class="meta-label">Cities</span><span class="meta-value">Istanbul</span></div>
+          <div class="meta-row"><span class="meta-label">Country</span><span class="meta-value">Turkey</span></div>
+          <div class="meta-row"><span class="meta-label">Media</span><span class="meta-value">35mm B&amp;W</span></div>
+          <div class="meta-row"><span class="meta-label">Prints</span><span class="meta-value">12</span></div>
+          <div class="box2-img-placeholder">— fotografia —</div>
+        </div>
+        <div class="box1">
+          <div class="box1-header">
+            <div>
+              <div class="box1-title">Istanbul</div>
+              <div class="box1-sub">Personal</div>
+            </div>
+            <div class="close-dot" style="background:#4a7c59">✕</div>
+          </div>
+          <div class="cip-meta-row"><span class="cip-meta-label">Luogo</span><span class="cip-meta-value">Istanbul</span></div>
+          <div class="cip-meta-row"><span class="cip-meta-label">Anno</span><span class="cip-meta-value">2003</span></div>
+          <div class="cip-meta-row"><span class="cip-meta-label">Pub.</span><span class="cip-meta-value">Io Donna</span></div>
+          <div class="thumb-grid">
+            <div class="thumb"><div class="thumb-placeholder">foto 1</div></div>
+            <div class="thumb"><div class="thumb-placeholder">foto 2</div></div>
+            <div class="thumb"><div class="thumb-placeholder">foto 3</div></div>
+            <div class="thumb"><div class="thumb-placeholder">foto 4</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══════════════════════════════════════════
+         VARIANTE 4 — OSSIDIANA
+    ══════════════════════════════════════════ -->
+    <div>
+      <div class="variant-label">Variante 04</div>
+      <div class="variant-name">Ossidiana</div>
+      <div class="variant-desc">Nero grafite profondo. Archivio notturno, massima eleganza. Le foto emergono come stampe su carta nera.</div>
+      <div class="swatches">
+        <div class="swatch-wrap"><div class="swatch" style="background:#1e1e1e; border: 1px solid #333"></div><div class="swatch-label">#1e1e1e</div></div>
+        <div class="swatch-wrap"><div class="swatch" style="background:#141414; border: 1px solid #333"></div><div class="swatch-label">#141414</div></div>
+        <div class="swatch-wrap"><div class="swatch" style="background:#7b2fff"></div><div class="swatch-label">#7b2fff</div></div>
+        <div class="swatch-wrap"><div class="swatch" style="background:#e8e8e8"></div><div class="swatch-label">#e8e8e8</div></div>
+      </div>
+      <div class="box-wrap p4">
+        <div class="box2">
+          <div class="box2-header">
+            <div class="box2-header-text">Fotografie realizzate durante il reportage urbano. La serie esplora la relazione tra architettura industriale e luce naturale.</div>
+            <div class="close-dot">✕</div>
+          </div>
+          <div class="meta-row"><span class="meta-label">Cities</span><span class="meta-value">Istanbul</span></div>
+          <div class="meta-row"><span class="meta-label">Country</span><span class="meta-value">Turkey</span></div>
+          <div class="meta-row"><span class="meta-label">Media</span><span class="meta-value">35mm B&amp;W</span></div>
+          <div class="meta-row"><span class="meta-label">Prints</span><span class="meta-value">12</span></div>
+          <div class="box2-img-placeholder">— fotografia —</div>
+        </div>
+        <div class="box1">
+          <div class="box1-header">
+            <div>
+              <div class="box1-title">Istanbul</div>
+              <div class="box1-sub">Personal</div>
+            </div>
+            <div class="close-dot" style="background:#7b2fff">✕</div>
+          </div>
+          <div class="cip-meta-row"><span class="cip-meta-label">Luogo</span><span class="cip-meta-value">Istanbul</span></div>
+          <div class="cip-meta-row"><span class="cip-meta-label">Anno</span><span class="cip-meta-value">2003</span></div>
+          <div class="cip-meta-row"><span class="cip-meta-label">Pub.</span><span class="cip-meta-value">Io Donna</span></div>
+          <div class="thumb-grid">
+            <div class="thumb"><div class="thumb-placeholder">foto 1</div></div>
+            <div class="thumb"><div class="thumb-placeholder">foto 2</div></div>
+            <div class="thumb"><div class="thumb-placeholder">foto 3</div></div>
+            <div class="thumb"><div class="thumb-placeholder">foto 4</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /grid -->
+
+  <div class="footer">Rizzi CMS — Palette Mockup v1 — Mar 2026 — Dimmi il numero preferito e applico subito</div>
+
+</body>
+</html>

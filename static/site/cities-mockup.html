@@ -1,0 +1,871 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Rizzi — Cities Mockup Varianti 2·3·4</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;900&family=EB+Garamond:ital,wght@0,400;1,400&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --mono: 'Courier New', Courier, monospace;
+      --sans: 'Inter', sans-serif;
+      --serif: 'EB Garamond', Georgia, serif;
+    }
+
+    body {
+      background: #e8e5e0;
+      font-family: var(--mono);
+      padding: 48px 0 80px;
+    }
+
+    /* ── INTESTAZIONE PAGINA ── */
+    .page-header {
+      padding: 0 48px 36px;
+      border-bottom: 1px solid #ccc;
+      margin-bottom: 56px;
+    }
+    .page-header-label {
+      font-family: var(--mono);
+      font-size: 9px;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: #999;
+      margin-bottom: 6px;
+    }
+    .page-header-title {
+      font-family: var(--sans);
+      font-size: 22px;
+      font-weight: 900;
+      color: #111;
+      margin-bottom: 4px;
+    }
+    .page-header-sub {
+      font-family: var(--serif);
+      font-size: 13px;
+      font-style: italic;
+      color: #777;
+    }
+
+    /* ── VARIANTE WRAPPER ── */
+    .variant-section {
+      margin-bottom: 80px;
+      padding: 0 48px;
+    }
+    .variant-tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 16px;
+    }
+    .variant-num {
+      font-family: var(--sans);
+      font-size: 10px;
+      font-weight: 900;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: #bbb;
+    }
+    .variant-title {
+      font-family: var(--sans);
+      font-size: 16px;
+      font-weight: 900;
+      color: #111;
+    }
+    .variant-palette {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 20px;
+      align-items: center;
+    }
+    .swatch {
+      width: 22px;
+      height: 22px;
+      border-radius: 50%;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.18);
+    }
+    .swatch-hex {
+      font-family: var(--mono);
+      font-size: 8px;
+      color: #aaa;
+    }
+    .swatch-group {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 2px;
+    }
+
+    /* ── SCHERMO CITIES (simulazione) ── */
+    .cities-screen {
+      width: 100%;
+      height: 680px;
+      background: #fff;
+      border-radius: 6px;
+      overflow: hidden;
+      box-shadow: 0 4px 40px rgba(0,0,0,0.13), 0 1px 6px rgba(0,0,0,0.07);
+      display: flex;
+      flex-direction: column;
+      position: relative;
+    }
+
+    /* Barra nav */
+    .nav-bar {
+      height: 38px;
+      background: #fff;
+      border-bottom: 1px solid #e8e8e8;
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      padding: 0 24px;
+      gap: 20px;
+      flex-shrink: 0;
+    }
+    .nav-item {
+      font-family: var(--mono);
+      font-size: 9px;
+      color: #999;
+      letter-spacing: 0.04em;
+    }
+    .nav-item.active {
+      color: #111;
+      font-weight: 700;
+    }
+
+    /* Contenuto pagina */
+    .page-body {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      padding: 0 40px;
+      position: relative;
+    }
+
+    /* Titolo Cities */
+    .cities-title {
+      font-family: var(--sans);
+      font-size: 28px;
+      font-weight: 900;
+      letter-spacing: 0;
+      color: #000;
+      padding: 22px 0 6px;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      flex-shrink: 0;
+    }
+    .title-sep {
+      display: inline-block;
+      width: 1px;
+      height: 1em;
+      background: #000;
+    }
+
+    /* Toggle lista/thumbs */
+    .view-toggle {
+      display: flex;
+      gap: 0;
+      margin-bottom: 8px;
+      flex-shrink: 0;
+    }
+    .toggle-btn {
+      font-family: var(--mono);
+      font-size: 9px;
+      padding: 3px 10px;
+      border: 1px solid #ccc;
+      background: transparent;
+      cursor: pointer;
+      color: #888;
+    }
+    .toggle-btn.active {
+      background: #111;
+      color: #fff;
+      border-color: #111;
+    }
+
+    /* Header colonne */
+    .col-header {
+      display: grid;
+      grid-template-columns: 80px 1fr;
+      padding: 4px 0;
+      border-bottom: 1px solid #ddd;
+      margin-bottom: 0;
+      flex-shrink: 0;
+    }
+    .col-header span {
+      font-family: var(--mono);
+      font-size: 8px;
+      color: #aaa;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+    }
+
+    /* Lista città */
+    .cities-list {
+      flex: 1;
+      overflow: hidden;
+    }
+    .city-row {
+      display: grid;
+      grid-template-columns: 80px 1fr;
+      padding: 5px 0;
+      border-bottom: 1px solid #ebebeb;
+    }
+    .city-code {
+      font-family: var(--mono);
+      font-size: 10px;
+      color: #bbb;
+    }
+    .city-name {
+      font-family: var(--mono);
+      font-size: 10px;
+      color: #222;
+    }
+    .city-row.highlighted .city-name {
+      font-weight: 700;
+    }
+
+    /* ── BOX 2 (sinistra, foto) ── */
+    .box2 {
+      position: absolute;
+      top: 0;
+      bottom: 35px;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+    .box2-header {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 10px;
+      padding: 10px 16px;
+      flex-shrink: 0;
+    }
+    .box2-header-text {
+      font-family: var(--serif);
+      font-size: 10px;
+      line-height: 1.55;
+      flex: 1;
+    }
+    .close-btn {
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 8px;
+      font-weight: 900;
+      color: #fff;
+      cursor: pointer;
+      margin-top: 1px;
+    }
+    .meta-table {
+      flex-shrink: 0;
+    }
+    .meta-row {
+      display: grid;
+      grid-template-columns: 78px 1fr;
+      padding: 3px 16px;
+      align-items: baseline;
+    }
+    .meta-label {
+      font-family: var(--mono);
+      font-size: 7.5px;
+      letter-spacing: 0.07em;
+      text-transform: uppercase;
+    }
+    .meta-value {
+      font-family: var(--mono);
+      font-size: 8.5px;
+      font-weight: 700;
+    }
+    .photo-area {
+      flex: 1;
+      overflow: hidden;
+      position: relative;
+    }
+    .photo-placeholder {
+      width: 100%;
+      height: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: var(--serif);
+      font-size: 11px;
+      font-style: italic;
+    }
+
+    /* ── BOX 1 (destra, thumbs) ── */
+    .box1 {
+      position: absolute;
+      top: 0;
+      right: 0;
+      bottom: 35px;
+      width: 300px;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+    .box1-header {
+      padding: 12px 14px 8px;
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      flex-shrink: 0;
+    }
+    .box1-title {
+      font-family: var(--sans);
+      font-size: 13px;
+      font-weight: 900;
+      letter-spacing: 0;
+    }
+    .box1-sub {
+      font-family: var(--serif);
+      font-size: 10px;
+      font-style: italic;
+      margin-top: 2px;
+    }
+    .cip-meta {
+      flex-shrink: 0;
+    }
+    .cip-row {
+      display: grid;
+      grid-template-columns: 54px 1fr;
+      padding: 3px 14px;
+      align-items: baseline;
+    }
+    .cip-label {
+      font-family: var(--mono);
+      font-size: 7.5px;
+      letter-spacing: 0.07em;
+      text-transform: uppercase;
+    }
+    .cip-value {
+      font-family: var(--mono);
+      font-size: 8.5px;
+      font-weight: 700;
+    }
+    .thumb-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 3px;
+      padding: 8px;
+      flex: 1;
+      overflow: hidden;
+    }
+    .thumb {
+      border-radius: 1px;
+      overflow: hidden;
+      aspect-ratio: 3/2;
+    }
+    .thumb-ph {
+      width: 100%;
+      height: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: var(--serif);
+      font-size: 9px;
+      font-style: italic;
+    }
+
+    /* ═══════════════════════════════════════════════
+       PALETTE 2 — NEBBIA NORDICA (pastelli alleggeriti)
+    ═══════════════════════════════════════════════ */
+    .p2 .box2 { background: #edf1f4; }
+    .p2 .box2-header { border-bottom: 1px solid #d4dde3; }
+    .p2 .box2-header-text { color: #5a7080; }
+    .p2 .close-btn.b2 { background: #7b2fff; }
+    .p2 .meta-row { border-bottom: 1px solid #d4dde3; }
+    .p2 .meta-row:first-child { border-top: 1px solid #d4dde3; }
+    .p2 .meta-label { color: #8aa4b4; }
+    .p2 .meta-value { color: #2a3d48; }
+    .p2 .photo-placeholder { background: #dde5ea; color: #8aa4b4; }
+    .p2 .box1 { background: #e2e9ed; border-left: 1px solid #ccd6dc; }
+    .p2 .box1-header { border-bottom: 1px solid #ccd6dc; }
+    .p2 .box1-title { color: #2a3d48; }
+    .p2 .box1-sub { color: #8aa4b4; }
+    .p2 .cip-row { border-bottom: 1px solid #ccd6dc; }
+    .p2 .cip-row:first-child { border-top: 1px solid #ccd6dc; }
+    .p2 .cip-label { color: #8aa4b4; }
+    .p2 .cip-value { color: #2a3d48; }
+    .p2 .close-btn.b1 { background: #5b9abf; }
+    .p2 .thumb-ph { background: #d0dce3; color: #8aa4b4; }
+
+    /* ═══════════════════════════════════════════════
+       PALETTE 3 — VERDE SALVIA
+    ═══════════════════════════════════════════════ */
+    .p3 .box2 { background: #dde5de; }
+    .p3 .box2-header { border-bottom: 1px solid #bfcfc1; }
+    .p3 .box2-header-text { color: #3a5040; }
+    .p3 .close-btn.b2 { background: #e05c4b; }
+    .p3 .meta-row { border-bottom: 1px solid #bfcfc1; }
+    .p3 .meta-row:first-child { border-top: 1px solid #bfcfc1; }
+    .p3 .meta-label { color: #6a8c72; }
+    .p3 .meta-value { color: #1e3025; }
+    .p3 .photo-placeholder { background: #cdd8ce; color: #6a8c72; }
+    .p3 .box1 { background: #ccd6cd; border-left: 1px solid #b4c4b6; }
+    .p3 .box1-header { border-bottom: 1px solid #b4c4b6; }
+    .p3 .box1-title { color: #1e3025; }
+    .p3 .box1-sub { color: #6a8c72; }
+    .p3 .cip-row { border-bottom: 1px solid #b4c4b6; }
+    .p3 .cip-row:first-child { border-top: 1px solid #b4c4b6; }
+    .p3 .cip-label { color: #6a8c72; }
+    .p3 .cip-value { color: #1e3025; }
+    .p3 .close-btn.b1 { background: #4a7c59; }
+    .p3 .thumb-ph { background: #bdc9be; color: #6a8c72; }
+
+    /* ═══════════════════════════════════════════════
+       PALETTE 4 — OSSIDIANA (pagina bianca + box neri)
+    ═══════════════════════════════════════════════ */
+    .p4 .box2 { background: #1a1a1a; }
+    .p4 .box2-header { border-bottom: 1px solid #2e2e2e; }
+    .p4 .box2-header-text { color: #888; }
+    .p4 .close-btn.b2 { background: #7b2fff; }
+    .p4 .meta-row { border-bottom: 1px solid #2a2a2a; }
+    .p4 .meta-row:first-child { border-top: 1px solid #2a2a2a; }
+    .p4 .meta-label { color: #505050; }
+    .p4 .meta-value { color: #e0e0e0; }
+    .p4 .photo-placeholder { background: #111; color: #404040; }
+    .p4 .box1 { background: #111111; border-left: 1px solid #2a2a2a; }
+    .p4 .box1-header { border-bottom: 1px solid #252525; }
+    .p4 .box1-title { color: #f0f0f0; }
+    .p4 .box1-sub { color: #505050; }
+    .p4 .cip-row { border-bottom: 1px solid #252525; }
+    .p4 .cip-row:first-child { border-top: 1px solid #252525; }
+    .p4 .cip-label { color: #505050; }
+    .p4 .cip-value { color: #e0e0e0; }
+    .p4 .close-btn.b1 { background: #7b2fff; }
+    .p4 .thumb-ph { background: #0a0a0a; color: #383838; }
+    /* pagina e nav rimangono bianchi */
+    .p4 .nav-bar { background: #fff; border-bottom-color: #e8e8e8; }
+    .p4 .nav-item { color: #999; }
+    .p4 .nav-item.active { color: #111; }
+    .p4 .cities-title { color: #000; }
+    .p4 .title-sep { background: #000; }
+    .p4 .toggle-btn { border-color: #ccc; color: #888; }
+    .p4 .toggle-btn.active { background: #111; color: #fff; border-color: #111; }
+    .p4 .col-header span { color: #aaa; }
+    .p4 .col-header { border-bottom-color: #ddd; }
+    .p4 .city-code { color: #bbb; }
+    .p4 .city-name { color: #222; }
+    .p4 .city-row { border-bottom-color: #ebebeb; }
+    .p4 .city-row.highlighted .city-name { color: #000; font-weight: 700; }
+    .p4 .cities-screen { background: #fff; }
+    .p4 .page-body { background: #fff; }
+
+    /* Anno viola in tutte le varianti */
+    .year-accent { color: #7b2fff; font-weight: 700; }
+
+    /* ═══════════════════════════════════════════════
+       PALETTE 5 — BIANCO + NERO (box 2 carta, box 1 nero)
+    ═══════════════════════════════════════════════ */
+    /* pagina e lista: bianco puro */
+    .p5 .cities-screen { background: #fff; }
+    .p5 .page-body { background: #fff; }
+    .p5 .nav-bar { background: #fff; border-bottom-color: #e8e8e8; }
+    .p5 .nav-item { color: #999; }
+    .p5 .nav-item.active { color: #111; }
+    .p5 .cities-title { color: #000; }
+    .p5 .title-sep { background: #000; }
+    .p5 .toggle-btn { border-color: #ccc; color: #888; }
+    .p5 .toggle-btn.active { background: #111; color: #fff; border-color: #111; }
+    .p5 .col-header span { color: #aaa; }
+    .p5 .col-header { border-bottom-color: #ddd; }
+    .p5 .city-code { color: #bbb; }
+    .p5 .city-name { color: #222; }
+    .p5 .city-row { border-bottom-color: #ebebeb; }
+    .p5 .city-row.highlighted .city-name { color: #000; font-weight: 700; }
+    /* box 2: bianco carta — appena diverso dalla pagina */
+    .p5 .box2 { background: #f3f2f0; }
+    .p5 .box2-header { border-bottom: 1px solid #e0dedd; }
+    .p5 .box2-header-text { color: #555; }
+    .p5 .close-btn.b2 { background: #7b2fff; }
+    .p5 .meta-row { border-bottom: 1px solid #e0dedd; }
+    .p5 .meta-row:first-child { border-top: 1px solid #e0dedd; }
+    .p5 .meta-label { color: #999; }
+    .p5 .meta-value { color: #111; }
+    .p5 .photo-placeholder { background: #e8e6e3; color: #bbb; }
+    /* box 1: nero pieno */
+    .p5 .box1 { background: #111; border-left: 1px solid #222; }
+    .p5 .box1-header { border-bottom: 1px solid #222; }
+    .p5 .box1-title { color: #f0f0f0; }
+    .p5 .box1-sub { color: #555; }
+    .p5 .cip-row { border-bottom: 1px solid #1e1e1e; }
+    .p5 .cip-row:first-child { border-top: 1px solid #1e1e1e; }
+    .p5 .cip-label { color: #4a4a4a; }
+    .p5 .cip-value { color: #e0e0e0; }
+    .p5 .close-btn.b1 { background: #7b2fff; }
+    .p5 .thumb-ph { background: #0a0a0a; color: #2e2e2e; }
+
+  </style>
+</head>
+<body>
+
+  <div class="page-header">
+    <div class="page-header-label">Rizzi CMS — Cities — Mockup palette</div>
+    <div class="page-header-title">Varianti 02 · 03 · 04 — Box espansi</div>
+    <div class="page-header-sub">Simulazione fedele della pagina Cities con lista, box 2 (foto) e box 1 (thumbs)</div>
+  </div>
+
+  <!-- ══════════════════════════════════════════════════
+       VARIANTE 2 — NEBBIA NORDICA
+  ══════════════════════════════════════════════════ -->
+  <div class="variant-section">
+    <div class="variant-tag">
+      <span class="variant-num">Variante 02</span>
+      <span class="variant-title">Nebbia Nordica</span>
+    </div>
+    <div class="variant-palette">
+      <div class="swatch-group"><div class="swatch" style="background:#dde4e8"></div><div class="swatch-hex">#dde4e8</div></div>
+      <div class="swatch-group"><div class="swatch" style="background:#ccd4d9"></div><div class="swatch-hex">#ccd4d9</div></div>
+      <div class="swatch-group"><div class="swatch" style="background:#7b2fff"></div><div class="swatch-hex">#7b2fff</div></div>
+      <div class="swatch-group"><div class="swatch" style="background:#4a7fa5"></div><div class="swatch-hex">#4a7fa5</div></div>
+    </div>
+
+    <div class="cities-screen p2">
+      <div class="nav-bar">
+        <span class="nav-item">Index</span>
+        <span class="nav-item">Overview</span>
+        <span class="nav-item">Archive</span>
+        <span class="nav-item active">Cities</span>
+        <span class="nav-item">Info</span>
+      </div>
+      <div class="page-body">
+        <div class="cities-title">Cities <span class="title-sep"></span> Index by Location</div>
+        <div class="view-toggle">
+          <button class="toggle-btn active">lista</button>
+          <button class="toggle-btn">thumbs</button>
+        </div>
+        <div class="col-header"><span>Code</span><span>City</span></div>
+        <div class="cities-list">
+          <div class="city-row"><span class="city-code">A01</span><span class="city-name">Amsterdam</span></div>
+          <div class="city-row"><span class="city-code">B01</span><span class="city-name">Berlino</span></div>
+          <div class="city-row"><span class="city-code">B02</span><span class="city-name">Buenos Aires</span></div>
+          <div class="city-row highlighted"><span class="city-code">I01</span><span class="city-name">Istanbul</span></div>
+          <div class="city-row"><span class="city-code">L01</span><span class="city-name">Lagos</span></div>
+          <div class="city-row"><span class="city-code">L02</span><span class="city-name">Lisbona</span></div>
+          <div class="city-row"><span class="city-code">L03</span><span class="city-name">Londra</span></div>
+          <div class="city-row"><span class="city-code">L04</span><span class="city-name">Los Angeles</span></div>
+          <div class="city-row"><span class="city-code">M01</span><span class="city-name">Mumbai</span></div>
+          <div class="city-row"><span class="city-code">N01</span><span class="city-name">Nairobi</span></div>
+          <div class="city-row"><span class="city-code">T01</span><span class="city-name">Tokyo</span></div>
+        </div>
+
+        <!-- BOX 2 -->
+        <div class="box2" style="left: 340px; right: 300px;">
+          <div class="box2-header">
+            <div class="box2-header-text">Fotografie realizzate durante il reportage urbano. La serie esplora la relazione tra architettura industriale e luce naturale, documentando spazi in transizione tra abbandono e memoria collettiva.</div>
+            <div class="close-btn b2">✕</div>
+          </div>
+          <div class="meta-table">
+            <div class="meta-row"><span class="meta-label">Cities</span><span class="meta-value">Istanbul</span></div>
+            <div class="meta-row"><span class="meta-label">Country</span><span class="meta-value">Turkey</span></div>
+            <div class="meta-row"><span class="meta-label">Media</span><span class="meta-value">35mm B&amp;W</span></div>
+            <div class="meta-row"><span class="meta-label">N° Pictures</span><span class="meta-value">48</span></div>
+            <div class="meta-row"><span class="meta-label">Prints</span><span class="meta-value">12</span></div>
+          </div>
+          <div class="photo-area">
+            <div class="photo-placeholder">— fotografia Istanbul —</div>
+          </div>
+        </div>
+
+        <!-- BOX 1 -->
+        <div class="box1">
+          <div class="box1-header">
+            <div>
+              <div class="box1-title">Istanbul</div>
+              <div class="box1-sub">Personal</div>
+            </div>
+            <div class="close-btn b1">✕</div>
+          </div>
+          <div class="cip-meta">
+            <div class="cip-row"><span class="cip-label">Luogo</span><span class="cip-value">Istanbul</span></div>
+            <div class="cip-row"><span class="cip-label">Anno</span><span class="cip-value year-accent">2003</span></div>
+            <div class="cip-row"><span class="cip-label">Pub.</span><span class="cip-value">Io Donna</span></div>
+          </div>
+          <div class="thumb-grid">
+            <div class="thumb"><div class="thumb-ph">foto 1</div></div>
+            <div class="thumb"><div class="thumb-ph">foto 2</div></div>
+            <div class="thumb"><div class="thumb-ph">foto 3</div></div>
+            <div class="thumb"><div class="thumb-ph">foto 4</div></div>
+            <div class="thumb"><div class="thumb-ph">foto 5</div></div>
+            <div class="thumb"><div class="thumb-ph">foto 6</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════════════
+       VARIANTE 3 — VERDE SALVIA
+  ══════════════════════════════════════════════════ -->
+  <div class="variant-section">
+    <div class="variant-tag">
+      <span class="variant-num">Variante 03</span>
+      <span class="variant-title">Verde Salvia</span>
+    </div>
+    <div class="variant-palette">
+      <div class="swatch-group"><div class="swatch" style="background:#dde5de"></div><div class="swatch-hex">#dde5de</div></div>
+      <div class="swatch-group"><div class="swatch" style="background:#ccd6cd"></div><div class="swatch-hex">#ccd6cd</div></div>
+      <div class="swatch-group"><div class="swatch" style="background:#e05c4b"></div><div class="swatch-hex">#e05c4b</div></div>
+      <div class="swatch-group"><div class="swatch" style="background:#4a7c59"></div><div class="swatch-hex">#4a7c59</div></div>
+    </div>
+
+    <div class="cities-screen p3">
+      <div class="nav-bar">
+        <span class="nav-item">Index</span>
+        <span class="nav-item">Overview</span>
+        <span class="nav-item">Archive</span>
+        <span class="nav-item active">Cities</span>
+        <span class="nav-item">Info</span>
+      </div>
+      <div class="page-body">
+        <div class="cities-title">Cities <span class="title-sep"></span> Index by Location</div>
+        <div class="view-toggle">
+          <button class="toggle-btn active">lista</button>
+          <button class="toggle-btn">thumbs</button>
+        </div>
+        <div class="col-header"><span>Code</span><span>City</span></div>
+        <div class="cities-list">
+          <div class="city-row"><span class="city-code">A01</span><span class="city-name">Amsterdam</span></div>
+          <div class="city-row"><span class="city-code">B01</span><span class="city-name">Berlino</span></div>
+          <div class="city-row"><span class="city-code">B02</span><span class="city-name">Buenos Aires</span></div>
+          <div class="city-row highlighted"><span class="city-code">I01</span><span class="city-name">Istanbul</span></div>
+          <div class="city-row"><span class="city-code">L01</span><span class="city-name">Lagos</span></div>
+          <div class="city-row"><span class="city-code">L02</span><span class="city-name">Lisbona</span></div>
+          <div class="city-row"><span class="city-code">L03</span><span class="city-name">Londra</span></div>
+          <div class="city-row"><span class="city-code">L04</span><span class="city-name">Los Angeles</span></div>
+          <div class="city-row"><span class="city-code">M01</span><span class="city-name">Mumbai</span></div>
+          <div class="city-row"><span class="city-code">N01</span><span class="city-name">Nairobi</span></div>
+          <div class="city-row"><span class="city-code">T01</span><span class="city-name">Tokyo</span></div>
+        </div>
+        <div class="box2" style="left: 340px; right: 300px;">
+          <div class="box2-header">
+            <div class="box2-header-text">Fotografie realizzate durante il reportage urbano. La serie esplora la relazione tra architettura industriale e luce naturale, documentando spazi in transizione tra abbandono e memoria collettiva.</div>
+            <div class="close-btn b2">✕</div>
+          </div>
+          <div class="meta-table">
+            <div class="meta-row"><span class="meta-label">Cities</span><span class="meta-value">Istanbul</span></div>
+            <div class="meta-row"><span class="meta-label">Country</span><span class="meta-value">Turkey</span></div>
+            <div class="meta-row"><span class="meta-label">Media</span><span class="meta-value">35mm B&amp;W</span></div>
+            <div class="meta-row"><span class="meta-label">N° Pictures</span><span class="meta-value">48</span></div>
+            <div class="meta-row"><span class="meta-label">Prints</span><span class="meta-value">12</span></div>
+          </div>
+          <div class="photo-area">
+            <div class="photo-placeholder">— fotografia Istanbul —</div>
+          </div>
+        </div>
+        <div class="box1">
+          <div class="box1-header">
+            <div>
+              <div class="box1-title">Istanbul</div>
+              <div class="box1-sub">Personal</div>
+            </div>
+            <div class="close-btn b1">✕</div>
+          </div>
+          <div class="cip-meta">
+            <div class="cip-row"><span class="cip-label">Luogo</span><span class="cip-value">Istanbul</span></div>
+            <div class="cip-row"><span class="cip-label">Anno</span><span class="cip-value year-accent">2003</span></div>
+            <div class="cip-row"><span class="cip-label">Pub.</span><span class="cip-value">Io Donna</span></div>
+          </div>
+          <div class="thumb-grid">
+            <div class="thumb"><div class="thumb-ph">foto 1</div></div>
+            <div class="thumb"><div class="thumb-ph">foto 2</div></div>
+            <div class="thumb"><div class="thumb-ph">foto 3</div></div>
+            <div class="thumb"><div class="thumb-ph">foto 4</div></div>
+            <div class="thumb"><div class="thumb-ph">foto 5</div></div>
+            <div class="thumb"><div class="thumb-ph">foto 6</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════════════
+       VARIANTE 4 — OSSIDIANA
+  ══════════════════════════════════════════════════ -->
+  <div class="variant-section">
+    <div class="variant-tag">
+      <span class="variant-num">Variante 04</span>
+      <span class="variant-title">Ossidiana</span>
+    </div>
+    <div class="variant-palette">
+      <div class="swatch-group"><div class="swatch" style="background:#1e1e1e; border:1px solid #444"></div><div class="swatch-hex">#1e1e1e</div></div>
+      <div class="swatch-group"><div class="swatch" style="background:#141414; border:1px solid #444"></div><div class="swatch-hex">#141414</div></div>
+      <div class="swatch-group"><div class="swatch" style="background:#7b2fff"></div><div class="swatch-hex">#7b2fff</div></div>
+      <div class="swatch-group"><div class="swatch" style="background:#e8e8e8"></div><div class="swatch-hex">#e8e8e8</div></div>
+    </div>
+
+    <div class="cities-screen p4">
+      <div class="nav-bar p4">
+        <span class="nav-item">Index</span>
+        <span class="nav-item">Overview</span>
+        <span class="nav-item">Archive</span>
+        <span class="nav-item active">Cities</span>
+        <span class="nav-item">Info</span>
+      </div>
+      <div class="page-body p4">
+        <div class="cities-title">Cities <span class="title-sep"></span> Index by Location</div>
+        <div class="view-toggle">
+          <button class="toggle-btn active">lista</button>
+          <button class="toggle-btn">thumbs</button>
+        </div>
+        <div class="col-header"><span>Code</span><span>City</span></div>
+        <div class="cities-list">
+          <div class="city-row"><span class="city-code">A01</span><span class="city-name">Amsterdam</span></div>
+          <div class="city-row"><span class="city-code">B01</span><span class="city-name">Berlino</span></div>
+          <div class="city-row"><span class="city-code">B02</span><span class="city-name">Buenos Aires</span></div>
+          <div class="city-row highlighted"><span class="city-code">I01</span><span class="city-name">Istanbul</span></div>
+          <div class="city-row"><span class="city-code">L01</span><span class="city-name">Lagos</span></div>
+          <div class="city-row"><span class="city-code">L02</span><span class="city-name">Lisbona</span></div>
+          <div class="city-row"><span class="city-code">L03</span><span class="city-name">Londra</span></div>
+          <div class="city-row"><span class="city-code">L04</span><span class="city-name">Los Angeles</span></div>
+          <div class="city-row"><span class="city-code">M01</span><span class="city-name">Mumbai</span></div>
+          <div class="city-row"><span class="city-code">N01</span><span class="city-name">Nairobi</span></div>
+          <div class="city-row"><span class="city-code">T01</span><span class="city-name">Tokyo</span></div>
+        </div>
+        <div class="box2" style="left: 340px; right: 300px;">
+          <div class="box2-header">
+            <div class="box2-header-text">Fotografie realizzate durante il reportage urbano. La serie esplora la relazione tra architettura industriale e luce naturale, documentando spazi in transizione tra abbandono e memoria collettiva.</div>
+            <div class="close-btn b2">✕</div>
+          </div>
+          <div class="meta-table">
+            <div class="meta-row"><span class="meta-label">Cities</span><span class="meta-value">Istanbul</span></div>
+            <div class="meta-row"><span class="meta-label">Country</span><span class="meta-value">Turkey</span></div>
+            <div class="meta-row"><span class="meta-label">Media</span><span class="meta-value">35mm B&amp;W</span></div>
+            <div class="meta-row"><span class="meta-label">N° Pictures</span><span class="meta-value">48</span></div>
+            <div class="meta-row"><span class="meta-label">Prints</span><span class="meta-value">12</span></div>
+          </div>
+          <div class="photo-area">
+            <div class="photo-placeholder">— fotografia Istanbul —</div>
+          </div>
+        </div>
+        <div class="box1">
+          <div class="box1-header">
+            <div>
+              <div class="box1-title">Istanbul</div>
+              <div class="box1-sub">Personal</div>
+            </div>
+            <div class="close-btn b1">✕</div>
+          </div>
+          <div class="cip-meta">
+            <div class="cip-row"><span class="cip-label">Luogo</span><span class="cip-value">Istanbul</span></div>
+            <div class="cip-row"><span class="cip-label">Anno</span><span class="cip-value year-accent">2003</span></div>
+            <div class="cip-row"><span class="cip-label">Pub.</span><span class="cip-value">Io Donna</span></div>
+          </div>
+          <div class="thumb-grid">
+            <div class="thumb"><div class="thumb-ph">foto 1</div></div>
+            <div class="thumb"><div class="thumb-ph">foto 2</div></div>
+            <div class="thumb"><div class="thumb-ph">foto 3</div></div>
+            <div class="thumb"><div class="thumb-ph">foto 4</div></div>
+            <div class="thumb"><div class="thumb-ph">foto 5</div></div>
+            <div class="thumb"><div class="thumb-ph">foto 6</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════════════
+       VARIANTE 5 — BIANCO + NERO
+  ══════════════════════════════════════════════════ -->
+  <div class="variant-section">
+    <div class="variant-tag">
+      <span class="variant-num">Variante 05</span>
+      <span class="variant-title">Bianco + Nero</span>
+    </div>
+    <div class="variant-palette">
+      <div class="swatch-group"><div class="swatch" style="background:#fff; border:1px solid #ddd"></div><div class="swatch-hex">#ffffff</div></div>
+      <div class="swatch-group"><div class="swatch" style="background:#f3f2f0"></div><div class="swatch-hex">#f3f2f0</div></div>
+      <div class="swatch-group"><div class="swatch" style="background:#111111; border:1px solid #444"></div><div class="swatch-hex">#111111</div></div>
+      <div class="swatch-group"><div class="swatch" style="background:#7b2fff"></div><div class="swatch-hex">#7b2fff</div></div>
+    </div>
+
+    <div class="cities-screen p5">
+      <div class="nav-bar">
+        <span class="nav-item">Index</span>
+        <span class="nav-item">Overview</span>
+        <span class="nav-item">Archive</span>
+        <span class="nav-item active">Cities</span>
+        <span class="nav-item">Info</span>
+      </div>
+      <div class="page-body">
+        <div class="cities-title">Cities <span class="title-sep"></span> Index by Location</div>
+        <div class="view-toggle">
+          <button class="toggle-btn active">lista</button>
+          <button class="toggle-btn">thumbs</button>
+        </div>
+        <div class="col-header"><span>Code</span><span>City</span></div>
+        <div class="cities-list">
+          <div class="city-row"><span class="city-code">A01</span><span class="city-name">Amsterdam</span></div>
+          <div class="city-row"><span class="city-code">B01</span><span class="city-name">Berlino</span></div>
+          <div class="city-row"><span class="city-code">B02</span><span class="city-name">Buenos Aires</span></div>
+          <div class="city-row highlighted"><span class="city-code">I01</span><span class="city-name">Istanbul</span></div>
+          <div class="city-row"><span class="city-code">L01</span><span class="city-name">Lagos</span></div>
+          <div class="city-row"><span class="city-code">L02</span><span class="city-name">Lisbona</span></div>
+          <div class="city-row"><span class="city-code">L03</span><span class="city-name">Londra</span></div>
+          <div class="city-row"><span class="city-code">L04</span><span class="city-name">Los Angeles</span></div>
+          <div class="city-row"><span class="city-code">M01</span><span class="city-name">Mumbai</span></div>
+          <div class="city-row"><span class="city-code">N01</span><span class="city-name">Nairobi</span></div>
+          <div class="city-row"><span class="city-code">T01</span><span class="city-name">Tokyo</span></div>
+        </div>
+
+        <!-- BOX 2 — bianco carta -->
+        <div class="box2" style="left: 340px; right: 300px;">
+          <div class="box2-header">
+            <div class="box2-header-text">Fotografie realizzate durante il reportage urbano. La serie esplora la relazione tra architettura industriale e luce naturale, documentando spazi in transizione tra abbandono e memoria collettiva.</div>
+            <div class="close-btn b2">✕</div>
+          </div>
+          <div class="meta-table">
+            <div class="meta-row"><span class="meta-label">Cities</span><span class="meta-value">Istanbul</span></div>
+            <div class="meta-row"><span class="meta-label">Country</span><span class="meta-value">Turkey</span></div>
+            <div class="meta-row"><span class="meta-label">Media</span><span class="meta-value">35mm B&amp;W</span></div>
+            <div class="meta-row"><span class="meta-label">N° Pictures</span><span class="meta-value">48</span></div>
+            <div class="meta-row"><span class="meta-label">Prints</span><span class="meta-value">12</span></div>
+          </div>
+          <div class="photo-area">
+            <div class="photo-placeholder">— fotografia Istanbul —</div>
+          </div>
+        </div>
+
+        <!-- BOX 1 — nero -->
+        <div class="box1">
+          <div class="box1-header">
+            <div>
+              <div class="box1-title">Istanbul</div>
+              <div class="box1-sub">Personal</div>
+            </div>
+            <div class="close-btn b1">✕</div>
+          </div>
+          <div class="cip-meta">
+            <div class="cip-row"><span class="cip-label">Luogo</span><span class="cip-value">Istanbul</span></div>
+            <div class="cip-row"><span class="cip-label">Anno</span><span class="cip-value year-accent">2003</span></div>
+            <div class="cip-row"><span class="cip-label">Pub.</span><span class="cip-value">Io Donna</span></div>
+          </div>
+          <div class="thumb-grid">
+            <div class="thumb"><div class="thumb-ph">foto 1</div></div>
+            <div class="thumb"><div class="thumb-ph">foto 2</div></div>
+            <div class="thumb"><div class="thumb-ph">foto 3</div></div>
+            <div class="thumb"><div class="thumb-ph">foto 4</div></div>
+            <div class="thumb"><div class="thumb-ph">foto 5</div></div>
+            <div class="thumb"><div class="thumb-ph">foto 6</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div style="padding: 0 48px; font-family: 'Courier New', monospace; font-size: 9px; color: #aaa; letter-spacing: 0.08em; text-transform: uppercase;">
+    Rizzi CMS — Cities Mockup v3 — Mar 2026 — Dimmi il numero e applico subito
+  </div>
+
+</body>
+</html>
