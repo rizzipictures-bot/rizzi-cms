@@ -1944,62 +1944,81 @@
       object-fit: cover;
     }
 
-    /* ── BOX FOTO SECONDARIO — box verticale a sinistra del box Cities ── */
+    /* ── BOX FOTO SECONDARIO — pannello orizzontale basso, SOLO in cities-index ── */
     #cip-photo-viewer {
+      display: none;           /* nascosto di default su TUTTE le pagine */
       position: fixed;
-      top: 48px;
-      right: 408px;           /* attaccato al bordo sinistro del box Cities */
-      bottom: 48px;
-      width: 408px;           /* stessa larghezza del box Cities */
-      background: #d8d6d2;    /* grigio medio — più scuro di #f0efed ma non nero */
-      z-index: 698;           /* sotto il box Cities (700) */
-      display: flex;
+      right: 0;
+      bottom: 48px;            /* bordo basso allineato al box Cities */
+      width: 408px;            /* stessa larghezza del box Cities */
+      /* altezza: header info + foto; gestita da .open */
+      max-height: calc(100vh - 48px - 48px);
+      background: #d0ceca;     /* grigio medio caldo, più scuro di #f0efed */
+      z-index: 710;            /* sopra il box Cities */
       flex-direction: column;
       overflow: hidden;
       border-radius: 4px 0 0 4px;
-      transform: translateX(100%); /* parte nascosto a destra, sotto il box Cities */
+      transform: translateY(100%);
       transition: transform .38s cubic-bezier(.4,0,.2,1);
       pointer-events: none;
     }
+    /* Visibile SOLO quando cities-index è attiva (body.cities-active aggiunto via JS) */
+    body.cities-active #cip-photo-viewer {
+      display: flex;
+    }
     #cip-photo-viewer.open {
-      transform: translateX(0);
+      display: flex;
+      transform: translateY(0);
       pointer-events: auto;
     }
-    /* Header del box 2: titolo foto + close */
+    /* Sezione info in alto: righe label/valore come reference */
     #cip-photo-viewer-header {
       flex-shrink: 0;
-      padding: 14px 16px 10px;
-      border-bottom: 1px solid rgba(0,0,0,0.12);
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 10px;
+      padding: 14px 18px 0;
+      background: #d0ceca;
     }
     #cip-photo-viewer-title {
       font-family: 'Georgia', 'Times New Roman', serif;
-      font-size: 11px;
-      color: #222;
-      margin: 0;
-      flex: 1;
-      min-width: 0;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
+      font-size: 12px;
+      font-weight: 700;
+      color: #111;
+      margin: 0 0 8px;
     }
-    /* Foto grande che riempie il resto del box */
+    .cpv-meta-row {
+      display: grid;
+      grid-template-columns: 90px 1fr;
+      border-top: 1px solid rgba(0,0,0,0.12);
+      padding: 4px 0;
+    }
+    .cpv-meta-label {
+      font-family: var(--font-mono, monospace);
+      font-size: 9px;
+      color: #666;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      padding-top: 1px;
+    }
+    .cpv-meta-value {
+      font-family: var(--font-mono, monospace);
+      font-size: 10px;
+      color: #111;
+    }
+    /* Foto grande: occupa tutta la larghezza, altezza proporzionale */
     #cip-photo-viewer img {
-      flex: 1;
-      min-height: 0;
       width: 100%;
-      object-fit: cover;
       display: block;
-    }
-    /* Pulsante chiudi il viewer — croce nera */
-    #cip-photo-viewer-close {
+      object-fit: cover;
       flex-shrink: 0;
+    }
+    /* Pulsante chiudi — cerchio grigio scuro con croce bianca */
+    #cip-photo-viewer-close {
+      position: absolute;
+      top: 10px;
+      right: 10px;
       --close-color: #555;
       width: 16.5px;
       height: 16.5px;
+      z-index: 2;
     }
     #cip-photo-viewer-close::before,
     #cip-photo-viewer-close::after { background: #fff; }
@@ -3943,12 +3962,48 @@ if (_cipImages) {
   _cipImages.addEventListener('click', e => {
     const img = e.target.closest('.cip-img');
     if (!img || !_cipPhotoViewer) return;
-    _cipPhotoViewerImg.src = img.src;
-    // Popola il titolo con il nome della città corrente
-    if (_cipPhotoViewerTitle && _cipTitle) {
-      _cipPhotoViewerTitle.textContent = _cipTitle.textContent || '';
+
+    // Popola header: titolo + meta-rows
+    const proj = _cipanel && _cipanel._currentProject;
+    if (_cipPhotoViewerTitle) {
+      _cipPhotoViewerTitle.textContent = (proj && proj.title) || (_cipTitle && _cipTitle.textContent) || '';
     }
+    // Ricostruisci le meta-rows nel header
+    const _hdr = document.getElementById('cip-photo-viewer-header');
+    if (_hdr && proj) {
+      // Rimuovi eventuali meta-rows precedenti
+      _hdr.querySelectorAll('.cpv-meta-row').forEach(r => r.remove());
+      const metas = [];
+      if (proj.place)       metas.push(['Luogo', proj.place]);
+      if (proj.year)        metas.push(['Anno',  proj.year]);
+      if (proj.publication) metas.push(['Pub.',  proj.publication]);
+      metas.forEach(([k, v]) => {
+        const row = document.createElement('div');
+        row.className = 'cpv-meta-row';
+        row.innerHTML = `<span class="cpv-meta-label">${k}</span><span class="cpv-meta-value">${v}</span>`;
+        _hdr.appendChild(row);
+      });
+    }
+
+    // Imposta la foto
+    _cipPhotoViewerImg.src = '';
     _cipPhotoViewer.classList.add('open');
+
+    // Carica l'immagine e imposta l'altezza in base all'aspect ratio
+    const tmpImg = new Image();
+    tmpImg.onload = () => {
+      const boxW = 408; // larghezza fissa del box
+      const isPortrait = tmpImg.naturalHeight > tmpImg.naturalWidth;
+      // Verticale: altezza = 25% della larghezza del box
+      // Orizzontale: altezza proporzionale alla larghezza
+      const photoH = isPortrait
+        ? Math.round(boxW * 0.25)
+        : Math.round(boxW * tmpImg.naturalHeight / tmpImg.naturalWidth);
+      _cipPhotoViewerImg.style.height = photoH + 'px';
+      _cipPhotoViewerImg.src = img.src;
+    };
+    tmpImg.onerror = () => { _cipPhotoViewerImg.src = img.src; };
+    tmpImg.src = img.src;
   });
 }
 
@@ -4055,6 +4110,9 @@ function switchView(name) {
   document.getElementById('menu-overlay').classList.remove('open');
   // Chiudi box info Cities se si cambia vista
   if (name !== 'cities-index') closeCityInfoPanel();
+
+  // Classe body per mostrare/nascondere il photo-viewer solo in cities-index
+  document.body.classList.toggle('cities-active', name === 'cities-index');
 
   // ── Cursore rosso solo per Archive e Cities ──
   const RED_VIEWS = ['archive', 'cities-index'];
