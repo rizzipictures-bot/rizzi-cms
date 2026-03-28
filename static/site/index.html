@@ -5971,13 +5971,17 @@ loadFromCMS();
     if (cursorEl) cursorEl.style.display = '';
     document.body.classList.remove('landing-active');
     switchView('home');
+    // Rendi il background della landing trasparente PRIMA che la foto salga:
+    // così la pagina successiva è già visibile sotto, senza vedere il nero
+    landing.style.background = 'transparent';
     // Abbassa z-index landing così l'Overview è davanti
-    landing.style.zIndex = '0';
+    landing.style.zIndex = '1';
     // Poi la foto sale
     landingPhoto.classList.add('exit-up');
     setTimeout(() => {
       landing.classList.add('gone');
       landing.style.zIndex = '';
+      landing.style.background = '';
     }, 950);
   }
 })();
