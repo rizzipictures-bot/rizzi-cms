@@ -963,17 +963,17 @@
       transform: scale(1);
       opacity: 1;
     }
-    /* Ball ancorata in alto a destra del popup */
+    /* Ball allineata verticalmente alla label FOTOGRAFIA */
     .media-popup-ball {
       position: absolute;
-      top: 11px;
+      top: 18px;     /* allineata al centro della label (18px padding + ~10px font/2) */
       right: 13px;
       width: 10px;
       height: 10px;
       border-radius: 50%;
       pointer-events: none;
     }
-    .media-popup-ball.ball-photo { background: #000; }
+    .media-popup-ball.ball-photo { background: #e00; }
     .media-popup-ball.ball-text  { background: #999; }
     .media-popup-label {
       font-family: var(--font-mono);
@@ -1099,8 +1099,8 @@
     .archive-expanded-thumbs::-webkit-scrollbar { display: none; }
     .archive-expanded-thumb {
       flex-shrink: 0;
-      width: 72px;
-      height: 48px;
+      width: 61px;   /* 72 * 0.85 ≈ 61px  −15% */
+      height: 41px;  /* 48 * 0.85 ≈ 41px  −15% */
       overflow: hidden;
       cursor: none;
       opacity: 0.55;
