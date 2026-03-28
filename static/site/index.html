@@ -1976,7 +1976,7 @@
       flex-shrink: 0;
       width: 16.5px;
       height: 16.5px;
-      margin-top: -10px;
+      margin-top: -15px;
     }
     .cip-meta {
       padding: 10px 18px;
@@ -2025,6 +2025,13 @@
       width: 100%;
       display: block;
       object-fit: cover;
+    }
+    /* Prima foto: visibile per intero */
+    .cip-img:first-child {
+      object-fit: contain;
+      background: #000;
+      height: auto;
+      max-height: none;
     }
 
     /* ── BOX FOTO SECONDARIO (box 2) — stile reference USI, a SINISTRA del box 1, SOLO in cities-index ── */
