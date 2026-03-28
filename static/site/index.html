@@ -1862,7 +1862,7 @@
       bottom: 48px;
       width: 408px;
       height: auto;
-      background: #f0efed;
+      background: #d1cfcc;     /* grigio medio 18% */
       z-index: 700;
       display: none;           /* nascosto su tutte le pagine non-cities */
       flex-direction: column;
@@ -1881,7 +1881,7 @@
     }
     .cip-header {
       padding: 18px 18px 10px;
-      border-bottom: 1px solid #d0cec9;
+      border-bottom: 1px solid #b5b3b0;
       flex-shrink: 0;
       display: flex;
       align-items: center;
@@ -1916,13 +1916,13 @@
     .cip-close::after { background: #fff; }
     .cip-meta {
       padding: 10px 18px;
-      border-bottom: 1px solid #d0cec9;
+      border-bottom: 1px solid #b5b3b0;
       flex-shrink: 0;
     }
     .cip-meta-row {
       display: grid;
       grid-template-columns: 80px 1fr;
-      border-bottom: 1px solid #d0cec9;
+      border-bottom: 1px solid #b5b3b0;
       padding: 4px 0;
     }
     .cip-meta-row:last-child { border-bottom: none; }
@@ -1971,7 +1971,7 @@
       /* left calcolato via JS per non coprire l'alfabeto */
       top: 48px;               /* stesso top del box 1 */
       height: 0;               /* impostato via JS (≈50% altezza box 1) */
-      background: #f5f4f2;
+      background: #9e9b97;     /* grigio scuro 30% più scuro del box 1 */
       z-index: 695;
       flex-direction: column;
       overflow-y: auto;
@@ -1994,50 +1994,39 @@
     /* Sezione titolo (in alto, sfondo leggermente più scuro come il reference) */
     #cip-photo-viewer-header {
       flex-shrink: 0;
-      padding: 18px 24px 14px;
-      background: #eceae6;     /* grigio leggermente più scuro per la sezione titolo */
+      padding: 8px 12px 8px;
+      background: #8a8784;
       display: flex;
-      align-items: flex-start;
-      justify-content: space-between;
-      gap: 12px;
-      border-bottom: 1px solid #d8d5d0;
-    }
-    #cip-photo-viewer-title {
-      font-family: var(--font-nav);
-      font-size: 15px;
-      font-weight: 400;
-      color: #000;
-      margin: 0;
-      flex: 1;
-      min-width: 0;
-      line-height: 1.4;
+      align-items: center;
+      justify-content: flex-end;  /* solo il close button */
+      border-bottom: 1px solid #7a7875;
     }
 
     /* Tabella meta: label sinistra, valore destra, separatori orizzontali */
     #cip-photo-viewer-meta {
       flex-shrink: 0;
-      background: #f5f4f2;
+      background: #9e9b97;
     }
     .cpv-meta-row {
       display: grid;
-      grid-template-columns: 160px 1fr;
-      border-top: 1px solid #d8d5d0;
+      grid-template-columns: 140px 1fr;
+      border-top: 1px solid #7a7875;
       padding: 7px 24px;
       align-items: baseline;
     }
     .cpv-meta-row:last-child {
-      border-bottom: 1px solid #d8d5d0;
+      border-bottom: 1px solid #7a7875;
     }
     .cpv-meta-label {
       font-family: var(--font-nav);
       font-size: 10px;
-      color: #555;
+      color: #ddd;
       letter-spacing: 0.04em;
     }
     .cpv-meta-value {
       font-family: var(--font-nav);
       font-size: 10px;
-      color: #000;
+      color: #fff;
       font-weight: 400;
     }
 
@@ -2048,7 +2037,7 @@
       font-family: var(--font-nav);
       font-size: 11px;
       line-height: 1.7;
-      color: #222;
+      color: #eee;
       display: none;           /* nascosto se non c'è testo */
     }
     #cip-photo-viewer-desc.has-text {
@@ -2061,7 +2050,7 @@
       display: block;
       object-fit: contain;
       flex-shrink: 0;
-      background: #f5f4f2;
+      background: #9e9b97;
     }
 
     /* Pulsante chiudi */
@@ -3239,11 +3228,16 @@
     <!-- Box foto secondario Cities (box 2, a sinistra del box 1) -->
     <div id="cip-photo-viewer">
       <div id="cip-photo-viewer-header">
-        <p id="cip-photo-viewer-title"></p>
         <button class="btn-circle-close black" id="cip-photo-viewer-close"></button>
       </div>
-      <div id="cip-photo-viewer-meta"></div>
-      <div id="cip-photo-viewer-desc"></div>
+      <!-- Righe info fisse -->
+      <div id="cip-photo-viewer-meta">
+        <div class="cpv-meta-row"><span class="cpv-meta-label">Cities</span><span class="cpv-meta-value" id="cpv-cities"></span></div>
+        <div class="cpv-meta-row"><span class="cpv-meta-label">Country</span><span class="cpv-meta-value" id="cpv-country"></span></div>
+        <div class="cpv-meta-row"><span class="cpv-meta-label">Media</span><span class="cpv-meta-value" id="cpv-media"></span></div>
+        <div class="cpv-meta-row"><span class="cpv-meta-label">Numbers of pictures</span><span class="cpv-meta-value" id="cpv-numpics"></span></div>
+        <div class="cpv-meta-row"><span class="cpv-meta-label">Prints</span><span class="cpv-meta-value" id="cpv-prints"></span></div>
+      </div>
       <img id="cip-photo-viewer-img" src="" alt="">
     </div>
 
@@ -4015,35 +4009,13 @@ if (_cipImages) {
 
     const proj = _cipanel && _cipanel._currentProject;
 
-    // Titolo
-    if (_cipPhotoViewerTitle) {
-      _cipPhotoViewerTitle.textContent = (proj && proj.title) || (_cipTitle && _cipTitle.textContent) || '';
-    }
-
-    // Meta-rows
-    const _metaDiv = document.getElementById('cip-photo-viewer-meta');
-    if (_metaDiv) {
-      _metaDiv.innerHTML = '';
-      const metas = [];
-      if (proj && proj.place)       metas.push(['Luogo',       proj.place]);
-      if (proj && proj.year)        metas.push(['Anno',        proj.year]);
-      if (proj && proj.publication) metas.push(['Pubblicazione', proj.publication]);
-      if (proj && proj.technique)   metas.push(['Tecnica',     proj.technique]);
-      metas.forEach(([k, v]) => {
-        const row = document.createElement('div');
-        row.className = 'cpv-meta-row';
-        row.innerHTML = `<span class="cpv-meta-label">${k}</span><span class="cpv-meta-value">${v}</span>`;
-        _metaDiv.appendChild(row);
-      });
-    }
-
-    // Testo descrittivo
-    const _descDiv = document.getElementById('cip-photo-viewer-desc');
-    if (_descDiv) {
-      const desc = (proj && proj.description) || '';
-      _descDiv.textContent = desc;
-      _descDiv.classList.toggle('has-text', !!desc);
-    }
+    // Popola le righe info fisse con i dati del progetto
+    const _setField = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val || ''; };
+    _setField('cpv-cities',  (proj && (proj.place || proj.city)) || '');
+    _setField('cpv-country', (proj && proj.country) || '');
+    _setField('cpv-media',   (proj && (proj.technique || proj.media)) || '');
+    _setField('cpv-numpics', (proj && (proj.numPictures || proj.num_pictures || proj.photos_count)) || '');
+    _setField('cpv-prints',  (proj && proj.prints) || '');
 
     // Posizionamento:
     // - top: stesso del box 1 (48px)
