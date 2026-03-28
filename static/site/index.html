@@ -1811,7 +1811,8 @@
       gap: 0;
       padding: 0 0 12px;
       border-bottom: 1px solid var(--light);
-      margin-bottom: 0;
+      margin-top: 10px;   /* più distante dal titolo */
+      margin-bottom: -6px; /* più vicino alla riga header sotto */
     }
     .cities-toggle-btn {
       font-family: var(--font-mono);
@@ -2171,6 +2172,7 @@
       height: var(--img-max-h, 60vh); /* altezza calcolata via JS */
       max-height: var(--img-max-h, 60vh);
       align-self: flex-start; /* allineata a sinistra */
+      margin-left: 0;          /* giustificata a sinistra */
     }
 
     /* Pulsante chiudi */
@@ -3928,15 +3930,29 @@ document.addEventListener('mousemove', e => {
         if (!boxOpen && mx >= OPEN_X) {
           _cipanel.classList.add('open');
           window._citLock = true;
+          // Cursore bianco nel box nero
+          document.body.classList.add('cursor-on-dark');
+          // Scroll al top: mostra sempre la prima foto
+          const _cipBody = _cipanel.querySelector('.cip-body');
+          if (_cipBody) _cipBody.scrollTop = 0;
         }
         // ── CHIUSURA: mouse torna sotto 20% → box rientra
         if (boxOpen && mx < CLOSE_X) {
           _cipanel.classList.remove('open');
           window._citLock = false;
           window._citBoxW = null; // reset misura per prossima apertura
+          document.body.classList.remove('cursor-on-dark');
         }
 
         const locked = _cipanel.classList.contains('open');
+
+        // Cursore bianco quando il mouse è nel box nero aperto
+        if (locked) {
+          const _cipRect = _cipanel.getBoundingClientRect();
+          const _inBox = mx >= _cipRect.left && mx <= _cipRect.right &&
+                         my >= _cipRect.top  && my <= _cipRect.bottom;
+          if (_inBox) document.body.classList.add('cursor-on-dark');
+        }
 
         // ── SCROLL VERTICALE: attivo sempre in lock mode
         if (locked) {
@@ -3975,14 +3991,23 @@ document.addEventListener('mousemove', e => {
       {
         const _closeBtns = document.querySelectorAll('.btn-circle-close');
         let _nearClose = false;
+        let _nearCipClose = false;
         _closeBtns.forEach(btn => {
           const r = btn.getBoundingClientRect();
           if (r.width === 0) return; // non visibile
           const cx = r.left + r.width / 2;
           const cy = r.top  + r.height / 2;
-          if (Math.abs(mx - cx) < 50 && Math.abs(my - cy) < 50) _nearClose = true;
+          if (Math.abs(mx - cx) < 50 && Math.abs(my - cy) < 50) {
+            _nearClose = true;
+            // Se è il close del Box 1 (cip-close), forza cursore bianco
+            if (btn.id === 'cip-close') _nearCipClose = true;
+          }
         });
         document.body.classList.toggle('cursor-near-close', _nearClose);
+        // Forza freccia bianca quando vicino alla X del Box 1 nero
+        if (_nearCipClose) {
+          document.body.classList.add('cursor-on-dark');
+        }
       }
 
       // Archive box aperto: rosso fuori dal box, bianco dentro il box
