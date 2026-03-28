@@ -2032,7 +2032,7 @@
       /* left calcolato via JS per non coprire l'alfabeto */
       top: 48px;               /* JS sovrascrive con bordo inferiore titolo Cities */
       bottom: 35px;            /* 35px prima della fine pagina */
-      background: #f8f7f5;     /* variante 05: bianco carta più chiaro */
+      background: #f3f2f0;     /* variante 05: bianco carta */
       z-index: 695;
       flex-direction: column;
       overflow-y: auto;        /* scroll interno se contenuto supera */
@@ -4170,6 +4170,8 @@ if (_cipImages) {
     const boxW      = rightEdge - leftVal;
 
     // Imposta subito left e larghezza, poi calcola altezza dopo caricamento immagine
+    // Sincronizza il top del Box 1 con quello del Box 2 (stessa linea di partenza)
+    _cipanel.style.top = topY + 'px';
     _cipPhotoViewer.style.top   = topY + 'px';
     _cipPhotoViewer.style.left  = leftVal + 'px';
     _cipPhotoViewer.style.width = boxW + 'px';
