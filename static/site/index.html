@@ -2070,8 +2070,7 @@
       background: #eeece8;     /* variante 05: bianco carta -10% scuro */
       z-index: 695;
       flex-direction: column;
-      overflow-y: auto;        /* scroll interno se contenuto supera */
-      overflow-x: hidden;
+      overflow: hidden;          /* foto borderless fino al fondo, no scroll */
       opacity: 0;
       transform: translateX(-16px);
       transition: opacity .32s ease, transform .32s cubic-bezier(.4,0,.2,1);
