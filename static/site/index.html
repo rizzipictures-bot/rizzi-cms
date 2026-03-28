@@ -2002,45 +2002,62 @@
       border-bottom: none;
     }
 
-    /* Titolo progetto nel box 2 */
+    /* Pallino chiudi box 2 — viola acceso */
+    #cip-photo-viewer-close {
+      --close-color: #7b2fff !important;
+    }
+
+    /* Titolo progetto nel box 2 — stesso stile cip-title box 1 */
     #cip-photo-viewer-title {
-      font-family: var(--font-nav);
-      font-size: 15px;
-      font-weight: 400;
+      font-family: 'Georgia', 'Times New Roman', serif;
+      font-size: 13px;
+      font-weight: 700;
       color: #111;
-      line-height: 1.25;
-      padding: 18px 24px 14px;
-      border-bottom: 1px solid #a8a5a2;
+      line-height: 1.2;
+      padding: 18px 18px 10px;
+      border-bottom: 1px solid #b5b3b0;
       flex-shrink: 0;
     }
 
-    /* Tabella meta box 2 — replica esatta screenshot reference */
+    /* Testo simulato nell'area header (sopra la tabella) */
+    #cip-photo-viewer-desc-sim {
+      flex-shrink: 0;
+      padding: 12px 18px 10px;
+      font-family: 'Georgia', 'Times New Roman', serif;
+      font-size: 11px;
+      color: #222;
+      line-height: 1.55;
+      border-bottom: 1px solid #b5b3b0;
+    }
+
+    /* Tabella meta box 2 — griglia stretta, linee attaccate alle parole */
     #cip-photo-viewer-meta {
       flex-shrink: 0;
       background: transparent;
     }
     .cpv-meta-row {
       display: grid;
-      grid-template-columns: 160px 1fr;
-      border-bottom: 1px solid #a8a5a2;
-      padding: 13px 24px;
+      grid-template-columns: 80px 1fr;
+      border-bottom: 1px solid #b5b3b0;
+      padding: 4px 18px;
       align-items: baseline;
       gap: 0;
     }
     .cpv-meta-row:first-child {
-      border-top: 1px solid #a8a5a2;
+      border-top: none;
     }
     .cpv-meta-label {
-      font-family: var(--font-nav);
-      font-size: 13px;
+      font-family: 'Georgia', 'Times New Roman', serif;
+      font-size: 9px;
       font-weight: 400;
-      color: #111;
-      letter-spacing: 0;
-      text-transform: none;
+      color: #555;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      padding-top: 1px;
     }
     .cpv-meta-value {
-      font-family: var(--font-nav);
-      font-size: 13px;
+      font-family: 'Georgia', 'Times New Roman', serif;
+      font-size: 10px;
       color: #111;
       font-weight: 400;
       letter-spacing: 0;
@@ -3246,10 +3263,12 @@
     <!-- Box foto secondario Cities (box 2, a sinistra del box 1) -->
     <div id="cip-photo-viewer">
       <div id="cip-photo-viewer-header">
-        <button class="btn-circle-close black" id="cip-photo-viewer-close"></button>
+        <button class="btn-circle-close" id="cip-photo-viewer-close"></button>
       </div>
       <!-- Titolo progetto -->
       <div id="cip-photo-viewer-title"></div>
+      <!-- Testo simulato / descrizione -->
+      <div id="cip-photo-viewer-desc-sim">Fotografie realizzate durante il reportage urbano. La serie esplora la relazione tra architettura industriale e luce naturale, documentando spazi in transizione tra abbandono e memoria collettiva.</div>
       <!-- Righe info fisse -->
       <div id="cip-photo-viewer-meta">
         <div class="cpv-meta-row"><span class="cpv-meta-label">Cities</span><span class="cpv-meta-value" id="cpv-cities"></span></div>
@@ -4049,11 +4068,8 @@ if (_cipImages) {
     // - left: rispetta l'alfabeto (minimo 60px dal bordo sinistro)
     const panelRect = _cipanel.getBoundingClientRect();
 
-    // Top: bordo inferiore dell'header del box 1
-    const cipHeader = _cipanel.querySelector('.cip-header');
-    const topY = cipHeader
-      ? Math.round(cipHeader.getBoundingClientRect().bottom)
-      : Math.round(panelRect.top);
+    // Top: stesso top del box 1 (allineati in cima)
+    const topY = Math.round(panelRect.top);
 
     // Calcola left: rispetta l'alfabeto (min 60px)
     const rightEdge = Math.round(panelRect.left);
