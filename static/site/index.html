@@ -1920,7 +1920,7 @@
       padding: 2px 16px 2px 0;
     }
     .cities-list-code .code-letter {
-      color: #7b2fff;  /* viola acceso */
+      color: #111;  /* nero — lettere stessa tonalità dei numeri */
     }
     .cities-list-name {
       font-family: var(--font-mono);
@@ -2172,6 +2172,22 @@
     }
     #cip-photo-viewer-desc.has-text {
       display: block;
+    }
+
+    /* Animazione foto Box 2 — orizzontali calano dall'alto, verticali arrivano da sx */
+    @keyframes cipDropDown {
+      from { opacity: 0; transform: translateY(-28px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    @keyframes cipSlideLeft {
+      from { opacity: 0; transform: translateX(-32px); }
+      to   { opacity: 1; transform: translateX(0); }
+    }
+    #cip-photo-viewer-img.anim-drop {
+      animation: cipDropDown 0.55s cubic-bezier(.22,.68,0,1.2) both;
+    }
+    #cip-photo-viewer-img.anim-slide {
+      animation: cipSlideLeft 0.55s cubic-bezier(.22,.68,0,1.2) both;
     }
 
     /* Foto nel box 2 — riempie tutto lo spazio fino al bordo inferiore del box */
@@ -4260,10 +4276,13 @@ if (_cipImages) {
     _cipPhotoViewerImg.style.height = 'auto';
 
     const _tmpImg2 = new Image();
+    // Applica animazione: verticale → slide da sx, orizzontale → cala dall'alto
+    _cipPhotoViewerImg.classList.remove('anim-drop', 'anim-slide');
+    // forza reflow per riavviare l'animazione anche se la classe era già presente
+    void _cipPhotoViewerImg.offsetWidth;
     _tmpImg2.onload = () => {
       const isVertical = _tmpImg2.naturalHeight > _tmpImg2.naturalWidth;
       if (isVertical) {
-        // Calcola altezza massima disponibile nel box (viewport - top - header/meta)
         const boxTop    = _cipPhotoViewer.getBoundingClientRect().top;
         const headerH   = (_cipPhotoViewer.querySelector('#cip-photo-viewer-header')  || {}).offsetHeight || 80;
         const titleH    = (_cipPhotoViewer.querySelector('#cip-photo-viewer-title')   || {}).offsetHeight || 40;
@@ -4271,9 +4290,10 @@ if (_cipImages) {
         const available = Math.round(window.innerHeight - boxTop - headerH - titleH - metaH - 8);
         _cipPhotoViewer.style.setProperty('--img-max-h', available + 'px');
         _cipPhotoViewerImg.classList.add('is-vertical');
+        _cipPhotoViewerImg.classList.add('anim-slide');
+      } else {
+        _cipPhotoViewerImg.classList.add('anim-drop');
       }
-
-      // bottom fisso 35px gestito via CSS — nessun override JS necessario
     };
     _tmpImg2.src = img.src;
     _cipPhotoViewerImg.src = img.src;
