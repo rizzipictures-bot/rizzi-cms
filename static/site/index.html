@@ -140,7 +140,7 @@
       justify-content: center;
       flex-shrink: 0;
       position: relative;
-      transition: background .2s, border .2s, width .2s, height .2s;
+      transition: background .14s, border .14s, width .14s, height .14s;
     }
     /* Croce bianca al centro — linee sottili */
     #cursor-dot::before,
@@ -149,7 +149,7 @@
       position: absolute;
       background: rgba(255,255,255,0.85);
       border-radius: 1px;
-      transition: background .2s, opacity .2s;
+      transition: background .14s, opacity .14s;
     }
     #cursor-dot::before {
       width: 1px;
@@ -4020,6 +4020,30 @@ document.addEventListener('mousemove', e => {
         // Forza freccia bianca quando vicino alla X del Box 1 nero
         if (_nearCipClose) {
           document.body.classList.add('cursor-on-dark');
+        }
+      }
+
+      // ── CITIES: pallino bianco dentro i due box, rosso fuori ──
+      if (currentView === 'cities-index') {
+        const _pv2 = document.getElementById('cip-photo-viewer');
+        const _bx1 = document.getElementById('cities-info-panel');
+        const _bx1Open = _bx1 && _bx1.classList.contains('open');
+        const _bx2Open = _pv2 && _pv2.classList.contains('open');
+        let _inAnyBox = false;
+        if (_bx1Open) {
+          const r = _bx1.getBoundingClientRect();
+          if (mx >= r.left && mx <= r.right && my >= r.top && my <= r.bottom) _inAnyBox = true;
+        }
+        if (_bx2Open) {
+          const r = _pv2.getBoundingClientRect();
+          if (mx >= r.left && mx <= r.right && my >= r.top && my <= r.bottom) _inAnyBox = true;
+        }
+        if (_inAnyBox) {
+          document.body.classList.add('cursor-on-dark');
+          document.body.classList.remove('cursor-red');
+        } else {
+          document.body.classList.remove('cursor-on-dark');
+          document.body.classList.add('cursor-red');
         }
       }
 
