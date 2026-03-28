@@ -1955,7 +1955,7 @@
       right: 0;
       bottom: 45px;            /* 45px prima della fine pagina */
       width: 300px;
-      height: auto;
+      height: auto;            /* altezza calcolata da top+bottom */
       background: #111;          /* variante 05: nero */
       color: #e0e0e0;
       z-index: 700;
@@ -2036,7 +2036,8 @@
       flex: 1;
       overflow-y: auto;
       overflow-x: hidden;
-      padding: 8px;
+      padding: 0;            /* nessun padding: le thumbs partono dal bordo */
+      min-height: 0;         /* fondamentale per flex: 1 con overflow */
       /* scrollbar sottile e discreta */
       scrollbar-width: thin;
       scrollbar-color: #444 transparent;
