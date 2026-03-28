@@ -1731,29 +1731,35 @@
     }
     #view-gallery::-webkit-scrollbar { display: none; }
 
-    /* Back button — in alto a sinistra nella gallery */
+    /* Back button — allineato alla navbar, in alto a sinistra */
     #gallery-back-btn {
-      position: sticky;
+      position: fixed;
       top: 0;
       left: 0;
-      z-index: 10;
+      z-index: 200;
       display: none;
       align-items: center;
-      gap: 6px;
+      gap: 5px;
       background: none;
       border: none;
       cursor: none;
       font-family: var(--font);
-      font-size: 12px;
+      font-size: 8.4px;   /* 12px × 0.7 = -30% */
       font-weight: 700;
-      letter-spacing: 0.04em;
+      letter-spacing: 0.06em;
       color: #111;
-      padding: 18px 20px 0;
+      height: var(--header-h, 40px);
+      padding: 0 0 0 18px;
       text-transform: uppercase;
-      opacity: 0.75;
-      transition: opacity .2s;
+      transition: color .18s;
     }
-    #gallery-back-btn:hover { opacity: 1; }
+    #gallery-back-btn:hover { color: #999; }
+
+    /* Cursore più piccolo del 22% nella gallery (18px × 0.78 ≈ 14px) */
+    body.gallery-active #cursor-dot {
+      width: 14px !important;
+      height: 14px !important;
+    }
 
     /* Foto principale centrata */
     .gallery-main-wrap {
@@ -4495,6 +4501,7 @@ function switchView(name) {
 
   // Classe body per mostrare/nascondere il photo-viewer solo in cities-index
   document.body.classList.toggle('cities-active', name === 'cities-index');
+  document.body.classList.toggle('gallery-active', name === 'gallery');
 
   // ── Cursore rosso solo per Archive e Cities ──
   const RED_VIEWS = ['archive', 'cities-index'];
