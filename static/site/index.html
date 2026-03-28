@@ -1739,6 +1739,7 @@
       padding: 72px var(--pad) 24px;
       min-height: calc(100vh - var(--header-h));
       box-sizing: border-box;
+      cursor: none;  /* tutta l'area reagisce al cursore custom */
     }
     .gallery-main-img-wrap {
       width: 100%;
@@ -1779,10 +1780,10 @@
       margin-left: 16px;
     }
 
-    /* Sezione thumbs — linea + titolo + griglia — allineata alla C di Cities (40px) */
+    /* Sezione thumbs — linea + titolo + griglia — allineata al bordo sinistro della pagina */
     .gallery-thumbs-section {
       border-top: 1px solid var(--light);
-      padding: 0 40px 32px;
+      padding: 0 0 32px;
     }
     .gallery-series-title {
       font-family: var(--font-nav);
@@ -4060,15 +4061,10 @@ document.addEventListener('mousemove', e => {
       }
 
       // Ring-mode cursore: attivo su foto, overlay, landing, gallery
-      const _isOnPhoto = e => {
-        const el = document.elementFromPoint(mx, my);
-        if (!el) return false;
-        return !!(el.closest('#view-home .grid-item img, #view-gallery img, #overview-overlay, #view-landing, .cities-card-cover img, .gallery-main-img-wrap img'));
-      };
       const _onPhotoNow = (() => {
         const el = document.elementFromPoint(mx, my);
         if (!el) return false;
-        // Se cursor-red è attivo (Overview hover foto, Archive, Cities), non usare ring-mode
+        // Se cursor-red è attivo (Overview hover foto, Archive, Cities lista), non usare ring-mode
         if (document.body.classList.contains('cursor-red')) return false;
         return !!(el.closest('#view-home .grid-item, #view-gallery, #overview-overlay, #view-landing, .cities-card-cover, .gallery-main-img-wrap'));
       })();
@@ -5456,8 +5452,19 @@ function renderGallery() {
     item.addEventListener('click', () => {
       galleryIndex = i;
       renderGallery();
-      // Scroll alla foto principale con animazione veloce
-      document.getElementById('view-gallery').scrollTo({ top: 0, behavior: 'smooth' });
+      // Scroll smooth lento verso l'alto per visualizzare la foto in grande
+      const vg = document.getElementById('view-gallery');
+      const duration = 900; // ms — lento e smooth
+      const start = vg.scrollTop;
+      const startTime = performance.now();
+      function easeInOutCubic(t) { return t < 0.5 ? 4*t*t*t : 1 - Math.pow(-2*t+2,3)/2; }
+      function scrollStep(now) {
+        const elapsed = now - startTime;
+        const progress = Math.min(elapsed / duration, 1);
+        vg.scrollTop = start * (1 - easeInOutCubic(progress));
+        if (progress < 1) requestAnimationFrame(scrollStep);
+      }
+      requestAnimationFrame(scrollStep);
     });
     thumbsEl.appendChild(item);
   });
@@ -5498,22 +5505,44 @@ document.getElementById('gallery-stage').addEventListener('click', e => {
   document.getElementById('view-gallery').scrollTo({ top: 0, behavior: 'smooth' });
 });
 
-// Click sotto il margine inferiore della foto → scroll smooth alle thumbs
+// Click su spazio bianco gallery: dx→avanti, sx→indietro, sotto→scroll thumbs
 document.getElementById('view-gallery').addEventListener('click', e => {
-  // Ignora click sull'immagine (cambio foto) e sui controlli
+  // Ignora click sui controlli e sulle thumbs
   if (e.target.closest('#gallery-stage, .gallery-thumbs-section, .gallery-text-section, .gallery-info-row')) return;
-  // Controlla se il click è sotto il bordo inferiore della foto
+  if (!galleryProject) return;
+  const vg = document.getElementById('view-gallery');
   const stage = document.getElementById('gallery-stage');
   if (!stage) return;
   const stageRect = stage.getBoundingClientRect();
+  // Sotto la foto → scroll smooth alle thumbs
   if (e.clientY > stageRect.bottom) {
-    const vg = document.getElementById('view-gallery');
     const thumbsSection = document.querySelector('.gallery-thumbs-section');
     if (vg && thumbsSection) {
-      const thumbsTop = thumbsSection.getBoundingClientRect().top + vg.scrollTop - (vg.getBoundingClientRect().top);
-      vg.scrollTo({ top: thumbsTop, behavior: 'smooth' });
+      const thumbsTop = thumbsSection.getBoundingClientRect().top + vg.scrollTop - vg.getBoundingClientRect().top;
+      const duration = 700;
+      const start = vg.scrollTop;
+      const end = thumbsTop;
+      const startTime = performance.now();
+      function easeOutCubic(t) { return 1 - Math.pow(1 - t, 3); }
+      function scrollStep(now) {
+        const elapsed = now - startTime;
+        const progress = Math.min(elapsed / duration, 1);
+        vg.scrollTop = start + (end - start) * easeOutCubic(progress);
+        if (progress < 1) requestAnimationFrame(scrollStep);
+      }
+      requestAnimationFrame(scrollStep);
     }
+    return;
   }
+  // A destra o a sinistra della foto → foto successiva/precedente
+  const half = stageRect.left + stageRect.width / 2;
+  if (e.clientX > half) {
+    galleryIndex = (galleryIndex + 1) % galleryProject.images.length;
+  } else {
+    galleryIndex = (galleryIndex - 1 + galleryProject.images.length) % galleryProject.images.length;
+  }
+  renderGallery();
+  vg.scrollTo({ top: 0, behavior: 'smooth' });
 });
 
 // Navigazione con frecce tastiera nella gallery
