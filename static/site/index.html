@@ -3989,16 +3989,7 @@ document.addEventListener('mousemove', e => {
           if (_inBox) document.body.classList.add('cursor-on-dark');
         }
 
-        // ── SCROLL VERTICALE: attivo sempre in lock mode
-        if (locked) {
-          const body = _cipanel.querySelector('.cip-body');
-          if (body) {
-            const sh = body.scrollHeight - body.clientHeight;
-            if (sh > 0) {
-              body.scrollTop = Math.max(0, Math.min(1, my / window.innerHeight)) * sh;
-            }
-          }
-        }
+        // Scroll verticale Box 1: gestito dall'utente con la rotella del mouse (nessun override automatico)
 
         // ── POSIZIONE THUMBS
         // Libera: segue il mouse in X (fino al bordo dx)
