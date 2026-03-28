@@ -1971,10 +1971,10 @@
       /* left calcolato via JS per non coprire l'alfabeto */
       top: 48px;               /* stesso top del box 1 */
       height: 0;               /* impostato via JS (≈50% altezza box 1) */
-      background: #9e9b97;     /* grigio scuro 30% più scuro del box 1 */
+      background: #8c8880;     /* grigio cemento */
       z-index: 695;
       flex-direction: column;
-      overflow-y: auto;
+      overflow-y: hidden;
       overflow-x: hidden;
       opacity: 0;
       transform: translateX(-16px);
@@ -1991,42 +1991,43 @@
       pointer-events: auto;
     }
 
-    /* Sezione titolo (in alto, sfondo leggermente più scuro come il reference) */
+    /* Header box 2 */
     #cip-photo-viewer-header {
       flex-shrink: 0;
       padding: 8px 12px 8px;
-      background: #8a8784;
+      background: #7a7774;
       display: flex;
       align-items: center;
-      justify-content: flex-end;  /* solo il close button */
-      border-bottom: 1px solid #7a7875;
+      justify-content: flex-end;
+      border-bottom: 1px solid #6a6764;
     }
 
-    /* Tabella meta: label sinistra, valore destra, separatori orizzontali */
+    /* Tabella meta box 2 */
     #cip-photo-viewer-meta {
       flex-shrink: 0;
-      background: #9e9b97;
+      background: #8c8880;
     }
     .cpv-meta-row {
       display: grid;
       grid-template-columns: 140px 1fr;
-      border-top: 1px solid #7a7875;
-      padding: 7px 24px;
+      border-top: 1px solid #6e6c68;
+      padding: 6px 18px;
       align-items: baseline;
     }
     .cpv-meta-row:last-child {
-      border-bottom: 1px solid #7a7875;
+      border-bottom: 1px solid #6e6c68;
     }
     .cpv-meta-label {
       font-family: var(--font-nav);
-      font-size: 10px;
-      color: #ddd;
-      letter-spacing: 0.04em;
+      font-size: 9px;
+      color: #2a2a2a;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
     }
     .cpv-meta-value {
       font-family: var(--font-nav);
       font-size: 10px;
-      color: #fff;
+      color: #111;
       font-weight: 400;
     }
 
@@ -2044,13 +2045,14 @@
       display: block;
     }
 
-    /* Foto a tutta larghezza in basso */
+    /* Foto a tutta larghezza — sempre intera, no clip */
     #cip-photo-viewer-img {
       width: 100%;
       display: block;
       object-fit: contain;
       flex-shrink: 0;
-      background: #9e9b97;
+      height: auto !important;
+      background: #8c8880;
     }
 
     /* Pulsante chiudi */
@@ -4018,39 +4020,53 @@ if (_cipImages) {
     _setField('cpv-prints',  (proj && proj.prints) || '');
 
     // Posizionamento:
-    // - top: prima linea sotto il titolo del box 1 (dopo l'header .cip-header)
-    // - height: ~69% dell'altezza del box 1 (+25% rispetto al precedente 55%)
+    // Posizionamento box 2:
+    // - top: bordo inferiore dell'header del box 1 (prima linea separatrice)
+    // - height: adattativa = header + meta + foto reale (no clip)
     // - left: rispetta l'alfabeto (minimo 60px dal bordo sinistro)
     const panelRect = _cipanel.getBoundingClientRect();
     const boxH  = Math.round(panelRect.height);
-    const viewerH = Math.round(boxH * 0.69); // 55% * 1.25 = ~69%
 
-    // Top: bordo inferiore dell'header del box 1 (prima linea separatrice)
+    // Top: bordo inferiore dell'header del box 1
     const cipHeader = _cipanel.querySelector('.cip-header');
     const topY = cipHeader
       ? Math.round(cipHeader.getBoundingClientRect().bottom)
       : Math.round(panelRect.top);
 
-    // Calcola left: lo spazio disponibile tra alfabeto (60px) e bordo sinistro del box 1
-    const rightEdge = Math.round(panelRect.left); // bordo sinistro del box 1
-    const minLeft   = 60; // spazio minimo per non coprire l'alfabeto
-    const leftVal   = Math.max(minLeft, rightEdge - 600); // larghezza max ~600px
+    // Calcola left: rispetta l'alfabeto (min 60px)
+    const rightEdge = Math.round(panelRect.left);
+    const minLeft   = 60;
+    const leftVal   = Math.max(minLeft, rightEdge - 600);
+    const boxW      = rightEdge - leftVal;
 
-    _cipPhotoViewer.style.top    = topY + 'px';
-    _cipPhotoViewer.style.height = viewerH + 'px';
-    _cipPhotoViewer.style.left   = leftVal + 'px';
+    // Imposta subito left e larghezza, poi calcola altezza dopo caricamento immagine
+    _cipPhotoViewer.style.top   = topY + 'px';
+    _cipPhotoViewer.style.left  = leftVal + 'px';
+    _cipPhotoViewer.style.width = boxW + 'px';
 
-    // Imposta altezza immagine proporzionale all'aspect ratio reale
-    _cipPhotoViewerImg.style.height = '';
+    // Imposta src e calcola altezza adattativa dopo caricamento
+    _cipPhotoViewerImg.style.height = 'auto';
+    _cipPhotoViewerImg.src = img.src;
+
     const _tmpImg = new Image();
     _tmpImg.onload = () => {
-      const boxW = _cipPhotoViewer.offsetWidth;
-      const imgH = Math.round(boxW * _tmpImg.naturalHeight / _tmpImg.naturalWidth);
+      // Altezza foto proporzionale alla larghezza reale del box
+      const realBoxW = _cipPhotoViewer.offsetWidth || boxW;
+      const imgH = Math.round(realBoxW * _tmpImg.naturalHeight / _tmpImg.naturalWidth);
       _cipPhotoViewerImg.style.height = imgH + 'px';
+
+      // Altezza totale box = header + meta + foto
+      // Massimo: arriva alla fine della 2a foto del box 1 (~69% box 1)
+      const maxH = Math.round(boxH * 0.69);
+      const metaEl = _cipPhotoViewer.querySelector('#cip-photo-viewer-meta');
+      const headerEl = _cipPhotoViewer.querySelector('#cip-photo-viewer-header');
+      const headerH = headerEl ? headerEl.offsetHeight : 36;
+      const metaH   = metaEl   ? metaEl.offsetHeight   : 160;
+      const totalH  = Math.min(headerH + metaH + imgH, maxH);
+      _cipPhotoViewer.style.height = totalH + 'px';
     };
     _tmpImg.src = img.src;
 
-    _cipPhotoViewerImg.src = img.src;
     _cipPhotoViewer.classList.add('open');
   });
 }
