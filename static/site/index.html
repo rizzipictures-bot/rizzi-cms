@@ -790,7 +790,7 @@
       font-family: 'Inter', sans-serif;
       font-size: 32px;
       font-weight: 900;
-      letter-spacing: -0.04em;
+      letter-spacing: 0.01em;
       padding: 40px 0 8px;
       color: #000;
       display: flex;
@@ -1782,7 +1782,7 @@
       font-family: 'Inter', sans-serif;
       font-size: 32px;
       font-weight: 900;
-      letter-spacing: -0.04em;
+      letter-spacing: 0.01em;
       padding: 40px 0 8px;
       color: #000;
       display: flex;
@@ -2084,7 +2084,9 @@
       font-weight: 700;
       color: #111;
       line-height: 1.2;
-      padding: 14px 18px 10px;
+      padding: 0;
+      margin: 0;
+      display: none;  /* nascosto: il titolo è già nell'header del box 1 */
       flex-shrink: 0;
     }
 
@@ -3253,7 +3255,7 @@
 
     <!-- ── VIEW: ARCHIVE — Tabella (rizzi-web) ── -->
     <div class="view" id="view-archive">
-      <div class="archive-page-title">Archive<span class="title-sep"></span>Works Index</div>
+      <div class="archive-page-title">Archive<span class="title-sep"></span>Index</div>
       <div class="archive-search-wrap">
         <input class="archive-search" id="archive-search" type="text" placeholder="Type any keyword" autocomplete="off">
       </div>
@@ -3309,7 +3311,7 @@
     <!-- ── VIEW: CITIES INDEX ── -->
     <div class="view" id="view-cities-index">
       <!-- Titolo pagina — identico ad Archive -->
-      <div class="cities-page-title">Cities<span class="title-sep"></span>Works by Location</div>
+      <div class="cities-page-title">Cities<span class="title-sep"></span>Index by Location</div>
       <!-- Toggle lista / thumbs -->
       <div class="cities-view-toggle">
         <button class="cities-toggle-btn active" id="cities-btn-list">lista</button>
