@@ -1944,84 +1944,88 @@
       object-fit: cover;
     }
 
-    /* ── BOX FOTO SECONDARIO — pannello orizzontale basso, SOLO in cities-index ── */
+    /* ── BOX FOTO SECONDARIO — verticale a sinistra del box Cities, SOLO in cities-index ── */
     #cip-photo-viewer {
       display: none;           /* nascosto di default su TUTTE le pagine */
       position: fixed;
-      right: 0;
-      bottom: 48px;            /* bordo basso allineato al box Cities */
+      top: 48px;
+      right: 408px;            /* attaccato al bordo sinistro del box Cities */
+      bottom: 48px;
       width: 408px;            /* stessa larghezza del box Cities */
-      /* altezza: header info + foto; gestita da .open */
-      max-height: calc(100vh - 48px - 48px);
-      background: #d0ceca;     /* grigio medio caldo, più scuro di #f0efed */
-      z-index: 710;            /* sopra il box Cities */
+      background: #e8e6e2;     /* grigio leggermente più scuro di #f0efed */
+      z-index: 698;            /* sotto il box Cities (700) */
       flex-direction: column;
       overflow: hidden;
       border-radius: 4px 0 0 4px;
-      transform: translateY(100%);
+      transform: translateX(100%); /* nascosto sotto il box Cities, slide verso sx */
       transition: transform .38s cubic-bezier(.4,0,.2,1);
       pointer-events: none;
     }
-    /* Visibile SOLO quando cities-index è attiva (body.cities-active aggiunto via JS) */
+    /* Visibile SOLO quando cities-index è attiva */
     body.cities-active #cip-photo-viewer {
       display: flex;
     }
     #cip-photo-viewer.open {
       display: flex;
-      transform: translateY(0);
+      transform: translateX(0);
       pointer-events: auto;
     }
-    /* Sezione info in alto: righe label/valore come reference */
+    /* Header: titolo + close, con bordo inferiore */
     #cip-photo-viewer-header {
       flex-shrink: 0;
-      padding: 14px 18px 0;
-      background: #d0ceca;
+      padding: 18px 18px 10px;
+      border-bottom: 1px solid #d0cec9;
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 10px;
+      position: relative;
     }
     #cip-photo-viewer-title {
-      font-family: 'Georgia', 'Times New Roman', serif;
-      font-size: 12px;
+      font-family: var(--font-serif, Georgia, serif);
+      font-size: 13px;
       font-weight: 700;
       color: #111;
-      margin: 0 0 8px;
+      margin: 0;
+      flex: 1;
+      min-width: 0;
+      line-height: 1.3;
     }
+    /* Righe meta: Luogo / Anno con separatori */
     .cpv-meta-row {
       display: grid;
-      grid-template-columns: 90px 1fr;
-      border-top: 1px solid rgba(0,0,0,0.12);
-      padding: 4px 0;
+      grid-template-columns: 80px 1fr;
+      border-top: 1px solid #d0cec9;
+      padding: 6px 18px;
+      flex-shrink: 0;
     }
     .cpv-meta-label {
       font-family: var(--font-mono, monospace);
       font-size: 9px;
-      color: #666;
-      letter-spacing: 0.1em;
+      color: #888;
+      letter-spacing: 0.12em;
       text-transform: uppercase;
       padding-top: 1px;
     }
     .cpv-meta-value {
       font-family: var(--font-mono, monospace);
       font-size: 10px;
+      font-weight: 600;
       color: #111;
     }
-    /* Foto grande: occupa tutta la larghezza, altezza proporzionale */
+    /* Foto grande a tutta larghezza, riempie il resto */
     #cip-photo-viewer img {
+      flex: 1;
+      min-height: 0;
       width: 100%;
       display: block;
       object-fit: cover;
-      flex-shrink: 0;
     }
-    /* Pulsante chiudi — cerchio grigio scuro con croce bianca */
+    /* Pulsante chiudi — stesso stile del box 1 (cerchio nero con croce bianca) */
     #cip-photo-viewer-close {
-      position: absolute;
-      top: 10px;
-      right: 10px;
-      --close-color: #555;
-      width: 16.5px;
-      height: 16.5px;
-      z-index: 2;
+      flex-shrink: 0;
+      margin-top: 2px;
     }
-    #cip-photo-viewer-close::before,
-    #cip-photo-viewer-close::after { background: #fff; }
     /* Le foto nel box Cities diventano cliccabili */
     .cip-img {
       cursor: none;
@@ -3192,8 +3196,9 @@
     <div id="cip-photo-viewer">
       <div id="cip-photo-viewer-header">
         <p id="cip-photo-viewer-title"></p>
-        <button class="btn-circle-close" id="cip-photo-viewer-close"></button>
+        <button class="btn-circle-close black" id="cip-photo-viewer-close"></button>
       </div>
+      <div id="cip-photo-viewer-meta"></div>
       <img id="cip-photo-viewer-img" src="" alt="">
     </div>
 
@@ -3963,47 +3968,33 @@ if (_cipImages) {
     const img = e.target.closest('.cip-img');
     if (!img || !_cipPhotoViewer) return;
 
-    // Popola header: titolo + meta-rows
     const proj = _cipanel && _cipanel._currentProject;
+
+    // Titolo
     if (_cipPhotoViewerTitle) {
       _cipPhotoViewerTitle.textContent = (proj && proj.title) || (_cipTitle && _cipTitle.textContent) || '';
     }
-    // Ricostruisci le meta-rows nel header
-    const _hdr = document.getElementById('cip-photo-viewer-header');
-    if (_hdr && proj) {
-      // Rimuovi eventuali meta-rows precedenti
-      _hdr.querySelectorAll('.cpv-meta-row').forEach(r => r.remove());
+
+    // Meta-rows nel div dedicato
+    const _metaDiv = document.getElementById('cip-photo-viewer-meta');
+    if (_metaDiv) {
+      _metaDiv.innerHTML = '';
       const metas = [];
-      if (proj.place)       metas.push(['Luogo', proj.place]);
-      if (proj.year)        metas.push(['Anno',  proj.year]);
-      if (proj.publication) metas.push(['Pub.',  proj.publication]);
+      if (proj && proj.place)       metas.push(['Luogo', proj.place]);
+      if (proj && proj.year)        metas.push(['Anno',  proj.year]);
+      if (proj && proj.publication) metas.push(['Pub.',  proj.publication]);
       metas.forEach(([k, v]) => {
         const row = document.createElement('div');
         row.className = 'cpv-meta-row';
         row.innerHTML = `<span class="cpv-meta-label">${k}</span><span class="cpv-meta-value">${v}</span>`;
-        _hdr.appendChild(row);
+        _metaDiv.appendChild(row);
       });
     }
 
-    // Imposta la foto
-    _cipPhotoViewerImg.src = '';
+    // Foto: reset height, poi carica
+    _cipPhotoViewerImg.style.height = '';
+    _cipPhotoViewerImg.src = img.src;
     _cipPhotoViewer.classList.add('open');
-
-    // Carica l'immagine e imposta l'altezza in base all'aspect ratio
-    const tmpImg = new Image();
-    tmpImg.onload = () => {
-      const boxW = 408; // larghezza fissa del box
-      const isPortrait = tmpImg.naturalHeight > tmpImg.naturalWidth;
-      // Verticale: altezza = 25% della larghezza del box
-      // Orizzontale: altezza proporzionale alla larghezza
-      const photoH = isPortrait
-        ? Math.round(boxW * 0.25)
-        : Math.round(boxW * tmpImg.naturalHeight / tmpImg.naturalWidth);
-      _cipPhotoViewerImg.style.height = photoH + 'px';
-      _cipPhotoViewerImg.src = img.src;
-    };
-    tmpImg.onerror = () => { _cipPhotoViewerImg.src = img.src; };
-    tmpImg.src = img.src;
   });
 }
 
