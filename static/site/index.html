@@ -1760,6 +1760,17 @@
       width: 14px !important;
       height: 14px !important;
     }
+    /* In gallery: cursore nero standard (non rosso) */
+    body.gallery-active.cursor-red #cursor-dot,
+    body.gallery-active.cursor-red.cursor-on-dark #cursor-dot {
+      background: #111 !important;
+    }
+    body.gallery-active.cursor-red #cursor-dot::before,
+    body.gallery-active.cursor-red #cursor-dot::after,
+    body.gallery-active.cursor-red.cursor-on-dark #cursor-dot::before,
+    body.gallery-active.cursor-red.cursor-on-dark #cursor-dot::after {
+      background: rgba(255,255,255,0.85) !important;
+    }
 
     /* Foto principale centrata */
     .gallery-main-wrap {
