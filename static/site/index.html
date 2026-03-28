@@ -4018,13 +4018,18 @@ if (_cipImages) {
     _setField('cpv-prints',  (proj && proj.prints) || '');
 
     // Posizionamento:
-    // - top: stesso del box 1 (48px)
-    // - height: ~55% dell'altezza del box 1 (arriva circa alla fine della 2a foto)
+    // - top: prima linea sotto il titolo del box 1 (dopo l'header .cip-header)
+    // - height: ~69% dell'altezza del box 1 (+25% rispetto al precedente 55%)
     // - left: rispetta l'alfabeto (minimo 60px dal bordo sinistro)
     const panelRect = _cipanel.getBoundingClientRect();
-    const topY  = Math.round(panelRect.top);
     const boxH  = Math.round(panelRect.height);
-    const viewerH = Math.round(boxH * 0.55); // ~55% = arriva alla fine della 2a foto
+    const viewerH = Math.round(boxH * 0.69); // 55% * 1.25 = ~69%
+
+    // Top: bordo inferiore dell'header del box 1 (prima linea separatrice)
+    const cipHeader = _cipanel.querySelector('.cip-header');
+    const topY = cipHeader
+      ? Math.round(cipHeader.getBoundingClientRect().bottom)
+      : Math.round(panelRect.top);
 
     // Calcola left: lo spazio disponibile tra alfabeto (60px) e bordo sinistro del box 1
     const rightEdge = Math.round(panelRect.left); // bordo sinistro del box 1
