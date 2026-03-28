@@ -1717,7 +1717,7 @@
       display: flex;
       flex-direction: column;
       align-items: center;
-      padding: 32px var(--pad) 24px;
+      padding: 72px var(--pad) 24px;
       min-height: calc(100vh - var(--header-h));
       box-sizing: border-box;
     }
@@ -5418,13 +5418,20 @@ document.getElementById('gallery-stage').addEventListener('click', e => {
   renderGallery();
 });
 
-// Click sullo spazio bianco sotto la foto (gallery-main-wrap fuori dall'immagine) → scroll smooth alle thumbs
-document.getElementById('gallery-main-wrap').addEventListener('click', e => {
-  // Solo se il click NON è sull'immagine
-  if (!e.target.closest('#gallery-stage')) {
+// Click sotto il margine inferiore della foto → scroll smooth alle thumbs
+document.getElementById('view-gallery').addEventListener('click', e => {
+  // Ignora click sull'immagine (cambio foto) e sui controlli
+  if (e.target.closest('#gallery-stage, .gallery-thumbs-section, .gallery-text-section, .gallery-info-row')) return;
+  // Controlla se il click è sotto il bordo inferiore della foto
+  const stage = document.getElementById('gallery-stage');
+  if (!stage) return;
+  const stageRect = stage.getBoundingClientRect();
+  if (e.clientY > stageRect.bottom) {
+    const vg = document.getElementById('view-gallery');
     const thumbsSection = document.querySelector('.gallery-thumbs-section');
-    if (thumbsSection) {
-      thumbsSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    if (vg && thumbsSection) {
+      const thumbsTop = thumbsSection.getBoundingClientRect().top + vg.scrollTop - (vg.getBoundingClientRect().top);
+      vg.scrollTo({ top: thumbsTop, behavior: 'smooth' });
     }
   }
 });
