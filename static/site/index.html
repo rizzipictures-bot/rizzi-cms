@@ -4188,10 +4188,10 @@ function populateCityInfoPanel(project, imageUrls) {
     _cipDesc.style.display = _cipDesc.textContent ? '' : 'none';
   }
 
-  // Immagini (max 6 thumbs in griglia 2x3)
+  // Immagini — tutte le foto del progetto, scroll verticale nel box
   if (_cipImages) {
     _cipImages.innerHTML = '';
-    const imgs = imageUrls.slice(0, 6);
+    const imgs = imageUrls;
     imgs.forEach(url => {
       const img = document.createElement('img');
       img.src = url;
