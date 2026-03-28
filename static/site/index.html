@@ -163,16 +163,22 @@
       top: 50%; left: 50%;
       transform: translate(-50%, -50%);
     }
-    /* Modalità cerchio vuoto — su foto/overlay/landing */
+    /* Modalità cerchio pieno con croce — su foto/overlay/landing */
     #cursor-dot.ring-mode {
-      background: transparent !important;
-      border: 1.5px solid #111;
+      background: #111 !important;
+      border: none;
       width: 22px;
       height: 22px;
     }
     #cursor-dot.ring-mode::before,
     #cursor-dot.ring-mode::after {
-      opacity: 0;
+      opacity: 1;
+      background: #fff;
+      width: 10px;
+      height: 1.5px;
+    }
+    #cursor-dot.ring-mode:hover {
+      background: #888 !important;
     }
     /* Cursore bianco su sfondo scuro */
     body.cursor-on-dark #cursor-dot {
