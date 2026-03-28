@@ -188,9 +188,10 @@
     #cursor-dot.ring-mode:hover {
       background: #888 !important;
     }
-    /* Cursore bianco su sfondo scuro */
+    /* Cursore bianco su sfondo scuro (Box 1 nero) */
     body.cursor-on-dark #cursor-dot {
       background: #f5f5f5;
+      box-shadow: none !important;
     }
     body.cursor-on-dark #cursor-dot::before,
     body.cursor-on-dark #cursor-dot::after {
@@ -199,6 +200,14 @@
     body.cursor-on-dark #cursor-dot.ring-mode {
       background: transparent !important;
       border-color: #fff;
+    }
+    /* Nel Box 1 nero: il cursore rosso NON deve essere rosso — diventa bianco */
+    body.cursor-on-dark.cursor-red #cursor-dot {
+      background: #f5f5f5 !important;
+    }
+    body.cursor-on-dark.cursor-red #cursor-dot::before,
+    body.cursor-on-dark.cursor-red #cursor-dot::after {
+      background: rgba(0,0,0,0.75) !important;
     }
     /* Hover: pallino nascosto, testo flottante visibile */
     #cursor.hover #cursor-dot {
@@ -256,15 +265,17 @@
     }
 
     /* ── Cursore FRECCIA CHIUDI — vicino ai btn-circle-close ──
-       Freccia nera su box chiaro, bianca su box scuro */
+       Su box scuro (Box 1 nero): freccia bianca → destra (direzione opposta alla X)
+       Su box chiaro: freccia nera → destra */
     body.cursor-near-close #cursor-dot {
       background: transparent !important;
       border: none !important;
+      box-shadow: none !important;
       width: 20px !important;
       height: 20px !important;
     }
     body.cursor-near-close #cursor-dot::before {
-      content: '\2190'; /* ← freccia sinistra */
+      content: '\2192'; /* → freccia destra (opposta alla X) */
       position: absolute;
       background: none !important;
       color: #111;
@@ -279,10 +290,10 @@
     body.cursor-near-close #cursor-dot::after {
       opacity: 0 !important;
     }
-    /* Su sfondo scuro: freccia bianca */
+    /* Su sfondo scuro (Box 1 nero): freccia bianca */
     body.cursor-near-close.cursor-on-dark #cursor-dot::before,
     body.cursor-near-close [data-theme="dark"] #cursor-dot::before {
-      color: #fff;
+      color: #fff !important;
     }
     /* Su box chiaro (Cities, Archive): freccia nera */
     body.cursor-near-close.cursor-red #cursor-dot::before {
@@ -2181,6 +2192,11 @@
       max-height: var(--img-max-h, 60vh);
       align-self: flex-start; /* allineata a sinistra */
       margin-left: 0;          /* giustificata a sinistra */
+      display: block;          /* forza block per allineamento a sinistra */
+    }
+    /* Contenitore foto Box 2: allinea sempre a sinistra */
+    #cip-photo-viewer {
+      align-items: flex-start;
     }
 
     /* Pulsante chiudi */
@@ -4154,6 +4170,9 @@ function populateCityInfoPanel(project, imageUrls) {
       _cipImages.appendChild(img);
     });
   }
+  // Sempre alla prima foto: reset scroll del cip-body
+  const _cipBodyEl = _cipanel.querySelector('.cip-body');
+  if (_cipBodyEl) _cipBodyEl.scrollTop = 0;
 }
 
 if (_cipClose) {
