@@ -1889,10 +1889,12 @@
     }
     .cip-close {
       flex-shrink: 0;
-      --close-color: #e00;
+      --close-color: #111;
       width: 16.5px;
       height: 16.5px;
     }
+    .cip-close::before,
+    .cip-close::after { background: #fff; }
     .cip-meta {
       padding: 10px 18px;
       border-bottom: 1px solid #d0cec9;
@@ -3165,7 +3167,7 @@
           <p class="cip-title" id="cip-title">—</p>
           <p class="cip-subtitle" id="cip-subtitle"></p>
         </div>
-        <button class="cip-close btn-circle-close red" id="cip-close"></button>
+        <button class="cip-close btn-circle-close black" id="cip-close"></button>
       </div>
       <div class="cip-meta" id="cip-meta"></div>
       <div class="cip-body">
