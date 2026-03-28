@@ -1991,15 +1991,23 @@
       pointer-events: auto;
     }
 
-    /* Header box 2 — solo pulsante chiudi, in alto a destra */
+    /* Header box 2 — pallino viola + testo descrittivo sulla stessa riga */
     #cip-photo-viewer-header {
       flex-shrink: 0;
-      padding: 8px 12px 0;
+      padding: 14px 18px 14px;
       background: transparent;
       display: flex;
-      align-items: center;
-      justify-content: flex-end;
-      border-bottom: none;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 12px;
+      border-bottom: 1px solid #b5b3b0;
+    }
+    #cip-photo-viewer-header-text {
+      flex: 1;
+      font-family: 'Georgia', 'Times New Roman', serif;
+      font-size: 11px;
+      color: #222;
+      line-height: 1.55;
     }
 
     /* Pallino chiudi box 2 — viola acceso */
@@ -2019,16 +2027,7 @@
       flex-shrink: 0;
     }
 
-    /* Testo simulato nell'area header (sopra la tabella) */
-    #cip-photo-viewer-desc-sim {
-      flex-shrink: 0;
-      padding: 12px 18px 10px;
-      font-family: 'Georgia', 'Times New Roman', serif;
-      font-size: 11px;
-      color: #222;
-      line-height: 1.55;
-      border-bottom: 1px solid #b5b3b0;
-    }
+
 
     /* Tabella meta box 2 — griglia stretta, linee attaccate alle parole */
     #cip-photo-viewer-meta {
@@ -3263,12 +3262,11 @@
     <!-- Box foto secondario Cities (box 2, a sinistra del box 1) -->
     <div id="cip-photo-viewer">
       <div id="cip-photo-viewer-header">
+        <div id="cip-photo-viewer-header-text">Fotografie realizzate durante il reportage urbano. La serie esplora la relazione tra architettura industriale e luce naturale, documentando spazi in transizione tra abbandono e memoria collettiva.</div>
         <button class="btn-circle-close" id="cip-photo-viewer-close"></button>
       </div>
       <!-- Titolo progetto -->
       <div id="cip-photo-viewer-title"></div>
-      <!-- Testo simulato / descrizione -->
-      <div id="cip-photo-viewer-desc-sim">Fotografie realizzate durante il reportage urbano. La serie esplora la relazione tra architettura industriale e luce naturale, documentando spazi in transizione tra abbandono e memoria collettiva.</div>
       <!-- Righe info fisse -->
       <div id="cip-photo-viewer-meta">
         <div class="cpv-meta-row"><span class="cpv-meta-label">Cities</span><span class="cpv-meta-value" id="cpv-cities"></span></div>
