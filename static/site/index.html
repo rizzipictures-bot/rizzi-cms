@@ -1970,11 +1970,11 @@
       right: 408px;            /* attaccato al bordo sinistro del box 1 */
       /* left calcolato via JS per non coprire l'alfabeto */
       top: 48px;               /* stesso top del box 1 */
-      height: 0;               /* impostato via JS (≈50% altezza box 1) */
+      height: auto;            /* adattativo — cresce con la foto */
       background: #f5f4f2;     /* grigio carta chiaro, come reference */
       z-index: 695;
       flex-direction: column;
-      overflow-y: hidden;
+      overflow-y: visible;
       overflow-x: hidden;
       opacity: 0;
       transform: translateX(-16px);
@@ -4043,13 +4043,11 @@ if (_cipImages) {
     _setField('cpv-numpics', (proj && (proj.numPictures || proj.num_pictures || proj.photos_count)) || '');
     _setField('cpv-prints',  (proj && proj.prints) || '');
 
-    // Posizionamento:
     // Posizionamento box 2:
     // - top: bordo inferiore dell'header del box 1 (prima linea separatrice)
     // - height: adattativa = header + meta + foto reale (no clip)
     // - left: rispetta l'alfabeto (minimo 60px dal bordo sinistro)
     const panelRect = _cipanel.getBoundingClientRect();
-    const boxH  = Math.round(panelRect.height);
 
     // Top: bordo inferiore dell'header del box 1
     const cipHeader = _cipanel.querySelector('.cip-header');
@@ -4068,30 +4066,10 @@ if (_cipImages) {
     _cipPhotoViewer.style.left  = leftVal + 'px';
     _cipPhotoViewer.style.width = boxW + 'px';
 
-    // Imposta src e calcola altezza adattativa dopo caricamento
+    // Altezza completamente adattativa: la foto si mostra tutta, il box cresce
     _cipPhotoViewerImg.style.height = 'auto';
+    _cipPhotoViewerImg.style.width  = '100%';
     _cipPhotoViewerImg.src = img.src;
-
-    const _tmpImg = new Image();
-    _tmpImg.onload = () => {
-      // Altezza foto proporzionale alla larghezza reale del box
-      const realBoxW = _cipPhotoViewer.offsetWidth || boxW;
-      const imgH = Math.round(realBoxW * _tmpImg.naturalHeight / _tmpImg.naturalWidth);
-      _cipPhotoViewerImg.style.height = imgH + 'px';
-
-      // Altezza totale box = header + meta + foto
-      // Massimo: arriva alla fine della 2a foto del box 1 (~69% box 1)
-      const maxH = Math.round(boxH * 0.69);
-      const metaEl    = _cipPhotoViewer.querySelector('#cip-photo-viewer-meta');
-      const headerEl  = _cipPhotoViewer.querySelector('#cip-photo-viewer-header');
-      const titleEl   = _cipPhotoViewer.querySelector('#cip-photo-viewer-title');
-      const headerH   = headerEl ? headerEl.offsetHeight : 36;
-      const titleH    = titleEl  ? titleEl.offsetHeight  : 60;
-      const metaH     = metaEl   ? metaEl.offsetHeight   : 160;
-      const totalH    = Math.min(headerH + titleH + metaH + imgH, maxH);
-      _cipPhotoViewer.style.height = totalH + 'px';
-    };
-    _tmpImg.src = img.src;
 
     _cipPhotoViewer.classList.add('open');
   });
