@@ -4067,6 +4067,13 @@ function populateCityInfoPanel(project, imageUrls) {
   if (_cipTitle)    _cipTitle.textContent    = project.title || '—';
   if (_cipSubtitle) _cipSubtitle.textContent = project.subtitle || '';
 
+  // Top dinamico: parte dal bordo inferiore del titolo Cities
+  const _ctitle = document.querySelector('.cities-page-title');
+  if (_ctitle) {
+    const _ctRect = _ctitle.getBoundingClientRect();
+    _cipanel.style.top = Math.round(_ctRect.bottom) + 'px';
+  }
+
   // Metadati: Luogo, Anno, Pubblicazione
   if (_cipMeta) {
     const rows = [];
@@ -4139,13 +4146,20 @@ if (_cipImages) {
     _setField('cpv-prints',  (proj && proj.prints) || '');
 
     // Posizionamento box 2:
-    // - top: bordo inferiore dell'header del box 1 (prima linea separatrice)
+    // - top: sotto il titolo "Cities — Works by Location"
     // - height: adattativa = header + meta + foto reale (no clip)
     // - left: rispetta l'alfabeto (minimo 60px dal bordo sinistro)
     const panelRect = _cipanel.getBoundingClientRect();
 
-    // Top: stesso top del box 1 (allineati in cima)
-    const topY = Math.round(panelRect.top);
+    // Top: bordo inferiore del titolo Cities (sotto il titolo grande)
+    const _citiesTitle = document.querySelector('.cities-page-title');
+    let topY;
+    if (_citiesTitle) {
+      const titleRect = _citiesTitle.getBoundingClientRect();
+      topY = Math.round(titleRect.bottom);
+    } else {
+      topY = Math.round(panelRect.top);
+    }
 
     // Calcola left: rispetta l'alfabeto (min 60px)
     const rightEdge = Math.round(panelRect.left);
