@@ -1924,7 +1924,8 @@
       bottom: 35px;            /* 35px prima della fine pagina */
       width: 408px;
       height: auto;
-      background: #d1cfcc;     /* grigio medio 18% */
+      background: #111;          /* variante 05: nero */
+      color: #e0e0e0;
       z-index: 700;
       display: none;           /* nascosto su tutte le pagine non-cities */
       flex-direction: column;
@@ -1943,7 +1944,7 @@
     }
     .cip-header {
       padding: 18px 18px 10px;
-      border-bottom: 1px solid #b5b3b0;
+      border-bottom: 1px solid #333;
       flex-shrink: 0;
       display: flex;
       align-items: center;
@@ -1958,14 +1959,14 @@
       font-family: 'Georgia', 'Times New Roman', serif;
       font-size: 13px;
       font-weight: 700;
-      color: #111;
+      color: #e8e8e8;
       line-height: 1.2;
       margin: 0 0 2px;
     }
     .cip-subtitle {
       font-family: 'Georgia', 'Times New Roman', serif;
       font-size: 10px;
-      color: #666;
+      color: #888;
       margin: 0;
     }
     .cip-close {
@@ -1975,23 +1976,23 @@
       height: 16.5px;
     }
     .cip-close::before,
-    .cip-close::after { background: #fff; }
+    .cip-close::after { background: #e0e0e0; }
     .cip-meta {
       padding: 10px 18px;
-      border-bottom: 1px solid #b5b3b0;
+      border-bottom: 1px solid #333;
       flex-shrink: 0;
     }
     .cip-meta-row {
       display: grid;
       grid-template-columns: 80px 1fr;
-      border-bottom: 1px solid #b5b3b0;
+      border-bottom: 1px solid #333;
       padding: 4px 0;
     }
     .cip-meta-row:last-child { border-bottom: none; }
     .cip-meta-label {
       font-family: 'Georgia', 'Times New Roman', serif;
       font-size: 9px;
-      color: #555;
+      color: #888;
       letter-spacing: 0.06em;
       text-transform: uppercase;
       padding-top: 1px;
@@ -1999,7 +2000,7 @@
     .cip-meta-value {
       font-family: 'Georgia', 'Times New Roman', serif;
       font-size: 10px;
-      color: #111;
+      color: #e0e0e0;
     }
     .cip-body {
       flex: 1;
@@ -2010,7 +2011,7 @@
     .cip-description {
       font-family: 'Georgia', 'Times New Roman', serif;
       font-size: 11px;
-      color: #222;
+      color: #ccc;
       line-height: 1.55;
       margin: 0 0 16px;
     }
@@ -2033,7 +2034,7 @@
       /* left calcolato via JS per non coprire l'alfabeto */
       top: 48px;               /* JS sovrascrive con bordo inferiore titolo Cities */
       bottom: 35px;            /* 35px prima della fine pagina */
-      background: #bcb9b6;     /* box 1 #d1cfcc scurito ~10% */
+      background: #f3f2f0;     /* variante 05: bianco carta */
       z-index: 695;
       flex-direction: column;
       overflow-y: auto;        /* scroll interno se contenuto supera */
