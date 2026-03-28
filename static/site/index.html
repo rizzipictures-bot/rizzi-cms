@@ -2174,28 +2174,24 @@
       display: block;
     }
 
-    /* Foto nel box 2 — orizzontale: larghezza 100%, verticale: altezza max disponibile allineata a sx */
+    /* Foto nel box 2 — riempie tutto lo spazio fino al bordo inferiore del box */
     #cip-photo-viewer-img {
       display: block;
-      object-fit: contain;
-      flex-shrink: 0;
+      object-fit: cover;
+      flex: 1;                 /* occupa tutto lo spazio rimanente */
+      width: 100%;
+      min-height: 0;           /* necessario per flex-shrink corretto */
       background: #bcb9b6;
       margin-top: 0;
-      /* default orizzontale */
-      width: 100%;
-      height: auto;
     }
     #cip-photo-viewer-img.is-vertical {
-      width: auto;             /* larghezza proporzionale */
-      height: var(--img-max-h, 60vh); /* altezza calcolata via JS */
-      max-height: var(--img-max-h, 60vh);
-      align-self: flex-start; /* allineata a sinistra */
-      margin-left: 0;          /* giustificata a sinistra */
-      display: block;          /* forza block per allineamento a sinistra */
+      object-fit: contain;     /* verticale: mostra per intero */
+      object-position: left top;
+      align-self: stretch;     /* si estende fino in fondo */
     }
-    /* Contenitore foto Box 2: allinea sempre a sinistra */
+    /* Contenitore foto Box 2: colonna flex, foto riempie il fondo */
     #cip-photo-viewer {
-      align-items: flex-start;
+      align-items: stretch;
     }
 
     /* Pulsante chiudi */
