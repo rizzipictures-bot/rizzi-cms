@@ -1944,45 +1944,65 @@
       object-fit: cover;
     }
 
-    /* ── BOX FOTO SECONDARIO — pannello orizzontale largo sopra il box Cities ── */
+    /* ── BOX FOTO SECONDARIO — box verticale a sinistra del box Cities ── */
     #cip-photo-viewer {
       position: fixed;
-      right: 0;
-      bottom: 48px;          /* bordo inferiore allineato al box Cities */
-      width: 408px;          /* stessa larghezza del box Cities */
-      height: 0;             /* collassato */
-      background: #3d3d3d;   /* grigio medio, più scuro di #f0efed */
-      z-index: 710;          /* sopra il box Cities (700), sotto la navbar */
-      overflow: hidden;
+      top: 48px;
+      right: 408px;           /* attaccato al bordo sinistro del box Cities */
+      bottom: 48px;
+      width: 408px;           /* stessa larghezza del box Cities */
+      background: #d8d6d2;    /* grigio medio — più scuro di #f0efed ma non nero */
+      z-index: 698;           /* sotto il box Cities (700) */
       display: flex;
       flex-direction: column;
-      /* Apre verso l'alto: usa transform translateY */
-      transform: translateY(0);
-      transition: height .38s cubic-bezier(.4,0,.2,1);
+      overflow: hidden;
+      border-radius: 4px 0 0 4px;
+      transform: translateX(100%); /* parte nascosto a destra, sotto il box Cities */
+      transition: transform .38s cubic-bezier(.4,0,.2,1);
       pointer-events: none;
     }
     #cip-photo-viewer.open {
-      height: 340px;         /* altezza pannello orizzontale */
+      transform: translateX(0);
       pointer-events: auto;
     }
+    /* Header del box 2: titolo foto + close */
+    #cip-photo-viewer-header {
+      flex-shrink: 0;
+      padding: 14px 16px 10px;
+      border-bottom: 1px solid rgba(0,0,0,0.12);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+    }
+    #cip-photo-viewer-title {
+      font-family: 'Georgia', 'Times New Roman', serif;
+      font-size: 11px;
+      color: #222;
+      margin: 0;
+      flex: 1;
+      min-width: 0;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    /* Foto grande che riempie il resto del box */
     #cip-photo-viewer img {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;     /* riempie orizzontalmente come nei reference */
-      display: block;
       flex: 1;
       min-height: 0;
+      width: 100%;
+      object-fit: cover;
+      display: block;
     }
-    /* Pulsante chiudi il viewer */
+    /* Pulsante chiudi il viewer — croce nera */
     #cip-photo-viewer-close {
-      position: absolute;
-      top: 10px;
-      right: 10px;
-      --close-color: #fff;
-      width: 16px;
-      height: 16px;
-      z-index: 2;
+      flex-shrink: 0;
+      --close-color: #555;
+      width: 16.5px;
+      height: 16.5px;
     }
+    #cip-photo-viewer-close::before,
+    #cip-photo-viewer-close::after { background: #fff; }
     /* Le foto nel box Cities diventano cliccabili */
     .cip-img {
       cursor: none;
@@ -3149,10 +3169,13 @@
     <!-- Preview thumbnail al cursore per Cities Lista -->
     <div id="cities-cursor-preview"><img id="cities-cursor-preview-img" src="" alt=""></div>
 
-    <!-- Box foto secondario Cities (slide da sx del box) -->
+    <!-- Box foto secondario Cities (box 2, a sinistra del box 1) -->
     <div id="cip-photo-viewer">
+      <div id="cip-photo-viewer-header">
+        <p id="cip-photo-viewer-title"></p>
+        <button class="btn-circle-close" id="cip-photo-viewer-close"></button>
+      </div>
       <img id="cip-photo-viewer-img" src="" alt="">
-      <button class="btn-circle-close" id="cip-photo-viewer-close" style="--close-color:#fff"></button>
     </div>
 
     <!-- Box info fisso Cities (slide da destra) -->
@@ -3910,9 +3933,10 @@ if (_cipClose) {
 }
 
 // ── BOX FOTO SECONDARIO CITIES ──
-const _cipPhotoViewer    = document.getElementById('cip-photo-viewer');
-const _cipPhotoViewerImg = document.getElementById('cip-photo-viewer-img');
+const _cipPhotoViewer      = document.getElementById('cip-photo-viewer');
+const _cipPhotoViewerImg   = document.getElementById('cip-photo-viewer-img');
 const _cipPhotoViewerClose = document.getElementById('cip-photo-viewer-close');
+const _cipPhotoViewerTitle = document.getElementById('cip-photo-viewer-title');
 
 // Apri il viewer al click su una foto del box
 if (_cipImages) {
@@ -3920,6 +3944,10 @@ if (_cipImages) {
     const img = e.target.closest('.cip-img');
     if (!img || !_cipPhotoViewer) return;
     _cipPhotoViewerImg.src = img.src;
+    // Popola il titolo con il nome della città corrente
+    if (_cipPhotoViewerTitle && _cipTitle) {
+      _cipPhotoViewerTitle.textContent = _cipTitle.textContent || '';
+    }
     _cipPhotoViewer.classList.add('open');
   });
 }
