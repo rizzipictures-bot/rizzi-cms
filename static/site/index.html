@@ -1848,13 +1848,16 @@
       height: auto;
       background: #f0efed;
       z-index: 700;
-      display: flex;
+      display: none;           /* nascosto su tutte le pagine non-cities */
       flex-direction: column;
       overflow: hidden;
       border-radius: 4px 0 0 4px;
       transform: translateX(100%);
       transition: transform .35s cubic-bezier(.4,0,.2,1);
       pointer-events: none;
+    }
+    body.cities-active #cities-info-panel {
+      display: flex;
     }
     #cities-info-panel.open {
       transform: translateX(0);
@@ -1944,21 +1947,23 @@
       object-fit: cover;
     }
 
-    /* ── BOX FOTO SECONDARIO — verticale a sinistra del box Cities, SOLO in cities-index ── */
+    /* ── BOX FOTO SECONDARIO — orizzontale, si apre sopra il box Cities, SOLO in cities-index ── */
     #cip-photo-viewer {
       display: none;           /* nascosto di default su TUTTE le pagine */
       position: fixed;
-      top: 48px;
-      right: 408px;            /* attaccato al bordo sinistro del box Cities */
-      bottom: 48px;
+      right: 0;
       width: 408px;            /* stessa larghezza del box Cities */
       background: #e8e6e2;     /* grigio leggermente più scuro di #f0efed */
-      z-index: 698;            /* sotto il box Cities (700) */
+      z-index: 710;            /* sopra il box Cities */
       flex-direction: column;
       overflow: hidden;
       border-radius: 4px 0 0 4px;
-      transform: translateX(100%); /* nascosto sotto il box Cities, slide verso sx */
-      transition: transform .38s cubic-bezier(.4,0,.2,1);
+      /* top e bottom calcolati via JS in base alla posizione delle foto nel box 1 */
+      top: 48px;
+      bottom: auto;
+      height: 0;
+      opacity: 0;
+      transition: height .38s cubic-bezier(.4,0,.2,1), opacity .25s ease;
       pointer-events: none;
     }
     /* Visibile SOLO quando cities-index è attiva */
@@ -1967,22 +1972,22 @@
     }
     #cip-photo-viewer.open {
       display: flex;
-      transform: translateX(0);
+      height: auto;            /* altezza impostata via JS */
+      opacity: 1;
       pointer-events: auto;
     }
-    /* Header: titolo + close, con bordo inferiore */
+    /* Header: titolo + close */
     #cip-photo-viewer-header {
       flex-shrink: 0;
-      padding: 18px 18px 10px;
+      padding: 14px 18px 10px;
       border-bottom: 1px solid #d0cec9;
       display: flex;
       align-items: flex-start;
       justify-content: space-between;
       gap: 10px;
-      position: relative;
     }
     #cip-photo-viewer-title {
-      font-family: var(--font-serif, Georgia, serif);
+      font-family: 'Georgia', 'Times New Roman', serif;
       font-size: 13px;
       font-weight: 700;
       color: #111;
@@ -1992,39 +1997,43 @@
       line-height: 1.3;
     }
     /* Righe meta: Luogo / Anno con separatori */
+    #cip-photo-viewer-meta {
+      flex-shrink: 0;
+    }
     .cpv-meta-row {
       display: grid;
       grid-template-columns: 80px 1fr;
       border-top: 1px solid #d0cec9;
-      padding: 6px 18px;
-      flex-shrink: 0;
+      padding: 5px 18px;
     }
     .cpv-meta-label {
-      font-family: var(--font-mono, monospace);
+      font-family: 'Georgia', 'Times New Roman', serif;
       font-size: 9px;
-      color: #888;
-      letter-spacing: 0.12em;
+      color: #555;
+      letter-spacing: 0.06em;
       text-transform: uppercase;
       padding-top: 1px;
     }
     .cpv-meta-value {
-      font-family: var(--font-mono, monospace);
+      font-family: 'Georgia', 'Times New Roman', serif;
       font-size: 10px;
-      font-weight: 600;
       color: #111;
     }
-    /* Foto grande a tutta larghezza, riempie il resto */
-    #cip-photo-viewer img {
-      flex: 1;
-      min-height: 0;
+    /* Foto a tutta larghezza */
+    #cip-photo-viewer-img {
       width: 100%;
       display: block;
       object-fit: cover;
+      flex-shrink: 0;
     }
-    /* Pulsante chiudi — stesso stile del box 1 (cerchio nero con croce bianca) */
+    /* Pulsante chiudi */
     #cip-photo-viewer-close {
       flex-shrink: 0;
-      margin-top: 2px;
+      margin-top: 1px;
+    }
+    /* Box 1 nascosto su pagine non-cities */
+    #cities-info-panel {
+      /* già translateX(100%) di default — non serve display:none */
     }
     /* Le foto nel box Cities diventano cliccabili */
     .cip-img {
@@ -3975,7 +3984,7 @@ if (_cipImages) {
       _cipPhotoViewerTitle.textContent = (proj && proj.title) || (_cipTitle && _cipTitle.textContent) || '';
     }
 
-    // Meta-rows nel div dedicato
+    // Meta-rows
     const _metaDiv = document.getElementById('cip-photo-viewer-meta');
     if (_metaDiv) {
       _metaDiv.innerHTML = '';
@@ -3991,8 +4000,32 @@ if (_cipImages) {
       });
     }
 
-    // Foto: reset height, poi carica
+    // Calcola posizione: top = top del box Cities, bottom = fine della 2a foto nel box 1
+    const panelRect = _cipanel.getBoundingClientRect();
+    const allImgs = _cipImages.querySelectorAll('.cip-img');
+    let bottomY = panelRect.bottom; // fallback: fine del box
+    if (allImgs.length >= 2) {
+      const img2Rect = allImgs[1].getBoundingClientRect();
+      bottomY = img2Rect.bottom;
+    } else if (allImgs.length === 1) {
+      bottomY = allImgs[0].getBoundingClientRect().bottom;
+    }
+    const topY = panelRect.top;
+    const boxH = Math.round(bottomY - topY);
+
+    _cipPhotoViewer.style.top    = topY + 'px';
+    _cipPhotoViewer.style.height = boxH + 'px';
+
+    // Altezza foto: proporzionale all'aspect ratio, max = boxH - header
     _cipPhotoViewerImg.style.height = '';
+    const tmpImg = new Image();
+    tmpImg.onload = () => {
+      const photoW = 408;
+      const photoH = Math.round(photoW * tmpImg.naturalHeight / tmpImg.naturalWidth);
+      _cipPhotoViewerImg.style.height = photoH + 'px';
+    };
+    tmpImg.src = img.src;
+
     _cipPhotoViewerImg.src = img.src;
     _cipPhotoViewer.classList.add('open');
   });
