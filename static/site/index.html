@@ -736,6 +736,38 @@
     [data-theme="dark"] #overview-overlay-bg {
       background: rgba(0,0,0,.85);
     }
+    /* Barra Index | Thumbs sotto la foto overlay */
+    #ov-nav-bar {
+      position: absolute;
+      bottom: 28px;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 2;
+      display: flex;
+      align-items: center;
+      gap: 0;
+      font-family: var(--font-nav);   /* EB Garamond — stesso delle parole fluttuanti */
+      font-size: 14px;
+      font-weight: 400;
+      letter-spacing: 0.04em;
+      color: #1a1a1a;
+      white-space: nowrap;
+      opacity: 0;
+      transition: opacity .3s .15s;
+      cursor: none;
+    }
+    #overview-overlay.open #ov-nav-bar { opacity: 1; }
+    #ov-nav-bar span {
+      transition: color .18s;
+    }
+    #ov-nav-bar #ov-nav-index:hover,
+    #ov-nav-bar #ov-nav-thumbs:hover {
+      color: #999;
+    }
+    .ov-nav-sep {
+      opacity: 0.4;
+    }
+
     /* Label in basso — jackdavison */
     #overview-overlay-label {
       position: absolute;
@@ -3638,9 +3670,14 @@
 
 <!-- Overview Overlay (jackdavison) -->
 <div id="overview-overlay">
-  <div id="overview-overlay-bg" onclick="closeOverview()"></div>
+  <div id="overview-overlay-bg"></div>
   <img id="overview-overlay-img" src="" alt="">
   <button id="overview-overlay-close" class="btn-circle-close black" onclick="closeOverview()"></button>
+  <div id="ov-nav-bar">
+    <span id="ov-nav-index" onclick="closeOverview()">Index</span>
+    <span class="ov-nav-sep">&nbsp;|&nbsp;</span>
+    <span id="ov-nav-thumbs" onclick="closeOverview()">Thumbs</span>
+  </div>
 </div>
 
 <!-- Lightbox esistente -->
@@ -4150,6 +4187,28 @@ document.addEventListener('mousemove', e => {
         // Aggiorna rect ogni 200ms
         if (performance.now() - _ovImgRectTs > 200) _refreshOvImgRect();
         ovUpdateCursor(ovImages[ovIndex]);
+      }
+
+      // Parole fluttuanti diventano pallino nero vicino a Index/Thumbs in overlay
+      if (overlayOpen) {
+        const _navBar = document.getElementById('ov-nav-bar');
+        if (_navBar) {
+          const _nr = _navBar.getBoundingClientRect();
+          const _nearNavBar = mx >= _nr.left - 40 && mx <= _nr.right + 40 &&
+                              my >= _nr.top  - 30 && my <= _nr.bottom + 30;
+          if (_nearNavBar) {
+            cursorLabel.classList.remove('show');
+            cursorDot.style.width  = '10px';
+            cursorDot.style.height = '10px';
+            cursorDot.style.background = '#111';
+            document.body.classList.add('ov-near-nav');
+          } else if (document.body.classList.contains('ov-near-nav')) {
+            document.body.classList.remove('ov-near-nav');
+            cursorDot.style.width  = '';
+            cursorDot.style.height = '';
+            cursorDot.style.background = '';
+          }
+        }
       }
 
       // Colore triangolo in overlay Overview (foto vs bordo bianco)
@@ -4693,6 +4752,10 @@ function closeOverview() {
   ov.classList.remove('open');
   overlayOpen = false;
   cursorDot.style.visibility = ''; // ripristina la freccia
+  cursorDot.style.width  = '';     // ripristina dimensione cursore
+  cursorDot.style.height = '';
+  cursorDot.style.background = '';
+  document.body.classList.remove('ov-near-nav');
   cursorLabel.style.mixBlendMode = 'normal';  // ripristina blend mode normale
   resetCursor();
 }
@@ -4701,10 +4764,10 @@ function closeOverview() {
 document.getElementById('overview-overlay').addEventListener('click', e => {
   // Pulsante Close: chiude
   if (e.target.id === 'overview-overlay-close') { closeOverview(); return; }
-  // Click sul background (fuori dalla foto): chiude
-  if (e.target.id === 'overview-overlay-bg') { closeOverview(); return; }
-  // Click su qualsiasi altro elemento (foto, bordo bianco, ecc.): naviga
-  // Metà destra (anche 1px oltre centro) = avanti; metà sinistra = indietro
+  // Click su Index o Thumbs: chiude (torna alla vista)
+  if (e.target.id === 'ov-nav-index' || e.target.id === 'ov-nav-thumbs') { closeOverview(); return; }
+  // Click sul background O sulla foto O ovunque nello spazio bianco: naviga
+  // Metà destra = avanti; metà sinistra = indietro
   const center = window.innerWidth / 2;
   const dir = e.clientX >= center ? 1 : -1;
   ovNavigate(dir);
