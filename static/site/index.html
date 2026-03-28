@@ -524,15 +524,15 @@
     }
     nav.pill-nav button,
     nav.pill-nav a {
-      font-family: var(--font-nav);
+      font-family: Georgia, 'Times New Roman', serif;
       font-size: 12px;
       font-weight: 400;
-      letter-spacing: 0.08em;    /* spaziatura più ariosa */
+      letter-spacing: 0.12em;    /* spaziatura ariosa come nel mockup */
       text-transform: none;
       background: none !important;
       background-color: transparent !important;
-      color: #111;
-      opacity: 1;                 /* nero pieno di default */
+      color: #aaa;               /* grigio chiaro di default */
+      opacity: 1;
       border: none !important;
       outline: none !important;
       box-shadow: none !important;
@@ -548,12 +548,12 @@
     }
     nav.pill-nav button:hover,
     nav.pill-nav a:hover {
-      color: #888;                /* grigio medio al hover */
+      color: #555;                /* grigio scuro al hover */
     }
     nav.pill-nav button.active {
-      color: #888;               /* grigio medio per la pagina attiva */
-      font-weight: 400;
-      letter-spacing: 0.08em;
+      color: #000;               /* nero pieno per la pagina attiva */
+      font-weight: 700;          /* bold per la voce attiva */
+      letter-spacing: 0.12em;
     }
     /* Pulsante Aggiorna — solo localhost */
     #btn-update {
