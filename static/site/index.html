@@ -1944,39 +1944,34 @@
       object-fit: cover;
     }
 
-    /* ── BOX FOTO SECONDARIO — si apre a sx del box Cities al click su una foto ── */
+    /* ── BOX FOTO SECONDARIO — pannello orizzontale largo sopra il box Cities ── */
     #cip-photo-viewer {
       position: fixed;
-      top: 48px;
-      right: 408px;          /* attaccato al bordo sx del box Cities */
-      bottom: 48px;
-      width: 0;
-      background: #2a2a2a;   /* grigio scuro */
-      z-index: 690;          /* sotto il box Cities (700) */
+      right: 0;
+      bottom: 48px;          /* bordo inferiore allineato al box Cities */
+      width: 408px;          /* stessa larghezza del box Cities */
+      height: 0;             /* collassato */
+      background: #3d3d3d;   /* grigio medio, più scuro di #f0efed */
+      z-index: 710;          /* sopra il box Cities (700), sotto la navbar */
       overflow: hidden;
       display: flex;
-      align-items: center;
-      justify-content: center;
-      border-radius: 4px 0 0 4px;
-      transition: width .35s cubic-bezier(.4,0,.2,1);
+      flex-direction: column;
+      /* Apre verso l'alto: usa transform translateY */
+      transform: translateY(0);
+      transition: height .38s cubic-bezier(.4,0,.2,1);
       pointer-events: none;
     }
     #cip-photo-viewer.open {
-      width: 265px;          /* 408 * 0.65 ≈ 265px (−35% rispetto all'esempio) */
+      height: 340px;         /* altezza pannello orizzontale */
       pointer-events: auto;
-    }
-    /* Se il box Cities è chiuso, il viewer si sposta a destra */
-    #cities-info-panel:not(.open) ~ #cip-photo-viewer,
-    #cip-photo-viewer:not(.open) {
-      /* già width:0 gestisce la visibilità */
     }
     #cip-photo-viewer img {
       width: 100%;
       height: 100%;
-      object-fit: contain;
-      padding: 0;
-      box-sizing: border-box;
+      object-fit: cover;     /* riempie orizzontalmente come nei reference */
       display: block;
+      flex: 1;
+      min-height: 0;
     }
     /* Pulsante chiudi il viewer */
     #cip-photo-viewer-close {
