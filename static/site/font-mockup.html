@@ -1,0 +1,441 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Font Mockup — Archive & Cities Titles</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <!-- 4 font candidati -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@900&family=DM+Sans:wght@900&family=Plus+Jakarta+Sans:wght@800&family=Barlow+Condensed:wght@800&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --light: #e7e7e7;
+      --accent: #6a49be;
+      --mono: 'Courier New', Courier, monospace;
+    }
+
+    body {
+      background: #fff;
+      color: #000;
+      font-family: var(--mono);
+    }
+
+    /* ── HEADER PAGINA ── */
+    .page-header {
+      background: #fff;
+      border-bottom: 1px solid #ccc;
+      padding: 0 40px;
+      height: 48px;
+      display: flex;
+      align-items: center;
+      gap: 32px;
+      font-family: var(--mono);
+      font-size: 11px;
+      letter-spacing: 0.04em;
+      color: #000;
+      position: sticky;
+      top: 0;
+      z-index: 10;
+    }
+    .page-header a { color: #000; text-decoration: none; }
+    .page-header a.active { color: var(--accent); }
+
+    /* ── GRIGLIA 4 COLONNE ── */
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 0;
+    }
+
+    /* ── SINGOLA VARIANTE ── */
+    .variant {
+      border-right: 1px solid var(--light);
+      padding: 0 40px;
+    }
+    .variant:last-child { border-right: none; }
+
+    /* ── BADGE FONT NAME ── */
+    .font-badge {
+      font-family: var(--mono);
+      font-size: 9px;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--accent);
+      padding: 10px 0 0;
+      display: block;
+    }
+
+    /* ── TITOLO PAGINA (le 4 varianti) ── */
+    .title-sep {
+      display: inline-block;
+      width: 1px;
+      height: 1.1em;
+      background: #000;
+      vertical-align: middle;
+      flex-shrink: 0;
+      margin: 0 14px;
+    }
+
+    /* Variante 1 — Inter Black */
+    .v1 .page-title {
+      font-family: 'Inter', sans-serif;
+      font-weight: 900;
+      font-size: 32px;
+      letter-spacing: -0.03em;
+      padding: 32px 0 28px;
+      color: #000;
+      display: flex;
+      align-items: center;
+    }
+
+    /* Variante 2 — DM Sans Black */
+    .v2 .page-title {
+      font-family: 'DM Sans', sans-serif;
+      font-weight: 900;
+      font-size: 32px;
+      letter-spacing: -0.03em;
+      padding: 32px 0 28px;
+      color: #000;
+      display: flex;
+      align-items: center;
+    }
+
+    /* Variante 3 — Plus Jakarta Sans ExtraBold */
+    .v3 .page-title {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-weight: 800;
+      font-size: 32px;
+      letter-spacing: -0.03em;
+      padding: 32px 0 28px;
+      color: #000;
+      display: flex;
+      align-items: center;
+    }
+
+    /* Variante 4 — Barlow Condensed ExtraBold */
+    .v4 .page-title {
+      font-family: 'Barlow Condensed', sans-serif;
+      font-weight: 800;
+      font-size: 42px;   /* condensed: leggermente più grande per compensare */
+      letter-spacing: -0.01em;
+      padding: 32px 0 28px;
+      color: #000;
+      display: flex;
+      align-items: center;
+    }
+
+    /* ── BARRA RICERCA (Archive) ── */
+    .search-wrap {
+      padding: 10px 0 0;
+      border-bottom: 1px solid var(--light);
+    }
+    .search-input {
+      font-family: var(--mono);
+      font-size: 13px;
+      border: none;
+      outline: none;
+      width: 100%;
+      padding: 4px 0 8px;
+      background: transparent;
+      color: var(--accent);
+    }
+    .search-input::placeholder { color: var(--accent); }
+
+    /* ── INTESTAZIONE COLONNE ── */
+    .col-header {
+      display: grid;
+      border-bottom: 1px solid var(--light);
+      padding: 8px 0 4px;
+    }
+    .col-header.archive { grid-template-columns: 100px 1fr 1fr 1fr 1fr 80px; }
+    .col-header.cities  { grid-template-columns: 100px 1fr 1fr 80px; }
+    .col-header span {
+      font-family: var(--mono);
+      font-size: 11px;
+      color: #000;
+    }
+    .col-header span:last-child { text-align: right; }
+
+    /* ── RIGHE DATI ── */
+    .data-row {
+      display: grid;
+      border-bottom: 1px solid var(--light);
+      align-items: center;
+      min-height: 22px;
+      transition: background .1s;
+    }
+    .data-row.archive { grid-template-columns: 100px 1fr 1fr 1fr 1fr 80px; }
+    .data-row.cities  { grid-template-columns: 100px 1fr 1fr 80px; }
+    .data-row > div, .data-row > span {
+      font-family: var(--mono);
+      font-size: 12px;
+      letter-spacing: -0.03em;
+      padding: 2px 16px 2px 0;
+      color: #000;
+    }
+    .data-row .year { font-weight: 600; }
+    .data-row .city-year { color: var(--accent); text-align: right; padding-right: 0; }
+    .data-row.hover-demo { background: #000; }
+    .data-row.hover-demo > * { color: #fff !important; }
+
+    /* Pallini media */
+    .media-balls { display: flex; gap: 6px; align-items: center; justify-self: center; }
+    .ball { width: 10px; height: 10px; border-radius: 50%; background: #000; }
+    .ball.gray { background: #999; }
+    .data-row.hover-demo .ball { background: #e00; }
+    .data-row.hover-demo .ball.gray { background: rgba(220,0,0,.5); }
+
+    /* ── SEZIONE LABEL ── */
+    .section-label {
+      font-family: var(--mono);
+      font-size: 9px;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: #999;
+      padding: 20px 0 6px;
+      border-bottom: 1px solid var(--light);
+      margin-bottom: 0;
+    }
+
+    /* ── SEPARATORE VERTICALE TRA ARCHIVE E CITIES ── */
+    .divider {
+      grid-column: 1 / -1;
+      height: 1px;
+      background: #ccc;
+      margin: 32px 0 0;
+    }
+
+    /* ── TOGGLE ── */
+    .toggle-wrap {
+      display: flex;
+      gap: 0;
+      padding: 0 0 12px;
+      border-bottom: 1px solid var(--light);
+    }
+    .toggle-btn {
+      font-family: var(--mono);
+      font-size: 9px;
+      letter-spacing: 0.08em;
+      color: #999;
+      background: none;
+      border: 1px solid #ddd;
+      padding: 4px 10px;
+      cursor: pointer;
+    }
+    .toggle-btn:first-child { border-right: none; }
+    .toggle-btn.active { color: #fff; border-color: #000; background: #000; }
+
+    /* ── FOOTER NOTA ── */
+    .footer-note {
+      grid-column: 1 / -1;
+      font-family: var(--mono);
+      font-size: 9px;
+      color: #bbb;
+      text-align: center;
+      padding: 24px 0 40px;
+      letter-spacing: 0.06em;
+    }
+  </style>
+</head>
+<body>
+
+<!-- Nav simulata -->
+<div class="page-header">
+  <span>Index</span>
+  <span>Overview</span>
+  <span>Archive</span>
+  <span class="active">Cities</span>
+  <span>Info</span>
+</div>
+
+<!-- Griglia 4 varianti -->
+<div class="grid">
+
+  <!-- ══ VARIANTE 1 — Inter Black ══ -->
+  <div class="variant v1">
+    <span class="font-badge">① Inter Black 900</span>
+
+    <div class="section-label">Archive</div>
+    <div class="page-title">Archive<span class="title-sep"></span>Works Index</div>
+    <div class="search-wrap">
+      <input class="search-input" placeholder="Type any keyword" readonly>
+    </div>
+    <div class="col-header archive">
+      <span>Year</span><span>Project</span><span>Subtitle</span><span>Place</span><span>Publication</span><span>Media</span>
+    </div>
+    <div class="data-row archive hover-demo">
+      <div class="year">2010</div><div>Tokyo Untitle</div><div>Urban Decay</div><div>Japan</div><div>—</div>
+      <div class="media-balls"><span class="ball"></span><span class="ball gray"></span></div>
+    </div>
+    <div class="data-row archive">
+      <div class="year">2003</div><div>Istanbul</div><div>Personal</div><div>Turkey</div><div>Io Donna</div>
+      <div class="media-balls"><span class="ball"></span></div>
+    </div>
+    <div class="data-row archive">
+      <div class="year">2025</div><div>Lisbona</div><div>Diploma USI</div><div>Portugal</div><div>—</div>
+      <div class="media-balls"><span class="ball"></span><span class="ball gray"></span></div>
+    </div>
+
+    <div class="section-label" style="margin-top:28px">Cities</div>
+    <div class="page-title">Cities<span class="title-sep"></span>Works by Location</div>
+    <div class="toggle-wrap">
+      <button class="toggle-btn active">lista</button>
+      <button class="toggle-btn">thumbs</button>
+    </div>
+    <div class="col-header cities">
+      <span>Code</span><span>City</span><span>Place</span><span>Year</span>
+    </div>
+    <div class="data-row cities hover-demo">
+      <span>I01</span><span>Istanbul</span><span>Turkey</span><span class="city-year" style="color:#fff">2003</span>
+    </div>
+    <div class="data-row cities">
+      <span>L01</span><span>Lisbona</span><span>Portugal</span><span class="city-year">2025</span>
+    </div>
+    <div class="data-row cities">
+      <span>T01</span><span>Tokyo Untitle</span><span>Japan</span><span class="city-year">2010</span>
+    </div>
+  </div>
+
+  <!-- ══ VARIANTE 2 — DM Sans Black ══ -->
+  <div class="variant v2">
+    <span class="font-badge">② DM Sans Black 900</span>
+
+    <div class="section-label">Archive</div>
+    <div class="page-title">Archive<span class="title-sep"></span>Works Index</div>
+    <div class="search-wrap">
+      <input class="search-input" placeholder="Type any keyword" readonly>
+    </div>
+    <div class="col-header archive">
+      <span>Year</span><span>Project</span><span>Subtitle</span><span>Place</span><span>Publication</span><span>Media</span>
+    </div>
+    <div class="data-row archive hover-demo">
+      <div class="year">2010</div><div>Tokyo Untitle</div><div>Urban Decay</div><div>Japan</div><div>—</div>
+      <div class="media-balls"><span class="ball"></span><span class="ball gray"></span></div>
+    </div>
+    <div class="data-row archive">
+      <div class="year">2003</div><div>Istanbul</div><div>Personal</div><div>Turkey</div><div>Io Donna</div>
+      <div class="media-balls"><span class="ball"></span></div>
+    </div>
+    <div class="data-row archive">
+      <div class="year">2025</div><div>Lisbona</div><div>Diploma USI</div><div>Portugal</div><div>—</div>
+      <div class="media-balls"><span class="ball"></span><span class="ball gray"></span></div>
+    </div>
+
+    <div class="section-label" style="margin-top:28px">Cities</div>
+    <div class="page-title">Cities<span class="title-sep"></span>Works by Location</div>
+    <div class="toggle-wrap">
+      <button class="toggle-btn active">lista</button>
+      <button class="toggle-btn">thumbs</button>
+    </div>
+    <div class="col-header cities">
+      <span>Code</span><span>City</span><span>Place</span><span>Year</span>
+    </div>
+    <div class="data-row cities hover-demo">
+      <span>I01</span><span>Istanbul</span><span>Turkey</span><span class="city-year" style="color:#fff">2003</span>
+    </div>
+    <div class="data-row cities">
+      <span>L01</span><span>Lisbona</span><span>Portugal</span><span class="city-year">2025</span>
+    </div>
+    <div class="data-row cities">
+      <span>T01</span><span>Tokyo Untitle</span><span>Japan</span><span class="city-year">2010</span>
+    </div>
+  </div>
+
+  <!-- ══ VARIANTE 3 — Plus Jakarta Sans ExtraBold ══ -->
+  <div class="variant v3">
+    <span class="font-badge">③ Plus Jakarta Sans 800</span>
+
+    <div class="section-label">Archive</div>
+    <div class="page-title">Archive<span class="title-sep"></span>Works Index</div>
+    <div class="search-wrap">
+      <input class="search-input" placeholder="Type any keyword" readonly>
+    </div>
+    <div class="col-header archive">
+      <span>Year</span><span>Project</span><span>Subtitle</span><span>Place</span><span>Publication</span><span>Media</span>
+    </div>
+    <div class="data-row archive hover-demo">
+      <div class="year">2010</div><div>Tokyo Untitle</div><div>Urban Decay</div><div>Japan</div><div>—</div>
+      <div class="media-balls"><span class="ball"></span><span class="ball gray"></span></div>
+    </div>
+    <div class="data-row archive">
+      <div class="year">2003</div><div>Istanbul</div><div>Personal</div><div>Turkey</div><div>Io Donna</div>
+      <div class="media-balls"><span class="ball"></span></div>
+    </div>
+    <div class="data-row archive">
+      <div class="year">2025</div><div>Lisbona</div><div>Diploma USI</div><div>Portugal</div><div>—</div>
+      <div class="media-balls"><span class="ball"></span><span class="ball gray"></span></div>
+    </div>
+
+    <div class="section-label" style="margin-top:28px">Cities</div>
+    <div class="page-title">Cities<span class="title-sep"></span>Works by Location</div>
+    <div class="toggle-wrap">
+      <button class="toggle-btn active">lista</button>
+      <button class="toggle-btn">thumbs</button>
+    </div>
+    <div class="col-header cities">
+      <span>Code</span><span>City</span><span>Place</span><span>Year</span>
+    </div>
+    <div class="data-row cities hover-demo">
+      <span>I01</span><span>Istanbul</span><span>Turkey</span><span class="city-year" style="color:#fff">2003</span>
+    </div>
+    <div class="data-row cities">
+      <span>L01</span><span>Lisbona</span><span>Portugal</span><span class="city-year">2025</span>
+    </div>
+    <div class="data-row cities">
+      <span>T01</span><span>Tokyo Untitle</span><span>Japan</span><span class="city-year">2010</span>
+    </div>
+  </div>
+
+  <!-- ══ VARIANTE 4 — Barlow Condensed ExtraBold ══ -->
+  <div class="variant v4">
+    <span class="font-badge">④ Barlow Condensed 800</span>
+
+    <div class="section-label">Archive</div>
+    <div class="page-title">Archive<span class="title-sep"></span>Works Index</div>
+    <div class="search-wrap">
+      <input class="search-input" placeholder="Type any keyword" readonly>
+    </div>
+    <div class="col-header archive">
+      <span>Year</span><span>Project</span><span>Subtitle</span><span>Place</span><span>Publication</span><span>Media</span>
+    </div>
+    <div class="data-row archive hover-demo">
+      <div class="year">2010</div><div>Tokyo Untitle</div><div>Urban Decay</div><div>Japan</div><div>—</div>
+      <div class="media-balls"><span class="ball"></span><span class="ball gray"></span></div>
+    </div>
+    <div class="data-row archive">
+      <div class="year">2003</div><div>Istanbul</div><div>Personal</div><div>Turkey</div><div>Io Donna</div>
+      <div class="media-balls"><span class="ball"></span></div>
+    </div>
+    <div class="data-row archive">
+      <div class="year">2025</div><div>Lisbona</div><div>Diploma USI</div><div>Portugal</div><div>—</div>
+      <div class="media-balls"><span class="ball"></span><span class="ball gray"></span></div>
+    </div>
+
+    <div class="section-label" style="margin-top:28px">Cities</div>
+    <div class="page-title">Cities<span class="title-sep"></span>Works by Location</div>
+    <div class="toggle-wrap">
+      <button class="toggle-btn active">lista</button>
+      <button class="toggle-btn">thumbs</button>
+    </div>
+    <div class="col-header cities">
+      <span>Code</span><span>City</span><span>Place</span><span>Year</span>
+    </div>
+    <div class="data-row cities hover-demo">
+      <span>I01</span><span>Istanbul</span><span>Turkey</span><span class="city-year" style="color:#fff">2003</span>
+    </div>
+    <div class="data-row cities">
+      <span>L01</span><span>Lisbona</span><span>Portugal</span><span class="city-year">2025</span>
+    </div>
+    <div class="data-row cities">
+      <span>T01</span><span>Tokyo Untitle</span><span>Japan</span><span class="city-year">2010</span>
+    </div>
+  </div>
+
+  <div class="footer-note">Mockup comparativo — scegli il font preferito e verrà applicato alle pagine Archive e Cities</div>
+
+</div>
+</body>
+</html>
