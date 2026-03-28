@@ -170,12 +170,20 @@
       width: 22px;
       height: 22px;
     }
-    #cursor-dot.ring-mode::before,
+    /* Croce bianca nel cursore ring-mode: due barre perpendicolari */
+    #cursor-dot.ring-mode::before {
+      opacity: 1;
+      background: #fff;
+      width: 10px;
+      height: 1.5px;
+      transform: translate(-50%, -50%) rotate(0deg);
+    }
     #cursor-dot.ring-mode::after {
       opacity: 1;
       background: #fff;
       width: 10px;
       height: 1.5px;
+      transform: translate(-50%, -50%) rotate(90deg);
     }
     #cursor-dot.ring-mode:hover {
       background: #888 !important;
@@ -1760,10 +1768,10 @@
       margin-left: 16px;
     }
 
-    /* Sezione thumbs — linea + titolo + griglia */
+    /* Sezione thumbs — linea + titolo + griglia — allineata alla C di Cities (40px) */
     .gallery-thumbs-section {
       border-top: 1px solid var(--light);
-      padding: 0 var(--pad) 32px;
+      padding: 0 40px 32px;
     }
     .gallery-series-title {
       font-family: var(--font-nav);
@@ -5430,17 +5438,31 @@ function renderGallery() {
   updateFooter();
 }
 
-// Click sulla foto principale: avanza/indietro
+// Click sulla foto principale: avanza/indietro in base alla posizione del cursore
 document.getElementById('gallery-stage').addEventListener('click', e => {
   if (!galleryProject) return;
-  const rect = e.currentTarget.getBoundingClientRect();
-  const half = rect.left + rect.width / 2;
+  const img = e.currentTarget.querySelector('img');
+  if (!img) return;
+  const imgRect = img.getBoundingClientRect();
+  // Se il click è sotto il bordo inferiore dell'immagine → scroll thumbs
+  if (e.clientY > imgRect.bottom) {
+    const vg = document.getElementById('view-gallery');
+    const thumbsSection = document.querySelector('.gallery-thumbs-section');
+    if (vg && thumbsSection) {
+      const thumbsTop = thumbsSection.getBoundingClientRect().top + vg.scrollTop - vg.getBoundingClientRect().top;
+      vg.scrollTo({ top: thumbsTop, behavior: 'smooth' });
+    }
+    return;
+  }
+  // Destra dell'immagine → foto successiva; sinistra → foto precedente
+  const half = imgRect.left + imgRect.width / 2;
   if (e.clientX > half) {
     galleryIndex = (galleryIndex + 1) % galleryProject.images.length;
   } else {
     galleryIndex = (galleryIndex - 1 + galleryProject.images.length) % galleryProject.images.length;
   }
   renderGallery();
+  document.getElementById('view-gallery').scrollTo({ top: 0, behavior: 'smooth' });
 });
 
 // Click sotto il margine inferiore della foto → scroll smooth alle thumbs
