@@ -1971,7 +1971,7 @@
       /* left calcolato via JS per non coprire l'alfabeto */
       top: 48px;               /* stesso top del box 1 */
       height: 0;               /* impostato via JS (≈50% altezza box 1) */
-      background: #8c8880;     /* grigio cemento */
+      background: #f5f4f2;     /* grigio carta chiaro, come reference */
       z-index: 695;
       flex-direction: column;
       overflow-y: hidden;
@@ -1991,44 +1991,59 @@
       pointer-events: auto;
     }
 
-    /* Header box 2 */
+    /* Header box 2 — solo pulsante chiudi, in alto a destra */
     #cip-photo-viewer-header {
       flex-shrink: 0;
-      padding: 8px 12px 8px;
-      background: #7a7774;
+      padding: 8px 12px 0;
+      background: transparent;
       display: flex;
       align-items: center;
       justify-content: flex-end;
-      border-bottom: 1px solid #6a6764;
+      border-bottom: none;
     }
 
-    /* Tabella meta box 2 */
+    /* Titolo progetto nel box 2 */
+    #cip-photo-viewer-title {
+      font-family: var(--font-nav);
+      font-size: 15px;
+      font-weight: 400;
+      color: #111;
+      line-height: 1.25;
+      padding: 18px 24px 14px;
+      border-bottom: 1px solid #bbb;
+      flex-shrink: 0;
+    }
+
+    /* Tabella meta box 2 — replica esatta screenshot reference */
     #cip-photo-viewer-meta {
       flex-shrink: 0;
-      background: #8c8880;
+      background: transparent;
     }
     .cpv-meta-row {
       display: grid;
-      grid-template-columns: 140px 1fr;
-      border-top: 1px solid #6e6c68;
-      padding: 6px 18px;
+      grid-template-columns: 160px 1fr;
+      border-bottom: 1px solid #bbb;
+      padding: 7px 24px;
       align-items: baseline;
+      gap: 0;
     }
-    .cpv-meta-row:last-child {
-      border-bottom: 1px solid #6e6c68;
+    .cpv-meta-row:first-child {
+      border-top: none;
     }
     .cpv-meta-label {
       font-family: var(--font-nav);
-      font-size: 9px;
-      color: #2a2a2a;
-      letter-spacing: 0.06em;
-      text-transform: uppercase;
+      font-size: 13px;
+      font-weight: 400;
+      color: #111;
+      letter-spacing: 0;
+      text-transform: none;
     }
     .cpv-meta-value {
       font-family: var(--font-nav);
-      font-size: 10px;
+      font-size: 13px;
       color: #111;
       font-weight: 400;
+      letter-spacing: 0;
     }
 
     /* Area testo descrittivo sotto la tabella */
@@ -2052,7 +2067,8 @@
       object-fit: contain;
       flex-shrink: 0;
       height: auto !important;
-      background: #8c8880;
+      background: #e8e6e3;
+      margin-top: 0;
     }
 
     /* Pulsante chiudi */
@@ -3232,6 +3248,8 @@
       <div id="cip-photo-viewer-header">
         <button class="btn-circle-close black" id="cip-photo-viewer-close"></button>
       </div>
+      <!-- Titolo progetto -->
+      <div id="cip-photo-viewer-title"></div>
       <!-- Righe info fisse -->
       <div id="cip-photo-viewer-meta">
         <div class="cpv-meta-row"><span class="cpv-meta-label">Cities</span><span class="cpv-meta-value" id="cpv-cities"></span></div>
@@ -4011,8 +4029,14 @@ if (_cipImages) {
 
     const proj = _cipanel && _cipanel._currentProject;
 
-    // Popola le righe info fisse con i dati del progetto
+    // Popola titolo e righe info fisse con i dati del progetto
     const _setField = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val || ''; };
+    // Titolo: nome della città + titolo progetto (se disponibile)
+    if (_cipPhotoViewerTitle) {
+      const cityName  = (proj && (proj.place || proj.city || proj.title)) || '';
+      const projTitle = (proj && proj.subtitle) || '';
+      _cipPhotoViewerTitle.textContent = projTitle ? cityName + '\n' + projTitle : cityName;
+    }
     _setField('cpv-cities',  (proj && (proj.place || proj.city)) || '');
     _setField('cpv-country', (proj && proj.country) || '');
     _setField('cpv-media',   (proj && (proj.technique || proj.media)) || '');
@@ -4058,11 +4082,13 @@ if (_cipImages) {
       // Altezza totale box = header + meta + foto
       // Massimo: arriva alla fine della 2a foto del box 1 (~69% box 1)
       const maxH = Math.round(boxH * 0.69);
-      const metaEl = _cipPhotoViewer.querySelector('#cip-photo-viewer-meta');
-      const headerEl = _cipPhotoViewer.querySelector('#cip-photo-viewer-header');
-      const headerH = headerEl ? headerEl.offsetHeight : 36;
-      const metaH   = metaEl   ? metaEl.offsetHeight   : 160;
-      const totalH  = Math.min(headerH + metaH + imgH, maxH);
+      const metaEl    = _cipPhotoViewer.querySelector('#cip-photo-viewer-meta');
+      const headerEl  = _cipPhotoViewer.querySelector('#cip-photo-viewer-header');
+      const titleEl   = _cipPhotoViewer.querySelector('#cip-photo-viewer-title');
+      const headerH   = headerEl ? headerEl.offsetHeight : 36;
+      const titleH    = titleEl  ? titleEl.offsetHeight  : 60;
+      const metaH     = metaEl   ? metaEl.offsetHeight   : 160;
+      const totalH    = Math.min(headerH + titleH + metaH + imgH, maxH);
       _cipPhotoViewer.style.height = totalH + 'px';
     };
     _tmpImg.src = img.src;
