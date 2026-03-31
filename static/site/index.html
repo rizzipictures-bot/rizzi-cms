@@ -2071,7 +2071,7 @@
       position: fixed;
       top: 0;                  /* JS sovrascrive con bordo inferiore titolo Cities */
       right: 0;
-      bottom: 45px;            /* 45px prima della fine pagina */
+      bottom: 0;               /* arriva fino al fondo pagina */
       width: 300px;
       height: auto;            /* altezza calcolata da top+bottom */
       background: #111;          /* variante 05: nero */
@@ -2190,7 +2190,7 @@
       right: 300px;            /* attaccato al bordo sinistro del box 1 */
       /* left calcolato via JS per non coprire l'alfabeto */
       top: 0;                  /* JS sovrascrive con bordo inferiore titolo Cities */
-      bottom: 45px;            /* 45px prima della fine pagina */
+      bottom: 0;               /* arriva fino al fondo pagina */
       background: #f0f4f7;     /* bianco con leggerissimo accento carta da zucchero ~10% */
       z-index: 695;
       flex-direction: column;
@@ -2315,14 +2315,14 @@
       flex: 1;                 /* occupa tutto lo spazio rimanente */
       width: 100%;
       min-height: 0;           /* necessario per flex-shrink corretto */
-      background: #eeece8;     /* stesso colore dell'header — uniforme su tutta la fascia */
+      background: #f0f4f7;     /* stesso colore del box — uniforme su tutta la fascia */
       margin-top: 0;
     }
     #cip-photo-viewer-img.is-vertical {
       object-fit: contain;     /* verticale: mostra per intero */
       object-position: left bottom;  /* base allineata al fondo, partenza da sinistra */
       align-self: stretch;     /* si estende fino in fondo */
-      background: #eeece8;     /* stesso colore header — nessuna zona più scura a dx */
+      background: #f0f4f7;     /* stesso colore del box — nessuna zona diversa */
     }
     /* Contenitore foto Box 2: colonna flex, foto riempie il fondo */
     #cip-photo-viewer {
