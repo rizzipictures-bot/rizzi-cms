@@ -2174,12 +2174,13 @@
     }
     .cip-img {
       width: 100%;
-      aspect-ratio: 4/3;
       display: block;
-      object-fit: cover;
+      object-fit: contain;     /* rispetta aspect ratio originale — no taglio */
+      object-position: left center;  /* allineamento a sinistra */
       cursor: pointer;
       border-radius: 1px;
       transition: opacity .15s;
+      background: #1a1a1a;     /* sfondo scuro del box 1 per le zone vuote */
     }
     .cip-img:hover { opacity: 0.8; }
 
@@ -2320,13 +2321,14 @@
       flex: 1;                 /* occupa tutto lo spazio rimanente */
       width: 100%;
       min-height: 0;           /* necessario per flex-shrink corretto */
-      background: #bcb9b6;
+      background: #eeece8;     /* stesso colore dell'header — uniforme su tutta la fascia */
       margin-top: 0;
     }
     #cip-photo-viewer-img.is-vertical {
       object-fit: contain;     /* verticale: mostra per intero */
       object-position: left top;
       align-self: stretch;     /* si estende fino in fondo */
+      background: #eeece8;     /* stesso colore header — nessuna zona più scura a dx */
     }
     /* Contenitore foto Box 2: colonna flex, foto riempie il fondo */
     #cip-photo-viewer {
