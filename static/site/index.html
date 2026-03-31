@@ -722,8 +722,8 @@
     #overview-overlay-img {
       position: relative;
       z-index: 1;
-      max-width: 69vw;   /* +25% rispetto a 55vw */
-      max-height: 86vh;  /* +25% rispetto a 69vh */
+      max-width: 62vw;   /* -10% rispetto a 69vw */
+      max-height: 77vh;  /* -10% rispetto a 86vh */
       object-fit: contain;
       display: block;
       /* Animazione jackdavison: si svolge dall'alto verso il basso */
@@ -2026,9 +2026,9 @@
     .cities-list-row:hover * { color: var(--white) !important; }
     /* Riga attiva (box info aperto): city e place restano viola su sfondo bianco o nero */
     .cities-list-row.cit-active .cities-list-name,
-    .cities-list-row.cit-active .cities-list-place { color: var(--accent) !important; }
+    .cities-list-row.cit-active .cities-list-place { color: var(--accent) !important; font-weight: 700 !important; }
     .cities-list-row.cit-active:hover .cities-list-name,
-    .cities-list-row.cit-active:hover .cities-list-place { color: var(--accent) !important; }
+    .cities-list-row.cit-active:hover .cities-list-place { color: var(--accent) !important; font-weight: 700 !important; }
     .cities-list-code {
       font-family: var(--font-mono);
       font-size: 12px;
@@ -4978,11 +4978,18 @@ function buildCitiesIndex() {
       // Popola il box info con i dati del progetto corrente
       const projectForPanel = isTokyoProject && TOKYO_CMS ? TOKYO_CMS : p;
       populateCityInfoPanel(projectForPanel, previewImages);
-      // Segnala il progetto attivo al mousemove
-      if (_cipanel) _cipanel._activeProject = projectForPanel;
+      // Segnala il progetto attivo al mousemove — con delay 400ms
+      // così il box 1 si apre solo dopo che la thumbs è già apparsa
+      if (_cipanel) _cipanel._activeProject = null; // blocca apertura immediata
+      clearTimeout(window._citBoxDelay);
+      window._citBoxDelay = setTimeout(() => {
+        if (_cipanel) _cipanel._activeProject = projectForPanel;
+      }, 400);
     });
     row.addEventListener('mouseleave', () => {
       citiesPreview.classList.remove('visible');
+      // Cancella il delay di apertura box se il mouse esce prima dei 400ms
+      clearTimeout(window._citBoxDelay);
       // Azzera il progetto attivo — il box si chiude solo quando il mouse
       // torna a sinistra del 20% (gestito nel mousemove)
       if (_cipanel) {
