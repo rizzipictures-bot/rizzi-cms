@@ -758,6 +758,10 @@
     }
     #overview-overlay.open #ov-nav-bar {
       opacity: 1;
+      pointer-events: none;   /* default: non intercetta il click per navigazione foto */
+    }
+    /* Quando il cursore è vicino alla barra, abilita i click */
+    body.ov-near-nav #ov-nav-bar {
       pointer-events: all;
     }
     #ov-nav-bar span {
@@ -3682,9 +3686,9 @@
   <img id="overview-overlay-img" src="" alt="">
   <button id="overview-overlay-close" class="btn-circle-close black" onclick="closeOverview()"></button>
   <div id="ov-nav-bar">
-    <span id="ov-nav-index" onclick="closeOverview()">Index</span>
+    <span id="ov-nav-index" onclick="closeOverview(); switchView('archive');">Index</span>
     <span class="ov-nav-sep">&nbsp;|&nbsp;</span>
-    <span id="ov-nav-thumbs" onclick="closeOverview()">Thumbs</span>
+    <span id="ov-nav-thumbs" onclick="closeOverview(); switchView('home');">Thumbs</span>
   </div>
 </div>
 
@@ -4786,8 +4790,8 @@ function closeOverview() {
 document.getElementById('overview-overlay').addEventListener('click', e => {
   // Pulsante Close: chiude
   if (e.target.id === 'overview-overlay-close') { closeOverview(); return; }
-  // Click su Index o Thumbs: chiude (torna alla vista)
-  if (e.target.id === 'ov-nav-index' || e.target.id === 'ov-nav-thumbs') { closeOverview(); return; }
+  // Click su Index o Thumbs: lascia gestire all'onclick inline (navigazione vista)
+  if (e.target.id === 'ov-nav-index' || e.target.id === 'ov-nav-thumbs') { return; }
   // Click sul background O sulla foto O ovunque nello spazio bianco: naviga
   // Metà destra = avanti; metà sinistra = indietro
   const center = window.innerWidth / 2;
