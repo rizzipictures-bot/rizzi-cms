@@ -1987,6 +1987,11 @@
       background: var(--black);
     }
     .cities-list-row:hover * { color: var(--white) !important; }
+    /* Riga attiva (box info aperto): city e place restano viola su sfondo bianco o nero */
+    .cities-list-row.cit-active .cities-list-name,
+    .cities-list-row.cit-active .cities-list-place { color: var(--accent) !important; }
+    .cities-list-row.cit-active:hover .cities-list-name,
+    .cities-list-row.cit-active:hover .cities-list-place { color: var(--accent) !important; }
     .cities-list-code {
       font-family: var(--font-mono);
       font-size: 12px;
@@ -4484,6 +4489,8 @@ function closeCityInfoPanel() {
   if (_cipPhotoViewer) _cipPhotoViewer.classList.remove('open');
   window._citLock = false;
   window._citBoxW = null;
+  // Rimuovi la classe attiva da tutte le righe
+  document.querySelectorAll('.cities-list-row.cit-active').forEach(r => r.classList.remove('cit-active'));
 }
 
 // Click sulla pagina bianca (view cities-index) → chiude entrambi i box
@@ -4919,6 +4926,9 @@ function buildCitiesIndex() {
     row.addEventListener('mouseenter', () => {
       // Suono click identico ad Archive
       if (typeof archiveRowClick === 'function') archiveRowClick();
+      // Marca la riga come attiva (viola su city/place)
+      document.querySelectorAll('.cities-list-row.cit-active').forEach(r => r.classList.remove('cit-active'));
+      row.classList.add('cit-active');
       if (previewImages.length === 0) return;
       // Usa sempre la foto memoizzata — non cambia mai
       citiesPreviewImg.src = previewImages[p._fixedImgIdx];
@@ -4940,6 +4950,10 @@ function buildCitiesIndex() {
         if (!_cipanel.classList.contains('open')) {
           _cipanel.classList.remove('open');
         }
+      }
+      // Rimuovi cit-active solo se il box info non è aperto (lock mode)
+      if (!_cipanel || !_cipanel.classList.contains('open')) {
+        row.classList.remove('cit-active');
       }
     });
 
