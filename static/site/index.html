@@ -2176,11 +2176,13 @@
       width: 100%;
       display: block;
       object-fit: contain;     /* rispetta aspect ratio originale — no taglio */
-      object-position: left center;  /* allineamento a sinistra */
+      object-position: center center;  /* centrata nella cella */
       cursor: pointer;
       border-radius: 1px;
       transition: opacity .15s;
       background: #1a1a1a;     /* sfondo scuro del box 1 per le zone vuote */
+      min-height: 60px;        /* altezza minima per foto molto panoramiche */
+      max-height: 200px;       /* altezza massima per foto molto verticali */
     }
     .cip-img:hover { opacity: 0.8; }
 
@@ -2200,7 +2202,8 @@
       transform: translateX(-16px);
       transition: opacity .32s ease, transform .32s cubic-bezier(.4,0,.2,1);
       pointer-events: none;
-      border-right: 1px solid #ddd;
+      border-left: 1px solid #e0ddd8;  /* separazione dalla lista a sinistra */
+      border-right: 1px solid #e0ddd8; /* separazione dal box 1 a destra */
     }
     body.cities-active #cip-photo-viewer {
       display: flex;
@@ -2222,11 +2225,16 @@
       gap: 12px;
       border-bottom: 0.5px solid #e0ddd8;
     }
+    /* Header senza testo: riduci padding e nascondi la linea */
+    #cip-photo-viewer-header:has(#cip-photo-viewer-header-text:empty) {
+      padding: 10px 18px 10px;
+      border-bottom: none;
+    }
     #cip-photo-viewer-header-text {
       flex: 1;
       font-family: 'Georgia', 'Times New Roman', serif;
       font-size: 11px;
-      color: #222;
+      color: #555;             /* grigio medio — tono carta */
       line-height: 1.55;
     }
 
@@ -2283,6 +2291,10 @@
       font-weight: 400;
       letter-spacing: 0;
     }
+    /* Nasconde le righe meta con valore vuoto */
+    .cpv-meta-row:has(.cpv-meta-value:empty) {
+      display: none;
+    }
 
     /* Area testo descrittivo sotto la tabella */
     #cip-photo-viewer-desc {
@@ -2317,7 +2329,8 @@
     /* Foto nel box 2 — riempie tutto lo spazio fino al bordo inferiore del box */
     #cip-photo-viewer-img {
       display: block;
-      object-fit: cover;
+      object-fit: contain;     /* contain: mostra la foto intera senza crop */
+      object-position: center top;  /* allineata in alto */
       flex: 1;                 /* occupa tutto lo spazio rimanente */
       width: 100%;
       min-height: 0;           /* necessario per flex-shrink corretto */
@@ -2326,7 +2339,7 @@
     }
     #cip-photo-viewer-img.is-vertical {
       object-fit: contain;     /* verticale: mostra per intero */
-      object-position: left top;
+      object-position: center top;  /* centrata orizzontalmente */
       align-self: stretch;     /* si estende fino in fondo */
       background: #eeece8;     /* stesso colore header — nessuna zona più scura a dx */
     }
@@ -3514,8 +3527,8 @@
     <!-- Box foto secondario Cities (box 2, a sinistra del box 1) -->
     <div id="cip-photo-viewer">
       <div id="cip-photo-viewer-header">
-        <div id="cip-photo-viewer-header-text">Fotografie realizzate durante il reportage urbano. La serie esplora la relazione tra architettura industriale e luce naturale, documentando spazi in transizione tra abbandono e memoria collettiva.</div>
-        <button class="btn-circle-close" id="cip-photo-viewer-close"></button>
+        <div id="cip-photo-viewer-header-text"></div>
+        <button class="btn-circle-close" id="cip-photo-viewer-close" style="--close-color:#7b2fff"></button>
       </div>
       <!-- Titolo progetto -->
       <div id="cip-photo-viewer-title"></div>
@@ -4399,6 +4412,13 @@ if (_cipImages) {
       const cityName  = (proj && (proj.place || proj.city || proj.title)) || '';
       const projTitle = (proj && proj.subtitle) || '';
       _cipPhotoViewerTitle.textContent = projTitle ? cityName + '\n' + projTitle : cityName;
+    }
+    // Testo header Box 2: descrizione del progetto o fallback titolo + luogo
+    const _headerTextEl = document.getElementById('cip-photo-viewer-header-text');
+    if (_headerTextEl) {
+      const _desc = (proj && (proj.description || (proj.texts && proj.texts[0] && proj.texts[0].content))) || '';
+      const _fallback = (proj && proj.title) ? (proj.title + (proj.place ? ' — ' + proj.place : '')) : '';
+      _headerTextEl.textContent = _desc ? (_desc.length > 160 ? _desc.slice(0, 160) + '…' : _desc) : _fallback;
     }
     _setField('cpv-cities',  (proj && (proj.place || proj.city)) || '');
     _setField('cpv-country', (proj && proj.country) || '');
