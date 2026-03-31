@@ -2323,7 +2323,7 @@
     }
     #cip-photo-viewer-img.is-vertical {
       object-fit: contain;     /* verticale: mostra per intero */
-      object-position: center top;  /* centrata orizzontalmente */
+      object-position: left top;   /* allineata a sinistra */
       align-self: stretch;     /* si estende fino in fondo */
       background: #eeece8;     /* stesso colore header — nessuna zona più scura a dx */
     }
@@ -3510,20 +3510,17 @@
 
     <!-- Box foto secondario Cities (box 2, a sinistra del box 1) -->
     <div id="cip-photo-viewer">
-      <!-- Header: titolo + sottotitolo + pallino chiudi -->
+      <!-- Header: testo descrittivo + pallino chiudi (come nel mockup originale) -->
       <div id="cip-photo-viewer-header">
-        <div id="cip-photo-viewer-header-text">
-          <div id="cpv-title" style="font-family:'Georgia','Times New Roman',serif;font-size:13px;font-weight:700;color:#111;line-height:1.2;margin:0 0 2px"></div>
-          <div id="cpv-subtitle" style="font-family:'Georgia','Times New Roman',serif;font-size:10px;color:#888;margin:0"></div>
-        </div>
+        <div id="cip-photo-viewer-header-text"></div>
         <button class="btn-circle-close" id="cip-photo-viewer-close" style="--close-color:#7b2fff"></button>
       </div>
-      <!-- Righe meta: Luogo, Anno, Pub. -->
+      <!-- Righe meta: Cities, Country, Media, N° Pictures, Prints -->
       <div id="cip-photo-viewer-meta">
-        <div class="cpv-meta-row"><span class="cpv-meta-label">Luogo</span><span class="cpv-meta-value" id="cpv-cities"></span></div>
-        <div class="cpv-meta-row"><span class="cpv-meta-label">Anno</span><span class="cpv-meta-value" id="cpv-country"></span></div>
-        <div class="cpv-meta-row"><span class="cpv-meta-label">Pub.</span><span class="cpv-meta-value" id="cpv-media"></span></div>
-        <div class="cpv-meta-row"><span class="cpv-meta-label">N° foto</span><span class="cpv-meta-value" id="cpv-numpics"></span></div>
+        <div class="cpv-meta-row"><span class="cpv-meta-label">Cities</span><span class="cpv-meta-value" id="cpv-cities"></span></div>
+        <div class="cpv-meta-row"><span class="cpv-meta-label">Country</span><span class="cpv-meta-value" id="cpv-country"></span></div>
+        <div class="cpv-meta-row"><span class="cpv-meta-label">Media</span><span class="cpv-meta-value" id="cpv-media"></span></div>
+        <div class="cpv-meta-row"><span class="cpv-meta-label">N° Pictures</span><span class="cpv-meta-value" id="cpv-numpics"></span></div>
         <div class="cpv-meta-row"><span class="cpv-meta-label">Prints</span><span class="cpv-meta-value" id="cpv-prints"></span></div>
       </div>
       <img id="cip-photo-viewer-img" src="" alt="">
@@ -4067,7 +4064,7 @@ document.addEventListener('mousemove', e => {
       // Il box vale solo in modalità lista — in modalità thumbs non si apre mai
       const _citThumbsActive = document.getElementById('cities-thumbs-view') &&
                                document.getElementById('cities-thumbs-view').style.display !== 'none';
-      if (!_citThumbsActive && _citPreview && _citPreview.classList.contains('visible') && _cipanel && _cipanel._activeProject) {
+      if (!_citThumbsActive && _citPreview && _citPreview.classList.contains('visible')) {
         const W      = window.innerWidth;
         const THUMBW = 196;   // larghezza thumbs
         const GAP    = 16;    // gap tra thumbs e bordo / box
@@ -4075,52 +4072,46 @@ document.addEventListener('mousemove', e => {
         const CLOSE_X = W * 0.20;  // soglia chiusura: 20% schermo
 
         // Misura la larghezza reale del box al primo open
-        if (!window._citBoxW) {
+        if (!window._citBoxW && _cipanel) {
           const r = _cipanel.getBoundingClientRect();
           window._citBoxW = r.width > 0 ? r.width : 420;
         }
-        const BOXW = window._citBoxW;
+        const BOXW = window._citBoxW || 420;
 
         // X massima thumbs libera (bordo dx schermo)
         const maxFreeX = W - THUMBW - GAP;
         // X massima thumbs con box aperto (a sinistra del box, senza sovrapposizione)
         const maxBoxX  = W - BOXW - THUMBW - GAP;
 
-        const boxOpen = _cipanel.classList.contains('open');
+        const boxOpen = _cipanel && _cipanel.classList.contains('open');
 
-        // ── APERTURA: mouse supera 30% → box esce
-        if (!boxOpen && mx >= OPEN_X) {
+        // ── APERTURA: mouse supera 30% → box esce (solo se progetto attivo)
+        if (_cipanel && _cipanel._activeProject && !boxOpen && mx >= OPEN_X) {
           _cipanel.classList.add('open');
           window._citLock = true;
-          // Cursore bianco nel box nero
           document.body.classList.add('cursor-on-dark');
-          // Scroll al top: mostra sempre la prima foto
           const _cipBody = _cipanel.querySelector('.cip-body');
           if (_cipBody) _cipBody.scrollTop = 0;
         }
         // ── CHIUSURA: mouse torna sotto 20% → box rientra
-        if (boxOpen && mx < CLOSE_X) {
+        if (_cipanel && boxOpen && mx < CLOSE_X) {
           _cipanel.classList.remove('open');
           window._citLock = false;
-          window._citBoxW = null; // reset misura per prossima apertura
+          window._citBoxW = null;
           document.body.classList.remove('cursor-on-dark');
         }
 
-        const locked = _cipanel.classList.contains('open');
+        const locked = _cipanel && _cipanel.classList.contains('open');
 
         // Cursore bianco quando il mouse è nel box nero aperto
-        if (locked) {
+        if (locked && _cipanel) {
           const _cipRect = _cipanel.getBoundingClientRect();
           const _inBox = mx >= _cipRect.left && mx <= _cipRect.right &&
                          my >= _cipRect.top  && my <= _cipRect.bottom;
           if (_inBox) document.body.classList.add('cursor-on-dark');
         }
 
-        // Scroll verticale Box 1: gestito dall'utente con la rotella del mouse (nessun override automatico)
-
-        // ── POSIZIONE THUMBS
-        // Libera: segue il mouse in X (fino al bordo dx)
-        // Locked: ancorata a sinistra del box (mai sovrapposta)
+        // ── POSIZIONE THUMBS — segue sempre il mouse
         const thumbX = locked ? maxBoxX : Math.min(mx + 20, maxFreeX);
         _citPreview.style.transform = `translate(${thumbX}px, ${my - 70}px)`;
       }
@@ -4391,16 +4382,18 @@ if (_cipImages) {
 
     const proj = _cipanel && _cipanel._currentProject;
 
-    // Popola titolo, sottotitolo e righe meta del Box 2
+    // Popola testo descrittivo e righe meta del Box 2 (struttura originale mockup)
     const _setField = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val || ''; };
-    // Titolo = nome città / titolo progetto
-    _setField('cpv-title',    (proj && proj.title) || '');
-    // Sottotitolo = sottotitolo progetto (es. "Personal", "Reportage")
-    _setField('cpv-subtitle', (proj && (proj.subtitle || proj.category || '')) || '');
-    // Righe meta: Luogo, Anno, Pub.
+    // Testo descrittivo nell'header
+    const _headerTextEl = document.getElementById('cip-photo-viewer-header-text');
+    if (_headerTextEl) {
+      const _desc = (proj && (proj.description || (proj.texts && proj.texts[0] && proj.texts[0].content))) || '';
+      _headerTextEl.textContent = _desc ? (_desc.length > 180 ? _desc.slice(0, 180) + '…' : _desc) : '';
+    }
+    // Righe meta: Cities, Country, Media, N° Pictures, Prints
     _setField('cpv-cities',  (proj && (proj.place || proj.city)) || '');
-    _setField('cpv-country', (proj && proj.year) || '');           // Anno
-    _setField('cpv-media',   (proj && proj.publication) || '');    // Pub.
+    _setField('cpv-country', (proj && (proj.country || proj.nation)) || '');
+    _setField('cpv-media',   (proj && (proj.technique || proj.media || proj.format)) || '');
     _setField('cpv-numpics', (proj && (proj.numPictures || proj.num_pictures || proj.photos_count)) || '');
     _setField('cpv-prints',  (proj && proj.prints) || '');
 
