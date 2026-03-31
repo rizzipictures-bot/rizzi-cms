@@ -2167,22 +2167,22 @@
     .cip-images {
       display: grid;
       grid-template-columns: 1fr 1fr;
-      gap: 10px;  /* 10px tra le thumbs in tutte le direzioni */
+      grid-auto-rows: auto;    /* ogni riga si adatta all'altezza naturale */
+      gap: 10px;               /* 10px tra le thumbs in tutte le direzioni */
       width: 100%;
-      /* height: auto — si espande con le thumbs, scroll gestito da cip-body */
       align-content: start;
+      align-items: stretch;    /* ogni cella si estende all'altezza della riga */
     }
     .cip-img {
       width: 100%;
+      height: 100%;            /* riempie tutta l'altezza della cella */
       display: block;
-      object-fit: contain;     /* rispetta aspect ratio originale — no taglio */
-      object-position: center center;  /* centrata nella cella */
+      object-fit: cover;       /* riempie la cella senza spazi neri */
+      object-position: center center;
       cursor: pointer;
       border-radius: 1px;
       transition: opacity .15s;
-      background: #1a1a1a;     /* sfondo scuro del box 1 per le zone vuote */
-      min-height: 60px;        /* altezza minima per foto molto panoramiche */
-      max-height: 200px;       /* altezza massima per foto molto verticali */
+      background: #1a1a1a;
     }
     .cip-img:hover { opacity: 0.8; }
 
