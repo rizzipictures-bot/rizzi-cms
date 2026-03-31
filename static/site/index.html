@@ -758,11 +758,7 @@
     }
     #overview-overlay.open #ov-nav-bar {
       opacity: 1;
-      pointer-events: none;   /* default: non intercetta il click per navigazione foto */
-    }
-    /* Quando il cursore è vicino alla barra, abilita i click */
-    body.ov-near-nav #ov-nav-bar {
-      pointer-events: all;
+      pointer-events: all;   /* sempre cliccabile nell'overlay */
     }
     #ov-nav-bar span {
       transition: color .18s;
@@ -4194,26 +4190,24 @@ document.addEventListener('mousemove', e => {
         cursorLabel.style.transform = `translate(${mx + 22}px, calc(${my}px - 50%))`;
       }
 
-      // Aggiorna cursore positivo/negativo in overlay Overview
-      if (overlayOpen && ovImages.length) {
-        // Aggiorna rect ogni 200ms
-        if (performance.now() - _ovImgRectTs > 200) _refreshOvImgRect();
-        ovUpdateCursor(ovImages[ovIndex]);
-      }
-
       // Parole fluttuanti diventano pallino nero vicino a Index/Thumbs in overlay
+      // DEVE essere prima di ovUpdateCursor per non essere sovrascritto
+      let _nearNavBar = false;
       if (overlayOpen) {
         const _navBar = document.getElementById('ov-nav-bar');
         if (_navBar) {
           const _nr = _navBar.getBoundingClientRect();
-          const _nearNavBar = mx >= _nr.left - 40 && mx <= _nr.right + 40 &&
-                              my >= _nr.top  - 30 && my <= _nr.bottom + 30;
+          _nearNavBar = mx >= _nr.left - 50 && mx <= _nr.right + 50 &&
+                        my >= _nr.top  - 40 && my <= _nr.bottom + 40;
           if (_nearNavBar) {
+            document.body.classList.add('ov-near-nav');
+            // Nasconde le parole fluttuanti e mostra pallino nero
             cursorLabel.classList.remove('show');
+            cursor.classList.remove('hover');
             cursorDot.style.width  = '10px';
             cursorDot.style.height = '10px';
             cursorDot.style.background = '#111';
-            document.body.classList.add('ov-near-nav');
+            cursorDot.classList.remove('ring-mode');
           } else if (document.body.classList.contains('ov-near-nav')) {
             document.body.classList.remove('ov-near-nav');
             cursorDot.style.width  = '';
@@ -4221,6 +4215,13 @@ document.addEventListener('mousemove', e => {
             cursorDot.style.background = '';
           }
         }
+      }
+
+      // Aggiorna cursore positivo/negativo in overlay Overview (solo se non vicino alla nav bar)
+      if (overlayOpen && ovImages.length && !_nearNavBar) {
+        // Aggiorna rect ogni 200ms
+        if (performance.now() - _ovImgRectTs > 200) _refreshOvImgRect();
+        ovUpdateCursor(ovImages[ovIndex]);
       }
 
       // Colore triangolo in overlay Overview (foto vs bordo bianco)
