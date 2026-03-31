@@ -2191,7 +2191,7 @@
       /* left calcolato via JS per non coprire l'alfabeto */
       top: 0;                  /* JS sovrascrive con bordo inferiore titolo Cities */
       bottom: 0;               /* arriva fino al fondo pagina */
-      background: #f0f4f7;     /* bianco con leggerissimo accento carta da zucchero ~10% */
+      background: #1c1c1c;     /* grigio molto scuro */
       z-index: 695;
       flex-direction: column;
       overflow: hidden;          /* foto borderless fino al fondo, no scroll */
@@ -2199,7 +2199,7 @@
       transform: translateX(-16px);
       transition: opacity .32s ease, transform .32s cubic-bezier(.4,0,.2,1);
       pointer-events: none;
-      border: 0.5px solid #1a1a1a;  /* bordo nero sottilissimo su tutti i lati */
+      border: 0.5px solid #3a3a3a;  /* bordo grigio scuro */
     }
     body.cities-active #cip-photo-viewer {
       display: flex;
@@ -2219,7 +2219,7 @@
       align-items: flex-start;
       justify-content: space-between;
       gap: 12px;
-      border-bottom: 0.5px solid #e8e8e8;
+      border-bottom: 0.5px solid #333;
     }
     #cip-photo-viewer-header-text {
       flex: 1;
@@ -2227,7 +2227,7 @@
       font-family: 'Georgia', 'Times New Roman', serif;
       font-size: 10.5px;
       line-height: 1.55;
-      color: #222;          /* grigio scuro quasi nero */
+      color: #e8e8e8;       /* bianco/grigio chiaro su sfondo scuro */
     }
 
     /* Pallino chiudi box 2 — viola acceso */
@@ -2250,19 +2250,19 @@
     .cpv-meta-row {
       display: grid;
       grid-template-columns: 110px 1fr;
-      border-bottom: 0.5px solid #e8e8e8;
+      border-bottom: 0.5px solid #333;
       padding: 5px 18px;
       align-items: baseline;
       gap: 0;
     }
     .cpv-meta-row:first-child {
-      border-top: 0.5px solid #e8e8e8;
+      border-top: 0.5px solid #333;
     }
     .cpv-meta-label {
       font-family: 'Georgia', 'Times New Roman', serif;
       font-size: 9px;
       font-weight: 400;
-      color: #444;          /* grigio scuro */
+      color: #888;          /* grigio medio su sfondo scuro */
       letter-spacing: 0.06em;
       text-transform: none;
       padding-top: 1px;
@@ -2271,8 +2271,8 @@
     .cpv-meta-value {
       font-family: 'Georgia', 'Times New Roman', serif;
       font-size: 10px;
-      color: #111;          /* quasi nero */
-      font-weight: 700;     /* bold per i valori */
+      color: #e8e8e8;       /* bianco su sfondo scuro */
+      font-weight: 700;
       letter-spacing: 0;
     }
     /* Le righe meta sono sempre visibili (anche senza valore, come nello screenshot originale) */
@@ -2315,14 +2315,14 @@
       flex: 1;                 /* occupa tutto lo spazio rimanente */
       width: 100%;
       min-height: 0;           /* necessario per flex-shrink corretto */
-      background: #f0f4f7;     /* stesso colore del box — uniforme su tutta la fascia */
+      background: #1c1c1c;     /* stesso colore del box — uniforme su tutta la fascia */
       margin-top: 0;
     }
     #cip-photo-viewer-img.is-vertical {
       object-fit: contain;     /* verticale: mostra per intero */
       object-position: left bottom;  /* base allineata al fondo, partenza da sinistra */
       align-self: stretch;     /* si estende fino in fondo */
-      background: #f0f4f7;     /* stesso colore del box — nessuna zona diversa */
+      background: #1c1c1c;     /* stesso colore del box — nessuna zona diversa */
     }
     /* Contenitore foto Box 2: colonna flex, foto riempie il fondo */
     #cip-photo-viewer {
