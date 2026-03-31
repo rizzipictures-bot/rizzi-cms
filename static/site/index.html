@@ -4362,11 +4362,13 @@ function populateCityInfoPanel(project, imageUrls) {
   if (_cipTitle)    _cipTitle.textContent    = project.title || '—';
   if (_cipSubtitle) _cipSubtitle.textContent = project.subtitle || '';
 
-  // Top dinamico: parte dal bordo inferiore del titolo Cities
+  // Top dinamico: parte dal bordo superiore della riga intestazione colonne (Code/City/N)
+  const _colHeader = document.getElementById('cities-col-header');
   const _ctitle = document.querySelector('.cities-page-title');
-  if (_ctitle) {
-    const _ctRect = _ctitle.getBoundingClientRect();
-    _cipanel.style.top = Math.round(_ctRect.bottom) + 'px';
+  const _topRef = _colHeader || _ctitle;
+  if (_topRef) {
+    const _topRect = _topRef.getBoundingClientRect();
+    _cipanel.style.top = Math.round(_topRef === _colHeader ? _topRect.top : _topRect.bottom) + 'px';
   }
 
   // Metadati: Luogo, Anno, Pubblicazione
@@ -4452,12 +4454,14 @@ if (_cipImages) {
     // - left: rispetta l'alfabeto (minimo 60px dal bordo sinistro)
     const panelRect = _cipanel.getBoundingClientRect();
 
-    // Top: bordo inferiore del titolo Cities (sotto il titolo grande)
+    // Top: bordo superiore della riga intestazione colonne (Code/City/N)
+    const _colHdr = document.getElementById('cities-col-header');
     const _citiesTitle = document.querySelector('.cities-page-title');
     let topY;
-    if (_citiesTitle) {
-      const titleRect = _citiesTitle.getBoundingClientRect();
-      topY = Math.round(titleRect.bottom);
+    if (_colHdr) {
+      topY = Math.round(_colHdr.getBoundingClientRect().top);
+    } else if (_citiesTitle) {
+      topY = Math.round(_citiesTitle.getBoundingClientRect().bottom);
     } else {
       topY = Math.round(panelRect.top);
     }
