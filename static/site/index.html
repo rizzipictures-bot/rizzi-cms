@@ -2225,23 +2225,10 @@
     #cip-photo-viewer-header-text {
       flex: 1;
       min-width: 0;
-    }
-    /* Titolo nel Box 2 — bold, come nel Box 1 */
-    #cpv-title {
       font-family: 'Georgia', 'Times New Roman', serif;
-      font-size: 13px;
-      font-weight: 700;
-      color: #111;
-      line-height: 1.2;
-      margin: 0 0 2px;
-    }
-    /* Sottotitolo nel Box 2 — grigio, italic */
-    #cpv-subtitle {
-      font-family: 'Georgia', 'Times New Roman', serif;
-      font-size: 10px;
-      font-style: italic;
-      color: #888;
-      margin: 0;
+      font-size: 10.5px;
+      line-height: 1.55;
+      color: #333;
     }
 
     /* Pallino chiudi box 2 — viola acceso */
@@ -2289,10 +2276,7 @@
       font-weight: 400;
       letter-spacing: 0;
     }
-    /* Nasconde le righe meta con valore vuoto */
-    .cpv-meta-row:has(.cpv-meta-value:empty) {
-      display: none;
-    }
+    /* Le righe meta sono sempre visibili (anche senza valore, come nello screenshot originale) */
 
     /* Area testo descrittivo sotto la tabella */
     #cip-photo-viewer-desc {
@@ -3524,21 +3508,18 @@
 
     <!-- Box foto secondario Cities (box 2, a sinistra del box 1) -->
     <div id="cip-photo-viewer">
-      <!-- Header: titolo + sottotitolo + pallino chiudi -->
+      <!-- Header: testo descrittivo + pallino chiudi (come nello screenshot originale) -->
       <div id="cip-photo-viewer-header">
-        <div id="cip-photo-viewer-header-text">
-          <div id="cpv-title"></div>
-          <div id="cpv-subtitle"></div>
-        </div>
+        <div id="cip-photo-viewer-header-text"></div>
         <button class="btn-circle-close" id="cip-photo-viewer-close" style="--close-color:#7b2fff"></button>
       </div>
-      <!-- Righe meta: Luogo, Anno, Pub. (come nello screenshot) -->
+      <!-- 5 righe meta sempre visibili: Cities, Country, Media, N° of pictures, Prints -->
       <div id="cip-photo-viewer-meta">
-        <div class="cpv-meta-row"><span class="cpv-meta-label">Luogo</span><span class="cpv-meta-value" id="cpv-cities"></span></div>
-        <div class="cpv-meta-row"><span class="cpv-meta-label">Anno</span><span class="cpv-meta-value" id="cpv-country"></span></div>
-        <div class="cpv-meta-row"><span class="cpv-meta-label">Pub.</span><span class="cpv-meta-value" id="cpv-media"></span></div>
-        <div class="cpv-meta-row" id="cpv-row-numpics"><span class="cpv-meta-label">N° foto</span><span class="cpv-meta-value" id="cpv-numpics"></span></div>
-        <div class="cpv-meta-row" id="cpv-row-prints"><span class="cpv-meta-label">Prints</span><span class="cpv-meta-value" id="cpv-prints"></span></div>
+        <div class="cpv-meta-row"><span class="cpv-meta-label">Cities</span><span class="cpv-meta-value" id="cpv-cities"></span></div>
+        <div class="cpv-meta-row"><span class="cpv-meta-label">Country</span><span class="cpv-meta-value" id="cpv-country"></span></div>
+        <div class="cpv-meta-row"><span class="cpv-meta-label">Media</span><span class="cpv-meta-value" id="cpv-media"></span></div>
+        <div class="cpv-meta-row"><span class="cpv-meta-label">N° of pictures</span><span class="cpv-meta-value" id="cpv-numpics"></span></div>
+        <div class="cpv-meta-row"><span class="cpv-meta-label">Prints</span><span class="cpv-meta-value" id="cpv-prints"></span></div>
       </div>
       <img id="cip-photo-viewer-img" src="" alt="">
     </div>
@@ -4399,24 +4380,20 @@ if (_cipImages) {
 
     const proj = _cipanel && _cipanel._currentProject;
 
-    // Popola titolo, sottotitolo e righe meta del Box 2
+    // Popola Box 2: testo descrittivo nell'header + 5 righe meta (come nello screenshot originale)
     const _setField = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val || ''; };
-    // Titolo e sottotitolo (come nel Box 1)
-    _setField('cpv-title',    (proj && proj.title) || '');
-    _setField('cpv-subtitle', (proj && (proj.subtitle || proj.category || '')) || '');
-    // Righe meta: Luogo, Anno, Pub. (come nello screenshot)
+    // Testo descrittivo nell'header (description o primo testo del progetto)
+    const _headerTextEl = document.getElementById('cip-photo-viewer-header-text');
+    if (_headerTextEl) {
+      const _desc = (proj && (proj.description || (proj.texts && proj.texts[0] && proj.texts[0].content))) || '';
+      _headerTextEl.textContent = _desc ? (_desc.length > 220 ? _desc.slice(0, 220) + '…' : _desc) : '';
+    }
+    // 5 righe meta sempre visibili (valori vuoti se campo non compilato nel CMS)
     _setField('cpv-cities',  (proj && (proj.place || proj.city)) || '');
-    _setField('cpv-country', (proj && proj.year) || '');
-    _setField('cpv-media',   (proj && proj.publication) || '');
-    // N° foto e Prints: nascondi riga se vuota
-    const _numpics = (proj && (proj.images ? String(proj.images.length) : '')) || '';
-    _setField('cpv-numpics', _numpics);
-    const _rowNp = document.getElementById('cpv-row-numpics');
-    if (_rowNp) _rowNp.style.display = _numpics ? '' : 'none';
-    const _prints = (proj && (proj.prints || proj.editions)) || '';
-    _setField('cpv-prints', _prints);
-    const _rowPr = document.getElementById('cpv-row-prints');
-    if (_rowPr) _rowPr.style.display = _prints ? '' : 'none';
+    _setField('cpv-country', (proj && (proj.country || proj.nation)) || '');
+    _setField('cpv-media',   (proj && (proj.technique || proj.medium || proj.media)) || '');
+    _setField('cpv-numpics', (proj && proj.images ? String(proj.images.length) : '') || '');
+    _setField('cpv-prints',  (proj && (proj.prints || proj.editions)) || '');
 
     // Posizionamento box 2:
     // - top: sotto il titolo "Cities — Works by Location"
