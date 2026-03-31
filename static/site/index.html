@@ -738,25 +738,28 @@
     }
     /* Barra Index | Thumbs sotto la foto overlay */
     #ov-nav-bar {
-      position: absolute;
-      bottom: 28px;
+      position: fixed;   /* fixed per poter usare top calcolato via JS */
       left: 50%;
       transform: translateX(-50%);
-      z-index: 2;
+      z-index: 302;
       display: flex;
       align-items: center;
       gap: 0;
-      font-family: var(--font-nav);   /* EB Garamond — stesso delle parole fluttuanti */
-      font-size: 14px;
+      font-family: var(--font-nav);
+      font-size: 13px;
       font-weight: 400;
-      letter-spacing: 0.04em;
+      letter-spacing: 0.06em;
       color: #1a1a1a;
       white-space: nowrap;
       opacity: 0;
       transition: opacity .3s .15s;
       cursor: none;
+      pointer-events: none;
     }
-    #overview-overlay.open #ov-nav-bar { opacity: 1; }
+    #overview-overlay.open #ov-nav-bar {
+      opacity: 1;
+      pointer-events: all;
+    }
     #ov-nav-bar span {
       transition: color .18s;
     }
@@ -4721,6 +4724,16 @@ function ovUpdateCursor(img) {
   // cursor.classList.add('hover') già fatto da setCursorHover — il CSS #cursor.hover svg { display:none } lo nasconde
 }
 
+function _ovPositionNavBar() {
+  const oImg = document.getElementById('overview-overlay-img');
+  const bar  = document.getElementById('ov-nav-bar');
+  if (!oImg || !bar) return;
+  const r = oImg.getBoundingClientRect();
+  if (r.height > 0) {
+    bar.style.top = (r.bottom + 18) + 'px';
+  }
+}
+
 function showOverview(img, idx, imageList) {
   const ov  = document.getElementById('overview-overlay');
   const oImg = document.getElementById('overview-overlay-img');
@@ -4729,8 +4742,10 @@ function showOverview(img, idx, imageList) {
   oImg.src = img.url;
   ov.classList.add('open');
   overlayOpen = true;
-  // FIX 1: non forzare la visibilità del triangolo — ovUpdateCursor gestisce il cursore
-  // (setCursorHover aggiunge .hover che nasconde l'SVG via CSS)
+  // Posiziona la barra sotto la foto dopo che l'immagine è caricata
+  oImg.onload = _ovPositionNavBar;
+  // Fallback: prova subito (se già in cache)
+  setTimeout(_ovPositionNavBar, 80);
   ovUpdateCursor(img);
 }
 
