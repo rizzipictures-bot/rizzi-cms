@@ -2225,17 +2225,9 @@
       gap: 12px;
       border-bottom: 0.5px solid #e0ddd8;
     }
-    /* Header senza testo: riduci padding e nascondi la linea */
-    #cip-photo-viewer-header:has(#cip-photo-viewer-header-text:empty) {
-      padding: 10px 18px 10px;
-      border-bottom: none;
-    }
     #cip-photo-viewer-header-text {
       flex: 1;
-      font-family: 'Georgia', 'Times New Roman', serif;
-      font-size: 11px;
-      color: #555;             /* grigio medio — tono carta */
-      line-height: 1.55;
+      min-width: 0;
     }
 
     /* Pallino chiudi box 2 — viola acceso */
@@ -2243,17 +2235,9 @@
       --close-color: #7b2fff !important;
     }
 
-    /* Titolo progetto nel box 2 — stesso stile cip-title box 1 */
+    /* Titolo progetto nel box 2 — non usato (titolo ora in #cpv-title dentro l'header) */
     #cip-photo-viewer-title {
-      font-family: 'Georgia', 'Times New Roman', serif;
-      font-size: 13px;
-      font-weight: 700;
-      color: #111;
-      line-height: 1.2;
-      padding: 0;
-      margin: 0;
-      display: none;  /* nascosto: il titolo è già nell'header del box 1 */
-      flex-shrink: 0;
+      display: none;
     }
 
 
@@ -3526,18 +3510,20 @@
 
     <!-- Box foto secondario Cities (box 2, a sinistra del box 1) -->
     <div id="cip-photo-viewer">
+      <!-- Header: titolo + sottotitolo + pallino chiudi -->
       <div id="cip-photo-viewer-header">
-        <div id="cip-photo-viewer-header-text"></div>
+        <div id="cip-photo-viewer-header-text">
+          <div id="cpv-title" style="font-family:'Georgia','Times New Roman',serif;font-size:13px;font-weight:700;color:#111;line-height:1.2;margin:0 0 2px"></div>
+          <div id="cpv-subtitle" style="font-family:'Georgia','Times New Roman',serif;font-size:10px;color:#888;margin:0"></div>
+        </div>
         <button class="btn-circle-close" id="cip-photo-viewer-close" style="--close-color:#7b2fff"></button>
       </div>
-      <!-- Titolo progetto -->
-      <div id="cip-photo-viewer-title"></div>
-      <!-- Righe info fisse -->
+      <!-- Righe meta: Luogo, Anno, Pub. -->
       <div id="cip-photo-viewer-meta">
-        <div class="cpv-meta-row"><span class="cpv-meta-label">Cities</span><span class="cpv-meta-value" id="cpv-cities"></span></div>
-        <div class="cpv-meta-row"><span class="cpv-meta-label">Country</span><span class="cpv-meta-value" id="cpv-country"></span></div>
-        <div class="cpv-meta-row"><span class="cpv-meta-label">Media</span><span class="cpv-meta-value" id="cpv-media"></span></div>
-        <div class="cpv-meta-row"><span class="cpv-meta-label">N° of pictures</span><span class="cpv-meta-value" id="cpv-numpics"></span></div>
+        <div class="cpv-meta-row"><span class="cpv-meta-label">Luogo</span><span class="cpv-meta-value" id="cpv-cities"></span></div>
+        <div class="cpv-meta-row"><span class="cpv-meta-label">Anno</span><span class="cpv-meta-value" id="cpv-country"></span></div>
+        <div class="cpv-meta-row"><span class="cpv-meta-label">Pub.</span><span class="cpv-meta-value" id="cpv-media"></span></div>
+        <div class="cpv-meta-row"><span class="cpv-meta-label">N° foto</span><span class="cpv-meta-value" id="cpv-numpics"></span></div>
         <div class="cpv-meta-row"><span class="cpv-meta-label">Prints</span><span class="cpv-meta-value" id="cpv-prints"></span></div>
       </div>
       <img id="cip-photo-viewer-img" src="" alt="">
@@ -4405,24 +4391,16 @@ if (_cipImages) {
 
     const proj = _cipanel && _cipanel._currentProject;
 
-    // Popola titolo e righe info fisse con i dati del progetto
+    // Popola titolo, sottotitolo e righe meta del Box 2
     const _setField = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val || ''; };
-    // Titolo: nome della città + titolo progetto (se disponibile)
-    if (_cipPhotoViewerTitle) {
-      const cityName  = (proj && (proj.place || proj.city || proj.title)) || '';
-      const projTitle = (proj && proj.subtitle) || '';
-      _cipPhotoViewerTitle.textContent = projTitle ? cityName + '\n' + projTitle : cityName;
-    }
-    // Testo header Box 2: descrizione del progetto o fallback titolo + luogo
-    const _headerTextEl = document.getElementById('cip-photo-viewer-header-text');
-    if (_headerTextEl) {
-      const _desc = (proj && (proj.description || (proj.texts && proj.texts[0] && proj.texts[0].content))) || '';
-      const _fallback = (proj && proj.title) ? (proj.title + (proj.place ? ' — ' + proj.place : '')) : '';
-      _headerTextEl.textContent = _desc ? (_desc.length > 160 ? _desc.slice(0, 160) + '…' : _desc) : _fallback;
-    }
+    // Titolo = nome città / titolo progetto
+    _setField('cpv-title',    (proj && proj.title) || '');
+    // Sottotitolo = sottotitolo progetto (es. "Personal", "Reportage")
+    _setField('cpv-subtitle', (proj && (proj.subtitle || proj.category || '')) || '');
+    // Righe meta: Luogo, Anno, Pub.
     _setField('cpv-cities',  (proj && (proj.place || proj.city)) || '');
-    _setField('cpv-country', (proj && proj.country) || '');
-    _setField('cpv-media',   (proj && (proj.technique || proj.media)) || '');
+    _setField('cpv-country', (proj && proj.year) || '');           // Anno
+    _setField('cpv-media',   (proj && proj.publication) || '');    // Pub.
     _setField('cpv-numpics', (proj && (proj.numPictures || proj.num_pictures || proj.photos_count)) || '');
     _setField('cpv-prints',  (proj && proj.prints) || '');
 
