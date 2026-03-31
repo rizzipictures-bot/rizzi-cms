@@ -2191,7 +2191,7 @@
       /* left calcolato via JS per non coprire l'alfabeto */
       top: 0;                  /* JS sovrascrive con bordo inferiore titolo Cities */
       bottom: 45px;            /* 45px prima della fine pagina */
-      background: #eeece8;     /* variante 05: bianco carta -10% scuro */
+      background: #ffffff;     /* bianco puro */
       z-index: 695;
       flex-direction: column;
       overflow: hidden;          /* foto borderless fino al fondo, no scroll */
@@ -2199,8 +2199,7 @@
       transform: translateX(-16px);
       transition: opacity .32s ease, transform .32s cubic-bezier(.4,0,.2,1);
       pointer-events: none;
-      border-left: 1px solid #e0ddd8;  /* separazione dalla lista a sinistra */
-      border-right: 1px solid #e0ddd8; /* separazione dal box 1 a destra */
+      border: 0.5px solid #1a1a1a;  /* bordo nero sottilissimo su tutti i lati */
     }
     body.cities-active #cip-photo-viewer {
       display: flex;
@@ -2220,7 +2219,7 @@
       align-items: flex-start;
       justify-content: space-between;
       gap: 12px;
-      border-bottom: 0.5px solid #e0ddd8;
+      border-bottom: 0.5px solid #e8e8e8;
     }
     #cip-photo-viewer-header-text {
       flex: 1;
@@ -2250,14 +2249,14 @@
     }
     .cpv-meta-row {
       display: grid;
-      grid-template-columns: 80px 1fr;
-      border-bottom: 0.5px solid #e0ddd8;
-      padding: 4px 18px;
+      grid-template-columns: 110px 1fr;
+      border-bottom: 0.5px solid #e8e8e8;
+      padding: 5px 18px;
       align-items: baseline;
       gap: 0;
     }
     .cpv-meta-row:first-child {
-      border-top: 0.5px solid #e0ddd8;
+      border-top: 0.5px solid #e8e8e8;
     }
     .cpv-meta-label {
       font-family: 'Georgia', 'Times New Roman', serif;
