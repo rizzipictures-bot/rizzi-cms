@@ -2074,7 +2074,7 @@
       bottom: 0;               /* arriva fino al fondo pagina */
       width: 300px;
       height: auto;            /* altezza calcolata da top+bottom */
-      background: #111;          /* variante 05: nero */
+      background: #2a2a2a;        /* grigio scuro (Box1) */
       color: #e0e0e0;
       z-index: 700;
       display: none;           /* nascosto su tutte le pagine non-cities */
@@ -2133,8 +2133,8 @@
     .cip-meta-row {
       display: grid;
       grid-template-columns: 80px 1fr;
-      border-bottom: 1px solid #333;
-      padding: 4px 0;
+      border-bottom: 0.5px solid #333;
+      padding: 2px 0;       /* riga più stretta */
     }
     .cip-meta-row:last-child { border-bottom: none; }
     .cip-meta-label {
@@ -2191,7 +2191,7 @@
       /* left calcolato via JS per non coprire l'alfabeto */
       top: 0;                  /* JS sovrascrive con bordo inferiore titolo Cities */
       bottom: 0;               /* arriva fino al fondo pagina */
-      background: #1c1c1c;     /* grigio molto scuro */
+      background: #111;           /* nero (Box2) */
       z-index: 695;
       flex-direction: column;
       overflow: hidden;          /* foto borderless fino al fondo, no scroll */
@@ -2199,7 +2199,7 @@
       transform: translateX(-16px);
       transition: opacity .32s ease, transform .32s cubic-bezier(.4,0,.2,1);
       pointer-events: none;
-      border: 0.5px solid #3a3a3a;  /* bordo grigio scuro */
+      border: 0.5px solid #2a2a2a;  /* bordo grigio scuro */
     }
     body.cities-active #cip-photo-viewer {
       display: flex;
@@ -2219,7 +2219,7 @@
       align-items: flex-start;
       justify-content: space-between;
       gap: 12px;
-      border-bottom: 0.5px solid #333;
+      border-bottom: 0.5px solid #222;
     }
     #cip-photo-viewer-header-text {
       flex: 1;
@@ -2250,32 +2250,88 @@
     .cpv-meta-row {
       display: grid;
       grid-template-columns: 110px 1fr;
-      border-bottom: 0.5px solid #333;
-      padding: 5px 18px;
+      border-bottom: 0.5px solid #222;
+      padding: 2px 18px;    /* riga più stretta */
       align-items: baseline;
       gap: 0;
     }
     .cpv-meta-row:first-child {
-      border-top: 0.5px solid #333;
+      border-top: 0.5px solid #222;
     }
     .cpv-meta-label {
       font-family: 'Georgia', 'Times New Roman', serif;
       font-size: 9px;
       font-weight: 400;
-      color: #888;          /* grigio medio su sfondo scuro */
+      color: #888;
       letter-spacing: 0.06em;
-      text-transform: none;
+      text-transform: uppercase;  /* capital letter come Box1 */
       padding-top: 1px;
       white-space: nowrap;
     }
     .cpv-meta-value {
       font-family: 'Georgia', 'Times New Roman', serif;
       font-size: 10px;
-      color: #e8e8e8;       /* bianco su sfondo scuro */
+      color: #e8e8e8;
       font-weight: 700;
       letter-spacing: 0;
     }
     /* Le righe meta sono sempre visibili (anche senza valore, come nello screenshot originale) */
+
+    /* Toggle tema Box2: bianco con bordo nero */
+    #cip-photo-viewer.light-mode {
+      background: #f8f8f8;
+      border-color: #1a1a1a;
+    }
+    #cip-photo-viewer.light-mode #cip-photo-viewer-header {
+      border-bottom-color: #ddd;
+    }
+    #cip-photo-viewer.light-mode #cip-photo-viewer-header-text {
+      color: #222;
+    }
+    #cip-photo-viewer.light-mode .cpv-meta-row {
+      border-bottom-color: #ddd;
+    }
+    #cip-photo-viewer.light-mode .cpv-meta-row:first-child {
+      border-top-color: #ddd;
+    }
+    #cip-photo-viewer.light-mode .cpv-meta-label {
+      color: #666;
+    }
+    #cip-photo-viewer.light-mode .cpv-meta-value {
+      color: #111;
+    }
+    #cip-photo-viewer.light-mode #cip-photo-viewer-img {
+      background: #f8f8f8;
+    }
+    /* Bottone toggle tema */
+    #cpv-theme-toggle {
+      position: absolute;
+      top: 10px;
+      left: 12px;
+      width: 14px;
+      height: 14px;
+      border-radius: 50%;
+      border: 1px solid #555;
+      background: transparent;
+      cursor: pointer;
+      padding: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: background .2s, border-color .2s;
+      z-index: 2;
+    }
+    #cpv-theme-toggle:hover {
+      border-color: #aaa;
+    }
+    #cip-photo-viewer.light-mode #cpv-theme-toggle {
+      background: #111;
+      border-color: #111;
+    }
+    #cip-photo-viewer-header {
+      position: relative;
+      padding-left: 36px; /* spazio per il toggle */
+    }
 
     /* Area testo descrittivo sotto la tabella */
     #cip-photo-viewer-desc {
@@ -2315,14 +2371,14 @@
       flex: 1;                 /* occupa tutto lo spazio rimanente */
       width: 100%;
       min-height: 0;           /* necessario per flex-shrink corretto */
-      background: #1c1c1c;     /* stesso colore del box — uniforme su tutta la fascia */
+      background: #111;          /* stesso colore del box — uniforme su tutta la fascia */
       margin-top: 0;
     }
     #cip-photo-viewer-img.is-vertical {
       object-fit: contain;     /* verticale: mostra per intero */
       object-position: left bottom;  /* base allineata al fondo, partenza da sinistra */
       align-self: stretch;     /* si estende fino in fondo */
-      background: #1c1c1c;     /* stesso colore del box — nessuna zona diversa */
+      background: #111;          /* stesso colore del box — nessuna zona diversa */
     }
     /* Contenitore foto Box 2: colonna flex, foto riempie il fondo */
     #cip-photo-viewer {
@@ -3507,8 +3563,9 @@
 
     <!-- Box foto secondario Cities (box 2, a sinistra del box 1) -->
     <div id="cip-photo-viewer">
-      <!-- Header: testo descrittivo + pallino chiudi (come nello screenshot originale) -->
+      <!-- Header: toggle tema + testo descrittivo + pallino chiudi -->
       <div id="cip-photo-viewer-header">
+        <button id="cpv-theme-toggle" title="Cambia tema"></button>
         <div id="cip-photo-viewer-header-text"></div>
         <button class="btn-circle-close" id="cip-photo-viewer-close" style="--close-color:#7b2fff"></button>
       </div>
@@ -4484,11 +4541,21 @@ function _cipShowIndex(idx) {
   _cipPhotoViewerImg.src = url;
 }
 
+// Toggle tema Box 2: scuro ↔ bianco con bordo nero
+const _cpvThemeToggle = document.getElementById('cpv-theme-toggle');
+if (_cpvThemeToggle && _cipPhotoViewer) {
+  _cpvThemeToggle.addEventListener('click', e => {
+    e.stopPropagation();
+    _cipPhotoViewer.classList.toggle('light-mode');
+  });
+}
+
 // Click sul Box 2: metà destra → foto successiva, metà sinistra → foto precedente
-// Ignora click sul pulsante chiudi
+// Ignora click sul pulsante chiudi e sul toggle tema
 if (_cipPhotoViewer) {
   _cipPhotoViewer.addEventListener('click', e => {
     if (e.target.closest('#cip-photo-viewer-close')) return;
+    if (e.target.closest('#cpv-theme-toggle')) return;
     if (!_cipCurrentUrls.length) return;
     const rect = _cipPhotoViewer.getBoundingClientRect();
     const midX = rect.left + rect.width / 2;
