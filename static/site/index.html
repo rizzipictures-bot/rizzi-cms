@@ -2310,11 +2310,11 @@
       animation: cipSlideLeft 0.64s cubic-bezier(.77,0,.175,1) both;
     }
 
-    /* Foto nel box 2 — riempie tutto lo spazio fino al bordo inferiore del box */
+    /* Foto nel box 2 — base sul margine inferiore del box */
     #cip-photo-viewer-img {
       display: block;
       object-fit: contain;     /* contain: mostra la foto intera senza crop */
-      object-position: center top;  /* allineata in alto */
+      object-position: left bottom;  /* base allineata al fondo */
       flex: 1;                 /* occupa tutto lo spazio rimanente */
       width: 100%;
       min-height: 0;           /* necessario per flex-shrink corretto */
@@ -2323,7 +2323,7 @@
     }
     #cip-photo-viewer-img.is-vertical {
       object-fit: contain;     /* verticale: mostra per intero */
-      object-position: left top;   /* allineata a sinistra */
+      object-position: left bottom;  /* base allineata al fondo, partenza da sinistra */
       align-self: stretch;     /* si estende fino in fondo */
       background: #eeece8;     /* stesso colore header — nessuna zona più scura a dx */
     }
@@ -4391,11 +4391,12 @@ if (_cipImages) {
       _headerTextEl.textContent = _desc ? (_desc.length > 180 ? _desc.slice(0, 180) + '…' : _desc) : '';
     }
     // Righe meta: Cities, Country, Media, N° Pictures, Prints
+    // Usa i campi reali del progetto (stessa struttura usata in Archive)
     _setField('cpv-cities',  (proj && (proj.place || proj.city)) || '');
-    _setField('cpv-country', (proj && (proj.country || proj.nation)) || '');
-    _setField('cpv-media',   (proj && (proj.technique || proj.media || proj.format)) || '');
-    _setField('cpv-numpics', (proj && (proj.numPictures || proj.num_pictures || proj.photos_count)) || '');
-    _setField('cpv-prints',  (proj && proj.prints) || '');
+    _setField('cpv-country', (proj && (proj.country || proj.nation || proj.subtitle)) || '');
+    _setField('cpv-media',   (proj && (proj.technique || proj.medium || proj.media || proj.format)) || '');
+    _setField('cpv-numpics', (proj && (proj.images ? String(proj.images.length) : (proj.numPictures || proj.num_pictures || proj.photos_count || ''))) || '');
+    _setField('cpv-prints',  (proj && (proj.prints || proj.editions)) || '');
 
     // Posizionamento box 2:
     // - top: sotto il titolo "Cities — Works by Location"
