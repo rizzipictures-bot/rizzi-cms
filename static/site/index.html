@@ -770,6 +770,43 @@
     .ov-nav-sep {
       opacity: 0.4;
     }
+    /* Quando il cursore è vicino alla barra Index/Thumbs: pallino nero visibile */
+    body.ov-near-nav #cursor-dot {
+      width: 18px !important;
+      height: 18px !important;
+      background: #111 !important;
+      display: flex !important;
+      opacity: 1 !important;
+    }
+    body.ov-near-nav #cursor-dot::before,
+    body.ov-near-nav #cursor-dot::after {
+      background: rgba(255,255,255,0.85) !important;
+      opacity: 1 !important;
+    }
+    body.ov-near-nav #cursor.hover #cursor-dot {
+      display: flex !important;  /* non nascondere il pallino vicino alla barra */
+    }
+    body.ov-near-nav #cursor-dot.ring-mode {
+      background: #111 !important;
+    }
+    /* ov-near-nav ha priorità su cursor-near-close: annulla la freccia */
+    body.ov-near-nav.cursor-near-close #cursor-dot {
+      background: #111 !important;
+      width: 18px !important;
+      height: 18px !important;
+    }
+    body.ov-near-nav.cursor-near-close #cursor-dot::before {
+      content: '' !important;
+      background: rgba(255,255,255,0.85) !important;
+      color: transparent !important;
+      width: 1px !important;
+      height: 9px !important;
+      font-size: 0 !important;
+    }
+    body.ov-near-nav.cursor-near-close #cursor-dot::after {
+      opacity: 1 !important;
+      background: rgba(255,255,255,0.85) !important;
+    }
 
     /* Label in basso — jackdavison */
     #overview-overlay-label {
@@ -3682,7 +3719,7 @@
   <img id="overview-overlay-img" src="" alt="">
   <button id="overview-overlay-close" class="btn-circle-close black" onclick="closeOverview()"></button>
   <div id="ov-nav-bar">
-    <span id="ov-nav-index" onclick="closeOverview(); switchView('archive');">Index</span>
+    <span id="ov-nav-index" onclick="closeOverview(); switchView('index');">Index</span>
     <span class="ov-nav-sep">&nbsp;|&nbsp;</span>
     <span id="ov-nav-thumbs" onclick="closeOverview(); switchView('home');">Thumbs</span>
   </div>
