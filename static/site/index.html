@@ -2228,7 +2228,7 @@
       font-family: 'Georgia', 'Times New Roman', serif;
       font-size: 10.5px;
       line-height: 1.55;
-      color: #333;
+      color: #222;          /* grigio scuro quasi nero */
     }
 
     /* Pallino chiudi box 2 — viola acceso */
@@ -2263,7 +2263,7 @@
       font-family: 'Georgia', 'Times New Roman', serif;
       font-size: 9px;
       font-weight: 400;
-      color: #999;
+      color: #444;          /* grigio scuro */
       letter-spacing: 0.06em;
       text-transform: none;
       padding-top: 1px;
@@ -2272,8 +2272,8 @@
     .cpv-meta-value {
       font-family: 'Georgia', 'Times New Roman', serif;
       font-size: 10px;
-      color: #111;
-      font-weight: 400;
+      color: #111;          /* quasi nero */
+      font-weight: 700;     /* bold per i valori */
       letter-spacing: 0;
     }
     /* Le righe meta sono sempre visibili (anche senza valore, come nello screenshot originale) */
@@ -3513,13 +3513,10 @@
         <div id="cip-photo-viewer-header-text"></div>
         <button class="btn-circle-close" id="cip-photo-viewer-close" style="--close-color:#7b2fff"></button>
       </div>
-      <!-- 5 righe meta sempre visibili: Cities, Country, Media, N° of pictures, Prints -->
+      <!-- 2 righe meta: Prints available e Print size -->
       <div id="cip-photo-viewer-meta">
-        <div class="cpv-meta-row"><span class="cpv-meta-label">Cities</span><span class="cpv-meta-value" id="cpv-cities"></span></div>
-        <div class="cpv-meta-row"><span class="cpv-meta-label">Country</span><span class="cpv-meta-value" id="cpv-country"></span></div>
-        <div class="cpv-meta-row"><span class="cpv-meta-label">Media</span><span class="cpv-meta-value" id="cpv-media"></span></div>
-        <div class="cpv-meta-row"><span class="cpv-meta-label">N° of pictures</span><span class="cpv-meta-value" id="cpv-numpics"></span></div>
-        <div class="cpv-meta-row"><span class="cpv-meta-label">Prints</span><span class="cpv-meta-value" id="cpv-prints"></span></div>
+        <div class="cpv-meta-row"><span class="cpv-meta-label">Prints available</span><span class="cpv-meta-value" id="cpv-prints"></span></div>
+        <div class="cpv-meta-row"><span class="cpv-meta-label">Print size</span><span class="cpv-meta-value" id="cpv-printsize"></span></div>
       </div>
       <img id="cip-photo-viewer-img" src="" alt="">
     </div>
@@ -4380,20 +4377,18 @@ if (_cipImages) {
 
     const proj = _cipanel && _cipanel._currentProject;
 
-    // Popola Box 2: testo descrittivo nell'header + 5 righe meta (come nello screenshot originale)
+    // Popola Box 2: testo descrittivo nell'header + 2 righe meta (Prints available, Print size)
     const _setField = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val || ''; };
-    // Testo descrittivo nell'header (description o primo testo del progetto)
+    // Testo descrittivo nell'header — usa description reale o testo simulato di ~80 parole per test
     const _headerTextEl = document.getElementById('cip-photo-viewer-header-text');
     if (_headerTextEl) {
       const _desc = (proj && (proj.description || (proj.texts && proj.texts[0] && proj.texts[0].content))) || '';
-      _headerTextEl.textContent = _desc ? (_desc.length > 220 ? _desc.slice(0, 220) + '…' : _desc) : '';
+      const _simulated = 'La serie esplora la relazione tra architettura industriale e luce naturale, documentando spazi urbani in transizione tra abbandono e memoria collettiva. Le fotografie indagano la stratificazione del tempo nei luoghi dimenticati, dove il degrado diventa forma e la luce radente rivela strutture invisibili. Un archivio visivo che racconta la città come organismo vivente.';
+      _headerTextEl.textContent = _desc || _simulated;
     }
-    // 5 righe meta sempre visibili (valori vuoti se campo non compilato nel CMS)
-    _setField('cpv-cities',  (proj && (proj.place || proj.city)) || '');
-    _setField('cpv-country', (proj && (proj.country || proj.nation)) || '');
-    _setField('cpv-media',   (proj && (proj.technique || proj.medium || proj.media)) || '');
-    _setField('cpv-numpics', (proj && proj.images ? String(proj.images.length) : '') || '');
-    _setField('cpv-prints',  (proj && (proj.prints || proj.editions)) || '');
+    // 2 righe meta: Prints available e Print size
+    _setField('cpv-prints',    (proj && (proj.prints || proj.editions)) || '');
+    _setField('cpv-printsize', (proj && (proj.print_size || proj.printSize || proj.print_format)) || '');
 
     // Posizionamento box 2:
     // - top: sotto il titolo "Cities — Works by Location"
