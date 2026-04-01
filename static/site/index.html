@@ -289,6 +289,45 @@
       color: #fff;
     }
 
+    /* ── Cursore FRECCIA DESTRA/SINISTRA — sulla hero archive expanded ── */
+    body.archive-hero-next #cursor-dot,
+    body.archive-hero-prev #cursor-dot {
+      background: transparent !important;
+      border: none !important;
+      box-shadow: none !important;
+      width: 22px !important;
+      height: 22px !important;
+    }
+    body.archive-hero-next #cursor-dot::before {
+      content: '→';
+      position: absolute;
+      background: none !important;
+      color: #fff;
+      font-size: 17px;
+      font-weight: 300;
+      width: auto; height: auto;
+      top: 50%; left: 50%;
+      transform: translate(-50%, -50%);
+      border-radius: 0;
+    }
+    body.archive-hero-prev #cursor-dot::before {
+      content: '←';
+      position: absolute;
+      background: none !important;
+      color: #fff;
+      font-size: 17px;
+      font-weight: 300;
+      width: auto; height: auto;
+      top: 50%; left: 50%;
+      transform: translate(-50%, -50%);
+      border-radius: 0;
+    }
+    body.archive-hero-next #cursor-dot::after,
+    body.archive-hero-prev #cursor-dot::after { opacity: 0 !important; }
+    /* Su box bianco: frecce nere */
+    body.archive-hero-next.archive-box-white #cursor-dot::before { color: #111; }
+    body.archive-hero-prev.archive-box-white #cursor-dot::before { color: #111; }
+
     /* ── Cursore FRECCIA CHIUDI — vicino ai btn-circle-close ──
        Su box scuro (Box 1 nero): freccia bianca → destra (direzione opposta alla X)
        Su box chiaro: freccia nera → destra */
@@ -2189,6 +2228,7 @@
     .gallery-thumbs-section {
       border-top: 1px solid var(--light);
       padding: 0 0 32px;
+      margin-top: 20px;  /* 20px di spazio extra sopra la linea delle thumbs */
       cursor: none;  /* cursore custom anche nella sezione thumbs */
     }
     .gallery-series-title {
@@ -4723,14 +4763,44 @@ document.addEventListener('mousemove', e => {
             }
           }
 
+          // Controlla se il cursore è sulla hero (foto grande) per mostrare freccia dx/sx
+          const _heroEl = activeExpanded.querySelector('.archive-expanded-hero');
+          let _onHero = false;
+          if (_heroEl) {
+            const _hr2 = _heroEl.getBoundingClientRect();
+            _onHero = mx >= _hr2.left && mx <= _hr2.right && my >= _hr2.top && my <= _hr2.bottom;
+            if (_onHero) {
+              const _heroHalf = _hr2.left + _hr2.width / 2;
+              document.body.classList.toggle('archive-hero-next', mx >= _heroHalf);
+              document.body.classList.toggle('archive-hero-prev', mx < _heroHalf);
+            } else {
+              document.body.classList.remove('archive-hero-next', 'archive-hero-prev');
+            }
+          }
+
           if (_nearToggleOrThumb) {
             // ROSSO: rimuovi cursor-on-dark così il !important del rosso vince senza conflitti
             document.body.classList.remove('cursor-on-dark');
             document.body.classList.remove('cursor-red');
             document.body.classList.remove('archive-box-white');
             document.body.classList.add('archive-near-toggle');
+          } else if (_onHero) {
+            // Sulla hero: freccia dx/sx già impostata sopra, rimuovi classi conflittuali
+            document.body.classList.remove('archive-near-toggle');
+            document.body.classList.remove('cursor-red');
+            if (_boxIsWhite) {
+              document.body.classList.remove('cursor-on-dark');
+              document.body.classList.add('archive-box-white');
+            } else {
+              document.body.classList.remove('archive-box-white');
+              document.body.classList.add('cursor-on-dark');
+            }
+            cursorDot.style.background = '';
+            cursorDot.style.width  = '';
+            cursorDot.style.height = '';
           } else {
             document.body.classList.remove('archive-near-toggle');
+            document.body.classList.remove('archive-hero-next', 'archive-hero-prev');
             document.body.classList.remove('cursor-red');
             if (_boxIsWhite) {
               document.body.classList.remove('cursor-on-dark');
@@ -4753,6 +4823,7 @@ document.addEventListener('mousemove', e => {
           const _onDarkRow = _elOut && _elOut.closest ? !!_elOut.closest('.archive-row.is-open') : false;
           document.body.classList.remove('archive-near-toggle');
           document.body.classList.remove('archive-box-white');
+          document.body.classList.remove('archive-hero-next', 'archive-hero-prev');
           if (_onDarkRow) {
             document.body.classList.add('cursor-on-dark');
             document.body.classList.remove('cursor-red');
@@ -4888,30 +4959,28 @@ document.addEventListener('mousemove', e => {
       }
 
       // ── GALLERY: cursore freccia giù / freccia su ──────────────────────────
-      // Freccia giù: mouse è nell'area gallery-main-wrap ma SOTTO il bordo inferiore della foto
+      // Freccia giù: mouse è sotto il bordo inferiore della foto E sopra la linea delle thumbs
+      //              (include gallery-info-row e qualsiasi spazio tra foto e thumbs)
       // Freccia su:  mouse è nella sezione thumbs (suggerisce di tornare alla foto)
       if (currentView === 'gallery' && galleryProject) {
         const _gallImg   = document.getElementById('gallery-img');
         const _gallThumb = document.querySelector('.gallery-thumbs-section');
+        const _gallInfo  = document.getElementById('gallery-info-row');
         let _gallCursorDown = false;
         let _gallCursorUp   = false;
 
-        if (_gallImg) {
-          const _ir = _gallImg.getBoundingClientRect();
-          const _mw = document.getElementById('gallery-main-wrap');
-          if (_mw) {
-            const _mwr = _mw.getBoundingClientRect();
-            // Dentro gallery-main-wrap ma sotto la foto
-            const _inWrap = mx >= _mwr.left && mx <= _mwr.right &&
-                            my >= _mwr.top  && my <= _mwr.bottom;
-            if (_inWrap && my > _ir.bottom) _gallCursorDown = true;
+        if (_gallImg && _gallThumb) {
+          const _ir  = _gallImg.getBoundingClientRect();
+          const _thr = _gallThumb.getBoundingClientRect();
+          // Zona freccia giù: da sotto la foto fino al bordo superiore della linea thumbs
+          // Larghezza: tutta la viewport (non limitare a gallery-main-wrap)
+          if (my > _ir.bottom && my < _thr.top) {
+            _gallCursorDown = true;
           }
-        }
-        if (_gallThumb) {
-          const _tr = _gallThumb.getBoundingClientRect();
-          const _inThumbs = mx >= _tr.left && mx <= _tr.right &&
-                            my >= _tr.top  && my <= _tr.bottom;
-          if (_inThumbs) _gallCursorUp = true;
+          // Zona freccia su: dentro la sezione thumbs
+          if (my >= _thr.top && my <= _thr.bottom) {
+            _gallCursorUp = true;
+          }
         }
 
         document.body.classList.toggle('gallery-cursor-down', _gallCursorDown);
@@ -6147,9 +6216,37 @@ function buildArchive() {
           heroImg.loading = 'lazy';
           heroImg.alt = p.title || '';
           hero.appendChild(heroImg);
+          // Indice corrente della foto nella hero (condiviso con le thumbs)
+          let _heroIndex = 0;
+
+          // Funzione per aggiornare la hero con animazione curtain
+          function _setHeroImage(idx) {
+            _heroIndex = ((idx % images.length) + images.length) % images.length;
+            heroImg.classList.remove('hero-curtain-in');
+            heroImg.classList.add('hero-curtain-reset');
+            heroImg.src = images[_heroIndex].url;
+            void heroImg.offsetWidth;
+            heroImg.classList.remove('hero-curtain-reset');
+            heroImg.classList.add('hero-curtain-in');
+            setTimeout(() => heroImg.classList.remove('hero-curtain-in'), 500);
+            // Aggiorna thumb attiva
+            if (strip) {
+              strip.querySelectorAll('.archive-expanded-thumb').forEach((el, i) => {
+                el.classList.toggle('active', i === _heroIndex);
+              });
+            }
+          }
+
           hero.addEventListener('click', e => {
             e.stopPropagation();
-            openLightboxViewer(images, 0, p.title || '');
+            if (images.length <= 1) return;
+            const heroRect = heroImg.getBoundingClientRect();
+            const half = heroRect.left + heroRect.width / 2;
+            if (e.clientX >= half) {
+              _setHeroImage(_heroIndex + 1);  // destra → foto successiva
+            } else {
+              _setHeroImage(_heroIndex - 1);  // sinistra → foto precedente
+            }
           });
           inner.appendChild(hero);
 
@@ -6174,15 +6271,7 @@ function buildArchive() {
             t.appendChild(tImg);
             t.addEventListener('click', e => {
               e.stopPropagation();
-              heroImg.classList.remove('hero-curtain-in');
-              heroImg.classList.add('hero-curtain-reset');
-              heroImg.src = img.url;
-              void heroImg.offsetWidth;
-              heroImg.classList.remove('hero-curtain-reset');
-              heroImg.classList.add('hero-curtain-in');
-              setTimeout(() => heroImg.classList.remove('hero-curtain-in'), 500);
-              strip.querySelectorAll('.archive-expanded-thumb').forEach(el => el.classList.remove('active'));
-              t.classList.add('active');
+              _setHeroImage(i);  // usa la funzione condivisa che aggiorna _heroIndex e thumbs
             });
             strip.appendChild(t);
           });
@@ -6869,6 +6958,14 @@ document.getElementById('gallery-main-wrap').addEventListener('click', e => {
   }
   renderGallery();
   _galleryScrollToTop();
+});
+
+// ── CLICK HANDLER: gallery-info-row (area caption+counter, tra foto e thumbs) ──
+// Click in questa zona → scroll alle thumbs (continuità con la zona sotto-foto)
+document.getElementById('gallery-info-row').addEventListener('click', e => {
+  e.stopPropagation();
+  if (!galleryProject) return;
+  _galleryScrollToThumbs();
 });
 
 // ── CLICK HANDLER SECONDARIO: view-gallery (spazio laterale fuori dalla foto) ──
