@@ -5792,6 +5792,9 @@ function buildCitiesIndex() {
       firstImg.classList.add('selected');
       if (_cipanel) _cipanel.classList.add('viewer-open');
       _cipPhotoViewer.classList.add('open');
+      // Nascondi la thumbnail cursor-preview quando il box 2 si apre
+      const _citPreview = document.getElementById('cities-cursor-preview');
+      if (_citPreview) _citPreview.classList.remove('visible');
       requestAnimationFrame(() => _updateCitiesLines());
     });
 
