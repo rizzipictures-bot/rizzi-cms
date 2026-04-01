@@ -7859,7 +7859,17 @@ loadFromCMS();
           const distStart = window._citLerpDistStart || Math.max(dist, 1);
 
           const t = Math.max(0, Math.min(1, dist / distStart));
-          const speed = 0.0175 + t * (0.105 - 0.0175);  /* -30%: era 0.025→0.15 */
+          // Curva ease-out a 3 segmenti con rallentamenti differenziati:
+          // t=1 (inizio): speedMax = 0.105 * 0.70 = 0.0735  (-30%)
+          // t=0.5 (metà): speed ≈ 0.105 * 0.80 * 0.5 = ~0.042  (-20% rispetto alla metà precedente)
+          // t=0 (fine):   speedMin = 0.0175 * 0.90 = 0.01575 (-10%)
+          const speedMax = 0.0735;   // inizio: -30% da 0.105
+          const speedMin = 0.01575;  // fine:   -10% da 0.0175
+          // Curva non lineare: quadratica smorzata per accentuare il rallentamento centrale
+          const tEased = t < 0.5
+            ? t * t * 2 * 0.9          // metà bassa: -20% extra sul tratto centrale
+            : 1 - Math.pow(1 - t, 2) * 0.9;
+          const speed = speedMin + tEased * (speedMax - speedMin);
 
           _citThumbCurX += distX * speed;
           _citThumbCurY += distY * speed;
