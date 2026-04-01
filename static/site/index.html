@@ -140,7 +140,7 @@
       justify-content: center;
       flex-shrink: 0;
       position: relative;
-      transition: background .14s, border .14s, width .14s, height .14s;
+      transition: background .14s, border .14s;  /* NO width/height: evita lag visivo del pallino */
     }
     /* Croce bianca al centro — linee sottili */
     #cursor-dot::before,
@@ -1215,7 +1215,8 @@
       background: transparent;
       max-width: 700px;
     }
-    .archive-expanded-hero:hover img { opacity: 0.92; }
+    /* BUG FIX: rimosso hover opaco sulla foto grande del box nero Archive */
+    /* .archive-expanded-hero:hover img { opacity: 0.92; } */
 
     /* Colonna destra: layout a 3 zone — thumbs 2 colonne | separatore | keywords */
     .archive-expanded-right {
@@ -1258,11 +1259,11 @@
       aspect-ratio: 3/2;
       overflow: hidden;
       cursor: none;
-      opacity: 0.30;  /* 30% opacità */
+      opacity: 0.72;  /* BUG FIX: era 0.30 (troppo scure), ora 0.72 — appena accennata */
       transition: opacity .25s;
       position: relative;
     }
-    .archive-expanded-thumb:hover { opacity: 0.7; }
+    .archive-expanded-thumb:hover { opacity: 0.88; }  /* hover: leggermente più luminosa */
     .archive-expanded-thumb.active { opacity: 1; outline: 1px solid rgba(255,255,255,0.7); }
     /* Light-mode: thumbs a piena opacità, hover con overlay grigio */
     .archive-expanded.box-white .archive-expanded-thumb { opacity: 1; }
@@ -4741,7 +4742,9 @@ document.addEventListener('mousemove', e => {
 
       // Parole fluttuanti diventano pallino nero vicino alla navbar normale
       // Solo quando NON siamo in overlay Overview (lì è gestito da ov-near-nav)
-      if (!overlayOpen && cursorLabel.classList.contains('show')) {
+      // e NON in Archive/Cities (dove il pallino rosso non deve sparire vicino alla navbar)
+      const _isRedView = currentView === 'archive' || currentView === 'cities-index';
+      if (!overlayOpen && !_isRedView && cursorLabel.classList.contains('show')) {
         const _header = document.querySelector('header');
         if (_header) {
           const _hr = _header.getBoundingClientRect();
