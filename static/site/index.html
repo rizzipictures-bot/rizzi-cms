@@ -188,6 +188,16 @@
     #cursor-dot.ring-mode:hover {
       background: #888 !important;
     }
+    /* Cursore nero quando sopra TV/Thumbs in box Archive scuro (elementi scuri su sfondo scuro) */
+    body.cursor-on-ae-dark #cursor-dot {
+      background: #111 !important;
+      box-shadow: none !important;
+    }
+    body.cursor-on-ae-dark #cursor-dot::before,
+    body.cursor-on-ae-dark #cursor-dot::after {
+      background: rgba(255,255,255,0.85) !important;
+    }
+
     /* Cursore bianco su sfondo scuro (Box 1 nero) */
     body.cursor-on-dark #cursor-dot {
       background: #f5f5f5;
@@ -2388,9 +2398,11 @@
       color: #e8e8e8;       /* testo bianco su sfondo nero */
     }
 
-    /* Pallino chiudi box 2 — viola acceso */
+    /* Pallino chiudi box 2 — viola acceso, +3px rispetto al default 18px */
     #cip-photo-viewer-close {
       --close-color: #7b2fff !important;
+      width: 21px;
+      height: 21px;
       margin-top: -5px;
     }
 
@@ -4498,6 +4510,27 @@ document.addEventListener('mousemove', e => {
                            my >= _boxRect.top  && my <= _boxRect.bottom;
         if (_insideBox) {
           document.body.classList.remove('cursor-red');
+          // Cursore su TV (toggle) o Thumbs: inverte colore rispetto al tema del box
+          const _elUnder = document.elementFromPoint(mx, my);
+          const _onToggleOrThumb = _elUnder && (
+            _elUnder.closest('.archive-expanded-toggle') ||
+            _elUnder.closest('.archive-expanded-viewall') ||
+            _elUnder.closest('.ae-thumbs-back')
+          );
+          const _boxIsWhite = activeExpanded.classList.contains('box-white');
+          if (_onToggleOrThumb) {
+            // Box scuro (default): TV e Thumbs sono bianchi/chiari su sfondo nero
+            //   → il pallino (nero di default) non si vede → diventa BIANCO
+            // Box chiaro (box-white): TV e Thumbs sono neri su sfondo bianco
+            //   → il pallino (bianco) non si vede → diventa NERO
+            if (_boxIsWhite) {
+              // Sfondo bianco: rimuovi cursor-on-dark → pallino rimane nero (visibile su bianco)
+              document.body.classList.remove('cursor-on-dark');
+            } else {
+              // Sfondo nero: aggiungi cursor-on-dark → pallino diventa bianco (visibile su nero)
+              document.body.classList.add('cursor-on-dark');
+            }
+          }
         } else {
           document.body.classList.add('cursor-red');
         }
@@ -5716,12 +5749,9 @@ function buildArchive() {
           toggle.innerHTML = _svgDark + _svgLight;
           toggle.addEventListener('click', e => {
             e.stopPropagation();
+            // panel è già .archive-expanded — basta togglare su di lui
             panel.classList.toggle('box-white');
-            inner.classList.toggle('box-white');
-            // Aggiorna anche il wrapper archive-expanded per i selettori CSS
-            const ae = panel.querySelector('.archive-expanded') || panel.closest('.archive-expanded') || panel;
-            ae.classList.toggle('box-white');
-            // Legge lo stato DOPO il toggle (non usa isWhite che non è definito qui)
+            // Legge lo stato DOPO il toggle
             const _nowWhite = panel.classList.contains('box-white');
             const _td = toggle.querySelector('.ae-toggle-dark');
             const _tl = toggle.querySelector('.ae-toggle-light');
