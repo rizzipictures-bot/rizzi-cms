@@ -2042,7 +2042,7 @@
       padding: 0;
       overflow-y: auto;
       overflow-x: hidden;
-      scroll-behavior: smooth;
+      /* scroll-behavior gestito via RAF custom (_gallerySmooth) per easing cubico preciso */
     }
     #view-gallery::-webkit-scrollbar { display: none; }
 
@@ -2085,6 +2085,55 @@
     body.gallery-active.cursor-red.cursor-on-dark #cursor-dot::before,
     body.gallery-active.cursor-red.cursor-on-dark #cursor-dot::after {
       background: rgba(255,255,255,0.85) !important;
+    }
+    /* Cursore freccia giù: sotto la foto nella gallery → scroll alle thumbs */
+    body.gallery-cursor-down #cursor-dot {
+      background: transparent !important;
+      border: none !important;
+      box-shadow: none !important;
+      width: 22px !important;
+      height: 22px !important;
+    }
+    body.gallery-cursor-down #cursor-dot::before {
+      content: '↓';
+      position: absolute;
+      background: none !important;
+      color: #111;
+      font-size: 17px;
+      font-weight: 300;
+      width: auto;
+      height: auto;
+      top: 50%; left: 50%;
+      transform: translate(-50%, -50%);
+      border-radius: 0;
+      transition: opacity .15s;
+    }
+    body.gallery-cursor-down #cursor-dot::after {
+      opacity: 0 !important;
+    }
+    /* Cursore freccia su: dentro le thumbs → scroll alla foto */
+    body.gallery-cursor-up #cursor-dot {
+      background: transparent !important;
+      border: none !important;
+      box-shadow: none !important;
+      width: 22px !important;
+      height: 22px !important;
+    }
+    body.gallery-cursor-up #cursor-dot::before {
+      content: '↑';
+      position: absolute;
+      background: none !important;
+      color: #111;
+      font-size: 17px;
+      font-weight: 300;
+      width: auto;
+      height: auto;
+      top: 50%; left: 50%;
+      transform: translate(-50%, -50%);
+      border-radius: 0;
+    }
+    body.gallery-cursor-up #cursor-dot::after {
+      opacity: 0 !important;
     }
 
     /* Foto principale centrata */
@@ -2140,6 +2189,7 @@
     .gallery-thumbs-section {
       border-top: 1px solid var(--light);
       padding: 0 0 32px;
+      cursor: none;  /* cursore custom anche nella sezione thumbs */
     }
     .gallery-series-title {
       font-family: var(--font-nav);
@@ -4836,6 +4886,44 @@ document.addEventListener('mousemove', e => {
                         my >= _ovImgRect.top  && my <= _ovImgRect.bottom;
         document.body.classList.toggle('cursor-on-dark', onPhoto);
       }
+
+      // ── GALLERY: cursore freccia giù / freccia su ──────────────────────────
+      // Freccia giù: mouse è nell'area gallery-main-wrap ma SOTTO il bordo inferiore della foto
+      // Freccia su:  mouse è nella sezione thumbs (suggerisce di tornare alla foto)
+      if (currentView === 'gallery' && galleryProject) {
+        const _gallImg   = document.getElementById('gallery-img');
+        const _gallThumb = document.querySelector('.gallery-thumbs-section');
+        let _gallCursorDown = false;
+        let _gallCursorUp   = false;
+
+        if (_gallImg) {
+          const _ir = _gallImg.getBoundingClientRect();
+          const _mw = document.getElementById('gallery-main-wrap');
+          if (_mw) {
+            const _mwr = _mw.getBoundingClientRect();
+            // Dentro gallery-main-wrap ma sotto la foto
+            const _inWrap = mx >= _mwr.left && mx <= _mwr.right &&
+                            my >= _mwr.top  && my <= _mwr.bottom;
+            if (_inWrap && my > _ir.bottom) _gallCursorDown = true;
+          }
+        }
+        if (_gallThumb) {
+          const _tr = _gallThumb.getBoundingClientRect();
+          const _inThumbs = mx >= _tr.left && mx <= _tr.right &&
+                            my >= _tr.top  && my <= _tr.bottom;
+          if (_inThumbs) _gallCursorUp = true;
+        }
+
+        document.body.classList.toggle('gallery-cursor-down', _gallCursorDown);
+        document.body.classList.toggle('gallery-cursor-up',   _gallCursorUp);
+
+        // Quando freccia giù o su: disabilita ring-mode
+        if (_gallCursorDown || _gallCursorUp) {
+          if (cursorDot) cursorDot.classList.remove('ring-mode');
+        }
+      } else {
+        document.body.classList.remove('gallery-cursor-down', 'gallery-cursor-up');
+      }
     });
   }
 });
@@ -6700,10 +6788,11 @@ function renderGallery() {
     capEl.textContent = ri2 ? ri2.title + ', ' + ri2.year : '';
     item.appendChild(imgEl2);
     item.appendChild(capEl);
-    item.addEventListener('click', () => {
+    item.addEventListener('click', e => {
+      e.stopPropagation();      // evita che il click si propaghi a view-gallery
       galleryIndex = i;
       renderGallery();          // aggiorna la foto principale con clip-path reveal
-      _galleryScrollToTop();   // scroll smooth verso l'alto (900ms, easing cubico)
+      _galleryScrollToTop();   // scroll smooth verso l'alto con easing cubico
     });
     thumbsEl.appendChild(item);
   });
@@ -6717,47 +6806,63 @@ function renderGallery() {
   updateFooter();
 }
 
-// ── FUNZIONE SCROLL SMOOTH GALLERY (condivisa da tutti i click handler) ──────
+// ── FUNZIONE SCROLL SMOOTH GALLERY ──────────────────────────────────────────
+// Easing ease-in-out cubico: partenza lenta, accelerazione, frenata fluida
 function _gallerySmooth(targetTop, duration) {
   const vg = document.getElementById('view-gallery');
   if (!vg) return;
+  // Cancella eventuale RAF precedente per evitare conflitti
+  if (vg._smoothRaf) { cancelAnimationFrame(vg._smoothRaf); vg._smoothRaf = null; }
   const start = vg.scrollTop;
   const diff  = targetTop - start;
-  if (Math.abs(diff) < 4) return;
+  if (Math.abs(diff) < 2) return;
   const t0 = performance.now();
+  // Easing cubico ease-in-out
   function ease(t) { return t < 0.5 ? 4*t*t*t : 1 - Math.pow(-2*t+2,3)/2; }
   function step(now) {
     const p = Math.min((now - t0) / duration, 1);
     vg.scrollTop = start + diff * ease(p);
-    if (p < 1) requestAnimationFrame(step);
+    if (p < 1) { vg._smoothRaf = requestAnimationFrame(step); }
+    else { vg._smoothRaf = null; }
   }
-  requestAnimationFrame(step);
-}
-function _galleryScrollToThumbs() {
-  const vg = document.getElementById('view-gallery');
-  const sec = document.querySelector('.gallery-thumbs-section');
-  if (!vg || !sec) return;
-  const top = sec.getBoundingClientRect().top + vg.scrollTop - vg.getBoundingClientRect().top;
-  _gallerySmooth(top, 900);
-}
-function _galleryScrollToTop() {
-  _gallerySmooth(0, 900);
+  vg._smoothRaf = requestAnimationFrame(step);
 }
 
-// Click sulla foto principale: avanza/indietro o scroll alle thumbs
-document.getElementById('gallery-stage').addEventListener('click', e => {
+function _galleryScrollToThumbs() {
+  const vg  = document.getElementById('view-gallery');
+  const sec = document.querySelector('.gallery-thumbs-section');
+  if (!vg || !sec) return;
+  // Calcola la posizione assoluta della sezione thumbs dentro lo scroller
+  const vgRect  = vg.getBoundingClientRect();
+  const secRect = sec.getBoundingClientRect();
+  const target  = vg.scrollTop + (secRect.top - vgRect.top);
+  _gallerySmooth(target, 820);
+}
+
+function _galleryScrollToTop() {
+  _gallerySmooth(0, 820);
+}
+
+// ── CLICK HANDLER PRINCIPALE: gallery-main-wrap (area foto + spazio sotto) ──
+// Gestisce: click sotto la foto → scroll alle thumbs
+//           click a destra della foto → foto successiva
+//           click a sinistra della foto → foto precedente
+document.getElementById('gallery-main-wrap').addEventListener('click', e => {
   if (!galleryProject) return;
-  const img = e.currentTarget.querySelector('img');
+  // Ignora click su elementi figli interattivi (non ce ne sono, ma per sicurezza)
+  const img = document.getElementById('gallery-img');
   if (!img) return;
   const imgRect = img.getBoundingClientRect();
-  // Click sotto il bordo inferiore della foto → scroll smooth alle thumbs
+
+  // Qualsiasi pixel SOTTO il bordo inferiore dell'immagine → scroll alle thumbs
   if (e.clientY > imgRect.bottom) {
     _galleryScrollToThumbs();
     return;
   }
-  // Destra → foto successiva; sinistra → foto precedente
+
+  // Click sulla foto: destra → avanti, sinistra → indietro
   const half = imgRect.left + imgRect.width / 2;
-  if (e.clientX > half) {
+  if (e.clientX >= half) {
     galleryIndex = (galleryIndex + 1) % galleryProject.images.length;
   } else {
     galleryIndex = (galleryIndex - 1 + galleryProject.images.length) % galleryProject.images.length;
@@ -6766,22 +6871,23 @@ document.getElementById('gallery-stage').addEventListener('click', e => {
   _galleryScrollToTop();
 });
 
-// Click su spazio bianco gallery: dx→avanti, sx→indietro, sotto→scroll thumbs
+// ── CLICK HANDLER SECONDARIO: view-gallery (spazio laterale fuori dalla foto) ──
+// Cattura click nelle zone laterali della view (fuori da gallery-main-wrap, thumbs, testo)
 document.getElementById('view-gallery').addEventListener('click', e => {
-  if (e.target.closest('#gallery-stage, .gallery-thumbs-section, .gallery-text-section, .gallery-info-row')) return;
+  // Delega a gallery-main-wrap se il click è dentro di esso (già gestito sopra)
+  if (e.target.closest('#gallery-main-wrap, .gallery-thumbs-section, .gallery-text-section, .gallery-info-row')) return;
   if (!galleryProject) return;
-  const vg = document.getElementById('view-gallery');
-  const stage = document.getElementById('gallery-stage');
-  if (!stage) return;
-  const stageRect = stage.getBoundingClientRect();
-  // Sotto la foto → scroll smooth alle thumbs
-  if (e.clientY > stageRect.bottom) {
+  const img = document.getElementById('gallery-img');
+  if (!img) return;
+  const imgRect = img.getBoundingClientRect();
+  // Sotto la foto → scroll alle thumbs
+  if (e.clientY > imgRect.bottom) {
     _galleryScrollToThumbs();
     return;
   }
   // Destra o sinistra → foto successiva/precedente
-  const half = stageRect.left + stageRect.width / 2;
-  if (e.clientX > half) {
+  const half = imgRect.left + imgRect.width / 2;
+  if (e.clientX >= half) {
     galleryIndex = (galleryIndex + 1) % galleryProject.images.length;
   } else {
     galleryIndex = (galleryIndex - 1 + galleryProject.images.length) % galleryProject.images.length;
