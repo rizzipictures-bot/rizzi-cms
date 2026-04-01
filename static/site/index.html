@@ -3066,6 +3066,9 @@
       padding: 0;
       overflow: hidden;
       background: #fff;
+      /* Ignora il padding-top del main: copre tutta la finestra dall'alto */
+      top: 0 !important;
+      bottom: 0 !important;
     }
     .index-split {
       display: grid;
