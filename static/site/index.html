@@ -4195,6 +4195,8 @@ document.addEventListener('mousemove', e => {
           document.body.classList.add('cursor-on-dark');
           const _cipBody = _cipanel.querySelector('.cip-body');
           if (_cipBody) _cipBody.scrollTop = 0;
+          // Aggiorna la linea orizzontale al top reale del Box 1
+          requestAnimationFrame(() => _updateCitiesLines());
         }
         // ── CHIUSURA: mouse torna sotto 20% → box rientra
         if (_cipanel && boxOpen && mx < CLOSE_X) {
@@ -4587,39 +4589,46 @@ if (_cipImages) {
 }
 
 // Aggiorna posizione delle linee decorative Cities
-// - lineV: sempre al bordo sx del Box 1 (o Box 2 se aperto), full height (top:0 → bottom:0)
-// - lineH: dal bordo sx pagina al bordo sx del Box 1, all'altezza del top dei box
+// - lineH: dal bordo sx pagina al bordo sx del Box 1, all'altezza ESATTA del top del Box 1
+// - lineV: al bordo sx del Box 2 (se aperto), full height
 function _updateCitiesLines() {
   const lineH  = document.getElementById('cities-line-h');
   const lineV  = document.getElementById('cities-line-v');
   const _bx1   = document.getElementById('cities-info-panel');
+  const _bx2   = document.getElementById('cip-photo-viewer');
   if (!lineH || !lineV) return;
 
-  // Calcola la X del bordo sinistro del Box 1 (fisso, right:0 con width:300px)
+  // Calcola la X del bordo sinistro del Box 1
   const bx1Rect = _bx1 ? _bx1.getBoundingClientRect() : null;
-  // Se Box 1 è visibile (open o display:flex), usa il suo bordo sinistro
-  // Altrimenti usa window.innerWidth - 300 (posizione attesa)
   const bx1Left = bx1Rect && bx1Rect.width > 0
     ? Math.round(bx1Rect.left)
     : Math.round(window.innerWidth - 300);
 
-  // Linea verticale: al bordo sx del Box 1, full height (CSS già imposta height:100vh)
-  lineV.style.left = bx1Left + 'px';
-
-  // Calcola il top dei box: bordo superiore del titolo Cities
-  const _citiesTitle = document.querySelector('.cities-page-title');
-  const _colHdr = document.getElementById('cities-col-header');
-  const _topRef = _citiesTitle || _colHdr;
+  // Linea orizzontale: usa il top REALE del Box 1 (non ricalcolato)
+  // così è sempre perfettamente allineata al bordo superiore del box
   let topY = 0;
-  if (_topRef) {
-    topY = Math.round(_topRef.getBoundingClientRect().top);
+  if (bx1Rect && bx1Rect.width > 0) {
+    topY = Math.round(bx1Rect.top);
+  } else {
+    const _citiesTitle = document.querySelector('.cities-page-title');
+    const _colHdr = document.getElementById('cities-col-header');
+    const _topRef = _citiesTitle || _colHdr;
+    if (_topRef) topY = Math.round(_topRef.getBoundingClientRect().top);
   }
-
-  // Linea orizzontale: dal bordo sx pagina (left:0) al bordo sx del Box 1,
-  // all'altezza del top dei box (allineata con il bordo superiore del Box 1)
   lineH.style.top   = topY + 'px';
   lineH.style.left  = '0';
   lineH.style.width = bx1Left + 'px';
+
+  // Linea verticale: al bordo sx del Box 2 (se aperto e visibile)
+  // Altrimenti nascosta (non ha senso senza Box 2)
+  const bx2Rect = _bx2 ? _bx2.getBoundingClientRect() : null;
+  const bx2Open = _bx2 && _bx2.classList.contains('open');
+  if (bx2Open && bx2Rect && bx2Rect.width > 0) {
+    lineV.style.left    = Math.round(bx2Rect.left) + 'px';
+    lineV.style.display = '';
+  } else {
+    lineV.style.display = 'none';
+  }
 }
 
 // Funzione riutilizzabile per mostrare una foto per indice nel Box 2
