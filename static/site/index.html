@@ -2193,8 +2193,8 @@
       /* left calcolato via JS per non coprire l'alfabeto */
       top: 0;                  /* JS sovrascrive con bordo inferiore titolo Cities */
       bottom: 0;               /* arriva fino al fondo pagina */
-      background: #ffffff;        /* bianco come il mockup */
-      color: #222;
+      background: #111;            /* nero */
+      color: #e8e8e8;
       z-index: 695;
       flex-direction: column;
       overflow: hidden;          /* foto borderless fino al fondo, no scroll */
@@ -2202,7 +2202,7 @@
       transform: translateX(-16px);
       transition: opacity .32s ease, transform .32s cubic-bezier(.4,0,.2,1);
       pointer-events: none;
-      border: 0.5px solid #1a1a1a;  /* bordo nero sottilissimo come il mockup */
+      border: 0.5px solid #333;     /* bordo grigio scuro */
     }
     body.cities-active #cip-photo-viewer {
       display: flex;
@@ -2222,7 +2222,7 @@
       align-items: flex-start;
       justify-content: space-between;
       gap: 12px;
-      border-bottom: 0.5px solid #ccc;
+      border-bottom: 0.5px solid #333;
     }
     #cip-photo-viewer-header-text {
       flex: 1;
@@ -2230,7 +2230,7 @@
       font-family: 'Georgia', 'Times New Roman', serif;
       font-size: 10.5px;
       line-height: 1.55;
-      color: #222;          /* testo scuro su sfondo bianco */
+      color: #e8e8e8;       /* testo bianco su sfondo nero */
     }
 
     /* Pallino chiudi box 2 — viola acceso */
@@ -2253,13 +2253,13 @@
     .cpv-meta-row {
       display: grid;
       grid-template-columns: 110px 1fr;
-      border-bottom: 0.5px solid #ccc;
+      border-bottom: 0.5px solid #333;
       padding: 2px 18px;
       align-items: baseline;
       gap: 0;
     }
     .cpv-meta-row:first-child {
-      border-top: 0.5px solid #ccc;
+      border-top: 0.5px solid #333;
     }
     .cpv-meta-label {
       font-family: 'Georgia', 'Times New Roman', serif;
@@ -2274,29 +2274,29 @@
     .cpv-meta-value {
       font-family: 'Georgia', 'Times New Roman', serif;
       font-size: 10px;
-      color: #111;
+      color: #e8e8e8;
       font-weight: 700;
       letter-spacing: 0;
     }
     /* Le righe meta sono sempre visibili (anche senza valore, come nello screenshot originale) */
 
-    /* Toggle tema Box2: scuro con bordo grigio */
+    /* Toggle tema Box2: bianco con bordo nero (light-mode = tema chiaro) */
     #cip-photo-viewer.light-mode {
-      background: #111;
-      border-color: #2a2a2a;
-      color: #e8e8e8;
+      background: #ffffff;
+      border-color: #1a1a1a;
+      color: #222;
     }
     #cip-photo-viewer.light-mode #cip-photo-viewer-header {
-      border-bottom-color: #333;
+      border-bottom-color: #ccc;
     }
     #cip-photo-viewer.light-mode #cip-photo-viewer-header-text {
-      color: #e8e8e8;
+      color: #222;
     }
     #cip-photo-viewer.light-mode .cpv-meta-row {
-      border-bottom-color: #333;
+      border-bottom-color: #ccc;
     }
     #cip-photo-viewer.light-mode .cpv-meta-row:first-child {
-      border-top-color: #333;
+      border-top-color: #ccc;
     }
     #cip-photo-viewer.light-mode .cpv-meta-label {
       color: #888;
@@ -2305,7 +2305,7 @@
       color: #111;
     }
     #cip-photo-viewer.light-mode #cip-photo-viewer-img {
-      background: #f8f8f8;
+      background: #ffffff;
     }
     /* Bottone toggle tema */
     #cpv-theme-toggle {
@@ -2375,14 +2375,14 @@
       flex: 1;                 /* occupa tutto lo spazio rimanente */
       width: 100%;
       min-height: 0;           /* necessario per flex-shrink corretto */
-      background: #ffffff;       /* stesso colore del box — uniforme su tutta la fascia */
+      background: #111;           /* stesso colore del box — uniforme su tutta la fascia */
       margin-top: 0;
     }
     #cip-photo-viewer-img.is-vertical {
       object-fit: contain;     /* verticale: mostra per intero */
       object-position: left bottom;  /* base allineata al fondo, partenza da sinistra */
       align-self: stretch;     /* si estende fino in fondo */
-      background: #ffffff;       /* stesso colore del box — nessuna zona diversa */
+      background: #111;           /* stesso colore del box — nessuna zona diversa */
     }
     /* Contenitore foto Box 2: colonna flex, foto riempie il fondo */
     #cip-photo-viewer {
@@ -4458,14 +4458,14 @@ if (_cipImages) {
     // - left: rispetta l'alfabeto (minimo 60px dal bordo sinistro)
     const panelRect = _cipanel.getBoundingClientRect();
 
-    // Top: bordo superiore della riga intestazione colonne (Code/City/N)
+    // Top: bordo superiore del titolo Cities ("Cities | Index by Location")
     const _colHdr = document.getElementById('cities-col-header');
     const _citiesTitle = document.querySelector('.cities-page-title');
     let topY;
-    if (_colHdr) {
+    if (_citiesTitle) {
+      topY = Math.round(_citiesTitle.getBoundingClientRect().top);
+    } else if (_colHdr) {
       topY = Math.round(_colHdr.getBoundingClientRect().top);
-    } else if (_citiesTitle) {
-      topY = Math.round(_citiesTitle.getBoundingClientRect().bottom);
     } else {
       topY = Math.round(panelRect.top);
     }
