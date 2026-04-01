@@ -4560,29 +4560,38 @@ document.addEventListener('mousemove', e => {
                            my >= _boxRect.top  && my <= _boxRect.bottom;
         if (_insideBox) {
           document.body.classList.remove('cursor-red');
-          // Cursore su TV (toggle) o Thumbs: inverte colore rispetto al tema del box
-          const _elUnder = document.elementFromPoint(mx, my);
-          const _onToggleOrThumb = _elUnder && (
-            _elUnder.closest('.archive-expanded-toggle') ||
-            _elUnder.closest('.archive-expanded-viewall') ||
-            _elUnder.closest('.ae-thumbs-back')
-          );
           const _boxIsWhite = activeExpanded.classList.contains('box-white');
-          if (_onToggleOrThumb) {
-            // Box scuro (default): TV e Thumbs sono bianchi/chiari su sfondo nero
-            //   → il pallino (nero di default) non si vede → diventa BIANCO
-            // Box chiaro (box-white): TV e Thumbs sono neri su sfondo bianco
-            //   → il pallino (bianco) non si vede → diventa NERO
+
+          // Controlla prossimità 5px da TV o Thumbs (tutte le istanze: normale + thumbs view)
+          const _PROX = 5;
+          let _nearToggleOrThumb = false;
+          const _toggleEls = activeExpanded.querySelectorAll('.archive-expanded-toggle, .archive-expanded-viewall, .ae-thumbs-back');
+          for (const el of _toggleEls) {
+            const r = el.getBoundingClientRect();
+            if (r.width === 0 && r.height === 0) continue; // elemento nascosto
+            if (mx >= r.left - _PROX && mx <= r.right  + _PROX &&
+                my >= r.top  - _PROX && my <= r.bottom + _PROX) {
+              _nearToggleOrThumb = true;
+              break;
+            }
+          }
+
+          if (_nearToggleOrThumb) {
+            // Entro 5px da TV o Thumbs: pallino ROSSO (sia dark che light mode)
+            document.body.classList.add('cursor-red');
+            document.body.classList.remove('cursor-on-dark');
+          } else {
+            // Cursore dentro il box ma lontano da TV/Thumbs
+            document.body.classList.remove('cursor-red');
             if (_boxIsWhite) {
-              // Sfondo bianco: rimuovi cursor-on-dark → pallino rimane nero (visibile su bianco)
               document.body.classList.remove('cursor-on-dark');
             } else {
-              // Sfondo nero: aggiungi cursor-on-dark → pallino diventa bianco (visibile su nero)
               document.body.classList.add('cursor-on-dark');
             }
           }
         } else {
           document.body.classList.add('cursor-red');
+          document.body.classList.remove('cursor-on-dark');
         }
       }
 
