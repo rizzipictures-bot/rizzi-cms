@@ -2420,6 +2420,19 @@
       margin-top: 2px;
     }
 
+    /* Quando il Box 2 è aperto: tutte le thumbs al 70% tranne quella selezionata */
+    #cities-info-panel.viewer-open .cip-img {
+      opacity: 0.3;
+      transition: opacity 0.3s ease;
+    }
+    #cities-info-panel.viewer-open .cip-img.selected {
+      opacity: 1;
+    }
+    #cities-info-panel:not(.viewer-open) .cip-img {
+      opacity: 1;
+      transition: opacity 0.3s ease;
+    }
+
     /* Le foto nel box Cities diventano cliccabili — stile definito sopra in .cip-img */
 
     /* Preview cursor cities */
@@ -4446,6 +4459,11 @@ if (_cipClose) {
     // Chiudi anche il photo-viewer
     const _pv = document.getElementById('cip-photo-viewer');
     if (_pv) _pv.classList.remove('open');
+    // Ripristina opacità thumbs
+    if (_cipanel) {
+      _cipanel.classList.remove('viewer-open');
+      _cipanel.querySelectorAll('.cip-img.selected').forEach(i => i.classList.remove('selected'));
+    }
   });
 }
 
@@ -4545,6 +4563,12 @@ if (_cipImages) {
     _tmpImg2.src = img.src;
     _cipPhotoViewerImg.src = img.src;
 
+    // Opacità thumbs: tutte al 30% tranne quella selezionata
+    const allImgsForOpacity = Array.from(_cipImages.querySelectorAll('.cip-img'));
+    allImgsForOpacity.forEach(i => i.classList.remove('selected'));
+    img.classList.add('selected');
+    if (_cipanel) _cipanel.classList.add('viewer-open');
+
     _cipPhotoViewer.classList.add('open');
   });
 }
@@ -4607,6 +4631,11 @@ if (_cipPhotoViewer) {
 if (_cipPhotoViewerClose) {
   _cipPhotoViewerClose.addEventListener('click', () => {
     if (_cipPhotoViewer) _cipPhotoViewer.classList.remove('open');
+    // Ripristina opacità thumbs
+    if (_cipanel) {
+      _cipanel.classList.remove('viewer-open');
+      _cipanel.querySelectorAll('.cip-img.selected').forEach(i => i.classList.remove('selected'));
+    }
   });
 }
 
@@ -4617,6 +4646,11 @@ function closeCityInfoPanel() {
     _cipanel._currentProject = null;
   }
   if (_cipPhotoViewer) _cipPhotoViewer.classList.remove('open');
+  // Ripristina opacità thumbs
+  if (_cipanel) {
+    _cipanel.classList.remove('viewer-open');
+    _cipanel.querySelectorAll('.cip-img.selected').forEach(i => i.classList.remove('selected'));
+  }
   window._citLock = false;
   window._citBoxW = null;
   // Rimuovi la classe attiva da tutte le righe
