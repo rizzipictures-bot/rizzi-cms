@@ -4711,6 +4711,21 @@ document.addEventListener('mousemove', e => {
         cursorLabel.style.transform = `translate(${mx + 22}px, calc(${my}px - 50%))`;
       }
 
+      // Rimuovi cursor-red quando il cursore è sulla navbar (Cities, Archive, etc.)
+      if (!overlayOpen && document.body.classList.contains('cursor-red')) {
+        const _hdrNav = document.querySelector('header');
+        if (_hdrNav) {
+          const _hdrNavR = _hdrNav.getBoundingClientRect();
+          if (my <= _hdrNavR.bottom) {
+            document.body.classList.remove('cursor-red');
+            document.body.classList.remove('cursor-on-dark');
+            cursorDot.style.background = '';
+            cursorDot.style.width  = '';
+            cursorDot.style.height = '';
+          }
+        }
+      }
+
       // Parole fluttuanti diventano pallino nero vicino alla navbar normale
       // Solo quando NON siamo in overlay Overview (lì è gestito da ov-near-nav)
       if (!overlayOpen && cursorLabel.classList.contains('show')) {
