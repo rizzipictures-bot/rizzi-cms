@@ -4555,8 +4555,9 @@ document.addEventListener('mousemove', e => {
               _cipanel.classList.remove('viewer-open');
               _cipanel.querySelectorAll('.cip-img.selected').forEach(i => i.classList.remove('selected'));
             }
-            requestAnimationFrame(() => _updateCitiesLines());
           }
+          // Aggiorna sempre le linee quando il Box 1 si chiude (rimuove cities-box2-open)
+          requestAnimationFrame(() => _updateCitiesLines());
         }
 
         const locked = _cipanel && _cipanel.classList.contains('open');
