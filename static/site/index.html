@@ -2156,7 +2156,7 @@
       flex: 1;
       overflow-y: auto;
       overflow-x: hidden;
-      padding: 10px;         /* 10px di spazio uniforme attorno alle thumbs */
+      padding: 9px;          /* 9px di spazio uniforme attorno alle thumbs (-12%) */
       min-height: 0;         /* fondamentale per flex: 1 con overflow */
       /* scrollbar sottile e discreta */
       scrollbar-width: thin;
@@ -2168,7 +2168,7 @@
     /* Griglia 2 colonne di thumbs nel Box 1 — layout masonry con CSS columns */
     .cip-images {
       columns: 2;
-      column-gap: 10px;
+      column-gap: 9px;
       width: 100%;
     }
     .cip-img {
@@ -2180,7 +2180,7 @@
       border-radius: 1px;
       transition: opacity .15s;
       background: #111;
-      margin-bottom: 10px;     /* spazio verticale tra le thumbs */
+      margin-bottom: 9px;      /* spazio verticale tra le thumbs (-12%) */
       break-inside: avoid;     /* evita che una foto venga spezzata tra colonne */
     }
     .cip-img:hover { opacity: 0.8; }
@@ -2418,7 +2418,7 @@
 
     /* Quando il Box 2 è aperto: tutte le thumbs al 70% tranne quella selezionata */
     #cities-info-panel.viewer-open .cip-img {
-      opacity: 0.3;
+      opacity: 0.35;
       transition: opacity 0.3s ease;
     }
     #cities-info-panel.viewer-open .cip-img.selected {
