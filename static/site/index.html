@@ -5803,7 +5803,15 @@ function renderGallery() {
     item.appendChild(capEl);
     item.addEventListener('click', () => {
       galleryIndex = i;
+
+      // Effetto visivo: la thumb si illumina brevemente prima della transizione
+      item.style.transition = 'opacity .15s';
+      item.style.opacity = '0.6';
+      setTimeout(() => { item.style.opacity = ''; item.style.transition = ''; }, 150);
+
+      // Aggiorna la foto principale con la transizione clip-path reveal
       renderGallery();
+
       // Scroll smooth lento verso l'alto per visualizzare la foto in grande
       const vg = document.getElementById('view-gallery');
       const duration = 900; // ms — lento e smooth
@@ -5896,6 +5904,74 @@ document.getElementById('view-gallery').addEventListener('click', e => {
   renderGallery();
   vg.scrollTo({ top: 0, behavior: 'smooth' });
 });
+
+// ── SCROLL AUTOMATICO GALLERY AL MOUSEMOVE ─────────────────────────────────
+// Quando il cursore è nella metà inferiore della foto principale → scroll smooth verso le thumbs
+// Quando il cursore è nella zona thumbs/testo → scroll smooth verso l'alto alla foto
+(function() {
+  const vg = document.getElementById('view-gallery');
+  if (!vg) return;
+
+  let _scrollTimer = null;      // timer debounce per lo scroll automatico
+  let _lastScrollDir = null;    // ultima direzione: 'down' | 'up' | null
+  const DELAY = 600;            // ms di permanenza prima di triggerare lo scroll
+
+  function smoothScrollTo(target, duration) {
+    const start = vg.scrollTop;
+    const diff = target - start;
+    if (Math.abs(diff) < 10) return;
+    const startTime = performance.now();
+    function ease(t) { return t < 0.5 ? 4*t*t*t : 1 - Math.pow(-2*t+2,3)/2; }
+    function step(now) {
+      const elapsed = now - startTime;
+      const progress = Math.min(elapsed / duration, 1);
+      vg.scrollTop = start + diff * ease(progress);
+      if (progress < 1) requestAnimationFrame(step);
+    }
+    requestAnimationFrame(step);
+  }
+
+  vg.addEventListener('mousemove', e => {
+    if (!galleryProject) return;
+    const stage = document.getElementById('gallery-stage');
+    const thumbsSection = document.querySelector('.gallery-thumbs-section');
+    if (!stage || !thumbsSection) return;
+
+    const stageRect = stage.getBoundingClientRect();
+    const thumbsRect = thumbsSection.getBoundingClientRect();
+    const vgRect = vg.getBoundingClientRect();
+
+    // Zona metà inferiore della foto principale
+    const imgMidY = stageRect.top + stageRect.height / 2;
+    const inLowerHalf = e.clientY > imgMidY && e.clientY < stageRect.bottom + 60;
+
+    // Zona thumbs/testo
+    const inThumbsZone = e.clientY >= thumbsRect.top - 20;
+
+    if (inLowerHalf && _lastScrollDir !== 'down') {
+      _lastScrollDir = 'down';
+      clearTimeout(_scrollTimer);
+      _scrollTimer = setTimeout(() => {
+        const thumbsTop = thumbsRect.top + vg.scrollTop - vgRect.top;
+        smoothScrollTo(thumbsTop, 800);
+      }, DELAY);
+    } else if (inThumbsZone && vg.scrollTop > 10 && _lastScrollDir !== 'up') {
+      _lastScrollDir = 'up';
+      clearTimeout(_scrollTimer);
+      _scrollTimer = setTimeout(() => {
+        smoothScrollTo(0, 800);
+      }, DELAY);
+    } else if (!inLowerHalf && !inThumbsZone) {
+      clearTimeout(_scrollTimer);
+      _lastScrollDir = null;
+    }
+  });
+
+  vg.addEventListener('mouseleave', () => {
+    clearTimeout(_scrollTimer);
+    _lastScrollDir = null;
+  });
+})();
 
 // Navigazione con frecce tastiera nella gallery
 document.addEventListener('keydown', e => {
