@@ -1286,7 +1286,7 @@
     /* Bottone "Thumbs" — nella bottom-bar, a destra */
     .archive-expanded-viewall {
       font-family: var(--font-mono);
-      font-size: 6px;    /* 8 * 0.78 ≈ 6 */
+      font-size: 5px;    /* 6 * 0.86 ≈ 5 (-14%) */
       letter-spacing: 0.12em;
       text-transform: uppercase;
       color: #000;
@@ -1294,7 +1294,7 @@
       cursor: pointer;
       display: flex;
       align-items: center;
-      padding: 3px 7px;  /* 4*0.78≈3, 9*0.78≈7 */
+      padding: 3px 6px;
       border: none;
       user-select: none;
       transition: opacity .18s;
@@ -1380,6 +1380,18 @@
       user-select: none;
     }
     .archive-expanded.box-white .ae-thumbs-counter { color: rgba(0,0,0,0.35); }
+    /* Bottom bar nella vista thumbs — TV + Back in basso a dx */
+    .ae-thumbs-bottombar {
+      position: absolute;
+      bottom: 10px;
+      right: 10px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      z-index: 10;
+      pointer-events: all;
+    }
+
     /* Strip orizzontale di thumbnail in basso — altezza fissa, non si espande */
     .ae-thumbs-strip {
       display: flex;
@@ -1414,8 +1426,8 @@
 
     /* Toggle tema Archive: icona monitor SVG — nella bottom-bar */
     .archive-expanded-toggle {
-      width: 20px;   /* 26 * 0.78 ≈ 20 */
-      height: 20px;
+      width: 17px;   /* 20 * 0.86 ≈ 17 (-14%) */
+      height: 17px;
       flex-shrink: 0;
       cursor: pointer;
       opacity: 0.9;
@@ -1426,8 +1438,8 @@
     }
     .archive-expanded-toggle:hover { opacity: 1; }
     .archive-expanded-toggle svg {
-      width: 20px;
-      height: 20px;
+      width: 17px;
+      height: 17px;
       display: block;
     }
 
@@ -1543,11 +1555,11 @@
       border-bottom: 1px solid rgba(255,255,255,0.04);
     }
     .archive-kw-tag:hover { color: rgba(255,255,255,0.9); padding-left: 4px; }
-    /* Numero indice archivistico */
+    /* Numero indice archivistico — più visibile */
     .archive-kw-tag-idx {
       font-size: 7px;
       letter-spacing: 0.1em;
-      color: rgba(255,255,255,0.18);
+      color: rgba(255,255,255,0.65);  /* molto più visibile */
       flex-shrink: 0;
       font-variant-numeric: tabular-nums;
       min-width: 16px;
@@ -1558,21 +1570,56 @@
     }
     .archive-expanded.box-white .archive-kw-tag {
       color: rgba(0,0,0,0.5);
-      border-bottom-color: rgba(0,0,0,0.06);
+      border-bottom: none;  /* nessuna linea sotto le keywords in light mode */
     }
     .archive-expanded.box-white .archive-kw-tag:hover {
       color: rgba(0,0,0,0.9);
     }
     .archive-expanded.box-white .archive-kw-tag-idx {
-      color: rgba(0,0,0,0.18);
+      color: rgba(0,0,0,0.55);  /* più visibile in light mode */
     }
-    /* Separatore verticale in tema bianco */
+    /* Separatore verticale: nascosto in light mode (non si vede accanto alle thumbs) */
     .archive-expanded.box-white .archive-expanded-sep {
-      background: rgba(0,0,0,0.08);
+      background: transparent;
     }
     /* Caption in tema bianco */
     .archive-expanded.box-white .archive-expanded-caption {
       color: rgba(0,0,0,0.3);
+    }
+
+    /* ── Linea verticale sinistra con pallino scorrevole nel pannello keywords ── */
+    .archive-kw-panel {
+      position: relative;  /* contesto per la linea assoluta */
+    }
+    /* Linea verticale sottile a sinistra della colonna keywords */
+    .archive-kw-vline {
+      position: absolute;
+      left: 0;
+      top: 0;
+      bottom: 0;
+      width: 1px;
+      background: rgba(255,255,255,0.18);
+      pointer-events: none;
+      z-index: 1;
+    }
+    .archive-expanded.box-white .archive-kw-vline {
+      background: rgba(0,0,0,0.18);
+    }
+    /* Pallino scorrevole sulla linea verticale */
+    .archive-kw-dot {
+      position: absolute;
+      left: -3px;   /* centrato sulla linea (1px/2 - 3.5px ≈ -3px) */
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: #fff;
+      pointer-events: none;
+      z-index: 2;
+      transition: top 0.25s cubic-bezier(0.25, 0.46, 0.45, 0.94);  /* smooth elegante */
+      top: 0;
+    }
+    .archive-expanded.box-white .archive-kw-dot {
+      background: #000;
     }
 
     /* Bottone keywords discreto nell'angolo alto destra del box */
@@ -5904,6 +5951,37 @@ function buildArchive() {
             _aeThumbsView.appendChild(aeHero);
             _aeThumbsView.appendChild(aeInfo);
             _aeThumbsView.appendChild(aeStrip);
+
+            // Bottom bar con TV e Thumbs (stessa della vista normale) — in basso a dx
+            const aeBottomBar = document.createElement('div');
+            aeBottomBar.className = 'ae-thumbs-bottombar';
+            // Clone del toggle TV
+            const aeToggleClone = toggle.cloneNode(true);
+            aeToggleClone.addEventListener('click', e => {
+              e.stopPropagation();
+              panel.classList.toggle('box-white');
+              // Aggiorna entrambi i toggle (originale e clone)
+              [toggle, aeToggleClone].forEach(t => {
+                const isDark = !panel.classList.contains('box-white');
+                const svgD = t.querySelector('.ae-toggle-dark');
+                const svgL = t.querySelector('.ae-toggle-light');
+                if (svgD) svgD.style.display = isDark ? '' : 'none';
+                if (svgL) svgL.style.display = isDark ? 'none' : '';
+              });
+            });
+            // Bottone Back (sostituisce Thumbs nella vista thumbs)
+            const aeBackBtn2 = document.createElement('div');
+            aeBackBtn2.className = 'archive-expanded-viewall';
+            aeBackBtn2.textContent = 'Back';
+            aeBackBtn2.addEventListener('click', e => {
+              e.stopPropagation();
+              inner.style.display = '';
+              _aeThumbsView.style.display = 'none';
+            });
+            aeBottomBar.appendChild(aeToggleClone);
+            aeBottomBar.appendChild(aeBackBtn2);
+            _aeThumbsView.appendChild(aeBottomBar);
+
             _aeThumbsView.style.display = 'none';
             // Appeso al panel (archive-expanded) che ha overflow:hidden
             panel.appendChild(_aeThumbsView);
@@ -5972,6 +6050,23 @@ function buildArchive() {
             });
 
             kwPanel.appendChild(kwTagsWrap);
+
+            // ── Linea verticale sinistra con pallino scorrevole smooth ──
+            const kwVline = document.createElement('div');
+            kwVline.className = 'archive-kw-vline';
+            const kwDot = document.createElement('div');
+            kwDot.className = 'archive-kw-dot';
+            kwVline.appendChild(kwDot);
+            kwPanel.appendChild(kwVline);
+
+            // Muovi il pallino in base alla posizione Y del cursore rispetto alla kwCol
+            kwCol.addEventListener('mousemove', ev => {
+              const rect = kwPanel.getBoundingClientRect();
+              const relY = ev.clientY - rect.top;
+              const clampedY = Math.max(0, Math.min(rect.height - 7, relY - 3));
+              kwDot.style.top = clampedY + 'px';
+            });
+
             kwCol.appendChild(kwPanel);
           }
         }
