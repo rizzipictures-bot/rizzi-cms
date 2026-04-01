@@ -5700,41 +5700,35 @@ function buildCitiesIndex() {
       }
     });
 
-    // Click sulla riga: toggle box
-    // 1° click → apre box 1 + box 2 con la prima foto
-    // 2° click sulla stessa riga → chiude tutto
+    // Click sulla riga:
+    // - Se box 2 è già aperto → chiude tutto (box 1 + box 2 + thumbnail)
+    // - Altrimenti → apre box 2 con la prima foto (box 1 già gestito dall'hover)
     row.addEventListener('click', () => {
-      const isThisRowActive = row.classList.contains('cit-active') &&
-                              _cipanel && _cipanel.classList.contains('open');
-      if (isThisRowActive) {
-        // 2° click: chiude tutto
+      // 2° click: box 2 già aperto → chiude tutto
+      if (_cipPhotoViewer && _cipPhotoViewer.classList.contains('open')) {
         closeCityInfoPanel();
         return;
       }
 
-      // 1° click: assicura che box 1 sia aperto con questo progetto
+      // 1° click: apre box 2 con la prima foto
+      // Il box 1 è già aperto (gestito dall'hover + delay 300ms)
+      // Se per qualche motivo non fosse ancora aperto, lo apriamo ora
       const projectForPanel = isTokyoProject && TOKYO_CMS ? TOKYO_CMS : p;
-      populateCityInfoPanel(projectForPanel, previewImages);
-      if (_cipanel) {
+      if (_cipanel && !_cipanel.classList.contains('open')) {
+        populateCityInfoPanel(projectForPanel, previewImages);
         _cipanel._activeProject = projectForPanel;
-        if (!_cipanel.classList.contains('open')) {
-          _cipanel.classList.add('open');
-          window._citLock = true;
-          document.body.classList.add('cursor-on-dark');
-          const _cipBody = _cipanel.querySelector('.cip-body');
-          if (_cipBody) _cipBody.scrollTop = 0;
-        }
+        _cipanel.classList.add('open');
+        window._citLock = true;
+        document.body.classList.add('cursor-on-dark');
+        const _cipBody = _cipanel.querySelector('.cip-body');
+        if (_cipBody) _cipBody.scrollTop = 0;
       }
-      // Marca la riga come attiva
-      document.querySelectorAll('.cities-list-row.cit-active').forEach(r => r.classList.remove('cit-active'));
-      row.classList.add('cit-active');
 
-      // Apri automaticamente il box 2 con la prima foto
       if (!_cipPhotoViewer || !_cipImages) return;
       const firstImg = _cipImages.querySelector('.cip-img');
       if (!firstImg) return;
 
-      // Popola box 2 (stesso codice del click su .cip-img)
+      // Popola box 2
       const proj = projectForPanel;
       const _setField = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val || ''; };
       const _headerTextEl = document.getElementById('cip-photo-viewer-header-text');
