@@ -5729,10 +5729,8 @@ function buildCitiesIndex() {
       }
 
       if (!_cipPhotoViewer || !_cipImages) return;
-      const firstImg = _cipImages.querySelector('.cip-img');
-      if (!firstImg) return;
 
-      // Popola box 2
+      // Popola box 2 (testi e meta — non dipende dal layout)
       const proj = projectForPanel;
       const _setField = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val || ''; };
       const _headerTextEl = document.getElementById('cip-photo-viewer-header-text');
@@ -5744,62 +5742,70 @@ function buildCitiesIndex() {
       _setField('cpv-prints',    (proj && (proj.prints || proj.editions)) || '');
       _setField('cpv-printsize', (proj && (proj.print_size || proj.printSize || proj.print_format)) || '');
 
-      // Posizionamento box 2
-      const panelRect = _cipanel.getBoundingClientRect();
-      const _navbarEl2 = document.querySelector('header');
-      const _navbarH2  = _navbarEl2 ? Math.round(_navbarEl2.getBoundingClientRect().bottom) : 36;
-      const _citiesTitle = document.querySelector('.cities-page-title');
-      const _colHdr = document.getElementById('cities-col-header');
-      let topY;
-      if (_citiesTitle) topY = Math.max(_navbarH2, Math.round(_citiesTitle.getBoundingClientRect().top));
-      else if (_colHdr)  topY = Math.max(_navbarH2, Math.round(_colHdr.getBoundingClientRect().top));
-      else               topY = Math.max(_navbarH2, Math.round(panelRect.top));
-
-      const rightEdge = Math.round(panelRect.left);
-      const W         = window.innerWidth;
-      const minLeft   = Math.round(W * 0.04);
-      const maxBoxW   = 700;
-      const leftVal   = Math.max(minLeft, rightEdge - maxBoxW);
-      const boxW      = Math.max(200, rightEdge - leftVal);
-
-      _cipanel.style.top = topY + 'px';
-      _cipPhotoViewer.style.top   = topY + 'px';
-      _cipPhotoViewer.style.left  = leftVal + 'px';
-      _cipPhotoViewer.style.width = boxW + 'px';
-
-      _cipPhotoViewerImg.classList.remove('is-vertical', 'anim-drop', 'anim-slide');
-      void _cipPhotoViewerImg.offsetWidth;
-
-      const allImgs = Array.from(_cipImages.querySelectorAll('.cip-img'));
-      _cipCurrentUrls  = allImgs.map(i => i.src);
-      _cipCurrentIndex = 0;
-
-      const _tmpImg = new Image();
-      _tmpImg.onload = () => {
-        const isV = _tmpImg.naturalHeight > _tmpImg.naturalWidth;
-        if (isV) {
-          const boxTop  = _cipPhotoViewer.getBoundingClientRect().top;
-          const headerH = (_cipPhotoViewer.querySelector('#cip-photo-viewer-header') || {}).offsetHeight || 80;
-          const titleH  = (_cipPhotoViewer.querySelector('#cip-photo-viewer-title')  || {}).offsetHeight || 40;
-          const metaH   = (_cipPhotoViewer.querySelector('#cip-photo-viewer-meta')   || {}).offsetHeight || 120;
-          const available = Math.round(window.innerHeight - boxTop - headerH - titleH - metaH - 8);
-          _cipPhotoViewer.style.setProperty('--img-max-h', available + 'px');
-          _cipPhotoViewerImg.classList.add('is-vertical', 'anim-slide');
-        } else {
-          _cipPhotoViewerImg.classList.add('anim-drop');
-        }
-      };
-      _tmpImg.src = firstImg.src;
-      _cipPhotoViewerImg.src = firstImg.src;
-
-      allImgs.forEach(i => i.classList.remove('selected'));
-      firstImg.classList.add('selected');
-      if (_cipanel) _cipanel.classList.add('viewer-open');
-      _cipPhotoViewer.classList.add('open');
-      // Nascondi la thumbnail cursor-preview quando il box 2 si apre
+      // Nascondi la thumbnail subito
       const _citPreview = document.getElementById('cities-cursor-preview');
       if (_citPreview) _citPreview.classList.remove('visible');
-      requestAnimationFrame(() => _updateCitiesLines());
+
+      // Attendi la fine della transizione del box 1 (.35s) prima di calcolare
+      // la posizione del box 2 — evita il posizionamento errato intermittente
+      setTimeout(() => {
+        const firstImg = _cipImages.querySelector('.cip-img');
+        if (!firstImg) return;
+
+        // Posizionamento box 2 — ora il box 1 ha finito la transizione
+        const panelRect = _cipanel.getBoundingClientRect();
+        const _navbarEl2 = document.querySelector('header');
+        const _navbarH2  = _navbarEl2 ? Math.round(_navbarEl2.getBoundingClientRect().bottom) : 36;
+        const _citiesTitle = document.querySelector('.cities-page-title');
+        const _colHdr = document.getElementById('cities-col-header');
+        let topY;
+        if (_citiesTitle) topY = Math.max(_navbarH2, Math.round(_citiesTitle.getBoundingClientRect().top));
+        else if (_colHdr)  topY = Math.max(_navbarH2, Math.round(_colHdr.getBoundingClientRect().top));
+        else               topY = Math.max(_navbarH2, Math.round(panelRect.top));
+
+        const rightEdge = Math.round(panelRect.left);
+        const W         = window.innerWidth;
+        const minLeft   = Math.round(W * 0.04);
+        const maxBoxW   = 700;
+        const leftVal   = Math.max(minLeft, rightEdge - maxBoxW);
+        const boxW      = Math.max(200, rightEdge - leftVal);
+
+        _cipanel.style.top = topY + 'px';
+        _cipPhotoViewer.style.top   = topY + 'px';
+        _cipPhotoViewer.style.left  = leftVal + 'px';
+        _cipPhotoViewer.style.width = boxW + 'px';
+
+        _cipPhotoViewerImg.classList.remove('is-vertical', 'anim-drop', 'anim-slide');
+        void _cipPhotoViewerImg.offsetWidth;
+
+        const allImgs = Array.from(_cipImages.querySelectorAll('.cip-img'));
+        _cipCurrentUrls  = allImgs.map(i => i.src);
+        _cipCurrentIndex = 0;
+
+        const _tmpImg = new Image();
+        _tmpImg.onload = () => {
+          const isV = _tmpImg.naturalHeight > _tmpImg.naturalWidth;
+          if (isV) {
+            const boxTop  = _cipPhotoViewer.getBoundingClientRect().top;
+            const headerH = (_cipPhotoViewer.querySelector('#cip-photo-viewer-header') || {}).offsetHeight || 80;
+            const titleH  = (_cipPhotoViewer.querySelector('#cip-photo-viewer-title')  || {}).offsetHeight || 40;
+            const metaH   = (_cipPhotoViewer.querySelector('#cip-photo-viewer-meta')   || {}).offsetHeight || 120;
+            const available = Math.round(window.innerHeight - boxTop - headerH - titleH - metaH - 8);
+            _cipPhotoViewer.style.setProperty('--img-max-h', available + 'px');
+            _cipPhotoViewerImg.classList.add('is-vertical', 'anim-slide');
+          } else {
+            _cipPhotoViewerImg.classList.add('anim-drop');
+          }
+        };
+        _tmpImg.src = firstImg.src;
+        _cipPhotoViewerImg.src = firstImg.src;
+
+        allImgs.forEach(i => i.classList.remove('selected'));
+        firstImg.classList.add('selected');
+        if (_cipanel) _cipanel.classList.add('viewer-open');
+        _cipPhotoViewer.classList.add('open');
+        requestAnimationFrame(() => _updateCitiesLines());
+      }, 370); // attende .35s transizione box 1 + 20ms margine
     });
 
     listView.appendChild(row);
