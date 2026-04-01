@@ -1449,10 +1449,10 @@
       height: 100%;  /* si adatta all'altezza della strip (64px) */
       overflow: hidden;
       cursor: none;
-      opacity: 0.65;
+      opacity: 0.25;
       transition: opacity .2s;
     }
-    .ae-thumbs-strip-item:hover { opacity: 1; }
+    .ae-thumbs-strip-item:hover { opacity: 0.6; }
     .ae-thumbs-strip-item.active { opacity: 1; outline: 1px solid rgba(255,255,255,0.6); }
     .archive-expanded.box-white .ae-thumbs-strip-item { opacity: 0.6; }
     .archive-expanded.box-white .ae-thumbs-strip-item:hover { opacity: 0.9; }
@@ -4611,9 +4611,9 @@ document.addEventListener('mousemove', e => {
 
       // Archive box aperto: rosso fuori dal box, bianco dentro il box
       if (currentView === 'archive' && activeExpanded) {
-        const _boxRect = activeExpanded.getBoundingClientRect();
-        const _insideBox = mx >= _boxRect.left && mx <= _boxRect.right &&
-                           my >= _boxRect.top  && my <= _boxRect.bottom;
+        // Usa elementFromPoint per rilevare se dentro il box (gestisce overflow e colonne)
+        const _elAtPoint = document.elementFromPoint(mx, my);
+        const _insideBox = _elAtPoint && _elAtPoint.closest && !!_elAtPoint.closest('.archive-expanded');
         if (_insideBox) {
           document.body.classList.remove('cursor-red');
           const _boxIsWhite = activeExpanded.classList.contains('box-white');
