@@ -5411,13 +5411,22 @@ function buildCitiesIndex() {
       // Popola il box info con i dati del progetto corrente
       const projectForPanel = isTokyoProject && TOKYO_CMS ? TOKYO_CMS : p;
       populateCityInfoPanel(projectForPanel, previewImages);
-      // Segnala il progetto attivo al mousemove — con delay 400ms
+      // Segnala il progetto attivo al mousemove — con delay 300ms
       // così il box 1 si apre solo dopo che la thumbs è già apparsa
       if (_cipanel) _cipanel._activeProject = null; // blocca apertura immediata
       clearTimeout(window._citBoxDelay);
       window._citBoxDelay = setTimeout(() => {
         if (_cipanel) _cipanel._activeProject = projectForPanel;
-      }, 400);
+        // Apertura automatica del Box 1 dopo 300ms, indipendentemente dalla posizione del cursore
+        if (_cipanel && !_cipanel.classList.contains('open')) {
+          _cipanel.classList.add('open');
+          window._citLock = true;
+          document.body.classList.add('cursor-on-dark');
+          const _cipBody = _cipanel.querySelector('.cip-body');
+          if (_cipBody) _cipBody.scrollTop = 0;
+          requestAnimationFrame(() => { if (typeof _updateCitiesLines === 'function') _updateCitiesLines(); });
+        }
+      }, 300);
     });
     row.addEventListener('mouseleave', () => {
       citiesPreview.classList.remove('visible');
