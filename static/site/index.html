@@ -5700,9 +5700,105 @@ function buildCitiesIndex() {
       }
     });
 
-    // Click sulla riga: chiude i box (non naviga alla gallery)
+    // Click sulla riga: toggle box
+    // 1° click → apre box 1 + box 2 con la prima foto
+    // 2° click sulla stessa riga → chiude tutto
     row.addEventListener('click', () => {
-      closeCityInfoPanel();
+      const isThisRowActive = row.classList.contains('cit-active') &&
+                              _cipanel && _cipanel.classList.contains('open');
+      if (isThisRowActive) {
+        // 2° click: chiude tutto
+        closeCityInfoPanel();
+        return;
+      }
+
+      // 1° click: assicura che box 1 sia aperto con questo progetto
+      const projectForPanel = isTokyoProject && TOKYO_CMS ? TOKYO_CMS : p;
+      populateCityInfoPanel(projectForPanel, previewImages);
+      if (_cipanel) {
+        _cipanel._activeProject = projectForPanel;
+        if (!_cipanel.classList.contains('open')) {
+          _cipanel.classList.add('open');
+          window._citLock = true;
+          document.body.classList.add('cursor-on-dark');
+          const _cipBody = _cipanel.querySelector('.cip-body');
+          if (_cipBody) _cipBody.scrollTop = 0;
+        }
+      }
+      // Marca la riga come attiva
+      document.querySelectorAll('.cities-list-row.cit-active').forEach(r => r.classList.remove('cit-active'));
+      row.classList.add('cit-active');
+
+      // Apri automaticamente il box 2 con la prima foto
+      if (!_cipPhotoViewer || !_cipImages) return;
+      const firstImg = _cipImages.querySelector('.cip-img');
+      if (!firstImg) return;
+
+      // Popola box 2 (stesso codice del click su .cip-img)
+      const proj = projectForPanel;
+      const _setField = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val || ''; };
+      const _headerTextEl = document.getElementById('cip-photo-viewer-header-text');
+      if (_headerTextEl) {
+        const _desc = (proj && (proj.description || (proj.texts && proj.texts[0] && proj.texts[0].content))) || '';
+        const _simulated = 'La serie esplora la relazione tra architettura industriale e luce naturale, documentando spazi urbani in transizione tra abbandono e memoria collettiva.';
+        _headerTextEl.textContent = _desc || _simulated;
+      }
+      _setField('cpv-prints',    (proj && (proj.prints || proj.editions)) || '');
+      _setField('cpv-printsize', (proj && (proj.print_size || proj.printSize || proj.print_format)) || '');
+
+      // Posizionamento box 2
+      const panelRect = _cipanel.getBoundingClientRect();
+      const _navbarEl2 = document.querySelector('header');
+      const _navbarH2  = _navbarEl2 ? Math.round(_navbarEl2.getBoundingClientRect().bottom) : 36;
+      const _citiesTitle = document.querySelector('.cities-page-title');
+      const _colHdr = document.getElementById('cities-col-header');
+      let topY;
+      if (_citiesTitle) topY = Math.max(_navbarH2, Math.round(_citiesTitle.getBoundingClientRect().top));
+      else if (_colHdr)  topY = Math.max(_navbarH2, Math.round(_colHdr.getBoundingClientRect().top));
+      else               topY = Math.max(_navbarH2, Math.round(panelRect.top));
+
+      const rightEdge = Math.round(panelRect.left);
+      const W         = window.innerWidth;
+      const minLeft   = Math.round(W * 0.04);
+      const maxBoxW   = 700;
+      const leftVal   = Math.max(minLeft, rightEdge - maxBoxW);
+      const boxW      = Math.max(200, rightEdge - leftVal);
+
+      _cipanel.style.top = topY + 'px';
+      _cipPhotoViewer.style.top   = topY + 'px';
+      _cipPhotoViewer.style.left  = leftVal + 'px';
+      _cipPhotoViewer.style.width = boxW + 'px';
+
+      _cipPhotoViewerImg.classList.remove('is-vertical', 'anim-drop', 'anim-slide');
+      void _cipPhotoViewerImg.offsetWidth;
+
+      const allImgs = Array.from(_cipImages.querySelectorAll('.cip-img'));
+      _cipCurrentUrls  = allImgs.map(i => i.src);
+      _cipCurrentIndex = 0;
+
+      const _tmpImg = new Image();
+      _tmpImg.onload = () => {
+        const isV = _tmpImg.naturalHeight > _tmpImg.naturalWidth;
+        if (isV) {
+          const boxTop  = _cipPhotoViewer.getBoundingClientRect().top;
+          const headerH = (_cipPhotoViewer.querySelector('#cip-photo-viewer-header') || {}).offsetHeight || 80;
+          const titleH  = (_cipPhotoViewer.querySelector('#cip-photo-viewer-title')  || {}).offsetHeight || 40;
+          const metaH   = (_cipPhotoViewer.querySelector('#cip-photo-viewer-meta')   || {}).offsetHeight || 120;
+          const available = Math.round(window.innerHeight - boxTop - headerH - titleH - metaH - 8);
+          _cipPhotoViewer.style.setProperty('--img-max-h', available + 'px');
+          _cipPhotoViewerImg.classList.add('is-vertical', 'anim-slide');
+        } else {
+          _cipPhotoViewerImg.classList.add('anim-drop');
+        }
+      };
+      _tmpImg.src = firstImg.src;
+      _cipPhotoViewerImg.src = firstImg.src;
+
+      allImgs.forEach(i => i.classList.remove('selected'));
+      firstImg.classList.add('selected');
+      if (_cipanel) _cipanel.classList.add('viewer-open');
+      _cipPhotoViewer.classList.add('open');
+      requestAnimationFrame(() => _updateCitiesLines());
     });
 
     listView.appendChild(row);
