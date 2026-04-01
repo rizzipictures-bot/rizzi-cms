@@ -3058,33 +3058,31 @@
     .info-link-btn:hover { opacity: 0.55; }
 
     /* ════════════════════════════════════════════════════════════════
-       VIEW: INDEX — Split layout esatto Jack Davison
-       Sinistra 55%: foto grande su sfondo scuro
-       Destra 45%: sub-nav + lista voci per gruppo
+       VIEW INDEX — Layout Jack Davison
+       Split 50/50 | Foto sx con overlay grigio 80% | Lista dx
     ════════════════════════════════════════════════════════════════ */
     #view-index {
       padding: 0;
-      overflow: hidden;            /* nessuno scroll esterno */
+      overflow: hidden;
       background: #fff;
     }
     .index-split {
       display: grid;
-      grid-template-columns: 55% 45%;
-      height: 100%;                /* occupa tutta l'altezza disponibile */
+      grid-template-columns: 50% 50%;
+      height: 100%;
       width: 100%;
     }
 
-    /* ── Colonna sinistra: foto su sfondo scuro ── */
+    /* ── Colonna sinistra: foto con overlay grigio 80% ── */
     .index-photo-col {
-      display: block;
       position: relative;
-      background: #2d2d2d;         /* sfondo grigio scuro come JD */
       overflow: hidden;
       height: 100%;
+      background: #1a1a1a;
     }
     .index-photo-wrap {
-      width: 100%;
-      height: 100%;
+      position: absolute;
+      inset: 0;
     }
     .index-photo-wrap img {
       width: 100%;
@@ -3093,86 +3091,116 @@
       object-position: center;
       display: block;
       opacity: 0;
-      transition: opacity .6s;
+      transition: opacity .8s ease;
     }
     .index-photo-wrap img.loaded { opacity: 1; }
+    /* Overlay grigio 80% sopra la foto */
+    .index-photo-col::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: rgba(80, 80, 80, 0.80);
+      pointer-events: none;
+    }
     .index-photo-label { display: none; }
 
-    /* ── Colonna destra: lista scrollabile ── */
+    /* ── Colonna destra: lista scrollabile su sfondo bianco ── */
     .index-list-col {
       height: 100%;
       overflow-y: auto;
+      overflow-x: hidden;
       display: flex;
       flex-direction: column;
-      padding: 0 56px 0 52px;      /* padding laterale come JD */
       background: #fff;
     }
+    .index-list-col::-webkit-scrollbar { display: none; }
 
-    /* ── Sub-nav: Works · Info · Helions (in JD) → qui: All · Interview · Books … ── */
+    /* ── Sub-nav: Archive · Interview · Cities · Info ── */
     .index-subnav {
       display: flex;
       gap: 20px;
-      padding: 52px 0 0;           /* spazio sopra prima del sub-nav */
+      padding: 52px 0 10px 52px;
       flex-shrink: 0;
     }
     .index-subnav-btn {
-      font-family: var(--font-nav);
-      font-size: 14px;
-      font-weight: 400;
+      font-family: 'Untitled Sans', 'PracticeRegular', Helvetica, Arial, sans-serif;
+      font-size: 12px;
+      font-weight: 500;
       letter-spacing: 0;
-      color: #999;
+      color: #2b2d30;
       background: none;
       border: none;
       padding: 0;
+      margin-right: 16px;
       cursor: none;
-      transition: color .15s;
+      transition: opacity .15s;
       line-height: 1.4;
+      text-decoration: none;
     }
-    .index-subnav-btn:hover { color: #555; }
+    .index-subnav-btn:hover { opacity: 0.5; }
     .index-subnav-btn.active {
-      color: #111;
-      font-weight: 400;
+      text-decoration: underline;
+      opacity: 1;
     }
 
     /* ── Lista voci ── */
     .index-entries {
       flex: 1;
-      padding: 0 0 80px;
+      padding: 0 52px 52px 52px;
     }
 
-    /* ── Gruppo sezione: spazio bianco tra gruppi ── */
+    /* ── Gruppo sezione: spazio tra gruppi come JD (margin-bottom 20px su ul) ── */
     .index-section-group {
-      margin-top: 48px;            /* gap tra gruppi come JD */
+      margin-bottom: 20px;
+    }
+    .index-section-group:first-child {
+      margin-top: 0;
     }
 
-    /* ── Voce singola: solo testo, nessun numero, nessuna meta ── */
+    /* ── Label sezione: nascosta ── */
+    .index-section-label { display: none; }
+
+    /* ── Voce singola: flex space-between con numero a destra ── */
     .index-entry {
-      display: block;              /* solo il nome, niente flex */
+      display: block;
       padding: 0;
       cursor: none;
       transition: opacity .15s;
-      line-height: 1.65;           /* interlinea generosa come JD */
     }
-    .index-entry:hover { opacity: 0.45; }
+    .index-entry a {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      text-decoration: none;
+      color: #2b2d30;
+      line-height: 26px;
+    }
+    .index-entry:hover a { opacity: 0.45; }
     .index-entry-name {
-      font-family: var(--font-nav);
-      font-size: 16px;             /* dimensione come JD */
+      font-family: 'Untitled Sans', 'PracticeRegular', Helvetica, Arial, sans-serif;
+      font-size: 13px;
       font-weight: 400;
       letter-spacing: 0;
-      color: #111;
-      line-height: 1.65;
+      color: #2b2d30;
+      line-height: 26px;
+    }
+    .index-entry-count {
+      font-family: 'Untitled Sans', 'PracticeRegular', Helvetica, Arial, sans-serif;
+      font-size: 13px;
+      font-weight: 400;
+      color: #2b2d30;
+      line-height: 26px;
+      flex-shrink: 0;
+      margin-left: 16px;
     }
     .index-entry-meta { display: none; }
-    .index-entry-count { display: none; }  /* nessun numero come JD */
 
-    /* ── Label sezione: nessuna ── */
-    .index-section-label { display: none; }
-
-    [data-theme="dark"] .index-photo-col { background: #1a1a1a; }
+    [data-theme="dark"] .index-photo-col { background: #111; }
     [data-theme="dark"] .index-list-col { background: #111; }
+    [data-theme="dark"] .index-entry a { color: #eee; }
     [data-theme="dark"] .index-entry-name { color: #eee; }
-    [data-theme="dark"] .index-subnav-btn { color: #666; }
-    [data-theme="dark"] .index-subnav-btn.active { color: #eee; }
+    [data-theme="dark"] .index-entry-count { color: #eee; }
+    [data-theme="dark"] .index-subnav-btn { color: #ccc; }
 
     .gallery-grid {
       display: grid;
@@ -4036,34 +4064,32 @@
       </div>
     </div>
 
-    <!-- ── VIEW: INDEX — Layout split foto sx + lista sezioni dx ── -->
+    <!-- ── VIEW: INDEX — Layout Jack Davison: split 50/50 ── -->
     <div class="view" id="view-index">
       <div class="index-split">
 
-        <!-- Colonna sinistra: foto da CMS -->
+        <!-- Colonna sinistra: foto con overlay grigio 80% -->
         <div class="index-photo-col">
           <div class="index-photo-wrap">
             <img id="index-photo" src="" alt="" loading="lazy">
           </div>
-          <div class="index-photo-label">Index</div>
         </div>
 
-        <!-- Colonna destra: lista sezioni aggregate -->
+        <!-- Colonna destra: sub-nav + lista scrollabile -->
         <div class="index-list-col">
 
-          <!-- Sub-nav interno -->
+          <!-- Sub-nav: Archive · Interview · Cities · Info -->
           <div class="index-subnav">
-            <button class="index-subnav-btn active" data-section="all">All</button>
+            <button class="index-subnav-btn active" data-section="all">Works</button>
             <button class="index-subnav-btn" data-section="interview">Interview</button>
             <button class="index-subnav-btn" data-section="books">Books</button>
             <button class="index-subnav-btn" data-section="sculptures">Sculptures</button>
-            <button class="index-subnav-btn" data-section="biography">Biography</button>
+            <button class="index-subnav-btn" data-section="biography">Info</button>
             <button class="index-subnav-btn" data-section="contact">Contact</button>
           </div>
 
-          <!-- Lista voci -->
+          <!-- Lista voci (generata via JS) -->
           <div class="index-entries" id="index-entries">
-            <!-- Generata via JS -->
           </div>
 
         </div>
@@ -7225,18 +7251,21 @@ function buildIndex() {
         return;
       }
 
-      items.forEach(item => {
+      items.forEach((item, idx) => {
         const row = document.createElement('div');
         row.className = 'index-entry';
         row.dataset.section = sec.id;
 
-        // Solo il nome — nessun numero, nessuna meta (come JD)
+        // Nome + numero immagini a destra (come JD)
         const name = item.title || item.name || '—';
+        const count = (item.images && item.images.length > 0) ? item.images.length : (item.count || '');
+        const countHtml = count ? `<span class="index-entry-count">${count}</span>` : '';
 
-        row.innerHTML = `<span class="index-entry-name">${name}</span>`;
+        row.innerHTML = `<a href="#"><span class="index-entry-name">${name}</span>${countHtml}</a>`;
 
         // Click: naviga alla sezione corrispondente
-        row.addEventListener('click', () => {
+        row.querySelector('a').addEventListener('click', (e) => {
+          e.preventDefault();
           if (sec.id === 'interview') {
             switchView('interview');
           } else if (sec.id === 'books') {
