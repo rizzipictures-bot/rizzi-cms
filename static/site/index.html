@@ -198,9 +198,9 @@
       background: rgba(255,255,255,0.85) !important;
     }
 
-    /* Cursore bianco su sfondo scuro (Box 1 nero) */
+    /* Cursore bianco su sfondo scuro (Box 1 nero, box Archive nero) */
     body.cursor-on-dark #cursor-dot {
-      background: #f5f5f5;
+      background: #f5f5f5 !important;
       box-shadow: none !important;
     }
     body.cursor-on-dark #cursor-dot::before,
@@ -4647,9 +4647,16 @@ document.addEventListener('mousemove', e => {
             if (_boxIsWhite) {
               document.body.classList.remove('cursor-on-dark');
               document.body.classList.add('archive-box-white'); // pallino nero su sfondo bianco
+              cursorDot.style.background = '';
+              cursorDot.style.width  = '';
+              cursorDot.style.height = '';
             } else {
               document.body.classList.remove('archive-box-white');
               document.body.classList.add('cursor-on-dark');
+              // Reset inline style: lascia che il CSS cursor-on-dark applichi il bianco
+              cursorDot.style.background = '';
+              cursorDot.style.width  = '';
+              cursorDot.style.height = '';
             }
           }
         } else {
@@ -4657,6 +4664,22 @@ document.addEventListener('mousemove', e => {
           document.body.classList.remove('archive-box-white');
           document.body.classList.add('cursor-red');
           document.body.classList.remove('cursor-on-dark');
+        }
+      }
+
+      // Archive righe in hover (sfondo nero): cursore bianco anche senza box espanso
+      if (currentView === 'archive' && !activeExpanded) {
+        const _el = document.elementFromPoint(mx, my);
+        const _hovRow = _el && _el.closest ? _el.closest('.archive-row:not(.header)') : null;
+        if (_hovRow) {
+          document.body.classList.add('cursor-on-dark');
+          document.body.classList.remove('cursor-red');
+          cursorDot.style.background = '';
+          cursorDot.style.width  = '';
+          cursorDot.style.height = '';
+        } else if (document.body.classList.contains('cursor-on-dark') && !activeExpanded) {
+          document.body.classList.remove('cursor-on-dark');
+          document.body.classList.add('cursor-red');
         }
       }
 
