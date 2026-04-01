@@ -2045,12 +2045,8 @@
     }
     #view-gallery::-webkit-scrollbar { display: none; }
 
-    /* Back button — allineato alla navbar, in alto a sinistra */
+    /* Back button — dentro la header, allineato verticalmente */
     #gallery-back-btn {
-      position: fixed;
-      top: 0;
-      left: 0;
-      z-index: 760;  /* sopra la navbar (750) per non essere coperto */
       display: none;
       align-items: center;
       gap: 5px;
@@ -2062,10 +2058,10 @@
       font-weight: 700;
       letter-spacing: 0.06em;
       color: #111;
-      height: var(--nav-h, 36px);
-      padding: 0 0 0 18px;
+      padding: 0 18px 0 0;
       text-transform: uppercase;
       transition: color .18s;
+      flex-shrink: 0;
     }
     #gallery-back-btn:hover { color: #999; }
 
@@ -3745,6 +3741,8 @@
 
   <!-- Navbar -->
   <header>
+    <!-- Back button gallery — visibile solo se si arriva da Cities Thumbs -->
+    <button id="gallery-back-btn" onclick="galleryGoBack()" style="display:none">&#8592;&nbsp;&nbsp;Back</button>
     <!-- 3 voci principali a destra -->
     <nav class="pill-nav">
       <button data-view="index">Index</button>
@@ -3914,9 +3912,6 @@
 
     <!-- ── VIEW: GALLERY — Nadav Kander style ── -->
     <div class="view" id="view-gallery">
-
-      <!-- Back button — visibile solo se si arriva da Cities Thumbs -->
-      <button id="gallery-back-btn" onclick="galleryGoBack()" style="display:none">&#8592;&nbsp;&nbsp;Back</button>
 
       <!-- Sezione 1: foto principale + didascalia -->
       <div class="gallery-main-wrap" id="gallery-main-wrap">
