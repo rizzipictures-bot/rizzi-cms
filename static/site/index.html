@@ -1358,12 +1358,18 @@
       clip-path: inset(0 0 0% 0);
       transition: clip-path .65s cubic-bezier(.77, 0, .175, 1);
     }
-    /* Info row: contatore a dx, bottone Back a sx */
+    /* Info row: Back a sx + TV vicino + contatore a dx */
     .ae-thumbs-info {
       display: flex;
       align-items: center;
       justify-content: space-between;
       padding: 6px 12px;
+      flex-shrink: 0;
+    }
+    /* TV nella info row: stessa dimensione del toggle normale, margine a sx del Back */
+    .ae-thumbs-tv {
+      margin-left: 10px;
+      margin-right: auto;  /* spinge il contatore a destra */
       flex-shrink: 0;
     }
     .ae-thumbs-back {
@@ -2475,7 +2481,7 @@
       --close-color: #7b2fff !important;
       width: 17px;
       height: 17px;
-      margin-top: -8px;   /* alzato di 3px rispetto a -5px */
+      margin-top: -13px;   /* alzato di ulteriori 5px */
     }
 
     /* Titolo progetto nel box 2 — non usato (titolo ora in #cpv-title dentro l'header) */
@@ -5987,11 +5993,9 @@ function buildArchive() {
             _aeThumbsView.appendChild(aeInfo);
             _aeThumbsView.appendChild(aeStrip);
 
-            // Bottom bar con TV e Thumbs (stessa della vista normale) — in basso a dx
-            const aeBottomBar = document.createElement('div');
-            aeBottomBar.className = 'ae-thumbs-bottombar';
-            // Clone del toggle TV
+            // Clone del toggle TV — va nella info row a sinistra vicino a Back
             const aeToggleClone = toggle.cloneNode(true);
+            aeToggleClone.className = 'archive-expanded-toggle ae-thumbs-tv';
             aeToggleClone.addEventListener('click', e => {
               e.stopPropagation();
               panel.classList.toggle('box-white');
@@ -6004,18 +6008,8 @@ function buildArchive() {
                 if (svgL) svgL.style.display = isDark ? 'none' : '';
               });
             });
-            // Bottone Back (sostituisce Thumbs nella vista thumbs)
-            const aeBackBtn2 = document.createElement('div');
-            aeBackBtn2.className = 'archive-expanded-viewall';
-            aeBackBtn2.textContent = 'Back';
-            aeBackBtn2.addEventListener('click', e => {
-              e.stopPropagation();
-              inner.style.display = '';
-              _aeThumbsView.style.display = 'none';
-            });
-            aeBottomBar.appendChild(aeToggleClone);
-            aeBottomBar.appendChild(aeBackBtn2);
-            _aeThumbsView.appendChild(aeBottomBar);
+            // Inserisci la TV nella info row, subito dopo il bottone Back
+            aeInfo.insertBefore(aeToggleClone, aeCtr);
 
             _aeThumbsView.style.display = 'none';
             // Appeso al panel (archive-expanded) che ha overflow:hidden
