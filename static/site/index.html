@@ -3095,12 +3095,12 @@
       transition: opacity .8s ease;
     }
     .index-photo-wrap img.loaded { opacity: 1; }
-    /* Overlay grigio 80% sopra la foto */
+    /* Overlay grigio scuro sopra la foto */
     .index-photo-col::after {
       content: '';
       position: absolute;
       inset: 0;
-      background: rgba(80, 80, 80, 0.80);
+      background: rgba(20, 20, 20, 0.88);
       pointer-events: none;
     }
     .index-photo-label { display: none; }
@@ -7205,12 +7205,27 @@ function buildIndex() {
   const photoEl   = document.getElementById('index-photo');
   if (!entriesEl) return;
 
-  // ── Foto laterale: cerca un progetto con category_id === 'index' ──
-  const indexProj = PROJECTS.find(p => p.category_id === 'index');
-  if (photoEl && indexProj && indexProj.images.length > 0) {
-    photoEl.src = indexProj.images[0].url;
-    photoEl.onload = () => photoEl.classList.add('loaded');
-    if (photoEl.complete) photoEl.classList.add('loaded');
+  // ── Foto laterale: cerca un progetto con category_id === 'index',
+  // altrimenti usa la prima foto disponibile da ALL_IMAGES (qualsiasi progetto del CMS) ──
+  if (photoEl) {
+    let photoUrl = null;
+    const indexProj = PROJECTS.find(p => p.category_id === 'index');
+    if (indexProj && indexProj.images.length > 0) {
+      photoUrl = indexProj.images[0].url;
+    } else if (typeof ALL_IMAGES !== 'undefined' && ALL_IMAGES.length > 0) {
+      // Prende una foto a caso tra le prime 20 per variare
+      const pool = ALL_IMAGES.slice(0, Math.min(20, ALL_IMAGES.length));
+      photoUrl = pool[Math.floor(Math.random() * pool.length)].url;
+    } else {
+      // Fallback: prima immagine di qualsiasi progetto
+      const anyProj = PROJECTS.find(p => p.images && p.images.length > 0);
+      if (anyProj) photoUrl = anyProj.images[0].url;
+    }
+    if (photoUrl) {
+      photoEl.src = photoUrl;
+      photoEl.onload = () => photoEl.classList.add('loaded');
+      if (photoEl.complete && photoEl.naturalWidth > 0) photoEl.classList.add('loaded');
+    }
   }
 
   // ── Definizione sezioni aggregate ──
