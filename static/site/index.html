@@ -211,13 +211,22 @@
       background: transparent !important;
       border-color: #fff;
     }
-    /* Nel Box 1 nero: il cursore rosso NON deve essere rosso — diventa bianco */
-    body.cursor-on-dark.cursor-red #cursor-dot {
+    /* Nel Box 1 nero: il cursore rosso NON deve essere rosso — diventa bianco
+       (ma NON quando siamo vicini a TV/Thumbs in Archive: archive-near-toggle ha priorità) */
+    body.cursor-on-dark.cursor-red:not(.archive-near-toggle) #cursor-dot {
       background: #f5f5f5 !important;
     }
-    body.cursor-on-dark.cursor-red #cursor-dot::before,
-    body.cursor-on-dark.cursor-red #cursor-dot::after {
+    body.cursor-on-dark.cursor-red:not(.archive-near-toggle) #cursor-dot::before,
+    body.cursor-on-dark.cursor-red:not(.archive-near-toggle) #cursor-dot::after {
       background: rgba(0,0,0,0.75) !important;
+    }
+    /* Prossimità TV/Thumbs in Archive: ROSSO con massima priorità */
+    body.archive-near-toggle #cursor-dot {
+      background: #e00 !important;
+    }
+    body.archive-near-toggle #cursor-dot::before,
+    body.archive-near-toggle #cursor-dot::after {
+      background: rgba(255,255,255,0.9) !important;
     }
     /* Hover: pallino nascosto, testo flottante visibile */
     #cursor.hover #cursor-dot {
@@ -1277,9 +1286,9 @@
       min-width: 0;
       display: flex;
       flex-direction: column;
-      padding: 18px 18px 18px 22px;  /* stesso padding-top delle thumbs */
+      padding: 18px 18px 18px 36px;  /* padding-left aumentato per fare spazio alla linea verticale */
       box-sizing: border-box;
-      overflow: hidden;
+      overflow: visible;  /* permette alla linea di stare nel padding senza essere tagliata */
       justify-content: flex-start;
     }
 
@@ -1591,10 +1600,10 @@
     .archive-kw-panel {
       position: relative;  /* contesto per la linea assoluta */
     }
-    /* Linea verticale sottile — spostata a sinistra dei numeri (fuori dal padding della kw-col) */
+    /* Linea verticale sottile — nel padding-left della kw-col, a sinistra dei numeri */
     .archive-kw-vline {
       position: absolute;
-      left: -14px;   /* a sinistra dei numeri, separata dal testo */
+      left: -18px;   /* dentro il padding-left (36px), a sinistra dei numeri */
       top: 0;
       bottom: 0;
       width: 1px;
@@ -1608,7 +1617,7 @@
     /* Pallino scorrevole sulla linea verticale (+15%: 7px → 8px) */
     .archive-kw-dot {
       position: absolute;
-      left: -4px;   /* centrato sulla linea: -14px + 0.5px - 4px */
+      left: -22px;   /* centrato sulla linea: -18px - 4px (metà pallino 8px) */
       width: 8px;
       height: 8px;
       border-radius: 50%;
@@ -4590,10 +4599,13 @@ document.addEventListener('mousemove', e => {
           }
 
           if (_nearToggleOrThumb) {
-            // Entro 5px da TV o Thumbs: pallino ROSSO (sia dark che light mode)
-            document.body.classList.add('cursor-red');
-            document.body.classList.remove('cursor-on-dark');
+            // Entro 5px da TV o Thumbs: pallino ROSSO (classe dedicata con max priorità CSS)
+            document.body.classList.add('archive-near-toggle');
+            // Mantieni cursor-on-dark per il box scuro (il CSS :not(.archive-near-toggle) evita il bianco)
+            if (!_boxIsWhite) document.body.classList.add('cursor-on-dark');
+            else document.body.classList.remove('cursor-on-dark');
           } else {
+            document.body.classList.remove('archive-near-toggle');
             // Cursore dentro il box ma lontano da TV/Thumbs
             document.body.classList.remove('cursor-red');
             if (_boxIsWhite) {
@@ -4603,6 +4615,7 @@ document.addEventListener('mousemove', e => {
             }
           }
         } else {
+          document.body.classList.remove('archive-near-toggle');
           document.body.classList.add('cursor-red');
           document.body.classList.remove('cursor-on-dark');
         }
