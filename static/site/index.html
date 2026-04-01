@@ -539,15 +539,18 @@
        NAVBAR (rizzi-web + pill centrephotogeneve)
     ══════════════════════════════════════════════════════════════ */
     header {
-      position: relative;
+      position: fixed;
+      top: 0; left: 0; right: 0;
       height: var(--nav-h);
       padding: 0 28px;
       display: flex;
       align-items: center;
       justify-content: space-between;
       flex-shrink: 0;
-      z-index: 750;  /* sopra Box1 (700) e Box2 (695) */
+      z-index: 1000;  /* sopra tutti gli overlay (300-700) */
+      background: #fff;  /* sfondo bianco per coprire il contenuto sotto */
     }
+    [data-theme="dark"] header { background: #111; }
     /* Navbar nascosta durante la landing — appare solo dopo */
     body.landing-active header {
       visibility: hidden;
@@ -736,6 +739,7 @@
       pointer-events: all;
       visibility: visible;
     }
+    /* La navbar (z-index 1000) è sopra l'overlay (z-index 300) — i click sulla navbar passano sempre */
     /* Sfondo sfumato come jackdavison */
     #overview-overlay-bg {
       position: absolute; inset: 0;
