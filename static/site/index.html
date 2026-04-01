@@ -1195,22 +1195,8 @@
       overflow: hidden;
       position: relative;
     }
-    /* Caption in cima alla zona thumbs */
-    .archive-expanded-caption {
-      font-family: var(--font-mono);
-      font-size: 9px;
-      letter-spacing: 0.18em;
-      color: rgba(255,255,255,0.35);
-      white-space: nowrap;
-      pointer-events: none;
-      user-select: none;
-      flex-shrink: 0;
-      margin-bottom: 10px;
-      text-transform: uppercase;
-    }
-    .archive-expanded-caption .caption-title { font-weight: 400; }
-    .archive-expanded-caption .caption-sep { margin: 0 5px; opacity: 0.4; }
-    .archive-expanded-caption .caption-count { font-variant-numeric: tabular-nums; }
+    /* Caption rimossa: già dentro la categoria, non serve ripetere il nome */
+    .archive-expanded-caption { display: none; }
     /* Griglia thumbs: 2 colonne */
     .archive-expanded-thumbs {
       display: grid;
@@ -1234,20 +1220,35 @@
     }
     .archive-expanded-thumb:hover { opacity: 0.8; }
     .archive-expanded-thumb.active { opacity: 1; outline: 1px solid rgba(255,255,255,0.7); }
+    /* Light-mode: thumbs a piena opacità, hover con overlay grigio */
+    .archive-expanded.box-white .archive-expanded-thumb { opacity: 1; }
+    .archive-expanded.box-white .archive-expanded-thumb:hover { opacity: 1; }
+    .archive-expanded.box-white .archive-expanded-thumb::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: rgba(0,0,0,0);
+      transition: background .2s;
+      pointer-events: none;
+    }
+    .archive-expanded.box-white .archive-expanded-thumb:hover::after {
+      background: rgba(0,0,0,0.18);
+    }
+    .archive-expanded.box-white .archive-expanded-thumb.active { outline: 1px solid rgba(0,0,0,0.4); }
     .archive-expanded-thumb img {
       width: 100%; height: 100%;
       object-fit: cover;
       display: block;
     }
-    /* Riga toggle in fondo alla zona thumbs */
+    /* Toggle monitor: posizionato in basso a destra del box espanso (position:absolute) */
     .archive-expanded-bottom-row {
-      display: flex;
-      flex-direction: row;
-      align-items: center;
-      justify-content: flex-start;
-      flex-shrink: 0;
-      margin-top: 8px;
-      gap: 8px;
+      display: none;  /* non più nella colonna thumbs */
+    }
+    .archive-expanded-toggle-abs {
+      position: absolute;
+      bottom: 14px;
+      right: 14px;
+      z-index: 2;
     }
 
     /* Separatore verticale sottile tra thumbs e keywords */
@@ -1420,7 +1421,7 @@
       font-family: var(--font-mono);
       font-size: 9px;
       letter-spacing: 0.04em;
-      color: rgba(255,255,255,0.55);
+      color: rgba(255,255,255,0.80);
       text-transform: lowercase;
       cursor: pointer;
       transition: color .18s, padding-left .15s;
@@ -5602,7 +5603,10 @@ function buildArchive() {
           toggle.addEventListener('click', e => {
             e.stopPropagation();
             panel.classList.toggle('box-white');
-            const isWhite = panel.classList.contains('box-white');
+            inner.classList.toggle('box-white');
+            // Aggiorna anche il wrapper archive-expanded per i selettori CSS
+            const ae = panel.querySelector('.archive-expanded') || panel.closest('.archive-expanded') || panel;
+            ae.classList.toggle('box-white');
             const _td = toggle.querySelector('.ae-toggle-dark');
             const _tl = toggle.querySelector('.ae-toggle-light');
             if (_td) _td.style.display = isWhite ? 'none' : '';
@@ -5625,15 +5629,13 @@ function buildArchive() {
           caption.appendChild(captionSep);
           caption.appendChild(captionCount);
 
-          // Riga toggle in fondo alla zona thumbs
-          const bottomRow = document.createElement('div');
-          bottomRow.className = 'archive-expanded-bottom-row';
-          bottomRow.appendChild(toggle);
-
-          // Assembla zona thumbs
-          thumbsCol.appendChild(caption);
+          // Assembla zona thumbs (senza caption e senza toggle in basso)
           thumbsCol.appendChild(strip);
-          thumbsCol.appendChild(bottomRow);
+
+          // Toggle monitor: div assoluto in basso a destra del box
+          const toggleAbs = document.createElement('div');
+          toggleAbs.className = 'archive-expanded-toggle-abs';
+          toggleAbs.appendChild(toggle);
 
           // Aggiorna contatore al click su ogni thumb
           strip.querySelectorAll('.archive-expanded-thumb').forEach((t, i) => {
@@ -5655,6 +5657,7 @@ function buildArchive() {
           right.appendChild(sep);
           right.appendChild(kwCol);
           inner.appendChild(right);
+          inner.appendChild(toggleAbs);  /* toggle in basso a destra del box */
 
           // Pulsante View all (angolo basso destra)
           const viewAll = document.createElement('div');
