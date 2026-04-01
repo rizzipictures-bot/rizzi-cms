@@ -5718,6 +5718,9 @@ function buildCitiesIndex() {
       // Il box 1 è già aperto (gestito dall'hover + delay 300ms)
       // Se per qualche motivo non fosse ancora aperto, lo apriamo ora
       const projectForPanel = isTokyoProject && TOKYO_CMS ? TOKYO_CMS : p;
+      // Assicura che la riga cliccata sia viola e le altre no
+      document.querySelectorAll('.cities-list-row.cit-active').forEach(r => r.classList.remove('cit-active'));
+      row.classList.add('cit-active');
       if (_cipanel && !_cipanel.classList.contains('open')) {
         populateCityInfoPanel(projectForPanel, previewImages);
         _cipanel._activeProject = projectForPanel;
