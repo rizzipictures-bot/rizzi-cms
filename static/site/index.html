@@ -2124,7 +2124,7 @@
       flex-shrink: 0;
       width: 16.5px;
       height: 16.5px;
-      margin-top: -24px;  /* alzato di 9px rispetto a -15px */
+      margin-top: 2px;   /* allineato al pallino chiudi del Box 2 */
     }
     .cip-meta {
       padding: 0 18px;           /* allineato alle meta del Box 2 */
@@ -2334,28 +2334,29 @@
     /* Bottone toggle tema */
     #cpv-theme-toggle {
       position: absolute;
-      top: 10px;
-      left: 12px;
-      width: 14px;
-      height: 14px;
-      border-radius: 50%;
-      border: 1px solid #555;
+      top: 8px;
+      left: 10px;
+      width: 18px;
+      height: 18px;
+      border-radius: 0;
+      border: none;
       background: transparent;
       cursor: pointer;
       padding: 0;
       display: flex;
       align-items: center;
       justify-content: center;
-      transition: background .2s, border-color .2s;
+      transition: opacity .2s;
       z-index: 2;
+      opacity: 0.7;
     }
-    #cpv-theme-toggle:hover {
-      border-color: #aaa;
-    }
-    #cip-photo-viewer.light-mode #cpv-theme-toggle {
-      background: #111;
-      border-color: #111;
-    }
+    #cpv-theme-toggle:hover { opacity: 1; }
+    /* Icona monitor SVG — bianca su sfondo scuro, nera su sfondo chiaro */
+    #cpv-theme-toggle svg { display: block; }
+    #cpv-theme-toggle .toggle-icon-dark  { display: block; }  /* visibile in dark mode */
+    #cpv-theme-toggle .toggle-icon-light { display: none; }   /* visibile in light mode */
+    #cip-photo-viewer.light-mode #cpv-theme-toggle .toggle-icon-dark  { display: none; }
+    #cip-photo-viewer.light-mode #cpv-theme-toggle .toggle-icon-light { display: block; }
     #cip-photo-viewer-header {
       position: relative;
       padding-left: 36px; /* spazio per il toggle */
@@ -3606,7 +3607,20 @@
     <div id="cip-photo-viewer">
       <!-- Header: toggle tema + testo descrittivo + pallino chiudi -->
       <div id="cip-photo-viewer-header">
-        <button id="cpv-theme-toggle" title="Cambia tema"></button>
+        <button id="cpv-theme-toggle" title="Cambia tema">
+          <!-- Icona monitor — bianca in dark mode -->
+          <svg class="toggle-icon-dark" width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <rect x="2" y="3" width="20" height="14" rx="2" stroke="white" stroke-width="1.5" fill="none"/>
+            <line x1="8" y1="21" x2="16" y2="21" stroke="white" stroke-width="1.5" stroke-linecap="round"/>
+            <line x1="12" y1="17" x2="12" y2="21" stroke="white" stroke-width="1.5" stroke-linecap="round"/>
+          </svg>
+          <!-- Icona monitor — nera in light mode -->
+          <svg class="toggle-icon-light" width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <rect x="2" y="3" width="20" height="14" rx="2" stroke="#111" stroke-width="1.5" fill="none"/>
+            <line x1="8" y1="21" x2="16" y2="21" stroke="#111" stroke-width="1.5" stroke-linecap="round"/>
+            <line x1="12" y1="17" x2="12" y2="21" stroke="#111" stroke-width="1.5" stroke-linecap="round"/>
+          </svg>
+        </button>
         <div id="cip-photo-viewer-header-text"></div>
         <button class="btn-circle-close" id="cip-photo-viewer-close" style="--close-color:#7b2fff"></button>
       </div>
@@ -4237,6 +4251,16 @@ document.addEventListener('mousemove', e => {
           window._citLock = false;
           window._citBoxW = null;
           document.body.classList.remove('cursor-on-dark');
+          // Chiudi anche il Box 2 se aperto (non deve restare da solo)
+          const _pv2 = document.getElementById('cip-photo-viewer');
+          if (_pv2 && _pv2.classList.contains('open')) {
+            _pv2.classList.remove('open');
+            if (_cipanel) {
+              _cipanel.classList.remove('viewer-open');
+              _cipanel.querySelectorAll('.cip-img.selected').forEach(i => i.classList.remove('selected'));
+            }
+            requestAnimationFrame(() => _updateCitiesLines());
+          }
         }
 
         const locked = _cipanel && _cipanel.classList.contains('open');
@@ -4655,12 +4679,12 @@ function _updateCitiesLines() {
   lineH.style.left  = '0';
   lineH.style.width = bx1Left + 'px';
 
-  // Linea verticale: al bordo sx del Box 2 (se aperto e visibile)
-  // Altrimenti nascosta (non ha senso senza Box 2)
-  const bx2Rect = _bx2 ? _bx2.getBoundingClientRect() : null;
+  // Linea verticale: al bordo ESTERNO sinistro del Box 2 (se aperto)
+  // Usiamo lo style.left del Box 2 (valore impostato via JS) per evitare
+  // che il border del box sposti la linea verso l'interno
   const bx2Open = _bx2 && _bx2.classList.contains('open');
-  if (bx2Open && bx2Rect && bx2Rect.width > 0) {
-    lineV.style.left    = Math.round(bx2Rect.left) + 'px';
+  if (bx2Open && _bx2 && _bx2.style.left) {
+    lineV.style.left    = _bx2.style.left;  // stesso left del Box 2 = bordo esterno
     lineV.style.display = '';
   } else {
     lineV.style.display = 'none';
