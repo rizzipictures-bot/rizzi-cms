@@ -7845,9 +7845,9 @@ loadFromCMS();
         }
         const distStart = window._citLerpDistStart || Math.max(dist, 1);
 
-        // Curva ease-out: velocità = 0.18 all'inizio, scende fino a 0.032 alla fine
+        // Curva ease-out: velocità = 0.15 all'inizio, scende fino a 0.025 alla fine
         const t = Math.max(0, Math.min(1, dist / distStart));  // 1 = lontano, 0 = vicino
-        const speed = 0.032 + t * (0.18 - 0.032);             // interpolazione lineare della velocità
+        const speed = 0.025 + t * (0.15 - 0.025);             // interpolazione lineare della velocità
 
         _citThumbCurX += distX * speed;
         _citThumbCurY += distY * speed;
