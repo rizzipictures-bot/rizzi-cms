@@ -1276,7 +1276,7 @@
     /* Bottone "Thumbs" — nella bottom-bar, a destra */
     .archive-expanded-viewall {
       font-family: var(--font-mono);
-      font-size: 8px;
+      font-size: 6px;    /* 8 * 0.78 ≈ 6 */
       letter-spacing: 0.12em;
       text-transform: uppercase;
       color: #000;
@@ -1284,7 +1284,7 @@
       cursor: pointer;
       display: flex;
       align-items: center;
-      padding: 4px 9px;
+      padding: 3px 7px;  /* 4*0.78≈3, 9*0.78≈7 */
       border: none;
       user-select: none;
       transition: opacity .18s;
@@ -1299,8 +1299,8 @@
 
     /* Toggle tema Archive: icona monitor SVG — nella bottom-bar */
     .archive-expanded-toggle {
-      width: 26px;
-      height: 26px;
+      width: 20px;   /* 26 * 0.78 ≈ 20 */
+      height: 20px;
       flex-shrink: 0;
       cursor: pointer;
       opacity: 0.9;
@@ -1311,8 +1311,8 @@
     }
     .archive-expanded-toggle:hover { opacity: 1; }
     .archive-expanded-toggle svg {
-      width: 26px;
-      height: 26px;
+      width: 20px;
+      height: 20px;
       display: block;
     }
 
