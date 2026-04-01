@@ -2213,29 +2213,25 @@
       pointer-events: auto;
     }
 
-    /* Linea orizzontale che attraversa tutta la pagina all'altezza del bordo inferiore dell'header del Box 2 */
-    #cip-photo-viewer-header::after {
-      content: '';
+    /* Linee decorative Cities */
+    #cities-line-h, #cities-line-v {
       position: fixed;
-      left: 0;
-      right: 0;
-      bottom: -0.5px;
-      height: 0.5px;
-      background: rgba(255,255,255,0.15);
-      z-index: 1;
       pointer-events: none;
+      z-index: 690;
+      background: rgba(180,180,180,0.35);
+      display: none;
     }
-    /* Linea verticale sul bordo sinistro del Box 2 */
-    #cip-photo-viewer::before {
-      content: '';
-      position: absolute;
+    body.cities-active #cities-line-h,
+    body.cities-active #cities-line-v {
+      display: block;
+    }
+    #cities-line-h {
+      height: 0.5px;
       left: 0;
-      top: 0;
-      bottom: 0;
+    }
+    #cities-line-v {
       width: 0.5px;
-      background: rgba(255,255,255,0.15);
-      z-index: 1;
-      pointer-events: none;
+      top: 0;
     }
 
     /* Header box 2 — pallino viola + testo descrittivo sulla stessa riga */
@@ -3620,6 +3616,10 @@
     </div>
 
     <!-- Box info fisso Cities (slide da destra) -->
+    <!-- Linee decorative Cities: orizzontale (dal bordo sx pagina al bordo sx Box2) e verticale (bordo sx Box2) -->
+    <div id="cities-line-h"></div>
+    <div id="cities-line-v"></div>
+
     <div id="cities-info-panel">
       <div class="cip-header">
         <div class="cip-header-text">
@@ -4570,7 +4570,32 @@ if (_cipImages) {
     if (_cipanel) _cipanel.classList.add('viewer-open');
 
     _cipPhotoViewer.classList.add('open');
+
+    // Posiziona le linee decorative dopo che il Box 2 è aperto
+    requestAnimationFrame(() => _updateCitiesLines());
   });
+}
+
+// Aggiorna posizione delle linee decorative
+function _updateCitiesLines() {
+  const lineH = document.getElementById('cities-line-h');
+  const lineV = document.getElementById('cities-line-v');
+  if (!lineH || !lineV || !_cipPhotoViewer) return;
+
+  const pvRect = _cipPhotoViewer.getBoundingClientRect();
+  const header = _cipPhotoViewer.querySelector('#cip-photo-viewer-header');
+  const headerRect = header ? header.getBoundingClientRect() : pvRect;
+
+  // Linea orizzontale: dal bordo sx pagina al bordo sx del Box 2, all'altezza del bordo inferiore dell'header
+  const hY = Math.round(headerRect.bottom);
+  lineH.style.top  = hY + 'px';
+  lineH.style.left = '0';
+  lineH.style.width = Math.round(pvRect.left) + 'px';
+
+  // Linea verticale: bordo sx del Box 2, dall'alto del box fino in fondo
+  lineV.style.left   = Math.round(pvRect.left) + 'px';
+  lineV.style.top    = Math.round(pvRect.top) + 'px';
+  lineV.style.height = Math.round(pvRect.height) + 'px';
 }
 
 // Funzione riutilizzabile per mostrare una foto per indice nel Box 2
