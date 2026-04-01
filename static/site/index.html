@@ -1342,7 +1342,8 @@
       position: relative;
       cursor: none;
       background: inherit;
-      padding-top: 8px;   /* stesso spazio che c'è tra foto e strip in basso */
+      padding-top: 8px;
+      padding-bottom: 15px;  /* 15px di spazio tra foto e strip in basso */
     }
     .ae-thumbs-hero img {
       max-width: 100%;
@@ -1367,10 +1368,10 @@
       padding: 6px 12px;
       flex-shrink: 0;
     }
-    /* TV nella info row: stessa dimensione del toggle normale, margine a sx del Back */
+    /* TV nella info row: a destra, vicino al contatore */
     .ae-thumbs-tv {
-      margin-left: 10px;
-      margin-right: auto;  /* spinge il contatore a destra */
+      margin-left: auto;  /* spinge TV a destra */
+      margin-right: 8px;
       flex-shrink: 0;
     }
     .ae-thumbs-back {
@@ -5969,7 +5970,7 @@ function buildArchive() {
             aeCtr.className = 'ae-thumbs-counter';
             aeCtr.textContent = '01 — ' + String(images.length).padStart(2,'0');
             aeInfo.appendChild(aeBack);
-            aeInfo.appendChild(aeCtr);
+            // aeCtr verrà aggiunto dopo la TV (a destra)
 
             // Strip thumbnail orizzontale
             const aeStrip = document.createElement('div');
@@ -6004,8 +6005,9 @@ function buildArchive() {
                 if (svgL) svgL.style.display = isDark ? 'none' : '';
               });
             });
-            // Inserisci la TV nella info row, subito dopo il bottone Back
-            aeInfo.insertBefore(aeToggleClone, aeCtr);
+            // Inserisci la TV nella info row a DESTRA: Back [spazio] TV contatore
+            aeInfo.appendChild(aeToggleClone);
+            aeInfo.appendChild(aeCtr);  // rimuovi e riappendi per mettere contatore dopo TV
 
             _aeThumbsView.style.display = 'none';
             // Appeso al panel (archive-expanded) che ha overflow:hidden
