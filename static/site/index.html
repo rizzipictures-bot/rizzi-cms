@@ -2074,7 +2074,8 @@
       bottom: 0;               /* arriva fino al fondo pagina */
       width: 300px;
       height: auto;            /* altezza calcolata da top+bottom */
-      background: #1a1a1a;        /* quasi nero (Box1) — più scuro ma non nero pieno */
+      background: #111;             /* nero uguale al Box 2 */
+      border-right: 0.5px solid rgba(255,255,255,0.18); /* separatore bianco sottilissimo verso Box 2 */
       color: #e0e0e0;
       z-index: 700;
       display: none;           /* nascosto su tutte le pagine non-cities */
@@ -2093,8 +2094,8 @@
       pointer-events: auto;
     }
     .cip-header {
-      padding: 18px 18px 10px;
-      border-bottom: 1px solid #333;
+      padding: 10px 18px 10px;   /* allineato all'header del Box 2 */
+      border-bottom: 0.5px solid #333;
       flex-shrink: 0;
       display: flex;
       align-items: center;
@@ -2126,15 +2127,16 @@
       margin-top: -24px;  /* alzato di 9px rispetto a -15px */
     }
     .cip-meta {
-      padding: 10px 18px;
-      border-bottom: 1px solid #333;
+      padding: 0 18px;           /* allineato alle meta del Box 2 */
+      border-bottom: 0.5px solid #333;
       flex-shrink: 0;
     }
     .cip-meta-row {
       display: grid;
       grid-template-columns: 80px 1fr;
       border-bottom: 0.5px solid #333;
-      padding: 2px 0;       /* riga più stretta */
+      padding: 2px 0;       /* stesso padding delle meta del Box 2 */
+      align-items: baseline;
     }
     .cip-meta-row:last-child { border-bottom: none; }
     .cip-meta-label {
@@ -2177,7 +2179,7 @@
       cursor: pointer;
       border-radius: 1px;
       transition: opacity .15s;
-      background: #1a1a1a;
+      background: #111;
       margin-bottom: 10px;     /* spazio verticale tra le thumbs */
       break-inside: avoid;     /* evita che una foto venga spezzata tra colonne */
     }
