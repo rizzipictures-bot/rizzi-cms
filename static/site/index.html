@@ -1240,15 +1240,17 @@
       object-fit: cover;
       display: block;
     }
-    /* Toggle monitor: posizionato in basso a destra del box espanso (position:absolute) */
-    .archive-expanded-bottom-row {
-      display: none;  /* non più nella colonna thumbs */
-    }
-    .archive-expanded-toggle-abs {
+    /* Bottom bar: icona monitor a sx + bottone Thumbs a dx */
+    .archive-expanded-bottom-bar {
       position: absolute;
-      bottom: 14px;
-      right: 14px;
-      z-index: 2;
+      bottom: 10px;
+      left: 14px;
+      right: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      z-index: 10;
+      pointer-events: all;
     }
 
     /* Separatore verticale sottile tra thumbs e keywords */
@@ -1270,7 +1272,7 @@
       overflow: hidden;
     }
 
-    /* Pulsante "Thumbs" — bottone bianco con testo nero, angolo basso destra */
+    /* Bottone "Thumbs" — nella bottom-bar, a destra */
     .archive-expanded-viewall {
       font-family: var(--font-mono);
       font-size: 8px;
@@ -1279,51 +1281,34 @@
       color: #000;
       background: #fff;
       cursor: pointer;
-      position: absolute;
-      right: 10px;
-      bottom: 10px;
       display: flex;
       align-items: center;
-      gap: 7px;
-      padding: 5px 10px;
+      padding: 4px 9px;
       border: none;
       user-select: none;
       transition: opacity .18s;
-      letter-spacing: 0.12em;
-      z-index: 50;
-      pointer-events: all !important;
-      isolation: isolate;
+      pointer-events: all;
     }
     .archive-expanded-viewall:hover { opacity: 0.8; }
-    /* Light-mode: bottone invertito (nero con testo bianco) */
+    /* Light-mode: bottone invertito */
     .archive-expanded.box-white .archive-expanded-viewall {
       background: #000;
       color: #fff;
     }
-    .archive-expanded.box-white .archive-expanded-viewall svg rect,
-    .archive-expanded.box-white .archive-expanded-viewall svg line {
-      stroke: #fff;
-    }
-    .archive-expanded.box-white .archive-expanded-viewall svg rect:last-of-type {
-      fill: #fff;
-    }
 
-    /* Toggle tema Archive: icona monitor SVG */
+    /* Toggle tema Archive: icona monitor SVG — nella bottom-bar */
     .archive-expanded-toggle {
       width: 26px;
-      height: 48px;                  /* stessa altezza delle thumbs */
+      height: 26px;
       flex-shrink: 0;
       cursor: pointer;
-      align-self: flex-end;          /* allineato al bottom */
-      margin-left: 14px;
       opacity: 0.9;
       transition: opacity .2s;
       display: flex;
-      align-items: center;           /* SVG centrato verticalmente nei 48px */
+      align-items: center;
       justify-content: center;
     }
     .archive-expanded-toggle:hover { opacity: 1; }
-
     .archive-expanded-toggle svg {
       width: 26px;
       height: 26px;
@@ -5648,13 +5633,8 @@ function buildArchive() {
           caption.appendChild(captionSep);
           caption.appendChild(captionCount);
 
-          // Assembla zona thumbs (senza caption e senza toggle in basso)
+          // Assembla zona thumbs
           thumbsCol.appendChild(strip);
-
-          // Toggle monitor: div assoluto in basso a destra del box
-          const toggleAbs = document.createElement('div');
-          toggleAbs.className = 'archive-expanded-toggle-abs';
-          toggleAbs.appendChild(toggle);
 
           // Aggiorna contatore al click su ogni thumb
           strip.querySelectorAll('.archive-expanded-thumb').forEach((t, i) => {
@@ -5676,35 +5656,27 @@ function buildArchive() {
           right.appendChild(sep);
           right.appendChild(kwCol);
           inner.appendChild(right);
-          inner.appendChild(toggleAbs);  /* toggle in basso a destra del box */
 
-          // Pulsante "Thumbs" (angolo basso destra) — icona monitor + scritta, porta alla pagina thumbs
-          const viewAll = document.createElement('div');
-          viewAll.className = 'archive-expanded-viewall';
-          // Icona monitor SVG (stessa usata nel toggle tema, ma piccola)
-          const _vaSvgDark = `<svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" width="13" height="13" style="flex-shrink:0">
-            <rect x="2" y="3" width="20" height="14" rx="2" stroke="#000" stroke-width="1.5" fill="none"/>
-            <rect x="4.5" y="5.5" width="15" height="9" rx="1" fill="#000"/>
-            <line x1="8" y1="21" x2="16" y2="21" stroke="#000" stroke-width="1.5" stroke-linecap="round"/>
-            <line x1="12" y1="17" x2="12" y2="21" stroke="#000" stroke-width="1.5" stroke-linecap="round"/>
-          </svg>`;
-          const _vaLabel = document.createElement('span');
-          _vaLabel.textContent = 'Thumbs';
-          viewAll.innerHTML = _vaSvgDark;
-          viewAll.appendChild(_vaLabel);
-          // Al click: chiudi il box espanso e porta alla pagina thumbs
-          viewAll.addEventListener('click', e => {
+          // ── BOTTOM BAR: icona monitor (toggle tema) a sx + bottone Thumbs a dx ──
+          const bottomBar = document.createElement('div');
+          bottomBar.className = 'archive-expanded-bottom-bar';
+
+          // Icona monitor (toggle tema) — a sinistra nella bottom bar
+          bottomBar.appendChild(toggle);
+
+          // Bottone "Thumbs" — a destra nella bottom bar, apre l'overlay View All
+          const thumbsBtn = document.createElement('div');
+          thumbsBtn.className = 'archive-expanded-viewall';
+          thumbsBtn.textContent = 'Thumbs';
+          thumbsBtn.addEventListener('click', e => {
             e.stopPropagation();
             e.preventDefault();
-            // Chiudi il box espanso
-            popup.classList.remove('open');
-            ball.classList.remove('active');
-            setTimeout(() => popup.remove(), 220);
-            if (activePopup === popup) activePopup = null;
-            // Naviga alla pagina thumbs di Archive
-            if (typeof switchView === 'function') switchView('archive');
+            const isDark = !panel.classList.contains('box-white');
+            window.openViewAllOverlay(images, p.title || '', isDark);
           });
-          inner.appendChild(viewAll);
+          bottomBar.appendChild(thumbsBtn);
+
+          inner.appendChild(bottomBar);
 
           // ── KEYWORDS: sempre visibili nella zona kw-col ──
           const allKws = new Set();
