@@ -4660,10 +4660,19 @@ document.addEventListener('mousemove', e => {
             }
           }
         } else {
+          // Fuori dal box: controlla se il cursore è su una riga nera (is-open)
+          const _elOut = document.elementFromPoint(mx, my);
+          const _onDarkRow = _elOut && _elOut.closest ? !!_elOut.closest('.archive-row.is-open') : false;
           document.body.classList.remove('archive-near-toggle');
           document.body.classList.remove('archive-box-white');
-          document.body.classList.add('cursor-red');
-          document.body.classList.remove('cursor-on-dark');
+          if (_onDarkRow) {
+            document.body.classList.add('cursor-on-dark');
+            document.body.classList.remove('cursor-red');
+            cursorDot.style.background = '';
+          } else {
+            document.body.classList.remove('cursor-on-dark');
+            document.body.classList.add('cursor-red');
+          }
         }
       }
 
@@ -4677,7 +4686,8 @@ document.addEventListener('mousemove', e => {
           cursorDot.style.background = '';
           cursorDot.style.width  = '';
           cursorDot.style.height = '';
-        } else if (document.body.classList.contains('cursor-on-dark') && !activeExpanded) {
+        } else {
+          // Default Archive senza box e senza riga nera: cursore rosso
           document.body.classList.remove('cursor-on-dark');
           document.body.classList.add('cursor-red');
         }
