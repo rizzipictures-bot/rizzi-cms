@@ -5647,6 +5647,8 @@ function buildCitiesIndex() {
     const citiesPreviewImg = document.getElementById('cities-cursor-preview-img');
 
     row.addEventListener('mouseenter', () => {
+      // Se il box 2 è già aperto via click, blocca tutto l'hover su altre righe
+      if (_cipPhotoViewer && _cipPhotoViewer.classList.contains('open')) return;
       // Suono click identico ad Archive
       if (typeof archiveRowClick === 'function') archiveRowClick();
       // Marca la riga come attiva (viola su city/place)
@@ -5681,6 +5683,8 @@ function buildCitiesIndex() {
       }, 300);
     });
     row.addEventListener('mouseleave', () => {
+      // Se il box 2 è già aperto via click, non fare nulla al mouseleave
+      if (_cipPhotoViewer && _cipPhotoViewer.classList.contains('open')) return;
       citiesPreview.classList.remove('visible');
       // Cancella il delay di apertura box se il mouse esce prima dei 400ms
       clearTimeout(window._citBoxDelay);
