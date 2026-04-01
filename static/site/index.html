@@ -7828,38 +7828,52 @@ loadFromCMS();
       const maxBoxX  = W - BOXW - THUMBW - GAP;
       const locked   = _cipan && _cipan.classList.contains('open');
 
-      const thumbTargetX = locked ? maxBoxX : Math.min(mx + 20, maxFreeX);
-      const thumbTargetY = my - 70;
-
       if (locked) {
-        // ── EASE-OUT progressivo verso il box ──
-        // La velocità parte alta (0.18) e rallenta man mano che la distanza si riduce.
-        // Formula: speed = speedMax * (dist / distStart) clamped, con un minimo per non bloccarsi.
-        const distX = thumbTargetX - _citThumbCurX;
-        const distY = thumbTargetY - _citThumbCurY;
-        const dist  = Math.sqrt(distX * distX + distY * distY);
-
-        // Memorizza la distanza iniziale al momento in cui locked diventa true
-        if (!window._citLerpDistStart || window._citLerpDistStart < dist) {
-          window._citLerpDistStart = dist;
+        // ── DELAY 300ms prima di iniziare il movimento verso destra ──
+        // Al momento in cui locked diventa true, registra il timestamp
+        if (!window._citLockTime) {
+          window._citLockTime = performance.now();
+          window._citLerpDistStart = null;  // reset distanza
         }
-        const distStart = window._citLerpDistStart || Math.max(dist, 1);
+        const elapsed = performance.now() - window._citLockTime;
 
-        // Curva ease-out: velocità = 0.15 all'inizio, scende fino a 0.025 alla fine
-        const t = Math.max(0, Math.min(1, dist / distStart));  // 1 = lontano, 0 = vicino
-        const speed = 0.025 + t * (0.15 - 0.025);             // interpolazione lineare della velocità
+        if (elapsed < 300) {
+          // Durante il delay: la thumbnail rimane ferma dove si trova (segue solo Y del mouse)
+          const thumbTargetY = my - 70;
+          _citThumbCurY += (thumbTargetY - _citThumbCurY) * 0.16;
+          _citPrev.style.transform = `translate(${_citThumbCurX}px, ${_citThumbCurY}px)`;
+        } else {
+          // Dopo il delay: ease-out progressivo verso il box
+          const thumbTargetX = maxBoxX;
+          const thumbTargetY = my - 70;
+          const distX = thumbTargetX - _citThumbCurX;
+          const distY = thumbTargetY - _citThumbCurY;
+          const dist  = Math.sqrt(distX * distX + distY * distY);
 
-        _citThumbCurX += distX * speed;
-        _citThumbCurY += distY * speed;
+          if (!window._citLerpDistStart || window._citLerpDistStart < dist) {
+            window._citLerpDistStart = dist;
+          }
+          const distStart = window._citLerpDistStart || Math.max(dist, 1);
+
+          const t = Math.max(0, Math.min(1, dist / distStart));
+          const speed = 0.025 + t * (0.15 - 0.025);
+
+          _citThumbCurX += distX * speed;
+          _citThumbCurY += distY * speed;
+          _citPrev.style.transform = `translate(${_citThumbCurX}px, ${_citThumbCurY}px)`;
+        }
       } else {
         // Segue il mouse liberamente: lerp reattivo standard
-        window._citLerpDistStart = null;  // reset per il prossimo locked
+        window._citLockTime = null;       // reset delay per il prossimo locked
+        window._citLerpDistStart = null;
+        const thumbTargetX = Math.min(mx + 20, maxFreeX);
+        const thumbTargetY = my - 70;
         const speed = 0.16;
         _citThumbCurX += (thumbTargetX - _citThumbCurX) * speed;
         _citThumbCurY += (thumbTargetY - _citThumbCurY) * speed;
+        _citPrev.style.transform = `translate(${_citThumbCurX}px, ${_citThumbCurY}px)`;
       }
 
-      _citPrev.style.transform = `translate(${_citThumbCurX}px, ${_citThumbCurY}px)`;
     }
     requestAnimationFrame(tick);
   }
