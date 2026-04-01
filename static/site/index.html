@@ -242,7 +242,7 @@
       display: none;
     }
     /* ── Cursore ROSSO — Overview, Archive (lista chiusa), Cities ──
-       cursor-on-dark ha priorità: se attivo, il pallino è bianco anche con cursor-red */
+       cursor-on-dark ha priorità: su zone nere il pallino è bianco */
     body.cursor-red:not(.cursor-on-dark) #cursor-dot {
       background: #e00 !important;
     }
@@ -547,8 +547,8 @@
       align-items: center;
       justify-content: space-between;
       flex-shrink: 0;
-      z-index: 1000;  /* sopra tutti gli overlay (300-700) */
-      background: #fff;  /* sfondo bianco per coprire il contenuto sotto */
+      z-index: 1000;  /* sopra tutti gli overlay — navbar sempre cliccabile */
+      background: #fff;
     }
     [data-theme="dark"] header { background: #111; }
     /* Navbar nascosta durante la landing — appare solo dopo */
@@ -739,7 +739,6 @@
       pointer-events: all;
       visibility: visible;
     }
-    /* La navbar (z-index 1000) è sopra l'overlay (z-index 300) — i click sulla navbar passano sempre */
     /* Sfondo sfumato come jackdavison */
     #overview-overlay-bg {
       position: absolute; inset: 0;
@@ -1453,10 +1452,10 @@
       height: 100%;  /* si adatta all'altezza della strip (64px) */
       overflow: hidden;
       cursor: none;
-      opacity: 0.25;
+      opacity: 0.35;
       transition: opacity .2s;
     }
-    .ae-thumbs-strip-item:hover { opacity: 0.6; }
+    .ae-thumbs-strip-item:hover { opacity: 0.7; }
     .ae-thumbs-strip-item.active { opacity: 1; outline: 1px solid rgba(255,255,255,0.6); }
     .archive-expanded.box-white .ae-thumbs-strip-item { opacity: 0.6; }
     .archive-expanded.box-white .ae-thumbs-strip-item:hover { opacity: 0.9; }
@@ -4615,9 +4614,9 @@ document.addEventListener('mousemove', e => {
 
       // Archive box aperto: rosso fuori dal box, bianco dentro il box
       if (currentView === 'archive' && activeExpanded) {
-        // Usa elementFromPoint per rilevare se dentro il box (gestisce overflow e colonne)
-        const _elAtPoint = document.elementFromPoint(mx, my);
-        const _insideBox = _elAtPoint && _elAtPoint.closest && !!_elAtPoint.closest('.archive-expanded');
+        // elementFromPoint è più affidabile di getBoundingClientRect (gestisce colonne e overflow)
+        const _elAtCursor = document.elementFromPoint(mx, my);
+        const _insideBox = _elAtCursor && _elAtCursor.closest && !!_elAtCursor.closest('.archive-expanded');
         if (_insideBox) {
           document.body.classList.remove('cursor-red');
           const _boxIsWhite = activeExpanded.classList.contains('box-white');
@@ -4661,19 +4660,10 @@ document.addEventListener('mousemove', e => {
             }
           }
         } else {
-          // Fuori dal box: controlla se su una riga nera
-          const _elOutside = document.elementFromPoint(mx, my);
-          const _onDarkRow = _elOutside && _elOutside.closest && _elOutside.closest('.archive-row:not(.header)');
           document.body.classList.remove('archive-near-toggle');
           document.body.classList.remove('archive-box-white');
-          if (_onDarkRow) {
-            document.body.classList.add('cursor-on-dark');
-            document.body.classList.remove('cursor-red');
-            cursorDot.style.background = '';
-          } else {
-            document.body.classList.add('cursor-red');
-            document.body.classList.remove('cursor-on-dark');
-          }
+          document.body.classList.add('cursor-red');
+          document.body.classList.remove('cursor-on-dark');
         }
       }
 
@@ -4709,21 +4699,6 @@ document.addEventListener('mousemove', e => {
         cursorLabel.style.transform = `translate(${lx}px, ${my + 24}px)`;
       } else {
         cursorLabel.style.transform = `translate(${mx + 22}px, calc(${my}px - 50%))`;
-      }
-
-      // Rimuovi cursor-red quando il cursore è sulla navbar (Cities, Archive, etc.)
-      if (!overlayOpen && document.body.classList.contains('cursor-red')) {
-        const _hdrNav = document.querySelector('header');
-        if (_hdrNav) {
-          const _hdrNavR = _hdrNav.getBoundingClientRect();
-          if (my <= _hdrNavR.bottom) {
-            document.body.classList.remove('cursor-red');
-            document.body.classList.remove('cursor-on-dark');
-            cursorDot.style.background = '';
-            cursorDot.style.width  = '';
-            cursorDot.style.height = '';
-          }
-        }
       }
 
       // Parole fluttuanti diventano pallino nero vicino alla navbar normale
