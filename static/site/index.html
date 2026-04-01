@@ -4671,6 +4671,36 @@ document.addEventListener('mousemove', e => {
         cursorLabel.style.transform = `translate(${mx + 22}px, calc(${my}px - 50%))`;
       }
 
+      // Parole fluttuanti diventano pallino nero vicino alla navbar normale
+      // Controlla se il cursore è entro 40px dall'header quando le parole volanti sono visibili
+      if (!overlayOpen && cursorLabel.classList.contains('show')) {
+        const _header = document.querySelector('header');
+        if (_header) {
+          const _hr = _header.getBoundingClientRect();
+          const _nearHeader = my <= _hr.bottom + 40;
+          if (_nearHeader) {
+            // Nasconde le parole fluttuanti → pallino nero
+            cursorLabel.classList.remove('show');
+            cursor.classList.remove('hover');
+            cursorDot.style.width  = '10px';
+            cursorDot.style.height = '10px';
+            cursorDot.style.background = '#111';
+            cursorDot.classList.remove('ring-mode');
+            document.body.classList.add('near-main-nav');
+          } else if (document.body.classList.contains('near-main-nav')) {
+            document.body.classList.remove('near-main-nav');
+            cursorDot.style.width  = '';
+            cursorDot.style.height = '';
+            cursorDot.style.background = '';
+          }
+        }
+      } else if (!overlayOpen && document.body.classList.contains('near-main-nav')) {
+        document.body.classList.remove('near-main-nav');
+        cursorDot.style.width  = '';
+        cursorDot.style.height = '';
+        cursorDot.style.background = '';
+      }
+
       // Parole fluttuanti diventano pallino nero vicino a Index/Thumbs in overlay
       // DEVE essere prima di ovUpdateCursor per non essere sovrascritto
       let _nearNavBar = false;
