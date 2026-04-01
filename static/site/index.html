@@ -4588,13 +4588,13 @@ document.addEventListener('mousemove', e => {
           document.body.classList.remove('cursor-red');
           const _boxIsWhite = activeExpanded.classList.contains('box-white');
 
-          // Controlla prossimità 5px da TV o Thumbs (tutte le istanze: normale + thumbs view)
+          // Controlla prossimità 5px da TV o Thumbs
           const _PROX = 5;
           let _nearToggleOrThumb = false;
-          const _toggleEls = activeExpanded.querySelectorAll('.archive-expanded-toggle, .archive-expanded-viewall, .ae-thumbs-back');
+          const _toggleEls = activeExpanded.querySelectorAll('.archive-expanded-toggle, .archive-expanded-viewall');
           for (const el of _toggleEls) {
             const r = el.getBoundingClientRect();
-            if (r.width === 0 && r.height === 0) continue; // elemento nascosto
+            if (r.width === 0 && r.height === 0) continue;
             if (mx >= r.left - _PROX && mx <= r.right  + _PROX &&
                 my >= r.top  - _PROX && my <= r.bottom + _PROX) {
               _nearToggleOrThumb = true;
@@ -4603,14 +4603,12 @@ document.addEventListener('mousemove', e => {
           }
 
           if (_nearToggleOrThumb) {
-            // Entro 5px da TV o Thumbs: pallino ROSSO (classe dedicata con max priorità CSS)
+            // ROSSO: rimuovi cursor-on-dark così il !important del rosso vince senza conflitti
+            document.body.classList.remove('cursor-on-dark');
+            document.body.classList.remove('cursor-red');
             document.body.classList.add('archive-near-toggle');
-            // Mantieni cursor-on-dark per il box scuro (il CSS :not(.archive-near-toggle) evita il bianco)
-            if (!_boxIsWhite) document.body.classList.add('cursor-on-dark');
-            else document.body.classList.remove('cursor-on-dark');
           } else {
             document.body.classList.remove('archive-near-toggle');
-            // Cursore dentro il box ma lontano da TV/Thumbs
             document.body.classList.remove('cursor-red');
             if (_boxIsWhite) {
               document.body.classList.remove('cursor-on-dark');
@@ -6147,10 +6145,8 @@ function buildArchive() {
 
         // Triangolo bianco nel box nero espanso
         panel.addEventListener('mouseenter', () => {
-          // Non sovrascrivere archive-near-toggle (pallino rosso vicino TV/Thumbs)
-          if (!document.body.classList.contains('archive-near-toggle')) {
-            document.body.classList.add('cursor-on-dark');
-          }
+          // Il mousemove gestisce tutto: non toccare cursor-on-dark qui
+          // (evita conflitti con archive-near-toggle)
         });
         panel.addEventListener('mouseleave', () => {
           document.body.classList.remove('cursor-on-dark');
