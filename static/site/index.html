@@ -4363,6 +4363,9 @@ const cursorLabel = document.getElementById('cursor-label');
 const cursorDot    = document.getElementById('cursor-dot');
 let mx = 0, my = 0;
 let prevMx = null, prevMy = null;
+// Lerp per thumbnail Cities: posizione corrente interpolata
+let _citThumbCurX = -300;  // inizia fuori schermo
+let _citThumbCurY = 0;
 let cursorAngle = 0;
 let overlayOpen = false;
 let ovImages = [];
@@ -4560,9 +4563,8 @@ document.addEventListener('mousemove', e => {
           if (_inBox) document.body.classList.add('cursor-on-dark');
         }
 
-        // ── POSIZIONE THUMBS — segue sempre il mouse
-        const thumbX = locked ? maxBoxX : Math.min(mx + 20, maxFreeX);
-        _citPreview.style.transform = `translate(${thumbX}px, ${my - 70}px)`;
+        // ── POSIZIONE THUMBS — gestita dal RAF loop lerp dedicato (_citThumbLerpLoop)
+        // Non aggiorniamo il transform qui: il RAF loop lo fa ogni frame in modo smooth
       }
 
       // Puntatore vicino ai pallini media: diventa freccia bianca
@@ -5641,6 +5643,10 @@ function buildCitiesIndex() {
       if (previewImages.length === 0) return;
       // Usa sempre la foto memoizzata — non cambia mai
       citiesPreviewImg.src = previewImages[p._fixedImgIdx];
+      // Inizializza la posizione lerp alla posizione attuale del cursore
+      // così la thumbnail appare esattamente dove è il mouse (senza saltare da -300)
+      _citThumbCurX = Math.min(mx + 20, window.innerWidth - 196 - 16);
+      _citThumbCurY = my - 70;
       citiesPreview.classList.add('visible');
       // Popola il box info con i dati del progetto corrente
       const projectForPanel = isTokyoProject && TOKYO_CMS ? TOKYO_CMS : p;
@@ -7775,6 +7781,46 @@ loadFromCMS();
       resetCursor();
     }
   });
+})();
+
+// ════════════════════════════════════════════════════════════════
+// CITIES THUMBNAIL — RAF loop per lerp continuo (anche a mouse fermo)
+// Quando il box si apre, la thumbnail scivola elegantemente verso il bordo
+// ════════════════════════════════════════════════════════════════
+(function _citThumbLerpLoop() {
+  const _citPrev = document.getElementById('cities-cursor-preview');
+  const _cipan   = document.getElementById('cities-info-panel');
+  if (!_citPrev) return;
+
+  function tick() {
+    // Attivo solo se la thumbnail è visibile e siamo in Cities
+    if (_citPrev.classList.contains('visible')) {
+      const W      = window.innerWidth;
+      const THUMBW = 196;
+      const GAP    = 16;
+
+      if (!window._citBoxW && _cipan) {
+        const r = _cipan.getBoundingClientRect();
+        window._citBoxW = r.width > 0 ? r.width : 420;
+      }
+      const BOXW     = window._citBoxW || 420;
+      const maxFreeX = W - THUMBW - GAP;
+      const maxBoxX  = W - BOXW - THUMBW - GAP;
+      const locked   = _cipan && _cipan.classList.contains('open');
+
+      const thumbTargetX = locked ? maxBoxX : Math.min(mx + 20, maxFreeX);
+      const thumbTargetY = my - 70;
+
+      // Lerp: lento ed elegante verso il box (0.055), reattivo a mouse libero (0.16)
+      const speed = locked ? 0.055 : 0.16;
+      _citThumbCurX += (thumbTargetX - _citThumbCurX) * speed;
+      _citThumbCurY += (thumbTargetY - _citThumbCurY) * speed;
+
+      _citPrev.style.transform = `translate(${_citThumbCurX}px, ${_citThumbCurY}px)`;
+    }
+    requestAnimationFrame(tick);
+  }
+  requestAnimationFrame(tick);
 })();
 </script>
 </body>
