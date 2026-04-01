@@ -7831,10 +7831,33 @@ loadFromCMS();
       const thumbTargetX = locked ? maxBoxX : Math.min(mx + 20, maxFreeX);
       const thumbTargetY = my - 70;
 
-      // Lerp: lento ed elegante verso il box (0.055), reattivo a mouse libero (0.16)
-      const speed = locked ? 0.055 : 0.16;
-      _citThumbCurX += (thumbTargetX - _citThumbCurX) * speed;
-      _citThumbCurY += (thumbTargetY - _citThumbCurY) * speed;
+      if (locked) {
+        // ── EASE-OUT progressivo verso il box ──
+        // La velocità parte alta (0.18) e rallenta man mano che la distanza si riduce.
+        // Formula: speed = speedMax * (dist / distStart) clamped, con un minimo per non bloccarsi.
+        const distX = thumbTargetX - _citThumbCurX;
+        const distY = thumbTargetY - _citThumbCurY;
+        const dist  = Math.sqrt(distX * distX + distY * distY);
+
+        // Memorizza la distanza iniziale al momento in cui locked diventa true
+        if (!window._citLerpDistStart || window._citLerpDistStart < dist) {
+          window._citLerpDistStart = dist;
+        }
+        const distStart = window._citLerpDistStart || Math.max(dist, 1);
+
+        // Curva ease-out: velocità = 0.18 all'inizio, scende fino a 0.032 alla fine
+        const t = Math.max(0, Math.min(1, dist / distStart));  // 1 = lontano, 0 = vicino
+        const speed = 0.032 + t * (0.18 - 0.032);             // interpolazione lineare della velocità
+
+        _citThumbCurX += distX * speed;
+        _citThumbCurY += distY * speed;
+      } else {
+        // Segue il mouse liberamente: lerp reattivo standard
+        window._citLerpDistStart = null;  // reset per il prossimo locked
+        const speed = 0.16;
+        _citThumbCurX += (thumbTargetX - _citThumbCurX) * speed;
+        _citThumbCurY += (thumbTargetY - _citThumbCurY) * speed;
+      }
 
       _citPrev.style.transform = `translate(${_citThumbCurX}px, ${_citThumbCurY}px)`;
     }
