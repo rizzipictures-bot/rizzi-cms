@@ -2050,7 +2050,7 @@
       position: fixed;
       top: 0;
       left: 0;
-      z-index: 200;
+      z-index: 760;  /* sopra la navbar (750) per non essere coperto */
       display: none;
       align-items: center;
       gap: 5px;
@@ -3200,7 +3200,8 @@
       object-position: center top;
       background: #fff;
     }
-    .gallery-grid-item:hover img { opacity: .9; }
+    .gallery-grid-item img { opacity: 0.25; transition: opacity .2s ease; }
+    .gallery-grid-item:hover img { opacity: 1; }
     .gallery-grid-item.active img { opacity: 1; }
     .gallery-grid-caption {
       font-family: var(--font-nav);
