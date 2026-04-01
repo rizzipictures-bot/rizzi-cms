@@ -1214,11 +1214,11 @@
       aspect-ratio: 3/2;
       overflow: hidden;
       cursor: none;
-      opacity: 0.45;
+      opacity: 0.27;  /* 0.45 - 40% = 0.27 */
       transition: opacity .25s;
       position: relative;
     }
-    .archive-expanded-thumb:hover { opacity: 0.8; }
+    .archive-expanded-thumb:hover { opacity: 0.7; }
     .archive-expanded-thumb.active { opacity: 1; outline: 1px solid rgba(255,255,255,0.7); }
     /* Light-mode: thumbs a piena opacità, hover con overlay grigio */
     .archive-expanded.box-white .archive-expanded-thumb { opacity: 1; }
@@ -1265,34 +1265,48 @@
       min-width: 0;
       display: flex;
       flex-direction: column;
-      padding: 22px 52px 18px 22px;  /* padding-right extra per View all */
+      padding: 18px 18px 18px 22px;  /* stesso padding-top delle thumbs */
       box-sizing: border-box;
       overflow: hidden;
     }
 
-    /* Pulsante "View all" — su 2 colonne, piccolo, angolo basso destra */
+    /* Pulsante "Thumbs" — bottone bianco con testo nero, angolo basso destra */
     .archive-expanded-viewall {
       font-family: var(--font-mono);
-      font-size: 9px;
-      color: rgba(255,255,255,0.85);
+      font-size: 8px;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: #000;
+      background: #fff;
       cursor: pointer;
       position: absolute;
       right: 10px;
       bottom: 10px;
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 1px 3px;
-      padding: 0;
-      transition: color .2s;
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      padding: 5px 10px;
+      border: none;
+      user-select: none;
+      transition: opacity .18s;
       letter-spacing: 0.12em;
       z-index: 50;
       pointer-events: all !important;
       isolation: isolate;
-      line-height: 1.4;
-      text-align: center;
-      width: 28px;
     }
-    .archive-expanded-viewall:hover { color: #fff; }
+    .archive-expanded-viewall:hover { opacity: 0.8; }
+    /* Light-mode: bottone invertito (nero con testo bianco) */
+    .archive-expanded.box-white .archive-expanded-viewall {
+      background: #000;
+      color: #fff;
+    }
+    .archive-expanded.box-white .archive-expanded-viewall svg rect,
+    .archive-expanded.box-white .archive-expanded-viewall svg line {
+      stroke: #fff;
+    }
+    .archive-expanded.box-white .archive-expanded-viewall svg rect:last-of-type {
+      fill: #fff;
+    }
 
     /* Toggle tema Archive: icona monitor SVG */
     .archive-expanded-toggle {
@@ -1350,12 +1364,7 @@
       background: #fff;
     }
     /* (toggle SVG ora gestito via JS con .ae-toggle-dark/.ae-toggle-light) */
-    .archive-expanded.box-white .archive-expanded-viewall {
-      color: #000;
-    }
-    .archive-expanded.box-white .archive-expanded-viewall:hover {
-      color: #666;
-    }
+    /* (viewall light-mode già gestito sopra) */
     .archive-expanded.box-white .archive-expanded-thumb.active {
       outline: 1px solid #000;
     }
@@ -5669,15 +5678,31 @@ function buildArchive() {
           inner.appendChild(right);
           inner.appendChild(toggleAbs);  /* toggle in basso a destra del box */
 
-          // Pulsante View all (angolo basso destra)
+          // Pulsante "Thumbs" (angolo basso destra) — icona monitor + scritta, porta alla pagina thumbs
           const viewAll = document.createElement('div');
           viewAll.className = 'archive-expanded-viewall';
-          viewAll.innerHTML = '<span>v</span><span>i</span><span>e</span><span>w</span>';
+          // Icona monitor SVG (stessa usata nel toggle tema, ma piccola)
+          const _vaSvgDark = `<svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" width="13" height="13" style="flex-shrink:0">
+            <rect x="2" y="3" width="20" height="14" rx="2" stroke="#000" stroke-width="1.5" fill="none"/>
+            <rect x="4.5" y="5.5" width="15" height="9" rx="1" fill="#000"/>
+            <line x1="8" y1="21" x2="16" y2="21" stroke="#000" stroke-width="1.5" stroke-linecap="round"/>
+            <line x1="12" y1="17" x2="12" y2="21" stroke="#000" stroke-width="1.5" stroke-linecap="round"/>
+          </svg>`;
+          const _vaLabel = document.createElement('span');
+          _vaLabel.textContent = 'Thumbs';
+          viewAll.innerHTML = _vaSvgDark;
+          viewAll.appendChild(_vaLabel);
+          // Al click: chiudi il box espanso e porta alla pagina thumbs
           viewAll.addEventListener('click', e => {
             e.stopPropagation();
             e.preventDefault();
-            const isDark = !panel.classList.contains('box-white');
-            window.openViewAllOverlay(images, p.title || '', isDark);
+            // Chiudi il box espanso
+            popup.classList.remove('open');
+            ball.classList.remove('active');
+            setTimeout(() => popup.remove(), 220);
+            if (activePopup === popup) activePopup = null;
+            // Naviga alla pagina thumbs di Archive
+            if (typeof switchView === 'function') switchView('archive');
           });
           inner.appendChild(viewAll);
 
