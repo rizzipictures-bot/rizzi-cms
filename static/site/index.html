@@ -1214,7 +1214,7 @@
       aspect-ratio: 3/2;
       overflow: hidden;
       cursor: none;
-      opacity: 0.27;  /* 0.45 - 40% = 0.27 */
+      opacity: 0.35;  /* meno opache del 35% rispetto al valore precedente */
       transition: opacity .25s;
       position: relative;
     }
@@ -1270,6 +1270,7 @@
       padding: 18px 18px 18px 22px;  /* stesso padding-top delle thumbs */
       box-sizing: border-box;
       overflow: hidden;
+      justify-content: flex-start;
     }
 
     /* Bottone "Thumbs" — nella bottom-bar, a destra */
@@ -1394,8 +1395,8 @@
       font-size: 8px;
       letter-spacing: 0.28em;
       text-transform: uppercase;
-      color: rgba(255,255,255,0.2);
-      margin-bottom: 12px;
+      color: rgba(255,255,255,0.85);  /* bianco come le keywords */
+      margin-bottom: 8px;
       flex-shrink: 0;
     }
     /* Contenitore tag — colonna verticale, una keyword per riga */
@@ -1438,7 +1439,7 @@
     }
     /* Tema bianco */
     .archive-expanded.box-white .archive-kw-label {
-      color: rgba(0,0,0,0.2);
+      color: rgba(0,0,0,0.7);
     }
     .archive-expanded.box-white .archive-kw-tag {
       color: rgba(0,0,0,0.5);
@@ -5618,10 +5619,12 @@ function buildArchive() {
             // Aggiorna anche il wrapper archive-expanded per i selettori CSS
             const ae = panel.querySelector('.archive-expanded') || panel.closest('.archive-expanded') || panel;
             ae.classList.toggle('box-white');
+            // Legge lo stato DOPO il toggle (non usa isWhite che non è definito qui)
+            const _nowWhite = panel.classList.contains('box-white');
             const _td = toggle.querySelector('.ae-toggle-dark');
             const _tl = toggle.querySelector('.ae-toggle-light');
-            if (_td) _td.style.display = isWhite ? 'none' : '';
-            if (_tl) _tl.style.display = isWhite ? '' : 'none';
+            if (_td) _td.style.display = _nowWhite ? 'none' : '';
+            if (_tl) _tl.style.display = _nowWhite ? '' : 'none';
           });
 
           // Caption: nome progetto + contatore foto
