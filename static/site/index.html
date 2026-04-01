@@ -521,7 +521,7 @@
       align-items: center;
       justify-content: space-between;
       flex-shrink: 0;
-      z-index: 100;
+      z-index: 750;  /* sopra Box1 (700) e Box2 (695) */
     }
     /* Navbar nascosta durante la landing — appare solo dopo */
     body.landing-active header {
@@ -1173,59 +1173,100 @@
     }
     .archive-expanded-hero:hover img { opacity: 0.92; }
 
-    /* Colonna destra: caption sopra, thumbs+toggle sotto */
+    /* Colonna destra: layout a 3 zone — thumbs 2 colonne | separatore | keywords */
     .archive-expanded-right {
       flex: 1;
-      min-width: 0;                  /* fondamentale: evita che flex-item superi il container */
+      min-width: 0;
       display: flex;
-      flex-direction: column;
-      justify-content: flex-start;   /* caption in cima, poi keywords, poi bottomRow in fondo */
-      overflow: hidden;              /* taglia il contenuto che eccede la larghezza */
-      padding-left: 32px;            /* stacco dalla hero */
-      padding-right: 52px;           /* spazio per View all assoluto a destra */
-      height: 500px;                 /* stessa altezza del box */
-      padding-top: 18px;             /* stacco dal bordo superiore del box */
-      padding-bottom: 0;
+      flex-direction: row;           /* orizzontale: thumbs-col | sep | kw-col */
+      overflow: hidden;
+      height: 500px;
       box-sizing: border-box;
     }
 
-    /* Riga inferiore: thumbs + toggle affiancati */
-    .archive-expanded-bottom-row {
+    /* Zona thumbs: due colonne verticali scorrevoli */
+    .archive-expanded-thumbs-col {
       display: flex;
-      flex-direction: row;
-      align-items: flex-end;
+      flex-direction: column;
+      width: 148px;                  /* 2 colonne da 68px + gap 8px + padding */
+      flex-shrink: 0;
+      padding: 18px 0 18px 28px;
+      box-sizing: border-box;
       overflow: hidden;
-      margin-top: auto;              /* spinge la riga in fondo alla colonna */
-      padding-right: 0;              /* nessun padding — il right ha già padding-right gestito dall'inner */
-      max-width: 100%;               /* non supera la larghezza della colonna destra */
+      position: relative;
     }
+    /* Caption in cima alla zona thumbs */
+    .archive-expanded-caption {
+      font-family: var(--font-mono);
+      font-size: 9px;
+      letter-spacing: 0.18em;
+      color: rgba(255,255,255,0.35);
+      white-space: nowrap;
+      pointer-events: none;
+      user-select: none;
+      flex-shrink: 0;
+      margin-bottom: 10px;
+      text-transform: uppercase;
+    }
+    .archive-expanded-caption .caption-title { font-weight: 400; }
+    .archive-expanded-caption .caption-sep { margin: 0 5px; opacity: 0.4; }
+    .archive-expanded-caption .caption-count { font-variant-numeric: tabular-nums; }
+    /* Griglia thumbs: 2 colonne */
     .archive-expanded-thumbs {
-      display: flex;
-      flex-direction: row;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
       gap: 4px;
-      overflow-x: auto;
-      padding: 0;
-      scroll-behavior: smooth;
+      overflow-y: auto;
+      overflow-x: hidden;
       flex: 1;
-      align-items: flex-end;
+      min-height: 0;
+      align-content: start;
     }
     .archive-expanded-thumbs::-webkit-scrollbar { display: none; }
     .archive-expanded-thumb {
-      flex-shrink: 0;
-      width: 61px;   /* 72 * 0.85 ≈ 61px  −15% */
-      height: 41px;  /* 48 * 0.85 ≈ 41px  −15% */
+      width: 100%;
+      aspect-ratio: 3/2;
       overflow: hidden;
       cursor: none;
-      opacity: 0.55;
+      opacity: 0.45;
       transition: opacity .25s;
       position: relative;
     }
-    .archive-expanded-thumb:hover { opacity: 0.85; }
-    .archive-expanded-thumb.active { opacity: 1; outline: 1px solid #fff; }
+    .archive-expanded-thumb:hover { opacity: 0.8; }
+    .archive-expanded-thumb.active { opacity: 1; outline: 1px solid rgba(255,255,255,0.7); }
     .archive-expanded-thumb img {
       width: 100%; height: 100%;
       object-fit: cover;
       display: block;
+    }
+    /* Riga toggle in fondo alla zona thumbs */
+    .archive-expanded-bottom-row {
+      display: flex;
+      flex-direction: row;
+      align-items: center;
+      justify-content: flex-start;
+      flex-shrink: 0;
+      margin-top: 8px;
+      gap: 8px;
+    }
+
+    /* Separatore verticale sottile tra thumbs e keywords */
+    .archive-expanded-sep {
+      width: 1px;
+      background: rgba(255,255,255,0.1);
+      flex-shrink: 0;
+      margin: 18px 0;
+    }
+
+    /* Zona keywords: sempre visibile, a destra del separatore */
+    .archive-expanded-kw-col {
+      flex: 1;
+      min-width: 0;
+      display: flex;
+      flex-direction: column;
+      padding: 22px 52px 18px 22px;  /* padding-right extra per View all */
+      box-sizing: border-box;
+      overflow: hidden;
     }
 
     /* Pulsante "View all" — su 2 colonne, piccolo, angolo basso destra */
@@ -1252,7 +1293,7 @@
     }
     .archive-expanded-viewall:hover { color: #fff; }
 
-    /* Toggle stile Angelucci — centrato verticalmente rispetto alle thumbs (48px) */
+    /* Toggle tema Archive: icona monitor SVG */
     .archive-expanded-toggle {
       width: 26px;
       height: 48px;                  /* stessa altezza delle thumbs */
@@ -1307,13 +1348,7 @@
     .archive-expanded.box-white {
       background: #fff;
     }
-    .archive-expanded.box-white .archive-expanded-toggle circle {
-      stroke: #000 !important;
-      fill: #000 !important;
-    }
-    .archive-expanded.box-white .archive-expanded-toggle circle:first-child {
-      fill: none !important;
-    }
+    /* (toggle SVG ora gestito via JS con .ae-toggle-dark/.ae-toggle-light) */
     .archive-expanded.box-white .archive-expanded-viewall {
       color: #000;
     }
@@ -1348,88 +1383,85 @@
     }
 
     /* ══════════════════════════════════════════════════════════════
-       KEYWORDS PANEL — angolo alto destra del box espanso
+       KEYWORDS PANEL — zona destra del box espanso (sempre visibile)
     ══════════════════════════════════════════════════════════════ */
     .archive-kw-panel {
-      position: relative;           /* nel flusso della colonna destra */
-      width: 100%;
-      padding: 10px 0 8px;
-      box-sizing: border-box;
       display: flex;
       flex-direction: column;
-      gap: 0;
-      overflow: hidden;              /* nasconde overflow verticale */
+      flex: 1;
+      min-height: 0;
+      overflow: hidden;
       pointer-events: all;
-      background: transparent;
-      flex: 1;                       /* occupa tutto lo spazio disponibile tra caption e bottomRow */
-      min-height: 0;                 /* fondamentale: permette a flex di ridursi */
-    }
-    /* Linea separatrice sottile in cima */
-    .archive-kw-panel::before {
-      content: '';
-      display: block;
-      width: 100%;
-      height: 1px;
-      background: rgba(255,255,255,0.15);
-      margin-bottom: 10px;
-      flex-shrink: 0;
     }
     /* Label sezione */
     .archive-kw-label {
       font-family: var(--font-mono);
-      font-size: 9px;
-      letter-spacing: 0.22em;
+      font-size: 8px;
+      letter-spacing: 0.28em;
       text-transform: uppercase;
-      color: rgba(255,255,255,0.25);
-      margin-bottom: 10px;
+      color: rgba(255,255,255,0.2);
+      margin-bottom: 12px;
       flex-shrink: 0;
     }
-    /* Contenitore tag — wrap */
+    /* Contenitore tag — colonna verticale, una keyword per riga */
     .archive-kw-tags {
       display: flex;
-      flex-wrap: wrap;
-      gap: 5px 8px;
-      overflow-y: auto;              /* scroll verticale se troppi tag */
+      flex-direction: column;
+      gap: 0;
+      overflow-y: auto;
       overflow-x: hidden;
-      flex: 1;                       /* occupa tutto lo spazio disponibile nel pannello */
-      min-height: 0;                 /* fondamentale: permette a flex di ridursi */
-      align-content: flex-start;     /* tag partono dall'alto */
+      flex: 1;
+      min-height: 0;
+      align-content: flex-start;
     }
     .archive-kw-tags::-webkit-scrollbar { display: none; }
-    /* Singolo tag */
+    /* Singolo tag — una riga, con numero indice archivistico */
     .archive-kw-tag {
       font-family: var(--font-mono);
-      font-size: 10px;
-      letter-spacing: 0.02em;
-      color: rgba(255,255,255,0.75);
+      font-size: 9px;
+      letter-spacing: 0.04em;
+      color: rgba(255,255,255,0.55);
       text-transform: lowercase;
       cursor: pointer;
-      transition: color .18s;
+      transition: color .18s, padding-left .15s;
       white-space: nowrap;
-      line-height: 1.6;
+      line-height: 2.0;
+      display: flex;
+      align-items: baseline;
+      gap: 8px;
+      border-bottom: 1px solid rgba(255,255,255,0.04);
     }
-    .archive-kw-tag:hover { color: rgba(255,255,255,0.35); }
-    /* Separatore tra tag: punto centrato */
-    .archive-kw-tag + .archive-kw-tag::before {
-      content: '·';
-      margin-right: 8px;
-      color: rgba(255,255,255,0.15);
+    .archive-kw-tag:hover { color: rgba(255,255,255,0.9); padding-left: 4px; }
+    /* Numero indice archivistico */
+    .archive-kw-tag-idx {
+      font-size: 7px;
+      letter-spacing: 0.1em;
+      color: rgba(255,255,255,0.18);
+      flex-shrink: 0;
+      font-variant-numeric: tabular-nums;
+      min-width: 16px;
     }
     /* Tema bianco */
-    .archive-expanded.box-white .archive-kw-panel::before {
-      background: rgba(0,0,0,0.1);
-    }
     .archive-expanded.box-white .archive-kw-label {
-      color: rgba(0,0,0,0.25);
+      color: rgba(0,0,0,0.2);
     }
     .archive-expanded.box-white .archive-kw-tag {
-      color: rgba(0,0,0,0.65);
+      color: rgba(0,0,0,0.5);
+      border-bottom-color: rgba(0,0,0,0.06);
     }
     .archive-expanded.box-white .archive-kw-tag:hover {
-      color: rgba(0,0,0,0.3);
+      color: rgba(0,0,0,0.9);
     }
-    .archive-expanded.box-white .archive-kw-tag + .archive-kw-tag::before {
-      color: rgba(0,0,0,0.15);
+    .archive-expanded.box-white .archive-kw-tag-idx {
+      color: rgba(0,0,0,0.18);
+    }
+    /* Separatore verticale in tema bianco */
+    .archive-expanded.box-white .archive-expanded-sep {
+      background: rgba(0,0,0,0.08);
+    }
+    /* Caption in tema bianco */
+    .archive-expanded.box-white .archive-expanded-caption {
+      color: rgba(0,0,0,0.3);
     }
 
     /* Bottone keywords discreto nell'angolo alto destra del box */
@@ -1951,7 +1983,7 @@
       font-family: var(--font-mono);
       font-size: 8px;
       letter-spacing: 0.08em;
-      color: #999;
+      color: #000;
       background: none;
       border: 1px solid #ddd;
       padding: 4px 10px;
@@ -3608,15 +3640,23 @@
       <!-- Header: toggle tema + testo descrittivo + pallino chiudi -->
       <div id="cip-photo-viewer-header">
         <button id="cpv-theme-toggle" title="Cambia tema">
-          <!-- Icona monitor — bianca in dark mode -->
+          <!-- Icona monitor dark: schermo bianco pieno con bordo interno (gap 1.5px tra fill e stroke) -->
           <svg class="toggle-icon-dark" width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <!-- Bordo esterno schermo -->
             <rect x="2" y="3" width="20" height="14" rx="2" stroke="white" stroke-width="1.5" fill="none"/>
+            <!-- Riquadro interno bianco pieno con piccolo bordo nero tra i due -->
+            <rect x="4.5" y="5.5" width="15" height="9" rx="1" fill="white"/>
+            <!-- Piedistallo -->
             <line x1="8" y1="21" x2="16" y2="21" stroke="white" stroke-width="1.5" stroke-linecap="round"/>
             <line x1="12" y1="17" x2="12" y2="21" stroke="white" stroke-width="1.5" stroke-linecap="round"/>
           </svg>
-          <!-- Icona monitor — nera in light mode -->
+          <!-- Icona monitor light: schermo nero pieno con bordo interno (invertito) -->
           <svg class="toggle-icon-light" width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <!-- Bordo esterno schermo -->
             <rect x="2" y="3" width="20" height="14" rx="2" stroke="#111" stroke-width="1.5" fill="none"/>
+            <!-- Riquadro interno nero pieno con piccolo bordo bianco tra i due -->
+            <rect x="4.5" y="5.5" width="15" height="9" rx="1" fill="#111"/>
+            <!-- Piedistallo -->
             <line x1="8" y1="21" x2="16" y2="21" stroke="#111" stroke-width="1.5" stroke-linecap="round"/>
             <line x1="12" y1="17" x2="12" y2="21" stroke="#111" stroke-width="1.5" stroke-linecap="round"/>
           </svg>
@@ -5508,9 +5548,13 @@ function buildArchive() {
           });
           inner.appendChild(hero);
 
-          // ── DESTRA: strip + view all ──
+          // ── DESTRA: layout a 3 zone (thumbs-col | sep | kw-col) ──
           const right = document.createElement('div');
           right.className = 'archive-expanded-right';
+
+          // ── Zona thumbs: due colonne verticali ──
+          const thumbsCol = document.createElement('div');
+          thumbsCol.className = 'archive-expanded-thumbs-col';
 
           const strip = document.createElement('div');
           strip.className = 'archive-expanded-thumbs';
@@ -5525,11 +5569,9 @@ function buildArchive() {
             t.appendChild(tImg);
             t.addEventListener('click', e => {
               e.stopPropagation();
-              // Tenda dx→sx: reset clip a dx, cambia src, poi apre da dx a sx
               heroImg.classList.remove('hero-curtain-in');
               heroImg.classList.add('hero-curtain-reset');
               heroImg.src = img.url;
-              // Forza reflow per applicare il reset
               void heroImg.offsetWidth;
               heroImg.classList.remove('hero-curtain-reset');
               heroImg.classList.add('hero-curtain-in');
@@ -5540,27 +5582,35 @@ function buildArchive() {
             strip.appendChild(t);
           });
 
-          // Toggle stile Angelucci: cerchio con punto centrale
+          // Toggle tema Angelucci: icona monitor SVG (stessa di Cities)
           const toggle = document.createElement('div');
           toggle.className = 'archive-expanded-toggle';
-          toggle.innerHTML = `<svg viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <circle cx="9" cy="9" r="7.5" stroke="white" stroke-width="1"/>
-            <circle cx="9" cy="9" r="1.5" fill="white"/>
+          // SVG dark (schermo bianco pieno su sfondo nero)
+          const _svgDark = `<svg class="ae-toggle-dark" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" width="18" height="18">
+            <rect x="2" y="3" width="20" height="14" rx="2" stroke="white" stroke-width="1.5" fill="none"/>
+            <rect x="4.5" y="5.5" width="15" height="9" rx="1" fill="white"/>
+            <line x1="8" y1="21" x2="16" y2="21" stroke="white" stroke-width="1.5" stroke-linecap="round"/>
+            <line x1="12" y1="17" x2="12" y2="21" stroke="white" stroke-width="1.5" stroke-linecap="round"/>
           </svg>`;
+          // SVG light (schermo nero pieno su sfondo bianco)
+          const _svgLight = `<svg class="ae-toggle-light" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" width="18" height="18" style="display:none">
+            <rect x="2" y="3" width="20" height="14" rx="2" stroke="#111" stroke-width="1.5" fill="none"/>
+            <rect x="4.5" y="5.5" width="15" height="9" rx="1" fill="#111"/>
+            <line x1="8" y1="21" x2="16" y2="21" stroke="#111" stroke-width="1.5" stroke-linecap="round"/>
+            <line x1="12" y1="17" x2="12" y2="21" stroke="#111" stroke-width="1.5" stroke-linecap="round"/>
+          </svg>`;
+          toggle.innerHTML = _svgDark + _svgLight;
           toggle.addEventListener('click', e => {
             e.stopPropagation();
             panel.classList.toggle('box-white');
-            // Aggiorna colore SVG in base al tema
             const isWhite = panel.classList.contains('box-white');
-            toggle.querySelectorAll('circle').forEach(c => {
-              c.setAttribute('stroke', isWhite ? 'black' : 'white');
-              c.setAttribute('fill', isWhite ? 'black' : 'white');
-            });
-            // Il circle esterno non ha fill, solo stroke
-            toggle.querySelector('circle:first-child').setAttribute('fill', 'none');
+            const _td = toggle.querySelector('.ae-toggle-dark');
+            const _tl = toggle.querySelector('.ae-toggle-light');
+            if (_td) _td.style.display = isWhite ? 'none' : '';
+            if (_tl) _tl.style.display = isWhite ? '' : 'none';
           });
 
-          // Caption: nome progetto + contatore foto (nella colonna destra, sopra le thumbs)
+          // Caption: nome progetto + contatore foto
           const caption = document.createElement('div');
           caption.className = 'archive-expanded-caption';
           const captionTitle = document.createElement('span');
@@ -5568,31 +5618,46 @@ function buildArchive() {
           captionTitle.textContent = p.title || '';
           const captionSep = document.createElement('span');
           captionSep.className = 'caption-sep';
-          captionSep.textContent = '\u2014';  /* em dash */
+          captionSep.textContent = '\u2014';
           const captionCount = document.createElement('span');
           captionCount.className = 'caption-count';
-          captionCount.textContent = '1\u2009/\u2009' + images.length;  /* thin space */
+          captionCount.textContent = '1\u2009/\u2009' + images.length;
           caption.appendChild(captionTitle);
           caption.appendChild(captionSep);
           caption.appendChild(captionCount);
 
-          // Riga inferiore: thumbs + toggle affiancati
+          // Riga toggle in fondo alla zona thumbs
           const bottomRow = document.createElement('div');
           bottomRow.className = 'archive-expanded-bottom-row';
-          bottomRow.appendChild(strip);
           bottomRow.appendChild(toggle);
 
-          right.appendChild(caption);
-          right.appendChild(bottomRow);
+          // Assembla zona thumbs
+          thumbsCol.appendChild(caption);
+          thumbsCol.appendChild(strip);
+          thumbsCol.appendChild(bottomRow);
 
           // Aggiorna contatore al click su ogni thumb
           strip.querySelectorAll('.archive-expanded-thumb').forEach((t, i) => {
             t.addEventListener('click', () => {
               captionCount.textContent = (i + 1) + '\u2009/\u2009' + images.length;
-            }, true);  /* capture: prima degli altri listener */
+            }, true);
           });
 
-          // Pulsante View all (2 colonne, piccolo, angolo basso destra)
+          // Separatore verticale
+          const sep = document.createElement('div');
+          sep.className = 'archive-expanded-sep';
+
+          // Zona keywords (sempre visibile)
+          const kwCol = document.createElement('div');
+          kwCol.className = 'archive-expanded-kw-col';
+
+          // Assembla colonna destra
+          right.appendChild(thumbsCol);
+          right.appendChild(sep);
+          right.appendChild(kwCol);
+          inner.appendChild(right);
+
+          // Pulsante View all (angolo basso destra)
           const viewAll = document.createElement('div');
           viewAll.className = 'archive-expanded-viewall';
           viewAll.innerHTML = '<span>v</span><span>i</span><span>e</span><span>w</span>';
@@ -5602,11 +5667,9 @@ function buildArchive() {
             const isDark = !panel.classList.contains('box-white');
             window.openViewAllOverlay(images, p.title || '', isDark);
           });
+          inner.appendChild(viewAll);
 
-          inner.appendChild(right);
-          inner.appendChild(viewAll);  /* viewAll dentro inner (position:relative), NON dentro right (overflow:hidden) */
-
-          // ── KEYWORDS: bottone discreto + overlay spaziale ──
+          // ── KEYWORDS: sempre visibili nella zona kw-col ──
           const allKws = new Set();
           images.forEach(img => {
             if (img.keywords) {
@@ -5618,71 +5681,39 @@ function buildArchive() {
           });
 
           if (allKws.size > 0) {
-            // Bottone discreto: 3 punti in griglia nell'angolo alto destra del box
-            const kwBtn = document.createElement('div');
-            kwBtn.className = 'archive-kw-btn';
-            kwBtn.title = 'Keywords';
-            kwBtn.innerHTML = `<svg viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <circle cx="3" cy="7" r="1" fill="white"/>
-              <circle cx="7" cy="7" r="1" fill="white"/>
-              <circle cx="11" cy="7" r="1" fill="white"/>
-            </svg>`;
+            // Costruisci il pannello keywords nella zona kw-col
+            const kwPanel = document.createElement('div');
+            kwPanel.className = 'archive-kw-panel';
 
-            // Overlay spaziale: keywords distribuite nello spazio del box
-            const kwOverlay = document.createElement('div');
-            kwOverlay.className = 'archive-kw-overlay';
-
-            const kwClose = document.createElement('div');
-            kwClose.className = 'archive-kw-overlay-close';
-            kwClose.textContent = '× close';
-            kwClose.addEventListener('click', e => {
-              e.stopPropagation();
-              kwOverlay.classList.remove('open');
-            });
-            kwOverlay.appendChild(kwClose);
+            const kwLabel = document.createElement('div');
+            kwLabel.className = 'archive-kw-label';
+            kwLabel.textContent = 'Index';
+            kwPanel.appendChild(kwLabel);
 
             const kwTagsWrap = document.createElement('div');
-            kwTagsWrap.className = 'archive-kw-overlay-tags';
+            kwTagsWrap.className = 'archive-kw-tags';
 
-            // Distribuzione spaziale: griglia pseudo-random con seed deterministico
             const kwArr = [...allKws].sort();
-            const cols = Math.ceil(Math.sqrt(kwArr.length * 1.6));
-            const rows = Math.ceil(kwArr.length / cols);
             kwArr.forEach((kw, i) => {
-              const tag = document.createElement('span');
-              tag.className = 'archive-kw-overlay-tag';
-              tag.textContent = kw;
-              // Posizione: griglia con jitter leggero
-              const col = i % cols;
-              const row = Math.floor(i / cols);
-              const jx = ((i * 37 + 13) % 20) - 10;  /* jitter -10..+10 px */
-              const jy = ((i * 53 + 7)  % 16) - 8;
-              const left = 4 + (col / (cols - 1 || 1)) * 88 + jx / 10;
-              const top  = 8 + (row / (rows - 1 || 1)) * 80 + jy / 10;
-              tag.style.left = left + '%';
-              tag.style.top  = top  + '%';
-              // Dimensione leggermente variabile per effetto visivo
-              const sz = 9 + (i % 3);
-              tag.style.fontSize = sz + 'px';
+              const tag = document.createElement('div');
+              tag.className = 'archive-kw-tag';
+              // Numero indice archivistico
+              const idx = document.createElement('span');
+              idx.className = 'archive-kw-tag-idx';
+              idx.textContent = String(i + 1).padStart(2, '0');
+              const kwText = document.createElement('span');
+              kwText.textContent = kw;
+              tag.appendChild(idx);
+              tag.appendChild(kwText);
               tag.addEventListener('click', e => {
                 e.stopPropagation();
-                kwOverlay.classList.remove('open');
                 openKeywordResults(kw);
               });
               kwTagsWrap.appendChild(tag);
             });
 
-            kwOverlay.appendChild(kwTagsWrap);
-
-            // Apri overlay al click sul bottone
-            kwBtn.addEventListener('click', e => {
-              e.stopPropagation();
-              kwOverlay.classList.toggle('open');
-            });
-
-            // Inserisci bottone e overlay dentro inner (position:relative)
-            inner.appendChild(kwBtn);
-            inner.appendChild(kwOverlay);
+            kwPanel.appendChild(kwTagsWrap);
+            kwCol.appendChild(kwPanel);
           }
         }
 
