@@ -2251,6 +2251,11 @@
     body.cities-active #cities-line-v {
       display: block;
     }
+    /* Nascondi le guide lines nella vista thumbs */
+    body.cities-thumbs-active #cities-line-h,
+    body.cities-thumbs-active #cities-line-v {
+      display: none;
+    }
     #cities-line-h {
       height: 0.5px;
       left: 0;
@@ -5318,6 +5323,7 @@ function buildCitiesIndex() {
       listView.style.display = 'block';
       thumbsView.style.display = 'none';
       if (colHeader) colHeader.style.display = '';
+      document.body.classList.remove('cities-thumbs-active');
     });
     btnThumbs.addEventListener('click', () => {
       btnThumbs.classList.add('active');
@@ -5326,6 +5332,7 @@ function buildCitiesIndex() {
       listView.classList.remove('active');
       listView.style.display = 'none';
       if (colHeader) colHeader.style.display = 'none';
+      document.body.classList.add('cities-thumbs-active');
       // Nascondi preview se visibile
       document.getElementById('cities-cursor-preview').classList.remove('visible');
       // Chiudi il box info (vale solo in modalità lista)
