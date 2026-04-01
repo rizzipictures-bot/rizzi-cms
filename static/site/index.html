@@ -2072,7 +2072,7 @@
       top: 0;                  /* JS sovrascrive con bordo inferiore titolo Cities */
       right: 0;
       bottom: 0;               /* arriva fino al fondo pagina */
-      width: 300px;
+      width: clamp(200px, 22vw, 300px);  /* responsivo: scala tra 200px e 300px */
       height: auto;            /* altezza calcolata da top+bottom */
       background: #111;             /* nero uguale al Box 2 */
       border-right: 0.5px solid rgba(255,255,255,0.18); /* separatore bianco sottilissimo verso Box 2 */
@@ -2189,8 +2189,7 @@
     #cip-photo-viewer {
       display: none;           /* nascosto di default su TUTTE le pagine */
       position: fixed;
-      right: 300px;            /* attaccato al bordo sinistro del box 1 */
-      /* left calcolato via JS per non coprire l'alfabeto */
+      /* left e width calcolati via JS in base alla larghezza reale del Box 1 */
       top: 0;                  /* JS sovrascrive con bordo inferiore titolo Cities */
       bottom: 0;               /* arriva fino al fondo pagina */
       background: #111;            /* nero */
@@ -4017,9 +4016,43 @@ function setVh() {
 setVh();
 window.addEventListener('resize', () => {
   setVh();
-  // Aggiorna linee decorative Cities al resize
+  // Aggiorna linee decorative Cities e riposiziona i box al resize
   if (document.body.classList.contains('cities-active')) {
-    requestAnimationFrame(() => _updateCitiesLines());
+    requestAnimationFrame(() => {
+      // Riposiziona Box 1 e Box 2 se sono aperti
+      const _bx1r = document.getElementById('cities-info-panel');
+      const _bx2r = document.getElementById('cip-photo-viewer');
+      if (_bx1r && _bx2r && _bx2r.classList.contains('open')) {
+        // Ricalcola top
+        const _citT = document.querySelector('.cities-page-title');
+        const _colH = document.getElementById('cities-col-header');
+        const _tRef = _citT || _colH;
+        if (_tRef) {
+          const tY = Math.round(_tRef.getBoundingClientRect().top);
+          _bx1r.style.top = tY + 'px';
+          _bx2r.style.top = tY + 'px';
+        }
+        // Ricalcola left e width del Box 2
+        const _bx1rRect = _bx1r.getBoundingClientRect();
+        const _rEdge = Math.round(_bx1rRect.left);
+        const _W     = window.innerWidth;
+        const _mLeft = Math.round(_W * 0.04);
+        const _lVal  = Math.max(_mLeft, _rEdge - 700);
+        const _bW    = Math.max(200, _rEdge - _lVal);
+        _bx2r.style.left  = _lVal + 'px';
+        _bx2r.style.width = _bW  + 'px';
+      } else if (_bx1r && _bx1r.classList.contains('open')) {
+        // Solo Box 1 aperto: aggiorna il suo top
+        const _citT = document.querySelector('.cities-page-title');
+        const _colH = document.getElementById('cities-col-header');
+        const _tRef = _citT || _colH;
+        if (_tRef) {
+          const tY = Math.round(_tRef.getBoundingClientRect().top);
+          _bx1r.style.top = tY + 'px';
+        }
+      }
+      _updateCitiesLines();
+    });
   }
 });
 
@@ -4529,11 +4562,14 @@ if (_cipImages) {
     }
 
     // Calcola left: rispetta l'alfabeto (min 60px)
-    // Il Box 2 occupa lo spazio tra la lista e il Box 1 (300px)
-    const rightEdge = Math.round(panelRect.left);
-    const minLeft   = 60;
-    const leftVal   = Math.max(minLeft, rightEdge - 700);
-    const boxW      = rightEdge - leftVal;
+    // Il Box 2 occupa lo spazio tra la lista e il Box 1 (larghezza reale)
+    const rightEdge = Math.round(panelRect.left); // bordo sx del Box 1
+    const W         = window.innerWidth;
+    // Larghezza massima del Box 2: tutto lo spazio disponibile meno un margine minimo sx
+    const minLeft   = Math.round(W * 0.04); // 4% del viewport come margine minimo sx
+    const maxBoxW   = 700; // larghezza massima Box 2
+    const leftVal   = Math.max(minLeft, rightEdge - maxBoxW);
+    const boxW      = Math.max(200, rightEdge - leftVal); // almeno 200px
 
     // Imposta subito left e larghezza, poi calcola altezza dopo caricamento immagine
     // Sincronizza il top del Box 1 con quello del Box 2 (stessa linea di partenza)
