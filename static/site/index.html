@@ -242,15 +242,12 @@
       display: none;
     }
     /* ── Cursore ROSSO — Overview, Archive (lista chiusa), Cities ──
-       Ha priorità massima: sovrascrive cursor-on-dark anche sulle righe nere */
-    body.cursor-red #cursor-dot,
-    body.cursor-red.cursor-on-dark #cursor-dot {
+       cursor-on-dark ha priorità: se attivo, il pallino è bianco anche con cursor-red */
+    body.cursor-red:not(.cursor-on-dark) #cursor-dot {
       background: #e00 !important;
     }
-    body.cursor-red #cursor-dot::before,
-    body.cursor-red #cursor-dot::after,
-    body.cursor-red.cursor-on-dark #cursor-dot::before,
-    body.cursor-red.cursor-on-dark #cursor-dot::after {
+    body.cursor-red:not(.cursor-on-dark) #cursor-dot::before,
+    body.cursor-red:not(.cursor-on-dark) #cursor-dot::after {
       background: rgba(255,255,255,0.9) !important;
     }
     /* ── In hover sulle foto di Overview: nero con croce bianca (visibile) ── */
@@ -1452,10 +1449,10 @@
       height: 100%;  /* si adatta all'altezza della strip (64px) */
       overflow: hidden;
       cursor: none;
-      opacity: 0.35;
+      opacity: 0.65;
       transition: opacity .2s;
     }
-    .ae-thumbs-strip-item:hover { opacity: 0.7; }
+    .ae-thumbs-strip-item:hover { opacity: 1; }
     .ae-thumbs-strip-item.active { opacity: 1; outline: 1px solid rgba(255,255,255,0.6); }
     .archive-expanded.box-white .ae-thumbs-strip-item { opacity: 0.6; }
     .archive-expanded.box-white .ae-thumbs-strip-item:hover { opacity: 0.9; }
@@ -4660,10 +4657,19 @@ document.addEventListener('mousemove', e => {
             }
           }
         } else {
+          // Fuori dal box: controlla se su una riga nera
+          const _elOutside = document.elementFromPoint(mx, my);
+          const _onDarkRow = _elOutside && _elOutside.closest && _elOutside.closest('.archive-row:not(.header)');
           document.body.classList.remove('archive-near-toggle');
           document.body.classList.remove('archive-box-white');
-          document.body.classList.add('cursor-red');
-          document.body.classList.remove('cursor-on-dark');
+          if (_onDarkRow) {
+            document.body.classList.add('cursor-on-dark');
+            document.body.classList.remove('cursor-red');
+            cursorDot.style.background = '';
+          } else {
+            document.body.classList.add('cursor-red');
+            document.body.classList.remove('cursor-on-dark');
+          }
         }
       }
 
