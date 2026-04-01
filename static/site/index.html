@@ -791,12 +791,28 @@
     #ov-nav-bar span {
       transition: color .18s;
     }
+    /* Index: bold, font-nav (sans-serif) */
+    #ov-nav-index {
+      font-weight: 700;
+      font-size: 13px;
+      letter-spacing: 0.04em;
+    }
+    /* Thumbs: light, leggermente più grande, font sans-serif sottile */
+    #ov-nav-thumbs {
+      font-weight: 300;
+      font-size: 13px;
+      letter-spacing: 0.08em;
+    }
     #ov-nav-bar #ov-nav-index:hover,
     #ov-nav-bar #ov-nav-thumbs:hover {
       color: #999;
     }
     .ov-nav-sep {
-      opacity: 0.4;
+      opacity: 0.35;
+      font-weight: 300;
+      letter-spacing: 0;
+      margin: 0 6px;
+      font-size: 11px;
     }
     /* Quando il cursore è vicino alla barra Index/Thumbs: pallino nero visibile */
     body.ov-near-nav #cursor-dot {
@@ -4065,7 +4081,7 @@
   <button id="overview-overlay-close" class="btn-circle-close black" onclick="closeOverview()"></button>
   <div id="ov-nav-bar">
     <span id="ov-nav-index" onclick="closeOverview(); switchView('index');">Index</span>
-    <span class="ov-nav-sep">&nbsp;|&nbsp;</span>
+    <span class="ov-nav-sep">&mdash;</span>
     <span id="ov-nav-thumbs" onclick="closeOverview(); switchView('home');">Thumbs</span>
   </div>
 </div>
