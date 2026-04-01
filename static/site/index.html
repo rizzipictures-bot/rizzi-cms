@@ -3119,24 +3119,26 @@
     /* ── Sub-nav: Archive · Interview · Cities · Info ── */
     .index-subnav {
       display: flex;
-      gap: 20px;
-      padding: 52px 0 10px 52px;
+      flex-direction: column;  /* verticale come le voci della lista */
+      gap: 0;
+      padding: 52px 0 28px 52px;
       flex-shrink: 0;
     }
     .index-subnav-btn {
       font-family: 'Untitled Sans', 'PracticeRegular', Helvetica, Arial, sans-serif;
-      font-size: 12px;
-      font-weight: 500;
+      font-size: 13px;
+      font-weight: 400;
       letter-spacing: 0;
       color: #2b2d30;
       background: none;
       border: none;
       padding: 0;
-      margin-right: 16px;
+      margin: 0;
       cursor: none;
       transition: opacity .15s;
-      line-height: 1.4;
+      line-height: 26px;  /* identico alle voci lista */
       text-decoration: none;
+      text-align: left;
     }
     .index-subnav-btn:hover { opacity: 0.5; }
     .index-subnav-btn.active {
