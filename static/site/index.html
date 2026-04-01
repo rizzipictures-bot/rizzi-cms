@@ -5216,7 +5216,7 @@ const _viewCitiesIndex = document.getElementById('view-cities-index');
 if (_viewCitiesIndex) {
   _viewCitiesIndex.addEventListener('click', e => {
     // Ignora click sui box stessi, sui pulsanti di toggle e sulle righe città
-    if (e.target.closest('#cities-info-panel, #cip-photo-viewer, .cities-view-toggle, .city-row, .cities-thumbs-item')) return;
+    if (e.target.closest('#cities-info-panel, #cip-photo-viewer, .cities-view-toggle, .city-row, .cities-list-row, .cities-thumbs-item')) return;
     closeCityInfoPanel();
   });
 }
