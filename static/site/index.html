@@ -2213,6 +2213,31 @@
       pointer-events: auto;
     }
 
+    /* Linea orizzontale che attraversa tutta la pagina all'altezza del bordo inferiore dell'header del Box 2 */
+    #cip-photo-viewer-header::after {
+      content: '';
+      position: fixed;
+      left: 0;
+      right: 0;
+      bottom: -0.5px;
+      height: 0.5px;
+      background: rgba(255,255,255,0.15);
+      z-index: 1;
+      pointer-events: none;
+    }
+    /* Linea verticale sul bordo sinistro del Box 2 */
+    #cip-photo-viewer::before {
+      content: '';
+      position: absolute;
+      left: 0;
+      top: 0;
+      bottom: 0;
+      width: 0.5px;
+      background: rgba(255,255,255,0.15);
+      z-index: 1;
+      pointer-events: none;
+    }
+
     /* Header box 2 — pallino viola + testo descrittivo sulla stessa riga */
     #cip-photo-viewer-header {
       flex-shrink: 0;
@@ -4366,13 +4391,16 @@ function populateCityInfoPanel(project, imageUrls) {
   if (_cipTitle)    _cipTitle.textContent    = project.title || '—';
   if (_cipSubtitle) _cipSubtitle.textContent = project.subtitle || '';
 
-  // Top dinamico: parte dal bordo superiore della riga intestazione colonne (Code/City/N)
-  const _colHeader = document.getElementById('cities-col-header');
-  const _ctitle = document.querySelector('.cities-page-title');
-  const _topRef = _colHeader || _ctitle;
-  if (_topRef) {
-    const _topRect = _topRef.getBoundingClientRect();
-    _cipanel.style.top = Math.round(_topRef === _colHeader ? _topRect.top : _topRect.bottom) + 'px';
+  // Top: calcolato una sola volta (se non già impostato) per evitare ridimensionamenti
+  if (!_cipanel._topSet) {
+    const _colHeader = document.getElementById('cities-col-header');
+    const _ctitle = document.querySelector('.cities-page-title');
+    const _topRef = _ctitle || _colHeader;
+    if (_topRef) {
+      const _topRect = _topRef.getBoundingClientRect();
+      _cipanel.style.top = Math.round(_topRect.top) + 'px';
+    }
+    _cipanel._topSet = true;
   }
 
   // Metadati: Luogo, Anno, Pubblicazione
