@@ -1129,7 +1129,7 @@
     /* Box nero — Ink Drop */
     .archive-expanded {
       background: #000;            /* nero 100% */
-      /* overflow: hidden rimosso — clip-path gestisce l'animazione, overflow nascondeva il pannello keywords */
+      overflow: hidden;            /* contiene la vista thumbs */
       /* Animazione: si svolge dall'alto al basso */
       clip-path: inset(0 0 100% 0);
       transition: clip-path .65s cubic-bezier(.16, 1, 0.3, 1);
@@ -1308,20 +1308,22 @@
     }
 
     /* ── Vista Thumbs dentro il box Archive (toggle con bottone Thumbs) ── */
-    .archive-expanded-inner.ae-thumbs-mode {
+    /* Vista Thumbs — contenuta nel box archive-expanded (overflow:hidden, 500px) */
+    .ae-thumbs-view {
+      display: flex;
       flex-direction: column;
-      align-items: stretch;
+      width: 100%;
+      height: 500px;       /* stessa altezza del box */
+      box-sizing: border-box;
       overflow: hidden;
+      background: #111;    /* default: scuro come il box */
     }
-    /* In modalità thumbs: nascondi hero, right, bottom-bar normali */
-    .archive-expanded-inner.ae-thumbs-mode .archive-expanded-hero,
-    .archive-expanded-inner.ae-thumbs-mode .archive-expanded-right,
-    .archive-expanded-inner.ae-thumbs-mode .archive-expanded-bottom-bar {
-      display: none;
+    .archive-expanded.box-white .ae-thumbs-view {
+      background: #fff;    /* tema chiaro */
     }
-    /* Foto grande centrata */
+    /* Foto grande centrata — occupa tutto lo spazio residuo nel box 500px */
     .ae-thumbs-hero {
-      flex: 1;
+      flex: 1 1 0;
       min-height: 0;
       display: flex;
       align-items: center;
@@ -1329,6 +1331,7 @@
       overflow: hidden;
       position: relative;
       cursor: none;
+      background: inherit;
     }
     .ae-thumbs-hero img {
       max-width: 100%;
@@ -1376,23 +1379,22 @@
       user-select: none;
     }
     .archive-expanded.box-white .ae-thumbs-counter { color: rgba(0,0,0,0.35); }
-    /* Strip orizzontale di thumbnail in basso */
+    /* Strip orizzontale di thumbnail in basso — altezza fissa, non si espande */
     .ae-thumbs-strip {
       display: flex;
       flex-direction: row;
       gap: 3px;
       overflow-x: auto;
       overflow-y: hidden;
-      flex-shrink: 0;
-      padding: 0 0 8px;
-      height: 72px;
+      flex: 0 0 64px;   /* altezza fissa 64px, non cresce */
+      padding: 0 8px 0;
       align-items: stretch;
     }
     .ae-thumbs-strip::-webkit-scrollbar { display: none; }
     .ae-thumbs-strip-item {
       flex-shrink: 0;
       width: 96px;
-      height: 64px;
+      height: 100%;  /* si adatta all'altezza della strip (64px) */
       overflow: hidden;
       cursor: none;
       opacity: 0.35;
@@ -5818,7 +5820,7 @@ function buildArchive() {
           function _buildAeThumbsView() {
             if (_aeThumbsView) return;
             _aeThumbsView = document.createElement('div');
-            _aeThumbsView.style.cssText = 'display:flex;flex-direction:column;width:100%;height:500px;box-sizing:border-box;overflow:hidden;';
+            _aeThumbsView.className = 'ae-thumbs-view';
 
             // Foto grande
             const aeHero = document.createElement('div');
@@ -5866,7 +5868,7 @@ function buildArchive() {
             aeBack.addEventListener('click', e => {
               e.stopPropagation();
               // Torna alla vista normale
-              inner.classList.remove('ae-thumbs-mode');
+              inner.style.display = '';
               _aeThumbsView.style.display = 'none';
             });
             const aeCtr = document.createElement('div');
@@ -5893,6 +5895,7 @@ function buildArchive() {
             _aeThumbsView.appendChild(aeInfo);
             _aeThumbsView.appendChild(aeStrip);
             _aeThumbsView.style.display = 'none';
+            // Appeso al panel (archive-expanded) che ha overflow:hidden
             panel.appendChild(_aeThumbsView);
           }
 
@@ -5900,8 +5903,8 @@ function buildArchive() {
             e.stopPropagation();
             e.preventDefault();
             _buildAeThumbsView();
-            // Attiva la vista thumbs
-            inner.classList.add('ae-thumbs-mode');
+            // Nasconde l'inner (hero+keywords+bottombar) e mostra la vista thumbs
+            inner.style.display = 'none';
             _aeThumbsView.style.display = 'flex';
             // Mostra la prima foto con animazione
             const aeImg2 = _aeThumbsView.querySelector('.ae-thumbs-hero img');
