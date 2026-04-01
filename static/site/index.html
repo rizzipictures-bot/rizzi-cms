@@ -2218,7 +2218,7 @@
       position: fixed;
       pointer-events: none;
       z-index: 690;
-      background: rgba(180,180,180,0.35);
+      background: rgba(160,160,160,0.30);
       display: none;
     }
     body.cities-active #cities-line-h,
@@ -2228,10 +2228,14 @@
     #cities-line-h {
       height: 0.5px;
       left: 0;
+      /* top e width calcolati via JS */
     }
     #cities-line-v {
       width: 0.5px;
-      top: 0;
+      top: 0;           /* parte dal bordo superiore della pagina */
+      bottom: 0;        /* arriva fino al fondo pagina */
+      height: 100vh;    /* full height sempre */
+      /* left calcolato via JS */
     }
 
     /* Header box 2 — pallino viola + testo descrittivo sulla stessa riga */
@@ -4011,7 +4015,13 @@ function setVh() {
   document.documentElement.style.setProperty('--vh', window.innerHeight * 0.01 + 'px');
 }
 setVh();
-window.addEventListener('resize', setVh);
+window.addEventListener('resize', () => {
+  setVh();
+  // Aggiorna linee decorative Cities al resize
+  if (document.body.classList.contains('cities-active')) {
+    requestAnimationFrame(() => _updateCitiesLines());
+  }
+});
 
 // ════════════════════════════════════════════════════════════════
 // CURSORE
@@ -4576,26 +4586,40 @@ if (_cipImages) {
   });
 }
 
-// Aggiorna posizione delle linee decorative
+// Aggiorna posizione delle linee decorative Cities
+// - lineV: sempre al bordo sx del Box 1 (o Box 2 se aperto), full height (top:0 → bottom:0)
+// - lineH: dal bordo sx pagina al bordo sx del Box 1, all'altezza del top dei box
 function _updateCitiesLines() {
-  const lineH = document.getElementById('cities-line-h');
-  const lineV = document.getElementById('cities-line-v');
-  if (!lineH || !lineV || !_cipPhotoViewer) return;
+  const lineH  = document.getElementById('cities-line-h');
+  const lineV  = document.getElementById('cities-line-v');
+  const _bx1   = document.getElementById('cities-info-panel');
+  if (!lineH || !lineV) return;
 
-  const pvRect = _cipPhotoViewer.getBoundingClientRect();
-  const header = _cipPhotoViewer.querySelector('#cip-photo-viewer-header');
-  const headerRect = header ? header.getBoundingClientRect() : pvRect;
+  // Calcola la X del bordo sinistro del Box 1 (fisso, right:0 con width:300px)
+  const bx1Rect = _bx1 ? _bx1.getBoundingClientRect() : null;
+  // Se Box 1 è visibile (open o display:flex), usa il suo bordo sinistro
+  // Altrimenti usa window.innerWidth - 300 (posizione attesa)
+  const bx1Left = bx1Rect && bx1Rect.width > 0
+    ? Math.round(bx1Rect.left)
+    : Math.round(window.innerWidth - 300);
 
-  // Linea orizzontale: dal bordo sx pagina al bordo sx del Box 2, all'altezza del bordo inferiore dell'header
-  const hY = Math.round(headerRect.bottom);
-  lineH.style.top  = hY + 'px';
-  lineH.style.left = '0';
-  lineH.style.width = Math.round(pvRect.left) + 'px';
+  // Linea verticale: al bordo sx del Box 1, full height (CSS già imposta height:100vh)
+  lineV.style.left = bx1Left + 'px';
 
-  // Linea verticale: bordo sx del Box 2, dall'alto del box fino in fondo
-  lineV.style.left   = Math.round(pvRect.left) + 'px';
-  lineV.style.top    = Math.round(pvRect.top) + 'px';
-  lineV.style.height = Math.round(pvRect.height) + 'px';
+  // Calcola il top dei box: bordo superiore del titolo Cities
+  const _citiesTitle = document.querySelector('.cities-page-title');
+  const _colHdr = document.getElementById('cities-col-header');
+  const _topRef = _citiesTitle || _colHdr;
+  let topY = 0;
+  if (_topRef) {
+    topY = Math.round(_topRef.getBoundingClientRect().top);
+  }
+
+  // Linea orizzontale: dal bordo sx pagina (left:0) al bordo sx del Box 1,
+  // all'altezza del top dei box (allineata con il bordo superiore del Box 1)
+  lineH.style.top   = topY + 'px';
+  lineH.style.left  = '0';
+  lineH.style.width = bx1Left + 'px';
 }
 
 // Funzione riutilizzabile per mostrare una foto per indice nel Box 2
@@ -4775,6 +4799,11 @@ function switchView(name) {
   // ── Cursore rosso solo per Archive e Cities ──
   const RED_VIEWS = ['archive', 'cities-index'];
   document.body.classList.toggle('cursor-red', RED_VIEWS.includes(name));
+
+  // Aggiorna le linee decorative Cities quando si entra nella view
+  if (name === 'cities-index') {
+    requestAnimationFrame(() => _updateCitiesLines());
+  }
 }
 
 document.querySelectorAll('[data-view]').forEach(el => {
