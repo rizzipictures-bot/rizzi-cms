@@ -2604,6 +2604,11 @@
     #cpv-theme-toggle .toggle-icon-light { display: none; }   /* visibile in light mode */
     #cip-photo-viewer.light-mode #cpv-theme-toggle .toggle-icon-dark  { display: none; }
     #cip-photo-viewer.light-mode #cpv-theme-toggle .toggle-icon-light { display: block; }
+    /* Box 2 Cities in light-mode: pallino cursore nero */
+    #cip-photo-viewer.light-mode ~ #cursor #cursor-dot,
+    body.cip-light-mode #cursor-dot {
+      background: #111 !important;
+    }
     /* padding-left rimosso: toggle ora nel flusso flex */
     /* #cip-photo-viewer-header { padding-left: 36px; } */
 
@@ -4509,6 +4514,8 @@ document.addEventListener('mousemove', e => {
           const _pv2 = document.getElementById('cip-photo-viewer');
           if (_pv2 && _pv2.classList.contains('open')) {
             _pv2.classList.remove('open');
+            _pv2.classList.remove('light-mode');
+            document.body.classList.remove('cip-light-mode');
             if (_cipanel) {
               _cipanel.classList.remove('viewer-open');
               _cipanel.querySelectorAll('.cip-img.selected').forEach(i => i.classList.remove('selected'));
@@ -5052,6 +5059,8 @@ if (_cpvThemeToggle && _cipPhotoViewer) {
   _cpvThemeToggle.addEventListener('click', e => {
     e.stopPropagation();
     _cipPhotoViewer.classList.toggle('light-mode');
+    // Sincronizza classe body per cursore nero in light-mode
+    document.body.classList.toggle('cip-light-mode', _cipPhotoViewer.classList.contains('light-mode'));
   });
 }
 
@@ -5075,7 +5084,11 @@ if (_cipPhotoViewer) {
 // Chiudi il viewer
 if (_cipPhotoViewerClose) {
   _cipPhotoViewerClose.addEventListener('click', () => {
-    if (_cipPhotoViewer) _cipPhotoViewer.classList.remove('open');
+    if (_cipPhotoViewer) {
+      _cipPhotoViewer.classList.remove('open');
+      _cipPhotoViewer.classList.remove('light-mode');
+    }
+    document.body.classList.remove('cip-light-mode');
     // Ripristina opacità thumbs
     if (_cipanel) {
       _cipanel.classList.remove('viewer-open');
@@ -5093,7 +5106,11 @@ function closeCityInfoPanel() {
     _cipanel._currentProject = null;
     _cipanel._topSet = false;  // reset per il prossimo accesso
   }
-  if (_cipPhotoViewer) _cipPhotoViewer.classList.remove('open');
+  if (_cipPhotoViewer) {
+    _cipPhotoViewer.classList.remove('open');
+    _cipPhotoViewer.classList.remove('light-mode');
+  }
+  document.body.classList.remove('cip-light-mode');
   // Ripristina opacità thumbs
   if (_cipanel) {
     _cipanel.classList.remove('viewer-open');
