@@ -1297,6 +1297,108 @@
       color: #fff;
     }
 
+    /* ── Vista Thumbs dentro il box Archive (toggle con bottone Thumbs) ── */
+    .archive-expanded-inner.ae-thumbs-mode {
+      flex-direction: column;
+      align-items: stretch;
+      overflow: hidden;
+    }
+    /* In modalità thumbs: nascondi hero, right, bottom-bar normali */
+    .archive-expanded-inner.ae-thumbs-mode .archive-expanded-hero,
+    .archive-expanded-inner.ae-thumbs-mode .archive-expanded-right,
+    .archive-expanded-inner.ae-thumbs-mode .archive-expanded-bottom-bar {
+      display: none;
+    }
+    /* Foto grande centrata */
+    .ae-thumbs-hero {
+      flex: 1;
+      min-height: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      position: relative;
+      cursor: none;
+    }
+    .ae-thumbs-hero img {
+      max-width: 100%;
+      max-height: 100%;
+      width: auto;
+      height: auto;
+      object-fit: contain;
+      display: block;
+      /* Animazione tenda dall'alto */
+      clip-path: inset(0 0 100% 0);
+      transition: none;
+    }
+    .ae-thumbs-hero img.revealing {
+      clip-path: inset(0 0 0% 0);
+      transition: clip-path .65s cubic-bezier(.77, 0, .175, 1);
+    }
+    /* Info row: contatore a dx, bottone Back a sx */
+    .ae-thumbs-info {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 6px 12px;
+      flex-shrink: 0;
+    }
+    .ae-thumbs-back {
+      font-family: var(--font-mono);
+      font-size: 6px;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: rgba(255,255,255,0.6);
+      cursor: pointer;
+      background: none;
+      border: none;
+      padding: 0;
+      transition: color .15s;
+    }
+    .ae-thumbs-back:hover { color: #fff; }
+    .archive-expanded.box-white .ae-thumbs-back { color: rgba(0,0,0,0.5); }
+    .archive-expanded.box-white .ae-thumbs-back:hover { color: #000; }
+    .ae-thumbs-counter {
+      font-family: var(--font-mono);
+      font-size: 6px;
+      letter-spacing: 0.12em;
+      color: rgba(255,255,255,0.4);
+      user-select: none;
+    }
+    .archive-expanded.box-white .ae-thumbs-counter { color: rgba(0,0,0,0.35); }
+    /* Strip orizzontale di thumbnail in basso */
+    .ae-thumbs-strip {
+      display: flex;
+      flex-direction: row;
+      gap: 3px;
+      overflow-x: auto;
+      overflow-y: hidden;
+      flex-shrink: 0;
+      padding: 0 0 8px;
+      height: 72px;
+      align-items: stretch;
+    }
+    .ae-thumbs-strip::-webkit-scrollbar { display: none; }
+    .ae-thumbs-strip-item {
+      flex-shrink: 0;
+      width: 96px;
+      height: 64px;
+      overflow: hidden;
+      cursor: none;
+      opacity: 0.35;
+      transition: opacity .2s;
+    }
+    .ae-thumbs-strip-item:hover { opacity: 0.7; }
+    .ae-thumbs-strip-item.active { opacity: 1; outline: 1px solid rgba(255,255,255,0.6); }
+    .archive-expanded.box-white .ae-thumbs-strip-item { opacity: 0.6; }
+    .archive-expanded.box-white .ae-thumbs-strip-item:hover { opacity: 0.9; }
+    .archive-expanded.box-white .ae-thumbs-strip-item.active { opacity: 1; outline: 1px solid rgba(0,0,0,0.4); }
+    .ae-thumbs-strip-item img {
+      width: 100%; height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+
     /* Toggle tema Archive: icona monitor SVG — nella bottom-bar */
     .archive-expanded-toggle {
       width: 20px;   /* 26 * 0.78 ≈ 20 */
@@ -5674,15 +5776,110 @@ function buildArchive() {
           // Icona monitor (toggle tema) — a sinistra nella bottom bar
           bottomBar.appendChild(toggle);
 
-          // Bottone "Thumbs" — a destra nella bottom bar, apre l'overlay View All
+          // Bottone "Thumbs" — commuta il box in vista foto-grande + strip bassa
           const thumbsBtn = document.createElement('div');
           thumbsBtn.className = 'archive-expanded-viewall';
           thumbsBtn.textContent = 'Thumbs';
+
+          // Costruisce la vista thumbs-style (creata una sola volta, poi mostrata/nascosta)
+          let _aeThumbsView = null;
+          let _aeThumbsIdx  = 0;
+
+          function _buildAeThumbsView() {
+            if (_aeThumbsView) return;
+            _aeThumbsView = document.createElement('div');
+            _aeThumbsView.style.cssText = 'display:flex;flex-direction:column;width:100%;height:500px;box-sizing:border-box;overflow:hidden;';
+
+            // Foto grande
+            const aeHero = document.createElement('div');
+            aeHero.className = 'ae-thumbs-hero';
+            const aeImg = document.createElement('img');
+            aeImg.src = images[0] ? images[0].url : '';
+            aeImg.alt = p.title || '';
+            aeHero.appendChild(aeImg);
+
+            function _aeShowIdx(idx) {
+              _aeThumbsIdx = (idx + images.length) % images.length;
+              aeImg.classList.remove('revealing');
+              void aeImg.offsetWidth;
+              aeImg.src = images[_aeThumbsIdx].url;
+              setTimeout(() => aeImg.classList.add('revealing'), 20);
+              // Aggiorna strip
+              _aeThumbsView.querySelectorAll('.ae-thumbs-strip-item').forEach((el, i) => {
+                el.classList.toggle('active', i === _aeThumbsIdx);
+              });
+              // Aggiorna contatore
+              const ctr = _aeThumbsView.querySelector('.ae-thumbs-counter');
+              if (ctr) ctr.textContent = String(_aeThumbsIdx + 1).padStart(2,'0') + ' — ' + String(images.length).padStart(2,'0');
+              // Scroll strip per mostrare la thumb attiva
+              const strip = _aeThumbsView.querySelector('.ae-thumbs-strip');
+              if (strip) {
+                const activeItem = strip.children[_aeThumbsIdx];
+                if (activeItem) activeItem.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+              }
+            }
+
+            // Click foto grande: metà dx → avanti, metà sx → indietro
+            aeHero.addEventListener('click', e => {
+              e.stopPropagation();
+              const rect = aeHero.getBoundingClientRect();
+              if (e.clientX >= rect.left + rect.width / 2) _aeShowIdx(_aeThumbsIdx + 1);
+              else _aeShowIdx(_aeThumbsIdx - 1);
+            });
+
+            // Info row: bottone Back a sx + contatore a dx
+            const aeInfo = document.createElement('div');
+            aeInfo.className = 'ae-thumbs-info';
+            const aeBack = document.createElement('button');
+            aeBack.className = 'ae-thumbs-back';
+            aeBack.textContent = '← Back';
+            aeBack.addEventListener('click', e => {
+              e.stopPropagation();
+              // Torna alla vista normale
+              inner.classList.remove('ae-thumbs-mode');
+              _aeThumbsView.style.display = 'none';
+            });
+            const aeCtr = document.createElement('div');
+            aeCtr.className = 'ae-thumbs-counter';
+            aeCtr.textContent = '01 — ' + String(images.length).padStart(2,'0');
+            aeInfo.appendChild(aeBack);
+            aeInfo.appendChild(aeCtr);
+
+            // Strip thumbnail orizzontale
+            const aeStrip = document.createElement('div');
+            aeStrip.className = 'ae-thumbs-strip';
+            images.forEach((img, i) => {
+              const item = document.createElement('div');
+              item.className = 'ae-thumbs-strip-item' + (i === 0 ? ' active' : '');
+              const tImg = document.createElement('img');
+              tImg.src = img.url;
+              tImg.loading = 'lazy';
+              item.appendChild(tImg);
+              item.addEventListener('click', e => { e.stopPropagation(); _aeShowIdx(i); });
+              aeStrip.appendChild(item);
+            });
+
+            _aeThumbsView.appendChild(aeHero);
+            _aeThumbsView.appendChild(aeInfo);
+            _aeThumbsView.appendChild(aeStrip);
+            _aeThumbsView.style.display = 'none';
+            panel.appendChild(_aeThumbsView);
+          }
+
           thumbsBtn.addEventListener('click', e => {
             e.stopPropagation();
             e.preventDefault();
-            const isDark = !panel.classList.contains('box-white');
-            window.openViewAllOverlay(images, p.title || '', isDark);
+            _buildAeThumbsView();
+            // Attiva la vista thumbs
+            inner.classList.add('ae-thumbs-mode');
+            _aeThumbsView.style.display = 'flex';
+            // Mostra la prima foto con animazione
+            const aeImg2 = _aeThumbsView.querySelector('.ae-thumbs-hero img');
+            if (aeImg2) {
+              aeImg2.classList.remove('revealing');
+              void aeImg2.offsetWidth;
+              setTimeout(() => aeImg2.classList.add('revealing'), 20);
+            }
           });
           bottomBar.appendChild(thumbsBtn);
 
