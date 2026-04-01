@@ -4288,6 +4288,7 @@ document.addEventListener('mousemove', e => {
         // ── CHIUSURA: mouse torna sotto 20% → box rientra
         if (_cipanel && boxOpen && mx < CLOSE_X) {
           _cipanel.classList.remove('open');
+          _cipanel._topSet = false;  // reset: al prossimo click ricalcola il top
           window._citLock = false;
           window._citBoxW = null;
           document.body.classList.remove('cursor-on-dark');
@@ -4518,9 +4519,13 @@ function populateCityInfoPanel(project, imageUrls) {
     const _colHeader = document.getElementById('cities-col-header');
     const _ctitle = document.querySelector('.cities-page-title');
     const _topRef = _ctitle || _colHeader;
+    const _navbarEl = document.querySelector('header, nav, #main-nav, .main-header');
+    const _navbarH  = _navbarEl ? Math.round(_navbarEl.getBoundingClientRect().bottom) : 36;
     if (_topRef) {
       const _topRect = _topRef.getBoundingClientRect();
-      _cipanel.style.top = Math.round(_topRect.top) + 'px';
+      // Clamp: mai sopra la navbar
+      const _safeTop = Math.max(_navbarH, Math.round(_topRect.top));
+      _cipanel.style.top = _safeTop + 'px';
     }
     _cipanel._topSet = true;
   }
@@ -4564,6 +4569,7 @@ if (_cipClose) {
     if (_cipanel) {
       _cipanel.classList.remove('open');
       _cipanel._currentProject = null;
+      _cipanel._topSet = false;  // reset: al prossimo click ricalcola il top
     }
     // Chiudi anche il photo-viewer
     const _pv = document.getElementById('cip-photo-viewer');
@@ -4614,15 +4620,18 @@ if (_cipImages) {
     const panelRect = _cipanel.getBoundingClientRect();
 
     // Top: bordo superiore del titolo Cities ("Cities | Index by Location")
+    // Clamp: mai sopra la navbar
+    const _navbarEl2 = document.querySelector('header, nav, #main-nav, .main-header');
+    const _navbarH2  = _navbarEl2 ? Math.round(_navbarEl2.getBoundingClientRect().bottom) : 36;
     const _colHdr = document.getElementById('cities-col-header');
     const _citiesTitle = document.querySelector('.cities-page-title');
     let topY;
     if (_citiesTitle) {
-      topY = Math.round(_citiesTitle.getBoundingClientRect().top);
+      topY = Math.max(_navbarH2, Math.round(_citiesTitle.getBoundingClientRect().top));
     } else if (_colHdr) {
-      topY = Math.round(_colHdr.getBoundingClientRect().top);
+      topY = Math.max(_navbarH2, Math.round(_colHdr.getBoundingClientRect().top));
     } else {
-      topY = Math.round(panelRect.top);
+      topY = Math.max(_navbarH2, Math.round(panelRect.top));
     }
 
     // Calcola left: rispetta l'alfabeto (min 60px)
@@ -4802,6 +4811,7 @@ function closeCityInfoPanel() {
   if (_cipanel) {
     _cipanel.classList.remove('open');
     _cipanel._currentProject = null;
+    _cipanel._topSet = false;  // reset per il prossimo accesso
   }
   if (_cipPhotoViewer) _cipPhotoViewer.classList.remove('open');
   // Ripristina opacità thumbs
