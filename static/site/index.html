@@ -1290,6 +1290,7 @@
       box-sizing: border-box;
       overflow: visible;  /* permette alla linea di stare nel padding senza essere tagliata */
       justify-content: flex-start;
+      position: relative;  /* contesto per la linea assoluta */
     }
 
     /* Bottone "Thumbs" — nella bottom-bar, a destra */
@@ -1603,13 +1604,10 @@
     }
 
     /* ── Linea verticale sinistra con pallino scorrevole nel pannello keywords ── */
-    .archive-kw-panel {
-      position: relative;  /* contesto per la linea assoluta */
-    }
     /* Linea verticale sottile — nel padding-left della kw-col, a sinistra dei numeri */
     .archive-kw-vline {
       position: absolute;
-      left: -18px;   /* dentro il padding-left (36px), a sinistra dei numeri */
+      left: 10px;   /* dentro il padding-left (36px), a sinistra dei numeri */
       top: 0;
       bottom: 0;
       width: 1px;
@@ -1623,7 +1621,7 @@
     /* Pallino scorrevole sulla linea verticale (+15%: 7px → 8px) */
     .archive-kw-dot {
       position: absolute;
-      left: -22px;   /* centrato sulla linea: -18px - 4px (metà pallino 8px) */
+      left: 6px;   /* centrato sulla linea: 10px - 4px (metà pallino 8px) */
       width: 8px;
       height: 8px;
       border-radius: 50%;
@@ -6086,12 +6084,12 @@ function buildArchive() {
             const kwDot = document.createElement('div');
             kwDot.className = 'archive-kw-dot';
             kwVline.appendChild(kwDot);
-            kwPanel.appendChild(kwVline);
+            kwCol.appendChild(kwVline);
 
             // Muovi il pallino in base alla posizione Y del cursore rispetto alla kwCol
             let _kwPulseTimer = null;
             kwCol.addEventListener('mousemove', ev => {
-              const rect = kwPanel.getBoundingClientRect();
+              const rect = kwCol.getBoundingClientRect();
               const relY = ev.clientY - rect.top;
               const clampedY = Math.max(0, Math.min(rect.height - 8, relY - 4));
               kwDot.style.top = clampedY + 'px';
@@ -6147,8 +6145,16 @@ function buildArchive() {
         }
 
         // Triangolo bianco nel box nero espanso
-        panel.addEventListener('mouseenter', () => document.body.classList.add('cursor-on-dark'));
-        panel.addEventListener('mouseleave', () => document.body.classList.remove('cursor-on-dark'));
+        panel.addEventListener('mouseenter', () => {
+          // Non sovrascrivere archive-near-toggle (pallino rosso vicino TV/Thumbs)
+          if (!document.body.classList.contains('archive-near-toggle')) {
+            document.body.classList.add('cursor-on-dark');
+          }
+        });
+        panel.addEventListener('mouseleave', () => {
+          document.body.classList.remove('cursor-on-dark');
+          document.body.classList.remove('archive-near-toggle');
+        });
 
         // Animazione Ink Drop: trigger dopo un frame
         requestAnimationFrame(() => {
