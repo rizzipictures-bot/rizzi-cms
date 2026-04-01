@@ -220,6 +220,15 @@
     body.cursor-on-dark.cursor-red:not(.archive-near-toggle) #cursor-dot::after {
       background: rgba(0,0,0,0.75) !important;
     }
+    /* Box Archive bianco: pallino nero */
+    body.archive-box-white #cursor-dot {
+      background: #111 !important;
+      box-shadow: none !important;
+    }
+    body.archive-box-white #cursor-dot::before,
+    body.archive-box-white #cursor-dot::after {
+      background: rgba(255,255,255,0.85) !important;
+    }
     /* Prossimità TV/Thumbs in Archive: ROSSO con massima priorità */
     body.archive-near-toggle #cursor-dot {
       background: #e00 !important;
@@ -4607,18 +4616,22 @@ document.addEventListener('mousemove', e => {
             // ROSSO: rimuovi cursor-on-dark così il !important del rosso vince senza conflitti
             document.body.classList.remove('cursor-on-dark');
             document.body.classList.remove('cursor-red');
+            document.body.classList.remove('archive-box-white');
             document.body.classList.add('archive-near-toggle');
           } else {
             document.body.classList.remove('archive-near-toggle');
             document.body.classList.remove('cursor-red');
             if (_boxIsWhite) {
               document.body.classList.remove('cursor-on-dark');
+              document.body.classList.add('archive-box-white'); // pallino nero su sfondo bianco
             } else {
+              document.body.classList.remove('archive-box-white');
               document.body.classList.add('cursor-on-dark');
             }
           }
         } else {
           document.body.classList.remove('archive-near-toggle');
+          document.body.classList.remove('archive-box-white');
           document.body.classList.add('cursor-red');
           document.body.classList.remove('cursor-on-dark');
         }
@@ -6153,6 +6166,7 @@ function buildArchive() {
         panel.addEventListener('mouseleave', () => {
           document.body.classList.remove('cursor-on-dark');
           document.body.classList.remove('archive-near-toggle');
+          document.body.classList.remove('archive-box-white');
         });
 
         // Animazione Ink Drop: trigger dopo un frame
