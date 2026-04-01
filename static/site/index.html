@@ -3074,11 +3074,14 @@
       width: 100%;
     }
 
-    /* ── Colonna sinistra: foto con overlay grigio 80% ── */
+    /* ── Colonna sinistra: foto con overlay grigio ──
+       Margine negativo in alto per coprire il padding-top del main (40px)
+       e arrivare fino al bordo superiore della finestra senza spazio bianco */
     .index-photo-col {
       position: relative;
       overflow: hidden;
-      height: 100%;
+      height: calc(100% + 40px);
+      margin-top: -40px;
       background: #1a1a1a;
     }
     .index-photo-wrap {
@@ -3121,7 +3124,7 @@
       display: flex;
       flex-direction: column;  /* verticale come le voci della lista */
       gap: 0;
-      padding: 22px 0 20px 52px;
+      padding: 62px 0 20px 52px;  /* 22px originale + 40px abbassamento */
       flex-shrink: 0;
     }
     .index-subnav-btn {
