@@ -7856,7 +7856,7 @@ loadFromCMS();
           const distStart = window._citLerpDistStart || Math.max(dist, 1);
 
           const t = Math.max(0, Math.min(1, dist / distStart));
-          const speed = 0.025 + t * (0.15 - 0.025);
+          const speed = 0.0175 + t * (0.105 - 0.0175);  /* -30%: era 0.025→0.15 */
 
           _citThumbCurX += distX * speed;
           _citThumbCurY += distY * speed;
