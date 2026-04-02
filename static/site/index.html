@@ -4765,6 +4765,8 @@ document.addEventListener('mousemove', e => {
 
       // ── CITIES: pallino bianco dentro i due box, rosso fuori ──
       if (currentView === 'cities-index') {
+        // Pulizia difensiva: rimuovi classi archive che potrebbero essere rimaste
+        document.body.classList.remove('archive-hero-next', 'archive-hero-prev', 'archive-near-toggle', 'archive-box-white');
         const _pv2 = document.getElementById('cip-photo-viewer');
         const _bx1 = document.getElementById('cities-info-panel');
         const _bx1Open = _bx1 && _bx1.classList.contains('open');
@@ -5523,6 +5525,14 @@ function switchView(name) {
   // ── Cursore rosso solo per Archive e Cities ──
   const RED_VIEWS = ['archive', 'cities-index'];
   document.body.classList.toggle('cursor-red', RED_VIEWS.includes(name));
+
+  // ── Pulizia classi cursore Archive quando si esce da Archive ──
+  if (name !== 'archive') {
+    document.body.classList.remove(
+      'archive-hero-next', 'archive-hero-prev',
+      'archive-near-toggle', 'archive-box-white'
+    );
+  }
 
   // Aggiorna le linee decorative Cities quando si entra nella view
   if (name === 'cities-index') {
