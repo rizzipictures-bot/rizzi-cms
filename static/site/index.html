@@ -775,8 +775,15 @@
       visibility: hidden;
     }
     #overview-overlay.open {
-      pointer-events: all;
+      pointer-events: none;  /* il container non intercetta: lascia passare i click alla navbar */
       visibility: visible;
+    }
+    /* Gli elementi figli intercettano i loro click */
+    #overview-overlay.open #overview-overlay-bg,
+    #overview-overlay.open #overview-overlay-img,
+    #overview-overlay.open #overview-overlay-close,
+    #overview-overlay.open #ov-nav-bar {
+      pointer-events: all;
     }
     /* Sfondo sfumato come jackdavison */
     #overview-overlay-bg {
@@ -5735,17 +5742,18 @@ function closeOverview() {
 }
 
 // Click sull'overlay: metà destra = avanti, metà sinistra = indietro
-document.getElementById('overview-overlay').addEventListener('click', e => {
-  // Pulsante Close: chiude
-  if (e.target.id === 'overview-overlay-close') { closeOverview(); return; }
-  // Click su Index o Thumbs: lascia gestire all'onclick inline (navigazione vista)
-  if (e.target.id === 'ov-nav-index' || e.target.id === 'ov-nav-thumbs') { return; }
-  // Click sul background O sulla foto O ovunque nello spazio bianco: naviga
-  // Metà destra = avanti; metà sinistra = indietro
+// Il container ha pointer-events:none → i click arrivano solo da bg, img, close, nav-bar
+document.getElementById('overview-overlay-bg').addEventListener('click', e => {
+  // Click sul background bianco: naviga dx/sx
   const center = window.innerWidth / 2;
   const dir = e.clientX >= center ? 1 : -1;
   ovNavigate(dir);
-  e.stopPropagation();
+});
+document.getElementById('overview-overlay-img').addEventListener('click', e => {
+  // Click sulla foto: naviga dx/sx
+  const center = window.innerWidth / 2;
+  const dir = e.clientX >= center ? 1 : -1;
+  ovNavigate(dir);
 });
 
 document.addEventListener('keydown', e => {
