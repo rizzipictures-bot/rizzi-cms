@@ -6986,8 +6986,8 @@ function _gallerySmooth(targetTop, duration) {
   const diff  = targetTop - start;
   if (Math.abs(diff) < 2) return;
   const t0 = performance.now();
-  // Easing cubico ease-in-out
-  function ease(t) { return t < 0.5 ? 4*t*t*t : 1 - Math.pow(-2*t+2,3)/2; }
+  // Easing quintico ease-in-out: più morbido e fluido del cubico
+  function ease(t) { return t < 0.5 ? 16*t*t*t*t*t : 1 - Math.pow(-2*t+2,5)/2; }
   function step(now) {
     const p = Math.min((now - t0) / duration, 1);
     vg.scrollTop = start + diff * ease(p);
@@ -7005,11 +7005,11 @@ function _galleryScrollToThumbs() {
   const vgRect  = vg.getBoundingClientRect();
   const secRect = sec.getBoundingClientRect();
   const target  = vg.scrollTop + (secRect.top - vgRect.top);
-  _gallerySmooth(target, 820);
+  _gallerySmooth(target, 1400);
 }
 
 function _galleryScrollToTop() {
-  _gallerySmooth(0, 820);
+  _gallerySmooth(0, 1400);
 }
 
 // ── CLICK HANDLER PRINCIPALE: gallery-main-wrap (area foto + spazio sotto) ──
