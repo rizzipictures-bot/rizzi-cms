@@ -5313,8 +5313,9 @@ function _updateCitiesLines() {
   lineH.style.top   = topY + 'px';
   lineH.style.left  = '0';
   // In light-mode la linea si estende fino al bordo destro della pagina (copre anche Box 1)
+  // Usa window.innerWidth invece di '100vw': style.width via JS non accetta unità vw
   const _bx1IsLight = _bx1 && _bx1.classList.contains('light-mode');
-  lineH.style.width = _bx1IsLight ? '100vw' : bx1Left + 'px';
+  lineH.style.width = _bx1IsLight ? window.innerWidth + 'px' : bx1Left + 'px';
 
   // Linea verticale: al bordo ESTERNO sinistro del Box 2 (se aperto)
   // Usiamo lo style.left del Box 2 (valore impostato via JS) per evitare
