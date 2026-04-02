@@ -2578,6 +2578,12 @@
       /* left calcolato via JS */
     }
 
+    /* Linee in light-mode: più scure per essere visibili su sfondo bianco */
+    body.cip-light-mode #cities-line-h,
+    body.cip-light-mode #cities-line-v {
+      background: rgba(0,0,0,0.20);
+    }
+
     /* Header box 2 — icona monitor + testo descrittivo + pallino viola sulla stessa riga */
     #cip-photo-viewer-header {
       flex-shrink: 0;
