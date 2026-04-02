@@ -2641,6 +2641,44 @@
     }
     /* Le righe meta sono sempre visibili (anche senza valore, come nello screenshot originale) */
 
+    /* ── Box 1 Cities in light-mode: sfondo crema (bianco con 5% tendente al crema) ── */
+    #cities-info-panel.light-mode {
+      background: #f7f4ef;           /* bianco-crema: bianco puro + 5% tendente al crema */
+      border-right-color: rgba(0,0,0,0.15);
+      color: #222;
+    }
+    #cities-info-panel.light-mode .cip-header {
+      border-bottom-color: #ddd;
+    }
+    #cities-info-panel.light-mode .cip-title {
+      color: #111;
+    }
+    #cities-info-panel.light-mode .cip-subtitle {
+      color: #888;
+    }
+    #cities-info-panel.light-mode .cip-meta {
+      border-bottom-color: #ddd;
+    }
+    #cities-info-panel.light-mode .cip-meta-row {
+      border-bottom-color: #ddd;
+    }
+    #cities-info-panel.light-mode .cip-meta-label {
+      color: #999;
+    }
+    #cities-info-panel.light-mode .cip-meta-value {
+      color: #111;
+    }
+    #cities-info-panel.light-mode .cip-body {
+      scrollbar-color: #ccc transparent;
+    }
+    #cities-info-panel.light-mode .cip-img {
+      background: #f7f4ef;
+    }
+    /* Pallino chiudi box 1 in light-mode: rimane viola */
+    #cities-info-panel.light-mode #cip-close {
+      /* invariato */
+    }
+
     /* Toggle tema Box2: bianco con bordo nero (light-mode = tema chiaro) */
     #cip-photo-viewer.light-mode {
       background: #ffffff;
@@ -4643,6 +4681,9 @@ document.addEventListener('mousemove', e => {
             _pv2.classList.remove('open');
             _pv2.classList.remove('light-mode');
             document.body.classList.remove('cip-light-mode');
+            // Rimuovi light-mode anche dal Box 1
+            const _cipBox1b = document.getElementById('cities-info-panel');
+            if (_cipBox1b) _cipBox1b.classList.remove('light-mode');
             if (_cipanel) {
               _cipanel.classList.remove('viewer-open');
               _cipanel.querySelectorAll('.cip-img.selected').forEach(i => i.classList.remove('selected'));
@@ -5297,13 +5338,18 @@ function _cipShowIndex(idx) {
 }
 
 // Toggle tema Box 2: scuro ↔ bianco con bordo nero
+// Sincronizza anche il Box 1 (cities-info-panel) che diventa crema
 const _cpvThemeToggle = document.getElementById('cpv-theme-toggle');
 if (_cpvThemeToggle && _cipPhotoViewer) {
   _cpvThemeToggle.addEventListener('click', e => {
     e.stopPropagation();
     _cipPhotoViewer.classList.toggle('light-mode');
+    const _isLight = _cipPhotoViewer.classList.contains('light-mode');
+    // Sincronizza Box 1
+    const _cipBox1 = document.getElementById('cities-info-panel');
+    if (_cipBox1) _cipBox1.classList.toggle('light-mode', _isLight);
     // Sincronizza classe body per cursore nero in light-mode
-    document.body.classList.toggle('cip-light-mode', _cipPhotoViewer.classList.contains('light-mode'));
+    document.body.classList.toggle('cip-light-mode', _isLight);
   });
 }
 
@@ -5332,6 +5378,9 @@ if (_cipPhotoViewerClose) {
       _cipPhotoViewer.classList.remove('light-mode');
     }
     document.body.classList.remove('cip-light-mode');
+    // Rimuovi light-mode anche dal Box 1
+    const _cipBox1c = document.getElementById('cities-info-panel');
+    if (_cipBox1c) _cipBox1c.classList.remove('light-mode');
     // Ripristina opacità thumbs
     if (_cipanel) {
       _cipanel.classList.remove('viewer-open');
@@ -5354,6 +5403,9 @@ function closeCityInfoPanel() {
     _cipPhotoViewer.classList.remove('light-mode');
   }
   document.body.classList.remove('cip-light-mode');
+  // Rimuovi light-mode anche dal Box 1
+  const _cipBox1d = document.getElementById('cities-info-panel');
+  if (_cipBox1d) _cipBox1d.classList.remove('light-mode');
   // Ripristina opacità thumbs
   if (_cipanel) {
     _cipanel.classList.remove('viewer-open');
