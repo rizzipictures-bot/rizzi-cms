@@ -2673,6 +2673,13 @@
     }
     #cities-info-panel.light-mode .cip-img {
       background: #ffffff;
+      opacity: 0.5;   /* overlay ridotto al 50% in light-mode */
+    }
+    #cities-info-panel.light-mode .cip-img:hover {
+      opacity: 0.75;  /* hover: leggermente più visibile */
+    }
+    #cities-info-panel.light-mode .cip-img.selected {
+      opacity: 1;     /* foto selezionata: piena visibilità */
     }
     /* Pallino chiudi box 1 in light-mode: rimane viola */
     #cities-info-panel.light-mode #cip-close {
@@ -5296,7 +5303,9 @@ function _updateCitiesLines() {
   }
   lineH.style.top   = topY + 'px';
   lineH.style.left  = '0';
-  lineH.style.width = bx1Left + 'px';
+  // In light-mode la linea si estende fino al bordo destro della pagina (copre anche Box 1)
+  const _bx1IsLight = _bx1 && _bx1.classList.contains('light-mode');
+  lineH.style.width = _bx1IsLight ? '100vw' : bx1Left + 'px';
 
   // Linea verticale: al bordo ESTERNO sinistro del Box 2 (se aperto)
   // Usiamo lo style.left del Box 2 (valore impostato via JS) per evitare
@@ -5350,6 +5359,8 @@ if (_cpvThemeToggle && _cipPhotoViewer) {
     if (_cipBox1) _cipBox1.classList.toggle('light-mode', _isLight);
     // Sincronizza classe body per cursore nero in light-mode
     document.body.classList.toggle('cip-light-mode', _isLight);
+    // Aggiorna la linea orizzontale (larghezza cambia in light-mode)
+    requestAnimationFrame(() => _updateCitiesLines());
   });
 }
 
