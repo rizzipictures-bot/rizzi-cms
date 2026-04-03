@@ -690,6 +690,11 @@
       transform: translateY(0);
       pointer-events: all;
     }
+    /* Quando l'overlay Overview è aperto, la view sottostante non intercetta i click
+       così la navbar (z-index:1000) rimane sempre cliccabile */
+    body.overlay-open .view.active {
+      pointer-events: none;
+    }
 
     /* ══════════════════════════════════════════════════════════════
        VIEW: HOME — THUMBS GRID (jackdavison / Miechowski)
@@ -6054,6 +6059,9 @@ function showOverview(img, idx, imageList) {
   oImg.src = img.url;
   ov.classList.add('open');
   overlayOpen = true;
+  document.body.classList.add('overlay-open');  /* disabilita pointer-events sulla view sottostante */
+  // Rimuovi cursor-red nell'overlay (non ha senso il pallino rosso qui)
+  document.body.classList.remove('cursor-red');
   // Posiziona la barra sotto la foto dopo che l'immagine è caricata
   oImg.onload = _ovPositionNavBar;
   // Fallback: prova subito (se già in cache)
@@ -6078,6 +6086,7 @@ function closeOverview() {
   const ov = document.getElementById('overview-overlay');
   ov.classList.remove('open');
   overlayOpen = false;
+  document.body.classList.remove('overlay-open');
   cursorDot.style.visibility = ''; // ripristina la freccia
   cursorDot.style.width  = '';     // ripristina dimensione cursore
   cursorDot.style.height = '';
