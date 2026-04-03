@@ -3881,6 +3881,350 @@
       width: 100%; height: auto; display: block;
     }
 
+
+  /* ══════════════════════════════════════════════════════════════
+     MOBILE RESPONSIVE — max-width: 768px
+     Tutte le regole qui sotto NON toccano il desktop.
+     Il cursore custom viene nascosto su touch.
+  ══════════════════════════════════════════════════════════════ */
+  @media (max-width: 768px) {
+
+    /* ── Cursore custom: nascosto su mobile ── */
+    #cursor, #cursor-label { display: none !important; }
+    * { cursor: auto !important; }
+
+    /* ── Linee decorative Cities: nascoste su mobile ── */
+    #cities-line-h, #cities-line-v { display: none !important; }
+
+    /* ── Variabili mobile ── */
+    :root {
+      --nav-h: 48px;
+      --pad: 16px;
+    }
+
+    /* ── Header / Navbar ── */
+    header {
+      height: var(--nav-h);
+      padding: 0 16px;
+    }
+    .logo {
+      font-size: 13px;
+    }
+    nav.pill-nav {
+      gap: 14px;
+    }
+    nav.pill-nav button,
+    nav.pill-nav a {
+      font-size: 11px;
+      cursor: auto;
+    }
+    #gallery-back-btn {
+      font-size: 11px;
+      padding: 0;
+    }
+
+    /* ── Main area ── */
+    main {
+      padding-top: var(--nav-h);
+    }
+    .view {
+      padding: var(--pad);
+    }
+
+    /* ══════════════════════════════════════════════════════════════
+       OVERVIEW — griglia 3 colonne su mobile
+    ══════════════════════════════════════════════════════════════ */
+    #view-home {
+      padding: 0;
+    }
+    #view-home .thumbs-grid {
+      grid-template-columns: repeat(3, 1fr);
+      grid-auto-rows: calc((100vw - 8px) / 3 * 1.2);
+      gap: 4px;
+      padding: 8px 4px 24px;
+    }
+    #view-home .thumbs-grid .thumb-item.is-landscape {
+      height: calc((100vw - 8px) / 3 * 1.2 * 0.575);
+    }
+    /* Nessun hover overlay su mobile */
+    #view-home .thumbs-grid .thumb-item:hover::after {
+      background: rgba(40,40,40,0);
+    }
+
+    /* ── Overview overlay (foto esplosa) ── */
+    #overview-overlay {
+      align-items: flex-start;
+      padding-top: var(--nav-h);
+    }
+    #overview-overlay-img {
+      max-width: 100vw;
+      max-height: calc(100vh - var(--nav-h) - 60px);
+      width: 100%;
+      object-fit: contain;
+    }
+    #ov-nav-bar {
+      bottom: 16px;
+      top: auto;
+      font-size: 12px;
+    }
+    #overview-overlay-close {
+      top: calc(var(--nav-h) + 12px);
+      right: 16px;
+    }
+
+    /* ══════════════════════════════════════════════════════════════
+       INDEX — lista verticale
+    ══════════════════════════════════════════════════════════════ */
+    #view-index {
+      padding: var(--pad);
+    }
+    .index-col-header {
+      display: none;
+    }
+    .index-row {
+      grid-template-columns: 1fr;
+      padding: 8px 0;
+      border-bottom: 1px solid var(--light);
+      gap: 2px;
+    }
+    .index-row > div {
+      font-size: 12px;
+      padding: 0;
+    }
+
+    /* ══════════════════════════════════════════════════════════════
+       ARCHIVE — lista verticale
+    ══════════════════════════════════════════════════════════════ */
+    .archive-page-title {
+      font-size: clamp(18px, 5vw, 26px);
+      margin-bottom: 12px;
+    }
+    .archive-col-header {
+      display: none;
+    }
+    #archive-list .archive-row {
+      grid-template-columns: 1fr;
+      padding: 10px 0;
+      gap: 2px;
+      border-bottom: 1px solid var(--light);
+    }
+    #archive-list .archive-row > div {
+      font-size: 12px;
+      padding: 0;
+    }
+    #archive-list .archive-row .year {
+      font-size: 11px;
+      color: #888;
+    }
+    /* Nascondi colonne meno importanti su mobile */
+    #archive-list .archive-row > div:nth-child(n+4) {
+      display: none;
+    }
+    /* Mostra solo Anno, Progetto, Sottotitolo */
+    #archive-list .archive-row > div:nth-child(1),
+    #archive-list .archive-row > div:nth-child(2),
+    #archive-list .archive-row > div:nth-child(3) {
+      display: block;
+    }
+    /* Preview cursore: nascosta su mobile */
+    #archive-cursor-preview { display: none !important; }
+    #cities-cursor-preview  { display: none !important; }
+    #sculptures-cursor-preview { display: none !important; }
+
+    /* ── Archive box espanso ── */
+    .archive-expanded {
+      position: fixed !important;
+      inset: var(--nav-h) 0 0 0 !important;
+      width: 100% !important;
+      height: auto !important;
+      max-height: calc(100vh - var(--nav-h)) !important;
+      overflow-y: auto !important;
+      z-index: 500 !important;
+      border-radius: 0 !important;
+    }
+    .archive-expanded-hero {
+      width: 100% !important;
+      height: auto !important;
+      max-height: 55vw !important;
+    }
+    .archive-expanded-hero img {
+      width: 100% !important;
+      height: 100% !important;
+      object-fit: cover !important;
+    }
+    .archive-expanded-thumbs {
+      grid-template-columns: repeat(3, 1fr) !important;
+      gap: 3px !important;
+    }
+    .archive-expanded-toggle {
+      display: none !important;
+    }
+
+    /* ══════════════════════════════════════════════════════════════
+       CITIES — lista verticale + box full-screen
+    ══════════════════════════════════════════════════════════════ */
+    .cities-page-title {
+      font-size: clamp(18px, 5vw, 26px);
+      margin-bottom: 12px;
+    }
+    .cities-col-header {
+      display: none;
+    }
+    #cities-list-view .cities-row {
+      grid-template-columns: 1fr;
+      padding: 10px 0;
+      gap: 2px;
+      border-bottom: 1px solid var(--light);
+    }
+    #cities-list-view .cities-row > div {
+      font-size: 12px;
+      padding: 0;
+    }
+    /* Nascondi colonne meno importanti */
+    #cities-list-view .cities-row > div:nth-child(n+3) {
+      display: none;
+    }
+    #cities-list-view .cities-row > div:nth-child(1),
+    #cities-list-view .cities-row > div:nth-child(2) {
+      display: block;
+    }
+
+    /* Cities thumbs: 2 colonne su mobile */
+    .cities-index-grid {
+      grid-template-columns: repeat(2, 1fr) !important;
+      gap: 4px !important;
+    }
+
+    /* ── Box 1 Cities (info panel): full-screen su mobile ── */
+    /* Su mobile il JS posiziona i box via style inline — sovrascriviamo tutto */
+    body.cities-active #cities-info-panel {
+      display: flex !important;
+    }
+    body.cities-active #cip-photo-viewer {
+      display: flex !important;
+      opacity: 1 !important;   /* su mobile non usiamo opacity per il viewer */
+    }
+    #cities-info-panel {
+      position: fixed !important;
+      inset: var(--nav-h) 0 0 0 !important;
+      width: 100% !important;
+      height: calc(100vh - var(--nav-h)) !important;
+      max-height: none !important;
+      border-radius: 0 !important;
+      overflow-y: auto !important;
+      z-index: 800 !important;
+      transform: translateX(100%) !important;
+      transition: transform .4s cubic-bezier(.77,0,.175,1) !important;
+    }
+    #cities-info-panel.open {
+      transform: translateX(0) !important;
+    }
+    .cip-images {
+      grid-template-columns: repeat(2, 1fr) !important;
+      gap: 4px !important;
+    }
+
+    /* ── Box 2 Cities (photo viewer): full-screen su mobile ── */
+    #cip-photo-viewer {
+      position: fixed !important;
+      inset: var(--nav-h) 0 0 0 !important;
+      width: 100% !important;
+      height: calc(100vh - var(--nav-h)) !important;
+      max-height: none !important;
+      border-radius: 0 !important;
+      overflow-y: auto !important;
+      z-index: 801 !important;
+      transform: translateX(100%) !important;
+      transition: transform .4s cubic-bezier(.77,0,.175,1) !important;
+    }
+    #cip-photo-viewer.open {
+      transform: translateX(0) !important;
+    }
+    #cip-photo-viewer-img {
+      width: 100% !important;
+      height: auto !important;
+      max-height: 60vw !important;
+      object-fit: contain !important;
+    }
+
+    /* Toggle bianco/nero: visibile su mobile */
+    #cpv-theme-toggle {
+      cursor: auto;
+    }
+
+    /* ── Box 1 light-mode su mobile ── */
+    #cities-info-panel.light-mode {
+      background: #fff !important;
+    }
+    #cip-photo-viewer.light-mode {
+      background: #fff !important;
+    }
+
+    /* ══════════════════════════════════════════════════════════════
+       GALLERY — foto full-width, thumbs 3 colonne
+    ══════════════════════════════════════════════════════════════ */
+    #view-gallery {
+      padding: 0;
+      overflow-y: auto;
+    }
+    .gallery-main-wrap {
+      min-height: auto !important;
+      padding: 0 !important;
+    }
+    .gallery-main-img-wrap {
+      width: 100% !important;
+      max-width: 100% !important;
+      margin: 0 auto !important;
+      padding: 0 !important;
+    }
+    #gallery-img {
+      width: 100% !important;
+      height: auto !important;
+      max-height: 80vw !important;
+      object-fit: contain !important;
+      display: block;
+    }
+    .gallery-info-row {
+      padding: 8px 16px !important;
+      font-size: 11px !important;
+    }
+    .gallery-thumbs-section {
+      padding: 12px 16px !important;
+      margin-top: 8px !important;
+    }
+    .gallery-grid {
+      grid-template-columns: repeat(3, 1fr) !important;
+      gap: 3px !important;
+    }
+    .gallery-text-section {
+      padding: 16px !important;
+    }
+
+    /* ══════════════════════════════════════════════════════════════
+       INTERVIEW — layout verticale
+    ══════════════════════════════════════════════════════════════ */
+    .interview-page-title {
+      font-size: clamp(18px, 5vw, 26px);
+      margin-bottom: 12px;
+    }
+    .interview-item {
+      flex-direction: column !important;
+      gap: 12px !important;
+    }
+    .interview-imgs {
+      grid-template-columns: 1fr 1fr !important;
+    }
+
+    /* ══════════════════════════════════════════════════════════════
+       LIGHTBOX — full-screen su mobile
+    ══════════════════════════════════════════════════════════════ */
+    #lightbox-img {
+      max-width: 100vw !important;
+      max-height: calc(100vh - var(--nav-h)) !important;
+    }
+
+  } /* fine @media mobile */
+
   </style>
 </head>
 <body>
@@ -8291,6 +8635,117 @@ loadFromCMS();
     requestAnimationFrame(tick);
   }
   requestAnimationFrame(tick);
+})();
+
+/* ══════════════════════════════════════════════════════════════
+   MOBILE JS — Touch navigation, swipe, box Cities
+   Attivo solo su dispositivi touch (window.innerWidth <= 768)
+══════════════════════════════════════════════════════════════ */
+(function() {
+  function isMobile() { return window.innerWidth <= 768; }
+
+  /* ── Utility swipe ── */
+  function addSwipe(el, onLeft, onRight, onUp, onDown, threshold) {
+    if (!el) return;
+    threshold = threshold || 50;
+    let sx = 0, sy = 0, active = false;
+    el.addEventListener('touchstart', function(e) {
+      if (!isMobile()) return;
+      const t = e.touches[0];
+      sx = t.clientX; sy = t.clientY; active = true;
+    }, { passive: true });
+    el.addEventListener('touchend', function(e) {
+      if (!isMobile() || !active) return;
+      active = false;
+      const t = e.changedTouches[0];
+      const dx = t.clientX - sx;
+      const dy = t.clientY - sy;
+      if (Math.abs(dx) > Math.abs(dy)) {
+        if (dx < -threshold && onLeft)  onLeft();
+        if (dx >  threshold && onRight) onRight();
+      } else {
+        if (dy < -threshold && onUp)   onUp();
+        if (dy >  threshold && onDown) onDown();
+      }
+    }, { passive: true });
+  }
+
+  /* ── Gallery: swipe sx/dx per foto successiva/precedente ── */
+  document.addEventListener('DOMContentLoaded', function() {
+    var galWrap = document.getElementById('gallery-main-wrap');
+    addSwipe(galWrap,
+      function() { // swipe sx → foto successiva
+        if (typeof galleryProject === 'undefined' || !galleryProject) return;
+        galleryIndex = (galleryIndex + 1) % galleryProject.images.length;
+        renderGallery();
+      },
+      function() { // swipe dx → foto precedente
+        if (typeof galleryProject === 'undefined' || !galleryProject) return;
+        galleryIndex = (galleryIndex - 1 + galleryProject.images.length) % galleryProject.images.length;
+        renderGallery();
+      }
+    );
+
+    /* ── Overview overlay: swipe sx/dx per navigare foto ── */
+    var ovOverlay = document.getElementById('overview-overlay');
+    addSwipe(ovOverlay,
+      function() { if (typeof ovNavigate === 'function') ovNavigate(1);  },  // swipe sx → avanti
+      function() { if (typeof ovNavigate === 'function') ovNavigate(-1); }   // swipe dx → indietro
+    );
+
+    /* ── Overview overlay: tap per chiudere (tap sul bg) ── */
+    var ovBg = document.getElementById('overview-overlay-bg');
+    if (ovBg) {
+      ovBg.addEventListener('click', function(e) {
+        if (!isMobile()) return;
+        if (typeof closeOverview === 'function') closeOverview();
+      });
+    }
+
+    /* ── Cities Box 1 (info panel): swipe dx per chiudere ── */
+    var cipanel = document.getElementById('cities-info-panel');
+    if (cipanel) {
+      addSwipe(cipanel,
+        null,
+        function() { // swipe dx → chiudi
+          if (!isMobile()) return;
+          cipanel.classList.remove('open');
+        }
+      );
+    }
+
+    /* ── Cities Box 2 (photo viewer): swipe dx per chiudere, swipe sx per aprire box 1 ── */
+    var cipViewer = document.getElementById('cip-photo-viewer');
+    if (cipViewer) {
+      addSwipe(cipViewer,
+        null,
+        function() { // swipe dx → chiudi
+          if (!isMobile()) return;
+          cipViewer.classList.remove('open');
+          if (cipanel) cipanel.classList.remove('viewer-open');
+        }
+      );
+    }
+
+    /* ── Archive box espanso: swipe giù per chiudere ── */
+    document.addEventListener('touchstart', function(e) {
+      if (!isMobile()) return;
+      var expanded = document.querySelector('.archive-expanded');
+      if (!expanded) return;
+      // swipe giù sull'expanded → chiudi
+    }, { passive: true });
+
+    /* ── Pulsante chiudi box Cities su mobile: aggiunge classe open al cipanel ── */
+    // Il close button già rimuove 'open' via JS esistente — nessuna modifica necessaria
+
+    /* ── Thumb gallery: tap → scroll smooth verso l'alto (già gestito da renderGallery) ── */
+    // Il click handler delle thumbs già chiama _galleryScrollToTop() — funziona su mobile
+
+    /* ── Disabilita mousemove/hover su touch device ── */
+    if ('ontouchstart' in window) {
+      document.body.classList.add('is-touch');
+    }
+  });
 })();
 </script>
 </body>
