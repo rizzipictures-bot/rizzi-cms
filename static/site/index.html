@@ -766,7 +766,9 @@
 
     /* Overlay preview — jackdavison style */
     #overview-overlay {
-      position: fixed; inset: 0;
+      position: fixed;
+      top: var(--nav-h);   /* NON copre la navbar — la navbar è sempre cliccabile */
+      left: 0; right: 0; bottom: 0;
       z-index: 300;
       display: flex;
       align-items: center;
@@ -775,15 +777,8 @@
       visibility: hidden;
     }
     #overview-overlay.open {
-      pointer-events: none;  /* il container non intercetta: lascia passare i click alla navbar */
+      pointer-events: all;  /* tutta l'area sotto la navbar è interattiva */
       visibility: visible;
-    }
-    /* Gli elementi figli intercettano i loro click */
-    #overview-overlay.open #overview-overlay-bg,
-    #overview-overlay.open #overview-overlay-img,
-    #overview-overlay.open #overview-overlay-close,
-    #overview-overlay.open #ov-nav-bar {
-      pointer-events: all;
     }
     /* Sfondo sfumato come jackdavison */
     #overview-overlay-bg {
