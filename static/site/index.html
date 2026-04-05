@@ -664,19 +664,19 @@
     /* ══════════════════════════════════════════════════════════════
        MAIN AREA
     ══════════════════════════════════════════════════════════════ */
-    main {
-      flex: 1;
-      overflow: hidden;
-      position: relative;
-      padding-top: 40px;   /* abbassa tutto il contenuto sotto la navbar */
-    }
+     main {
+       flex: 1;
+       overflow: hidden;
+       position: relative;
+       /* padding-top rimosso: le .view hanno top:var(--nav-h) e non coprono la navbar */
+     }
 
     /* ══════════════════════════════════════════════════════════════
        VIEWS (pagine)
     ══════════════════════════════════════════════════════════════ */
     .view {
       position: absolute;
-      inset: 0;
+      top: var(--nav-h); left: 0; right: 0; bottom: 0;  /* non copre mai la navbar */
       overflow-y: auto;
       padding: var(--pad);
       opacity: 0;
@@ -3210,14 +3210,12 @@
        VIEW INDEX — Layout Jack Davison
        Split 50/50 | Foto sx con overlay grigio 80% | Lista dx
     ════════════════════════════════════════════════════════════════ */
-    #view-index {
-      padding: 0;
-      overflow: hidden;
-      background: #fff;
-      /* Ignora il padding-top del main: copre tutta la finestra dall'alto */
-      top: 0 !important;
-      bottom: 0 !important;
-    }
+     #view-index {
+       padding: 0;
+       overflow: hidden;
+       background: #fff;
+       /* top:var(--nav-h) già ereditato da .view — non copre la navbar */
+     }
     .index-split {
       display: grid;
       grid-template-columns: 50% 50%;
@@ -3226,13 +3224,11 @@
     }
 
     /* ── Colonna sinistra: foto con overlay grigio ──
-       Margine negativo in alto per coprire il padding-top del main (40px)
-       e arrivare fino al bordo superiore della finestra senza spazio bianco */
+       La .view ha top:var(--nav-h), quindi la foto riempie l'area sotto la navbar */
     .index-photo-col {
       position: relative;
       overflow: hidden;
-      height: calc(100% + 40px);
-      margin-top: -40px;
+      height: 100%;
       background: #000;
     }
     .index-photo-wrap {
@@ -5403,6 +5399,19 @@ document.addEventListener('mousemove', e => {
   }
 });
 
+// Nascondi il cursorLabel quando il mouse esce dalla pagina o si ferma
+document.addEventListener('mouseleave', () => { resetCursor(); });
+let _labelHideTimer = null;
+document.addEventListener('mousemove', () => {
+  clearTimeout(_labelHideTimer);
+  _labelHideTimer = setTimeout(() => {
+    // Nascondi label quando il mouse si ferma (sia in overlay che fuori)
+    if (!document.querySelector(':hover .gallery-thumb')) {
+      cursorLabel.classList.remove('show');
+    }
+  }, 800);
+});
+
 // Cache elementi interni del label
 const _clCat = cursorLabel.querySelector('.cl-cat');
 const _clSep = cursorLabel.querySelector('.cl-sep');
@@ -5794,6 +5803,8 @@ function closeCityInfoPanel() {
 const _viewCitiesIndex = document.getElementById('view-cities-index');
 if (_viewCitiesIndex) {
   _viewCitiesIndex.addEventListener('click', e => {
+    // Non intercettare click sulla navbar (header) — la navbar deve sempre funzionare
+    if (e.target.closest('header, nav.pill-nav')) return;
     // Ignora click sui box stessi, sui pulsanti di toggle e sulle righe città
     if (e.target.closest('#cities-info-panel, #cip-photo-viewer, .cities-view-toggle, .city-row, .cities-list-row, .cities-thumbs-item')) return;
     closeCityInfoPanel();
@@ -5856,6 +5867,10 @@ let currentView = 'home';
 // Nessun cursor-red all'avvio — Overview usa il cursore nero standard
 
 function switchView(name) {
+  // Chiudi l'overlay Overview se aperto — navbar sempre funzionante
+  if (typeof overlayOpen !== 'undefined' && overlayOpen) {
+    closeOverview();
+  }
   document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
   document.querySelectorAll('nav.pill-nav button[data-view]').forEach(b => b.classList.remove('active'));
 
@@ -7372,6 +7387,8 @@ function _galleryScrollToTop() {
 //           click a destra della foto → foto successiva
 //           click a sinistra della foto → foto precedente
 document.getElementById('gallery-main-wrap').addEventListener('click', e => {
+  // Non intercettare click sulla navbar (header) — la navbar deve sempre funzionare
+  if (e.target.closest('header, nav.pill-nav')) return;
   if (!galleryProject) return;
   // Ignora click su elementi figli interattivi (non ce ne sono, ma per sicurezza)
   const img = document.getElementById('gallery-img');
@@ -7406,6 +7423,8 @@ document.getElementById('gallery-info-row').addEventListener('click', e => {
 // ── CLICK HANDLER SECONDARIO: view-gallery (spazio laterale fuori dalla foto) ──
 // Cattura click nelle zone laterali della view (fuori da gallery-main-wrap, thumbs, testo)
 document.getElementById('view-gallery').addEventListener('click', e => {
+  // Non intercettare click sulla navbar (header) — la navbar deve sempre funzionare
+  if (e.target.closest('header, nav.pill-nav')) return;
   // Delega a gallery-main-wrap se il click è dentro di esso (già gestito sopra)
   if (e.target.closest('#gallery-main-wrap, .gallery-thumbs-section, .gallery-text-section, .gallery-info-row')) return;
   if (!galleryProject) return;
