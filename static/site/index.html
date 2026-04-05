@@ -1878,6 +1878,109 @@
     .kw-results-item:hover img { opacity: 0.6; }
 
     /* ══════════════════════════════════════════════════════════════
+       ARCHIVE — ICONA ZOOM (angolo basso-destra della foto grande)
+    ══════════════════════════════════════════════════════════════ */
+    .ae-zoom-btn {
+      position: absolute;
+      bottom: 10px;
+      right: 10px;
+      width: 28px;
+      height: 28px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      z-index: 70;
+      opacity: 0;
+      transition: opacity .2s;
+      pointer-events: all;
+      background: rgba(0,0,0,0.45);
+      border-radius: 50%;
+    }
+    .archive-expanded-hero:hover .ae-zoom-btn,
+    .ae-thumbs-hero:hover .ae-zoom-btn {
+      opacity: 1;
+    }
+    .ae-zoom-btn svg {
+      width: 14px;
+      height: 14px;
+      display: block;
+      stroke: #fff;
+      fill: none;
+      stroke-width: 1.6;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+    /* Tema bianco: icona scura */
+    .archive-expanded.box-white .ae-zoom-btn {
+      background: rgba(255,255,255,0.7);
+    }
+    .archive-expanded.box-white .ae-zoom-btn svg {
+      stroke: #222;
+    }
+
+    /* ══════════════════════════════════════════════════════════════
+       ARCHIVE — POPUP LIGHTBOX INGRANDIMENTO
+    ══════════════════════════════════════════════════════════════ */
+    #ae-zoom-popup {
+      position: fixed;
+      inset: 0;
+      z-index: 3000;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      background: rgba(100,100,100,0.40);
+    }
+    #ae-zoom-popup.open {
+      display: flex;
+    }
+    #ae-zoom-popup-inner {
+      position: relative;
+      max-width: 90vw;
+      max-height: 90vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    #ae-zoom-popup-img {
+      display: block;
+      max-width: 90vw;
+      max-height: 90vh;
+      width: auto;
+      height: auto;
+      object-fit: contain;
+      box-shadow: 0 8px 40px rgba(0,0,0,0.35);
+    }
+    #ae-zoom-popup-close {
+      position: absolute;
+      top: -14px;
+      right: -14px;
+      width: 30px;
+      height: 30px;
+      background: #fff;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      z-index: 10;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.25);
+      transition: background .15s;
+    }
+    #ae-zoom-popup-close:hover {
+      background: #f0f0f0;
+    }
+    #ae-zoom-popup-close svg {
+      width: 12px;
+      height: 12px;
+      display: block;
+      stroke: #222;
+      fill: none;
+      stroke-width: 2;
+      stroke-linecap: round;
+    }
+
+    /* ══════════════════════════════════════════════════════════════
        HERO TENDA DX→SX — cambio foto nel box espanso
     ══════════════════════════════════════════════════════════════ */
     .archive-expanded-hero img {
@@ -4646,6 +4749,16 @@
   <div class="ss-label">Screensaver — premi un tasto o clicca per uscire</div>
 </div>
 
+<!-- Popup zoom immagine Archive -->
+<div id="ae-zoom-popup">
+  <div id="ae-zoom-popup-inner">
+    <button id="ae-zoom-popup-close" aria-label="Chiudi">
+      <svg viewBox="0 0 12 12"><line x1="1" y1="1" x2="11" y2="11"/><line x1="11" y1="1" x2="1" y2="11"/></svg>
+    </button>
+    <img id="ae-zoom-popup-img" src="" alt="">
+  </div>
+</div>
+
 <script>
 // ══════════════════════════════════════════════════════════════════
 // DATI — immagini reali da rizzi-web + Miechowski
@@ -6699,6 +6812,10 @@ function buildArchive() {
             }
           });
           inner.appendChild(hero);
+          // Icona zoom angolo basso-destra della foto grande (modalità 1)
+          if (window._addAeZoomBtn) {
+            window._addAeZoomBtn(hero, () => images[_heroIndex] ? images[_heroIndex].url : heroImg.src);
+          }
 
           // ── DESTRA: layout a 3 zone (thumbs-col | sep | kw-col) ──
           const right = document.createElement('div');
@@ -6824,6 +6941,10 @@ function buildArchive() {
             aeImg.src = images[0] ? images[0].url : '';
             aeImg.alt = p.title || '';
             aeHero.appendChild(aeImg);
+            // Icona zoom angolo basso-destra della foto grande (modalità 2)
+            if (window._addAeZoomBtn) {
+              window._addAeZoomBtn(aeHero, () => images[_aeThumbsIdx] ? images[_aeThumbsIdx].url : aeImg.src);
+            }
 
             function _aeShowIdx(idx) {
               _aeThumbsIdx = (idx + images.length) % images.length;
@@ -8769,6 +8890,60 @@ loadFromCMS();
       document.body.classList.add('is-touch');
     }
   });
+})();
+
+// ════════════════════════════════════════════════════════════════
+// ARCHIVE — POPUP ZOOM IMMAGINE
+// ════════════════════════════════════════════════════════════════
+(function() {
+  const _zoomPopup    = document.getElementById('ae-zoom-popup');
+  const _zoomPopupImg = document.getElementById('ae-zoom-popup-img');
+  const _zoomClose    = document.getElementById('ae-zoom-popup-close');
+
+  // SVG icona lente di ingrandimento
+  function _makeZoomIcon() {
+    const btn = document.createElement('button');
+    btn.className = 'ae-zoom-btn';
+    btn.setAttribute('aria-label', 'Ingrandisci immagine');
+    btn.innerHTML = '<svg viewBox="0 0 14 14"><circle cx="5.5" cy="5.5" r="3.5"/><line x1="8.5" y1="8.5" x2="13" y2="13"/></svg>';
+    return btn;
+  }
+
+  // Apre il popup con l'immagine indicata
+  function _openZoom(imgSrc) {
+    _zoomPopupImg.src = imgSrc;
+    // In Chromium, html/body con overflow:hidden clippa anche position:fixed
+    // Spostiamo il popup come figlio diretto di <html> per evitare il clipping
+    document.documentElement.appendChild(_zoomPopup);
+    _zoomPopup.classList.add('open');
+  }
+
+  // Chiude il popup
+  function _closeZoom() {
+    _zoomPopup.classList.remove('open');
+    // Riporta il popup nel body
+    document.body.appendChild(_zoomPopup);
+    _zoomPopupImg.src = '';
+  }
+
+  // Chiudi cliccando la X
+  _zoomClose.addEventListener('click', e => { e.stopPropagation(); _closeZoom(); });
+  // Chiudi cliccando lo sfondo
+  _zoomPopup.addEventListener('click', e => { if (e.target === _zoomPopup) _closeZoom(); });
+  // Chiudi con Escape
+  document.addEventListener('keydown', e => { if (e.key === 'Escape' && _zoomPopup.classList.contains('open')) _closeZoom(); });
+
+  // Funzione pubblica: aggiunge l'icona zoom a un elemento hero (modalità 1 o 2)
+  // heroEl: il div .archive-expanded-hero o .ae-thumbs-hero
+  // getImgSrc: funzione che restituisce l'URL dell'immagine corrente
+  window._addAeZoomBtn = function(heroEl, getImgSrc) {
+    const btn = _makeZoomIcon();
+    btn.addEventListener('click', e => {
+      e.stopPropagation();
+      _openZoom(getImgSrc());
+    });
+    heroEl.appendChild(btn);
+  };
 })();
 </script>
 </body>
