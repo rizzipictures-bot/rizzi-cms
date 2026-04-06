@@ -1049,15 +1049,15 @@
     }
     .archive-order-label {
       font-family: var(--font-mono);
-      font-size: 13px;
-      font-weight: 700;
+      font-size: 11px;
+      font-weight: 400;
       color: #000;
       letter-spacing: 0;
     }
     .archive-order-btn {
       font-family: var(--font-mono);
-      font-size: 13px;
-      font-weight: 700;
+      font-size: 11px;
+      font-weight: 400;
       color: #e00;
       background: none;
       border: none;
@@ -7363,9 +7363,8 @@ function buildArchive() {
     if (!ctrl || !colHdr) return;
     const hdrRect = colHdr.getBoundingClientRect();
     const viewRect = document.getElementById('view-archive').getBoundingClientRect();
-    // Allinea il bottom del controllo al top dell'header colonne
-    const bottomFromTop = hdrRect.top - viewRect.top;
-    ctrl.style.top = (bottomFromTop - ctrl.offsetHeight - 4) + 'px';
+    // Allinea il top del controllo al top dell'header colonne (stessa riga di Publication)
+    ctrl.style.top = (hdrRect.top - viewRect.top + document.getElementById('view-archive').scrollTop) + 'px';
   }
   requestAnimationFrame(_positionOrderCtrl);
 
