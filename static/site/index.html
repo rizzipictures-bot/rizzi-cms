@@ -7460,17 +7460,17 @@ function buildArchive() {
 
   renderRows(getSortedProjects(archiveProjects));
 
-  // Allinea il controllo Order con la colonna Publication
+  // Allinea il controllo Order con la colonna Place
   function _alignOrderCtrl() {
     const ctrl = document.getElementById('archive-order-ctrl');
     const colHdr = document.querySelector('.archive-col-header');
     if (!ctrl || !colHdr) return;
-    // La quinta colonna (Publication) è il quinto span (indice 4)
-    const pubCol = colHdr.querySelectorAll('span')[4];
-    if (!pubCol) return;
-    const pubRect = pubCol.getBoundingClientRect();
+    // La quarta colonna (Place) è il quarto span (indice 3)
+    const placeCol = colHdr.querySelectorAll('span')[3];
+    if (!placeCol) return;
+    const placeRect = placeCol.getBoundingClientRect();
     const wrapRect = ctrl.parentElement.getBoundingClientRect();
-    ctrl.style.left = (pubRect.left - wrapRect.left) + 'px';
+    ctrl.style.left = (placeRect.left - wrapRect.left) + 'px';
   }
   requestAnimationFrame(_alignOrderCtrl);
   window.addEventListener('resize', _alignOrderCtrl);
