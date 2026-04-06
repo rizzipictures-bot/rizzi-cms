@@ -9038,21 +9038,32 @@ loadFromCMS();
   // e posiziona il bottone zoom nell'angolo basso-destra dell'immagine stessa
   function _positionCipZoom() {
     if (!_cipImg.naturalWidth || !_cipImg.naturalHeight) return;
-    const container = _cipImg.parentElement;
-    if (!container) return;
-    const cW = container.clientWidth;
-    const cH = container.clientHeight;
+    // Usa getBoundingClientRect per calcolare la posizione reale dell'immagine
+    // rispetto al viewer (che è position:fixed e contiene anche header+meta)
+    const viewerRect = _cipViewer.getBoundingClientRect();
+    const imgRect    = _cipImg.getBoundingClientRect();
+    if (!viewerRect.width || !imgRect.width) return;
+    // Dimensioni della zona immagine (slot flex dell'img dentro il viewer)
+    const slotW = imgRect.width;
+    const slotH = imgRect.height;
     const nW = _cipImg.naturalWidth;
     const nH = _cipImg.naturalHeight;
-    const scale = Math.min(cW / nW, cH / nH);
+    // Calcola dimensioni reali con object-fit:contain
+    const scale = Math.min(slotW / nW, slotH / nH);
     const rendW = Math.round(nW * scale);
     const rendH = Math.round(nH * scale);
-    // object-position: left bottom (Cities) — allineato a sinistra e in basso
-    const offX = 0;
-    const offY = cH - rendH;
+    // object-position: left bottom — immagine allineata a sinistra e in basso nello slot
+    const imgOffX = 0;                   // bordo sinistro dello slot
+    const imgOffY = slotH - rendH;       // bordo inferiore dello slot
+    // Posizione dell'angolo basso-destra dell'immagine reale
+    // rispetto al bordo inferiore e destro del viewer
     const margin = 8;
-    _cipZoomBtn.style.right  = (cW - offX - rendW + margin) + 'px';
-    _cipZoomBtn.style.bottom = (offY + margin) + 'px';
+    // right = distanza dal bordo destro del viewer al bordo destro dell'immagine reale
+    const rightFromViewer  = (viewerRect.right - (imgRect.left + imgOffX + rendW)) + margin;
+    // bottom = distanza dal bordo inferiore del viewer al bordo inferiore dell'immagine reale
+    const bottomFromViewer = (viewerRect.bottom - (imgRect.top + imgOffY + rendH)) + margin;
+    _cipZoomBtn.style.right  = Math.max(margin, rightFromViewer)  + 'px';
+    _cipZoomBtn.style.bottom = Math.max(margin, bottomFromViewer) + 'px';
     _cipZoomBtn.style.left   = 'auto';
     _cipZoomBtn.style.top    = 'auto';
   }
