@@ -131,8 +131,8 @@
     }
     /* ── CURSORE RIDISEGNATO: pallino + croce bianca ── */
     #cursor-dot {
-      width: 18px;
-      height: 18px;
+      width: 22px;
+      height: 22px;
       border-radius: 50%;
       background: #111;
       display: flex;
@@ -153,12 +153,12 @@
     }
     #cursor-dot::before {
       width: 1px;
-      height: 9px;
+      height: 11px;
       top: 50%; left: 50%;
       transform: translate(-50%, -50%);
     }
     #cursor-dot::after {
-      width: 9px;
+      width: 11px;
       height: 1px;
       top: 50%; left: 50%;
       transform: translate(-50%, -50%);
@@ -867,8 +867,8 @@
     }
     /* Quando il cursore è vicino alla barra Index/Thumbs: pallino nero visibile */
     body.ov-near-nav #cursor-dot {
-      width: 18px !important;
-      height: 18px !important;
+      width: 22px !important;
+      height: 22px !important;
       background: #111 !important;
       display: flex !important;
       opacity: 1 !important;
@@ -887,8 +887,8 @@
     /* ov-near-nav ha priorità su cursor-near-close: annulla la freccia */
     body.ov-near-nav.cursor-near-close #cursor-dot {
       background: #111 !important;
-      width: 18px !important;
-      height: 18px !important;
+      width: 22px !important;
+      height: 22px !important;
     }
     body.ov-near-nav.cursor-near-close #cursor-dot::before {
       content: '' !important;
@@ -1057,7 +1057,7 @@
       font-family: var(--font-mono);
       font-size: 11px;
       font-weight: 400;
-      color: #e00;
+      color: #4a6e8a;
       background: none;
       border: none;
       padding: 0;
@@ -1072,7 +1072,7 @@
       color: #000;
     }
     [data-theme="dark"] .archive-order-label { color: #fff; }
-    [data-theme="dark"] .archive-order-btn { color: #e00; }
+    [data-theme="dark"] .archive-order-btn { color: #6a8ea8; }
     [data-theme="dark"] .archive-order-btn.active { color: #fff; }
     [data-theme="dark"] .archive-order-btn:not(.active):hover { color: #fff; }
     .archive-row {
@@ -2296,10 +2296,10 @@
     }
     #gallery-back-btn:hover { color: #999; }
 
-    /* Cursore più piccolo del 22% nella gallery (18px × 0.78 ≈ 14px) */
+    /* Cursore uguale al base nella gallery */
     body.gallery-active #cursor-dot {
-      width: 14px !important;
-      height: 14px !important;
+      width: 22px !important;
+      height: 22px !important;
     }
     /* In gallery: cursore nero standard (non rosso) */
     body.gallery-active.cursor-red #cursor-dot,
@@ -2488,7 +2488,7 @@
       font-family: var(--font-mono);
       font-size: 11px;
       font-weight: 400;
-      color: #e00;
+      color: #4a6e8a;
       background: none;
       border: none;
       padding: 0;
@@ -2503,7 +2503,7 @@
       color: #000;
     }
     [data-theme="dark"] .cities-order-label { color: #fff; }
-    [data-theme="dark"] .cities-order-btn { color: #e00; }
+    [data-theme="dark"] .cities-order-btn { color: #6a8ea8; }
     [data-theme="dark"] .cities-order-btn.active { color: #fff; }
     [data-theme="dark"] .cities-order-btn:not(.active):hover { color: #fff; }
     .cities-toggle-btn {
