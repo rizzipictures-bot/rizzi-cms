@@ -1892,7 +1892,7 @@
       cursor: pointer;
       z-index: 70;
       opacity: 0;
-      transition: opacity .2s;
+      transition: opacity .2s, bottom .1s, right .1s;
       pointer-events: all;
       background: rgba(0,0,0,0.45);
       border-radius: 50%;
@@ -1972,28 +1972,28 @@
     }
     #ae-zoom-popup-close {
       position: absolute;
-      top: -14px;
-      right: -14px;
-      width: 30px;
-      height: 30px;
-      background: #fff;
+      top: -9px;
+      right: -9px;
+      width: 18px;
+      height: 18px;
+      background: #e00;
       border-radius: 50%;
       display: flex;
       align-items: center;
       justify-content: center;
       cursor: pointer;
       z-index: 10;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.25);
+      box-shadow: 0 2px 6px rgba(0,0,0,0.30);
       transition: background .15s;
     }
     #ae-zoom-popup-close:hover {
-      background: #f0f0f0;
+      background: #c00;
     }
     #ae-zoom-popup-close svg {
-      width: 12px;
-      height: 12px;
+      width: 7px;
+      height: 7px;
       display: block;
-      stroke: #222;
+      stroke: #fff;
       fill: none;
       stroke-width: 2;
       stroke-linecap: round;
@@ -8956,6 +8956,33 @@ loadFromCMS();
   // Funzione pubblica: aggiunge l'icona zoom a un elemento hero (modalità 1 o 2)
   // heroEl: il div .archive-expanded-hero o .ae-thumbs-hero
   // getImgSrc: funzione che restituisce l'URL dell'immagine corrente
+  // Calcola le dimensioni reali dell'immagine con object-fit:contain
+  // e posiziona il bottone zoom nell'angolo basso-destra dell'immagine stessa
+  function _positionZoomBtn(btn, imgEl) {
+    const container = imgEl.parentElement;
+    if (!container || !imgEl.naturalWidth || !imgEl.naturalHeight) return;
+    const cW = container.clientWidth;
+    const cH = container.clientHeight;
+    const nW = imgEl.naturalWidth;
+    const nH = imgEl.naturalHeight;
+    const scale = Math.min(cW / nW, cH / nH);
+    const rendW = nW * scale;
+    const rendH = nH * scale;
+    // object-position: left center (Archive modalità 1) o center center (modalità 2)
+    const style = window.getComputedStyle(imgEl);
+    const pos = style.objectPosition || 'left center';
+    let offX = 0, offY = 0;
+    if (pos.includes('center') && !pos.startsWith('left')) {
+      offX = (cW - rendW) / 2;
+    }
+    offY = (cH - rendH) / 2;
+    // Margine interno dal bordo dell'immagine
+    const margin = 10;
+    const btnSize = parseInt(window.getComputedStyle(btn).width) || 28;
+    btn.style.right  = Math.round(cW - offX - rendW + margin) + 'px';
+    btn.style.bottom = Math.round(offY + margin) + 'px';
+  }
+
   window._addAeZoomBtn = function(heroEl, getImgSrc) {
     const btn = _makeZoomIcon();
     btn.addEventListener('click', e => {
@@ -8963,6 +8990,21 @@ loadFromCMS();
       _openZoom(getImgSrc());
     });
     heroEl.appendChild(btn);
+    // Posiziona il bottone dopo il caricamento dell'immagine
+    const imgEl = heroEl.querySelector('img');
+    if (imgEl) {
+      const _reposition = () => _positionZoomBtn(btn, imgEl);
+      if (imgEl.complete && imgEl.naturalWidth) {
+        _reposition();
+      } else {
+        imgEl.addEventListener('load', _reposition, { once: true });
+      }
+      // Riposiziona anche quando cambia l'immagine (src cambia)
+      const _srcObs = new MutationObserver(_reposition);
+      _srcObs.observe(imgEl, { attributes: true, attributeFilter: ['src'] });
+      // Riposiziona al resize della finestra
+      window.addEventListener('resize', _reposition);
+    }
   };
 
   // Esposta per riuso in altri moduli (es. Cities)
@@ -8976,15 +9018,41 @@ loadFromCMS();
   const _cipViewer  = document.getElementById('cip-photo-viewer');
   const _cipImg     = document.getElementById('cip-photo-viewer-img');
   const _cipZoomBtn = document.getElementById('cip-zoom-btn');
-
   if (!_cipViewer || !_cipImg || !_cipZoomBtn) return;
+
+  // Calcola le dimensioni reali dell'immagine con object-fit:contain
+  // e posiziona il bottone zoom nell'angolo basso-destra dell'immagine stessa
+  function _positionCipZoom() {
+    const container = _cipImg.parentElement;
+    if (!container || !_cipImg.naturalWidth || !_cipImg.naturalHeight) return;
+    const cW = container.clientWidth;
+    const cH = container.clientHeight;
+    const nW = _cipImg.naturalWidth;
+    const nH = _cipImg.naturalHeight;
+    const scale = Math.min(cW / nW, cH / nH);
+    const rendW = nW * scale;
+    const rendH = nH * scale;
+    // object-position: left bottom (Cities)
+    const offX = 0;                  // allineato a sinistra
+    const offY = cH - rendH;         // allineato in basso
+    const margin = 10;
+    _cipZoomBtn.style.right  = Math.round(cW - offX - rendW + margin) + 'px';
+    _cipZoomBtn.style.bottom = Math.round(offY + margin) + 'px';
+  }
 
   // Mostra/nasconde il bottone zoom in base allo stato del viewer
   const _cipObserver = new MutationObserver(() => {
     const isOpen = _cipViewer.classList.contains('open');
     _cipZoomBtn.style.display = isOpen ? 'flex' : 'none';
+    if (isOpen) _positionCipZoom();
   });
   _cipObserver.observe(_cipViewer, { attributes: true, attributeFilter: ['class'] });
+
+  // Riposiziona quando cambia l'immagine
+  _cipImg.addEventListener('load', _positionCipZoom);
+  const _cipSrcObs = new MutationObserver(_positionCipZoom);
+  _cipSrcObs.observe(_cipImg, { attributes: true, attributeFilter: ['src'] });
+  window.addEventListener('resize', _positionCipZoom);
 
   // Click sul bottone zoom: apre il popup con l'immagine corrente
   _cipZoomBtn.addEventListener('click', function(e) {
