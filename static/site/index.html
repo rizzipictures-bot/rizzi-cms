@@ -1911,6 +1911,25 @@
       stroke-linecap: round;
       stroke-linejoin: round;
     }
+    /* Cities: bottone zoom più piccolo */
+    #cip-photo-viewer .ae-zoom-btn {
+      width: 22px;
+      height: 22px;
+      bottom: 10px;
+      right: 10px;
+    }
+    #cip-photo-viewer .ae-zoom-btn svg {
+      width: 11px;
+      height: 11px;
+    }
+    #cip-photo-viewer.open .ae-zoom-btn {
+      opacity: 0;
+      transition: opacity .2s;
+    }
+    #cip-photo-viewer.open:hover .ae-zoom-btn {
+      opacity: 1;
+    }
+
     /* Tema bianco: icona scura */
     .archive-expanded.box-white .ae-zoom-btn {
       background: rgba(255,255,255,0.7);
@@ -1929,7 +1948,7 @@
       display: none;
       align-items: center;
       justify-content: center;
-      background: rgba(100,100,100,0.40);
+      background: rgba(100,100,100,0.50);
     }
     #ae-zoom-popup.open {
       display: flex;
@@ -4518,6 +4537,7 @@
         <div class="cpv-meta-row"><span class="cpv-meta-label">Print size</span><span class="cpv-meta-value" id="cpv-printsize"></span></div>
       </div>
       <img id="cip-photo-viewer-img" src="" alt="">
+      <button class="ae-zoom-btn" id="cip-zoom-btn" aria-label="Ingrandisci immagine" style="display:none"><svg viewBox="0 0 14 14"><circle cx="5.5" cy="5.5" r="3.5"/><line x1="8.5" y1="8.5" x2="13" y2="13"/></svg></button>
     </div>
 
     <!-- Box info fisso Cities (slide da destra) -->
@@ -8944,6 +8964,37 @@ loadFromCMS();
     });
     heroEl.appendChild(btn);
   };
+
+  // Esposta per riuso in altri moduli (es. Cities)
+  window._openAeZoom = _openZoom;
+})();
+
+// ════════════════════════════════════════════════════════════════
+// CITIES — ZOOM IMMAGINE PRINCIPALE
+// ════════════════════════════════════════════════════════════════
+(function() {
+  const _cipViewer  = document.getElementById('cip-photo-viewer');
+  const _cipImg     = document.getElementById('cip-photo-viewer-img');
+  const _cipZoomBtn = document.getElementById('cip-zoom-btn');
+
+  if (!_cipViewer || !_cipImg || !_cipZoomBtn) return;
+
+  // Mostra/nasconde il bottone zoom in base allo stato del viewer
+  const _cipObserver = new MutationObserver(() => {
+    const isOpen = _cipViewer.classList.contains('open');
+    _cipZoomBtn.style.display = isOpen ? 'flex' : 'none';
+  });
+  _cipObserver.observe(_cipViewer, { attributes: true, attributeFilter: ['class'] });
+
+  // Click sul bottone zoom: apre il popup con l'immagine corrente
+  _cipZoomBtn.addEventListener('click', function(e) {
+    e.stopPropagation();
+    const src = _cipImg.src;
+    if (!src || src === window.location.href) return;
+    if (typeof window._openAeZoom === 'function') {
+      window._openAeZoom(src);
+    }
+  });
 })();
 </script>
 </body>
