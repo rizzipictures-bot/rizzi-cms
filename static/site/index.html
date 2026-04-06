@@ -2851,11 +2851,12 @@
       pointer-events: none;
     }
     #cip-photo-viewer.light-mode #cip-viewer-top-border {
-      display: block;
+      display: none;
     }
         #cip-photo-viewer.light-mode {
       background: #ffffff;
       border-color: rgba(0,0,0,0.15);
+      border-top: none;
       color: #222;
     }
     #cip-photo-viewer.light-mode #cip-photo-viewer-header {
@@ -5892,12 +5893,12 @@ function _updateHeaderCitiesLine(isLight) {
   if (!hdr) return;
   let ln = document.getElementById('header-cities-line');
   if (isLight) {
-    const vRect = _cipPhotoViewer ? _cipPhotoViewer.getBoundingClientRect() : null;
-    const leftPx = vRect ? Math.round(vRect.left) : 0;
+    // La linea deve coprire tutta la larghezza dello schermo (left: 0)
+    const leftPx = 0;
     if (!ln) {
       ln = document.createElement('div');
       ln.id = 'header-cities-line';
-      ln.style.cssText = 'position:absolute;bottom:0;height:1px;background:rgba(0,0,0,0.15);pointer-events:none;z-index:1001';
+      ln.style.cssText = 'position:absolute;bottom:-1px;height:1px;background:rgba(0,0,0,0.15);pointer-events:none;z-index:1001';
       hdr.appendChild(ln);
     }
     ln.style.left = leftPx + 'px';
