@@ -196,13 +196,24 @@ def load_db():
     db.setdefault('categories', [])
     db.setdefault('texts', {})
     db.setdefault('settings', {})
-    # Migrazione: se non ci sono categorie, crea quelle di default
-    if not db['categories']:
-        db['categories'] = [
-            {'id': 'cities',    'name': 'Cities',    'order': 0, 'visible': True},
-            {'id': 'archive',   'name': 'Archive',   'order': 1, 'visible': True},
-            {'id': 'interview', 'name': 'Interview', 'order': 2, 'visible': True},
-        ]
+    # Migrazione: garantisce che tutte le categorie del sito siano presenti
+    REQUIRED_CATS = [
+        {'id': 'cities',     'name': 'Cities',              'order': 0, 'visible': True},
+        {'id': 'archive',    'name': 'Archive',             'order': 1, 'visible': True},
+        {'id': 'interview',  'name': 'Interview',           'order': 2, 'visible': True},
+        {'id': 'books',      'name': 'Books',               'order': 3, 'visible': True},
+        {'id': 'sculptures', 'name': 'Sculptures Project',  'order': 4, 'visible': True},
+        {'id': 'biography',  'name': 'Biography',           'order': 5, 'visible': True},
+        {'id': 'contact',    'name': 'Contact',             'order': 6, 'visible': True},
+        {'id': 'index',      'name': 'Index (foto laterale)', 'order': 7, 'visible': True},
+    ]
+    existing_ids = {c['id'] for c in db['categories']}
+    changed = False
+    for cat in REQUIRED_CATS:
+        if cat['id'] not in existing_ids:
+            db['categories'].append(cat)
+            changed = True
+    if changed:
         save_db(db)
     return db
 
@@ -335,16 +346,21 @@ def create_project():
     data = request.json
     project = {
         'id':          str(uuid.uuid4())[:8],
-        'title':       data.get('title', 'Senza titolo'),
-        'year':        data.get('year', ''),
-        'place':       data.get('place', ''),
-        'publication': data.get('publication', ''),
-        'category_id': data.get('category_id', None),  # ID della categoria madre
-        'subtitle':    data.get('subtitle', ''),
-        'description': data.get('description', ''),
-        'images':      [],
-        'texts':       [],
-        'order':       len(db['projects']),
+        'title':          data.get('title', 'Senza titolo'),
+        'year':           data.get('year', ''),
+        'place':          data.get('place', ''),
+        'publication':    data.get('publication', ''),
+        'category_id':    data.get('category_id', None),  # ID della categoria madre
+        'subtitle':       data.get('subtitle', ''),
+        'description':    data.get('description', ''),
+        'technique':      data.get('technique', ''),
+        'medium':         data.get('medium', ''),
+        'prints':         data.get('prints', ''),
+        'editions':       data.get('editions', ''),
+        'keywords_manual': data.get('keywords_manual', ''),
+        'images':         [],
+        'texts':          [],
+        'order':          len(db['projects']),
     }
     db['projects'].append(project)
     save_db(db)
@@ -363,7 +379,8 @@ def update_project(pid):
     p = next((p for p in db['projects'] if p['id'] == pid), None)
     if not p: return jsonify({'error': 'not found'}), 404
     data = request.json
-    for k in ['title','year','place','publication','category_id','subtitle','description','order']:
+    for k in ['title','year','place','publication','category_id','subtitle','description','order',
+             'technique','medium','prints','editions','keywords_manual']:
         if k in data:
             p[k] = data[k]
     save_db(db)
@@ -456,13 +473,18 @@ def upload_images(pid):
         p['images'].append(img_data)
         results.append(img_data)
 
-        # Avvia auto-tagging AI in background (non blocca la risposta)
-        t = threading.Thread(
-            target=ai_tag_image,
-            args=(fpath, img_data, None, pid),
-            daemon=True
-        )
-        t.start()
+        # ── AI TAGGING: solo se abilitato nelle settings (default: OFF) ──
+        # L'utente può attivarlo manualmente dal CMS con il bottone "Tag AI"
+        # oppure per singola foto con il bottone nella griglia immagini
+        db_check = load_db()
+        ai_enabled = db_check.get('settings', {}).get('ai_tagging_auto', False)
+        if ai_enabled:
+            t = threading.Thread(
+                target=ai_tag_image,
+                args=(fpath, img_data, None, pid),
+                daemon=True
+            )
+            t.start()
 
     save_db(db)
     return jsonify(results), 201
@@ -584,6 +606,24 @@ def update_settings():
     db['settings'].update(request.json)
     save_db(db)
     return jsonify(db['settings'])
+
+# ── REORDER IMAGES ──────────────────────────────────────────
+@app.route('/api/projects/<pid>/images/reorder', methods=['PUT'])
+def reorder_images(pid):
+    """Riordina le immagini di un progetto. Body: {order: [id1, id2, ...]}"""
+    db = load_db()
+    p = next((p for p in db['projects'] if p['id'] == pid), None)
+    if not p: return jsonify({'error': 'not found'}), 404
+    order = request.json.get('order', [])
+    img_map = {img['id']: img for img in p.get('images', [])}
+    p['images'] = [img_map[iid] for iid in order if iid in img_map]
+    # Aggiunge eventuali immagini non presenti nell'order (sicurezza)
+    ordered_ids = set(order)
+    for img in img_map.values():
+        if img['id'] not in ordered_ids:
+            p['images'].append(img)
+    save_db(db)
+    return jsonify({'ok': True})
 
 # ── MIGRAZIONE IMMAGINI ──────────────────────────────────────
 # Allinea i nomi nel db.json con i file UUID fisici in uploads/
@@ -743,9 +783,9 @@ def rescan_iptc(pid, iid):
     if not img: return jsonify({'error': 'not found'}), 404
     # Cerca il file fisico (supporta sia campo 'file' che 'filename')
     fname = img.get('file') or img.get('filename', '')
-    fpath = (DATA / 'uploads' / fname) if fname else None
+    fpath = (UPLOAD / fname) if fname else None
     if not fpath or not fpath.exists():
-        return jsonify({'error': 'file not found on disk'}), 404
+        return jsonify({'error': 'file not found on disk', 'path': str(fpath)}), 404
     iptc_kws = read_iptc_keywords(fpath)
     if iptc_kws:
         img['keywords'] = merge_keywords_str(img.get('keywords', ''), iptc_kws)
@@ -762,7 +802,7 @@ def rescan_iptc_all(pid):
     total_added = 0
     for img in p.get('images', []):
         fname = img.get('file') or img.get('filename', '')
-        fpath = (DATA / 'uploads' / fname) if fname else None
+        fpath = (UPLOAD / fname) if fname else None
         if not fpath or not fpath.exists():
             continue
         iptc_kws = read_iptc_keywords(fpath)

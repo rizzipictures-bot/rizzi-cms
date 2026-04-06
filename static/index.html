@@ -306,6 +306,49 @@
     white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
   }
 
+  /* ── GRIGLIA IMMAGINI AVANZATA ── */
+  .image-cell .img-overlay {
+    flex-direction: column;
+    gap: 4px;
+  }
+  .img-actions {
+    display: flex; gap: 4px;
+  }
+  .img-action-btn {
+    background: rgba(255,255,255,.15); border: 1px solid rgba(255,255,255,.3);
+    color: #fff; font-size: 8px; letter-spacing: .4px;
+    cursor: pointer; padding: 3px 6px; border-radius: 2px;
+    white-space: nowrap;
+  }
+  .img-action-btn:hover { background: rgba(255,255,255,.3); }
+  .img-action-btn.danger { border-color: #ff6b6b; color: #ff6b6b; }
+  .img-kw-badge {
+    position: absolute; top: 4px; left: 4px;
+    font-size: 7px; letter-spacing: .3px; padding: 2px 5px;
+    border-radius: 2px; font-weight: 600;
+    pointer-events: none;
+  }
+  .img-kw-badge.has-iptc  { background: #1a7a3a; color: #7effa0; }
+  .img-kw-badge.has-ai    { background: #1a3a7a; color: #7eaaff; }
+  .img-kw-badge.has-both  { background: #5a1a7a; color: #d07eff; }
+  .img-kw-badge.no-kw     { background: rgba(0,0,0,.5); color: #888; }
+  .img-kw-count {
+    position: absolute; bottom: 4px; right: 4px;
+    font-size: 7px; color: rgba(255,255,255,.6);
+    pointer-events: none;
+  }
+  /* Toolbar sopra la griglia foto */
+  .images-toolbar {
+    display: flex; align-items: center; gap: 8px;
+    margin-bottom: 10px; flex-wrap: wrap;
+  }
+  .images-toolbar .btn-text { font-size: 9px; }
+  .iptc-status-bar {
+    font-size: 9px; color: var(--gray); letter-spacing: .3px;
+    padding: 6px 0; border-bottom: 1px solid var(--border); margin-bottom: 8px;
+  }
+  .iptc-status-bar strong { color: var(--text); }
+
   /* ── TESTI ── */
   .text-blocks { display: flex; flex-direction: column; gap: 12px; margin-bottom: 20px; }
   .text-block {
@@ -585,10 +628,30 @@
             <textarea id="f-description" rows="3" oninput="livePreview()"></textarea>
           </div>
         </div>
+        <div class="field-group">
+          <div class="field">
+            <label>Tecnica</label>
+            <input type="text" id="f-technique" placeholder="Stampa ai sali d'argento" oninput="livePreview()">
+          </div>
+          <div class="field">
+            <label>Supporto / Medium</label>
+            <input type="text" id="f-medium" placeholder="Carta baritata" oninput="livePreview()">
+          </div>
+        </div>
+        <div class="field-group">
+          <div class="field">
+            <label>Stampe (n. esemplari)</label>
+            <input type="text" id="f-prints" placeholder="5" oninput="livePreview()">
+          </div>
+          <div class="field">
+            <label>Edizioni</label>
+            <input type="text" id="f-editions" placeholder="1/5" oninput="livePreview()">
+          </div>
+        </div>
         <div class="field-group full">
           <div class="field">
             <label style="display:flex;align-items:center;gap:8px">
-              Keywords manuali
+              Keywords manuali (progetto)
               <span style="font-size:9px;font-weight:400;color:#888;letter-spacing:.3px">(separate da virgola — si aggiungono a IPTC e AI, non le sostituiscono)</span>
             </label>
             <input type="text" id="f-keywords" placeholder="architettura, bianco e nero, Istanbul" oninput="livePreview()">
@@ -607,6 +670,12 @@
         </div>
         <input type="file" id="file-input" multiple accept=".jpg,.jpeg,.png,.webp,.tiff,.tif"
                style="display:none" onchange="uploadFiles(this.files)">
+        <!-- Toolbar IPTC / AI -->
+        <div class="images-toolbar" id="images-toolbar" style="display:none">
+          <button class="btn-text" onclick="rescanIptcAll()">↻ Rescan IPTC</button>
+          <button class="btn-text" id="btn-tag-ai-proj" onclick="tagProjectImages()">✶ Tag AI (questo progetto)</button>
+          <span id="iptc-status" class="iptc-status-bar" style="flex:1"></span>
+        </div>
         <div class="image-grid" id="image-grid"></div>
       </div>
 
@@ -875,23 +944,32 @@ function renderEditor() {
   if (catSel) catSel.value = p.category_id || '';
   document.getElementById('f-subtitle').value    = p.subtitle || '';
   document.getElementById('f-description').value = p.description || '';
+  document.getElementById('f-technique').value   = p.technique || '';
+  document.getElementById('f-medium').value      = p.medium || '';
+  document.getElementById('f-prints').value      = p.prints || '';
+  document.getElementById('f-editions').value    = p.editions || '';
   document.getElementById('f-keywords').value    = p.keywords_manual || '';
 
   renderImageGrid();
   renderTextBlocks();
+  updateIptcStatusBar();
 }
 
 async function saveProjectInfo() {
   if (!currentProject) return;
   const body = {
-    title:       document.getElementById('f-title').value,
-    year:        document.getElementById('f-year').value,
-    place:       document.getElementById('f-place').value,
-    publication: document.getElementById('f-publication').value,
-    category_id: document.getElementById('f-category-id').value || null,
-    subtitle:         document.getElementById('f-subtitle').value,
-    description:      document.getElementById('f-description').value,
-    keywords_manual:  document.getElementById('f-keywords').value,
+    title:           document.getElementById('f-title').value,
+    year:            document.getElementById('f-year').value,
+    place:           document.getElementById('f-place').value,
+    publication:     document.getElementById('f-publication').value,
+    category_id:     document.getElementById('f-category-id').value || null,
+    subtitle:        document.getElementById('f-subtitle').value,
+    description:     document.getElementById('f-description').value,
+    technique:       document.getElementById('f-technique').value,
+    medium:          document.getElementById('f-medium').value,
+    prints:          document.getElementById('f-prints').value,
+    editions:        document.getElementById('f-editions').value,
+    keywords_manual: document.getElementById('f-keywords').value,
   };
   await fetch(`${API}/projects/${currentProject.id}`, {
     method: 'PUT',
@@ -926,21 +1004,56 @@ async function showNewProjectModal() {
 // ─────────────────────────────────────────────
 // IMAGES
 // ─────────────────────────────────────────────
+function getKwBadgeInfo(img) {
+  // Determina se le keyword sono IPTC, AI o manuali
+  // Usa i campi iptc_keywords e ai_keywords se presenti, altrimenti usa keywords
+  const hasIptc = !!(img.iptc_keywords && img.iptc_keywords.trim());
+  const hasAi   = !!(img.ai_keywords   && img.ai_keywords.trim());
+  const hasKw   = !!(img.keywords      && img.keywords.trim());
+  const kwCount = hasKw ? img.keywords.split(',').filter(k => k.trim()).length : 0;
+  if (hasIptc && hasAi) return { cls: 'has-both', label: 'IPTC+AI', count: kwCount };
+  if (hasIptc)          return { cls: 'has-iptc', label: 'IPTC',    count: kwCount };
+  if (hasAi)            return { cls: 'has-ai',   label: 'AI',      count: kwCount };
+  if (hasKw)            return { cls: 'has-iptc', label: 'KW',      count: kwCount };
+  return { cls: 'no-kw', label: '—', count: 0 };
+}
+
+function updateIptcStatusBar() {
+  const imgs = currentProject ? (currentProject.images || []) : [];
+  const toolbar = document.getElementById('images-toolbar');
+  const status  = document.getElementById('iptc-status');
+  if (!toolbar || !status) return;
+  toolbar.style.display = imgs.length > 0 ? 'flex' : 'none';
+  const withKw  = imgs.filter(i => i.keywords && i.keywords.trim()).length;
+  const withIptc = imgs.filter(i => i.iptc_keywords && i.iptc_keywords.trim()).length;
+  const withAi   = imgs.filter(i => i.ai_keywords   && i.ai_keywords.trim()).length;
+  status.innerHTML = `<strong>${withKw}/${imgs.length}</strong> foto con keyword &nbsp;·&nbsp; <strong>${withIptc}</strong> IPTC &nbsp;·&nbsp; <strong>${withAi}</strong> AI`;
+}
+
 function renderImageGrid() {
   const grid = document.getElementById('image-grid');
   grid.innerHTML = '';
-  (currentProject.images || []).forEach(img => {
+  (currentProject.images || []).forEach((img, idx) => {
     const cell = document.createElement('div');
     cell.className = 'image-cell';
+    const badge = getKwBadgeInfo(img);
     cell.innerHTML = `
-      <img src="http://localhost:5151/uploads/${img.thumb || img.file}" alt="">
+      <img src="http://localhost:5151/uploads/${img.thumb || img.file}" alt="" loading="lazy">
+      <span class="img-kw-badge ${badge.cls}">${badge.label}</span>
+      ${badge.count > 0 ? `<span class="img-kw-count">${badge.count} kw</span>` : ''}
       <div class="img-overlay">
-        <button class="img-del-btn" onclick="deleteImage('${img.id}')">×</button>
+        <div class="img-actions">
+          <button class="img-action-btn" onclick="showImgKeywords('${img.id}')" title="Vedi keyword">KW</button>
+          <button class="img-action-btn" onclick="rescanIptcSingle('${img.id}')" title="Rescan IPTC">↻</button>
+          <button class="img-action-btn" onclick="tagSingleImageAi('${img.id}')" title="Tag AI">✶</button>
+          <button class="img-action-btn danger" onclick="deleteImage('${img.id}')" title="Elimina">×</button>
+        </div>
       </div>
       ${img.caption ? `<div class="img-caption">${img.caption}</div>` : ''}
     `;
     grid.appendChild(cell);
   });
+  updateIptcStatusBar();
 }
 
 async function uploadFiles(files) {
@@ -964,6 +1077,116 @@ async function deleteImage(iid) {
   renderImageGrid();
   renderPreview();
   toast('Foto eliminata');
+}
+
+// Mostra le keyword di una singola foto in un alert leggibile
+function showImgKeywords(iid) {
+  const img = (currentProject.images || []).find(i => i.id === iid);
+  if (!img) return;
+  const kw = img.keywords || '';
+  const iptc = img.iptc_keywords || '';
+  const ai   = img.ai_keywords   || '';
+  let msg = `KEYWORDS FOTO\n`;
+  msg += `\nTutte (usate dal sito):\n${kw || '(nessuna)'}\n`;
+  if (iptc) msg += `\nIPTC originali:\n${iptc}`;
+  if (ai)   msg += `\nAI generate:\n${ai}`;
+  alert(msg);
+}
+
+// Rescan IPTC per una singola foto
+async function rescanIptcSingle(iid) {
+  const pid = currentProject.id;
+  try {
+    const res  = await fetch(`${API}/projects/${pid}/images/${iid}/rescan-iptc`, { method: 'POST' });
+    const data = await res.json();
+    if (data.ok) {
+      // Aggiorna il record locale
+      const img = (currentProject.images || []).find(i => i.id === iid);
+      if (img && data.keywords !== undefined) img.keywords = data.keywords;
+      renderImageGrid();
+      toast(`IPTC: ${data.iptc_found} keyword trovate`);
+    } else {
+      toast('File non trovato su disco — IPTC non disponibile');
+    }
+  } catch(e) {
+    toast('Errore rescan IPTC');
+  }
+}
+
+// Rescan IPTC per tutte le foto del progetto corrente
+async function rescanIptcAll() {
+  const pid = currentProject.id;
+  try {
+    const res  = await fetch(`${API}/projects/${pid}/rescan-iptc-all`, { method: 'POST' });
+    const data = await res.json();
+    // Ricarica il progetto per aggiornare le keyword
+    const pRes = await fetch(`${API}/projects/${pid}`);
+    const p    = await pRes.json();
+    currentProject.images = p.images;
+    renderImageGrid();
+    toast(`IPTC rescanned: ${data.updated} foto aggiornate`);
+  } catch(e) {
+    toast('Errore rescan IPTC');
+  }
+}
+
+// Tag AI per una singola foto
+async function tagSingleImageAi(iid) {
+  const pid = currentProject.id;
+  const btn = event.target;
+  btn.textContent = '⧗';
+  btn.disabled = true;
+  try {
+    const res  = await fetch(`${API}/projects/${pid}/images/${iid}/tag-ai`, { method: 'POST' });
+    const data = await res.json();
+    if (data.ok) {
+      toast('✶ Tag AI avviato — aggiorna tra qualche secondo');
+      // Ricarica dopo 4 secondi
+      setTimeout(async () => {
+        const pRes = await fetch(`${API}/projects/${pid}`);
+        const p    = await pRes.json();
+        currentProject.images = p.images;
+        renderImageGrid();
+      }, 4000);
+    }
+  } catch(e) {
+    toast('Errore Tag AI');
+  } finally {
+    btn.textContent = '✶';
+    btn.disabled = false;
+  }
+}
+
+// Tag AI per tutte le foto del progetto corrente (senza keyword)
+async function tagProjectImages() {
+  const pid = currentProject.id;
+  const btn = document.getElementById('btn-tag-ai-proj');
+  if (btn) { btn.disabled = true; btn.textContent = '⧗ AI in corso…'; }
+  try {
+    // Avvia tag AI solo per le foto di questo progetto senza keyword
+    const imgs = (currentProject.images || []).filter(i => !i.keywords || !i.keywords.trim());
+    if (imgs.length === 0) {
+      toast('Tutte le foto hanno già keyword ✔');
+      return;
+    }
+    let started = 0;
+    for (const img of imgs) {
+      await fetch(`${API}/projects/${pid}/images/${img.id}/tag-ai`, { method: 'POST' });
+      started++;
+    }
+    toast(`✶ Tag AI avviato per ${started} foto`);
+    // Ricarica dopo 6 secondi
+    setTimeout(async () => {
+      const pRes = await fetch(`${API}/projects/${pid}`);
+      const p    = await pRes.json();
+      currentProject.images = p.images;
+      renderImageGrid();
+    }, 6000);
+  } catch(e) {
+    toast('Errore Tag AI progetto');
+  } finally {
+    if (btn) { btn.disabled = false; btn.textContent = '✶ Tag AI (questo progetto)'; }
+  }
 }
 
 function dragOver(e) {
@@ -1062,6 +1285,8 @@ function renderPreview() {
     }
   }).join('');
 
+  const techMeta = [p.technique, p.medium, p.prints ? `${p.prints} stampe` : '', p.editions ? `ed. ${p.editions}` : ''].filter(Boolean).join(' · ');
+  const kwCount  = (currentProject.images || []).reduce((acc, i) => acc + (i.keywords ? i.keywords.split(',').filter(k=>k.trim()).length : 0), 0);
   body.innerHTML = `
     <div class="preview-meta">
       <span>${p.year || '—'}</span>
@@ -1072,6 +1297,8 @@ function renderPreview() {
     </div>
     <div class="preview-project-title">${p.title}</div>
     ${p.subtitle ? `<div style="font-size:11px;color:var(--gray);margin-bottom:12px">${p.subtitle}</div>` : ''}
+    ${techMeta ? `<div style="font-size:9px;color:var(--gray);letter-spacing:.4px;margin-bottom:8px">${techMeta}</div>` : ''}
+    ${kwCount > 0 ? `<div style="font-size:9px;color:var(--gray);margin-bottom:8px">✶ ${kwCount} keyword totali</div>` : ''}
     <hr class="preview-divider">
     ${cover}
     ${thumbs ? `<div class="preview-thumbs">${thumbs}</div>` : ''}
@@ -1081,11 +1308,15 @@ function renderPreview() {
 
 function livePreview() {
   if (!currentProject) return;
-  currentProject.title    = document.getElementById('f-title').value;
-  currentProject.year     = document.getElementById('f-year').value;
-  currentProject.place    = document.getElementById('f-place').value;
-  currentProject.subtitle = document.getElementById('f-subtitle').value;
+  currentProject.title       = document.getElementById('f-title').value;
+  currentProject.year        = document.getElementById('f-year').value;
+  currentProject.place       = document.getElementById('f-place').value;
+  currentProject.subtitle    = document.getElementById('f-subtitle').value;
   currentProject.category_id = document.getElementById('f-category-id')?.value || null;
+  currentProject.technique   = document.getElementById('f-technique')?.value || '';
+  currentProject.medium      = document.getElementById('f-medium')?.value || '';
+  currentProject.prints      = document.getElementById('f-prints')?.value || '';
+  currentProject.editions    = document.getElementById('f-editions')?.value || '';
   document.getElementById('editor-project-title').textContent = currentProject.title;
   renderPreview();
 }
@@ -1131,6 +1362,7 @@ async function exportAll() {
 }
 
 async function tagAllImages() {
+  // Tag AI globale: avvia per TUTTE le foto di TUTTI i progetti senza keyword
   const btn = document.getElementById('btn-tag-ai');
   btn.disabled = true;
   btn.textContent = '⧗ Analisi in corso…';
@@ -1141,13 +1373,13 @@ async function tagAllImages() {
     if (n === 0) {
       toast('Tutte le foto hanno già le keyword AI ✔');
     } else {
-      toast(`✦ Tag AI avviato per ${n} foto — pronto in pochi minuti`);
+      toast(`✶ Tag AI avviato per ${n} foto (tutti i progetti) — pronto in pochi minuti`);
     }
   } catch(e) {
     toast('Errore durante il Tag AI');
   } finally {
     btn.disabled = false;
-    btn.textContent = '✦ Tag AI';
+    btn.textContent = '✶ Tag AI (globale)';
   }
 }
 
