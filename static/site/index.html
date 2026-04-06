@@ -728,7 +728,11 @@
       height: 100%;
       object-fit: cover;
       object-position: center top;
-      transition: opacity .18s var(--ease-out);
+      transition: opacity .18s var(--ease-out), transform .15s cubic-bezier(0.4,0,0.2,1);
+      transform: scale(1);
+    }
+    #view-home .thumbs-grid .thumb-item:hover img {
+      transform: scale(1.10);
     }
     /* Foto orizzontale: altezza ~58% della cella verticale, bordo inferiore allineato */
     #view-home .thumbs-grid .thumb-item.is-landscape {
@@ -738,6 +742,7 @@
     #view-home .thumbs-grid .thumb-item.is-landscape img {
       object-fit: cover;
       object-position: center center;
+      transition: opacity .18s var(--ease-out), transform .15s cubic-bezier(0.4,0,0.2,1);
     }
     /* Hover Overview: overlay grigio scuro 60% su pannello bianco */
     #view-home .thumbs-grid .thumb-item::after {
@@ -1884,8 +1889,8 @@
       position: absolute;
       bottom: 10px;
       right: 10px;
-      width: 28px;
-      height: 28px;
+      width: 24px;
+      height: 24px;
       display: flex;
       align-items: center;
       justify-content: center;
@@ -1894,36 +1899,42 @@
       opacity: 0;
       transition: opacity .2s, bottom .1s, right .1s;
       pointer-events: all;
-      background: rgba(0,0,0,0.45);
-      border-radius: 50%;
+      background: none;
+      border-radius: 0;
+      border: none;
+      padding: 0;
     }
     .archive-expanded-hero:hover .ae-zoom-btn,
     .ae-thumbs-hero:hover .ae-zoom-btn {
       opacity: 1;
     }
     .ae-zoom-btn svg {
-      width: 14px;
-      height: 14px;
+      width: 16px;
+      height: 16px;
       display: block;
       fill: none;
       stroke: #fff;
-      stroke-width: 2;
+      stroke-width: 2.5;
       stroke-linecap: round;
+      filter: drop-shadow(0 0 2px rgba(0,0,0,0.7));
     }
-    /* Cities: bottone zoom più piccolo */
+    /* Cities: bottone zoom — stesso stile di Archive, senza cerchio */
     #cip-photo-viewer .ae-zoom-btn {
-      width: 22px;
-      height: 22px;
+      width: 24px;
+      height: 24px;
       bottom: 10px;
       right: 10px;
+      background: none;
+      border-radius: 0;
     }
     #cip-photo-viewer .ae-zoom-btn svg {
-      width: 11px;
-      height: 11px;
+      width: 16px;
+      height: 16px;
       fill: none;
       stroke: #fff;
-      stroke-width: 2;
+      stroke-width: 2.5;
       stroke-linecap: round;
+      filter: drop-shadow(0 0 2px rgba(0,0,0,0.7));
     }
     #cip-photo-viewer.open .ae-zoom-btn {
       opacity: 0;
@@ -1933,15 +1944,16 @@
       opacity: 1;
     }
 
-    /* Tema bianco: icona scura */
+    /* Tema bianco: icona scura senza cerchio */
     .archive-expanded.box-white .ae-zoom-btn {
-      background: rgba(255,255,255,0.7);
+      background: none;
     }
     .archive-expanded.box-white .ae-zoom-btn svg {
       fill: none;
       stroke: #222;
-      stroke-width: 2;
+      stroke-width: 2.5;
       stroke-linecap: round;
+      filter: drop-shadow(0 0 1px rgba(255,255,255,0.8));
     }
 
     /* ══════════════════════════════════════════════════════════════
@@ -9042,33 +9054,11 @@ loadFromCMS();
   // Calcola le dimensioni reali dell'immagine con object-fit:contain
   // e posiziona il bottone zoom nell'angolo basso-destra dell'immagine stessa
   function _positionCipZoom() {
-    if (!_cipImg.naturalWidth || !_cipImg.naturalHeight) return;
-    // Usa getBoundingClientRect per calcolare la posizione reale dell'immagine
-    // rispetto al viewer (che è position:fixed e contiene anche header+meta)
-    const viewerRect = _cipViewer.getBoundingClientRect();
-    const imgRect    = _cipImg.getBoundingClientRect();
-    if (!viewerRect.width || !imgRect.width) return;
-    // Dimensioni della zona immagine (slot flex dell'img dentro il viewer)
-    const slotW = imgRect.width;
-    const slotH = imgRect.height;
-    const nW = _cipImg.naturalWidth;
-    const nH = _cipImg.naturalHeight;
-    // Calcola dimensioni reali con object-fit:contain
-    const scale = Math.min(slotW / nW, slotH / nH);
-    const rendW = Math.round(nW * scale);
-    const rendH = Math.round(nH * scale);
-    // object-position: left bottom — immagine allineata a sinistra e in basso nello slot
-    const imgOffX = 0;                   // bordo sinistro dello slot
-    const imgOffY = slotH - rendH;       // bordo inferiore dello slot
-    // Posizione dell'angolo basso-destra dell'immagine reale
-    // rispetto al bordo inferiore e destro del viewer
-    const margin = 8;
-    // right = distanza dal bordo destro del viewer al bordo destro dell'immagine reale
-    const rightFromViewer  = (viewerRect.right - (imgRect.left + imgOffX + rendW)) + margin;
-    // bottom = distanza dal bordo inferiore del viewer al bordo inferiore dell'immagine reale
-    const bottomFromViewer = (viewerRect.bottom - (imgRect.top + imgOffY + rendH)) + margin;
-    _cipZoomBtn.style.right  = Math.max(margin, rightFromViewer)  + 'px';
-    _cipZoomBtn.style.bottom = Math.max(margin, bottomFromViewer) + 'px';
+    // Usa la stessa logica di Archive: bottom/right CSS fissi rispetto al viewer.
+    // Il bottone è già posizionato con CSS bottom:10px right:10px.
+    // Non serve ricalcolare — il CSS è sufficiente per entrambi i formati.
+    _cipZoomBtn.style.right  = '10px';
+    _cipZoomBtn.style.bottom = '10px';
     _cipZoomBtn.style.left   = 'auto';
     _cipZoomBtn.style.top    = 'auto';
   }
