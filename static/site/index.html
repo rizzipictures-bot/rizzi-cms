@@ -1905,9 +1905,10 @@
       width: 14px;
       height: 14px;
       display: block;
-      fill: #fff;
-      stroke: none;
-      color: #fff;
+      fill: none;
+      stroke: #fff;
+      stroke-width: 2;
+      stroke-linecap: round;
     }
     /* Cities: bottone zoom più piccolo */
     #cip-photo-viewer .ae-zoom-btn {
@@ -1919,9 +1920,10 @@
     #cip-photo-viewer .ae-zoom-btn svg {
       width: 11px;
       height: 11px;
-      fill: #fff;
-      stroke: none;
-      color: #fff;
+      fill: none;
+      stroke: #fff;
+      stroke-width: 2;
+      stroke-linecap: round;
     }
     #cip-photo-viewer.open .ae-zoom-btn {
       opacity: 0;
@@ -1936,9 +1938,10 @@
       background: rgba(255,255,255,0.7);
     }
     .archive-expanded.box-white .ae-zoom-btn svg {
-      fill: #222;
-      stroke: none;
-      color: #222;
+      fill: none;
+      stroke: #222;
+      stroke-width: 2;
+      stroke-linecap: round;
     }
 
     /* ══════════════════════════════════════════════════════════════
@@ -4541,7 +4544,7 @@
         <div class="cpv-meta-row"><span class="cpv-meta-label">Print size</span><span class="cpv-meta-value" id="cpv-printsize"></span></div>
       </div>
       <img id="cip-photo-viewer-img" src="" alt="">
-      <button class="ae-zoom-btn" id="cip-zoom-btn" aria-label="Ingrandisci immagine" style="display:none"><svg viewBox="0 0 20 20" fill="currentColor"><path d="M8.5 2a6.5 6.5 0 1 0 3.9 11.7l3.7 3.7a1 1 0 0 0 1.4-1.4l-3.7-3.7A6.5 6.5 0 0 0 8.5 2zm0 2a4.5 4.5 0 1 1 0 9 4.5 4.5 0 0 1 0-9z"/></svg></button>
+      <button class="ae-zoom-btn" id="cip-zoom-btn" aria-label="Ingrandisci immagine" style="display:none"><svg viewBox="0 0 14 14"><line x1="7" y1="1" x2="7" y2="13"/><line x1="1" y1="7" x2="13" y2="7"/></svg></button>
     </div>
 
     <!-- Box info fisso Cities (slide da destra) -->
@@ -5811,7 +5814,9 @@ function _updateCitiesLines() {
   // In light-mode la linea si estende fino al bordo destro della pagina (copre anche Box 1)
   // Usa window.innerWidth invece di '100vw': style.width via JS non accetta unità vw
   const _bx1IsLight = _bx1 && _bx1.classList.contains('light-mode');
-  lineH.style.width = _bx1IsLight ? window.innerWidth + 'px' : bx1Left + 'px';
+  lineH.style.width   = _bx1IsLight ? window.innerWidth + 'px' : bx1Left + 'px';
+  // In light-mode la lineH deve passare sopra il box 1 (z-index 695)
+  lineH.style.zIndex  = _bx1IsLight ? '696' : '690';
 
   // Linea verticale: al bordo ESTERNO sinistro del Box 2 (se aperto)
   // Usiamo lo style.left del Box 2 (valore impostato via JS) per evitare
@@ -8929,7 +8934,7 @@ loadFromCMS();
     const btn = document.createElement('button');
     btn.className = 'ae-zoom-btn';
     btn.setAttribute('aria-label', 'Ingrandisci immagine');
-    btn.innerHTML = '<svg viewBox="0 0 20 20" fill="currentColor"><path d="M8.5 2a6.5 6.5 0 1 0 3.9 11.7l3.7 3.7a1 1 0 0 0 1.4-1.4l-3.7-3.7A6.5 6.5 0 0 0 8.5 2zm0 2a4.5 4.5 0 1 1 0 9 4.5 4.5 0 0 1 0-9z"/></svg>';
+    btn.innerHTML = '<svg viewBox="0 0 14 14"><line x1="7" y1="1" x2="7" y2="13"/><line x1="1" y1="7" x2="13" y2="7"/></svg>';
     return btn;
   }
 
