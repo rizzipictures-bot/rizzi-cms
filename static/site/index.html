@@ -1658,6 +1658,98 @@
     #archive-viewall-overlay.theme-dark .vao-grid-blank {
       background: #000;
     }
+    /* Toggle light/dark mode nel VAO */
+    .vao-header-right {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+    .vao-theme-toggle {
+      font-family: var(--font-nav);
+      font-size: 11px;
+      font-weight: 400;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: #000;
+      background: none;
+      border: none;
+      cursor: none;
+      padding: 0;
+      transition: opacity .15s;
+      white-space: nowrap;
+    }
+    .vao-theme-toggle:hover { opacity: 0.5; }
+    #archive-viewall-overlay.theme-dark .vao-theme-toggle { color: #fff; }
+    /* Viewer singolo foto nel VAO */
+    .vao-viewer {
+      position: absolute;
+      inset: var(--nav-h, 36px) 0 0 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: inherit;   /* eredita sfondo dal parent overlay */
+      z-index: 10;
+      transition: opacity .25s ease;
+    }
+    .vao-viewer.hidden {
+      opacity: 0;
+      pointer-events: none;
+    }
+    #vao-viewer-img {
+      max-width: 52vw;
+      max-height: 78vh;
+      object-fit: contain;
+      display: block;
+      transition: opacity .18s;
+    }
+    #vao-viewer-img.fade { opacity: 0; }
+    .vao-viewer-nav {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      background: none;
+      border: none;
+      font-size: 11px;
+      color: rgba(0,0,0,0.35);
+      padding: 20px;
+      cursor: none;
+      transition: color .15s;
+      letter-spacing: 0.4px;
+      font-family: var(--font);
+    }
+    .vao-viewer-nav:hover { color: rgba(0,0,0,0.85); }
+    .vao-viewer-nav.prev { left: 2vw; }
+    .vao-viewer-nav.next { right: 2vw; }
+    #archive-viewall-overlay.theme-dark .vao-viewer-nav {
+      color: rgba(255,255,255,0.35);
+    }
+    #archive-viewall-overlay.theme-dark .vao-viewer-nav:hover {
+      color: rgba(255,255,255,0.9);
+    }
+    .vao-viewer-counter {
+      position: absolute;
+      bottom: 24px;
+      left: 50%;
+      transform: translateX(-50%);
+      font-family: var(--font-mono);
+      font-size: 11px;
+      color: rgba(0,0,0,0.35);
+      letter-spacing: 0.4px;
+    }
+    #archive-viewall-overlay.theme-dark .vao-viewer-counter {
+      color: rgba(255,255,255,0.35);
+    }
+    /* Cursore adattivo nel VAO: bianco su dark, nero su light */
+    #archive-viewall-overlay.theme-dark ~ #cursor #cursor-dot,
+    body.vao-dark-mode #cursor-dot {
+      background: #f5f5f5 !important;
+    }
+    #archive-viewall-overlay.theme-dark ~ #cursor #cursor-dot::before,
+    #archive-viewall-overlay.theme-dark ~ #cursor #cursor-dot::after,
+    body.vao-dark-mode #cursor-dot::before,
+    body.vao-dark-mode #cursor-dot::after {
+      background: rgba(0,0,0,0.75) !important;
+    }
 
     /* ══════════════════════════════════════════════════════════════
        KEYWORDS PANEL — zona destra del box espanso (sempre visibile)
@@ -4899,18 +4991,24 @@
 
 <!-- View All Overlay — stile Miechowski -->
 <div id="archive-viewall-overlay">
-  <!-- Navbar View All: back a sinistra, titolo al centro, close a destra -->
+  <!-- Navbar View All: back a sinistra, titolo al centro, toggle + close a destra -->
   <div class="vao-header">
     <div class="vao-back" id="vao-back" onclick="closeViewAllOverlay()">← Back</div>
     <span id="vao-title" class="vao-title"></span>
-    <button class="vao-close btn-circle-close black" id="vao-close" onclick="closeViewAllOverlay()"></button>
+    <div class="vao-header-right">
+      <button class="vao-theme-toggle" id="vao-theme-toggle">Light mode</button>
+      <button class="vao-close btn-circle-close black" id="vao-close" onclick="closeViewAllOverlay()"></button>
+    </div>
   </div>
-  <!-- Fase 1: foto singola centrata -->
-  <div id="vao-single">
-    <img id="vao-single-img" src="" alt="">
-  </div>
-  <!-- Fase 2: griglia masonry -->
+  <!-- Griglia masonry -->
   <div id="vao-grid"></div>
+  <!-- Viewer singolo foto (si apre sopra la griglia) -->
+  <div id="vao-viewer" class="vao-viewer hidden">
+    <button class="vao-viewer-nav prev" id="vao-viewer-prev">←</button>
+    <img id="vao-viewer-img" src="" alt="">
+    <button class="vao-viewer-nav next" id="vao-viewer-next">→</button>
+    <div class="vao-viewer-counter" id="vao-viewer-counter">01 / 01</div>
+  </div>
 </div>
 
 <!-- Screensaver -->
@@ -7361,7 +7459,10 @@ function buildArchive() {
               tag.appendChild(kwText);
               tag.addEventListener('click', e => {
                 e.stopPropagation();
-                window.openKeywordResults(kw);
+                // Eredita il tema dal box di provenienza: box-white = light, altrimenti dark
+                const _panel = tag.closest('.archive-expanded');
+                const _isLight = _panel && _panel.classList.contains('box-white');
+                window.openKeywordResults(kw, !_isLight);
               });
               kwTagsWrap.appendChild(tag);
             });
@@ -7575,12 +7676,14 @@ function buildArchive() {
   }
 
   // Apre l'overlay View All per una keyword
-  window.openKeywordResults = function(kw) {
+  // isDark: true = sfondo nero, false/undefined = sfondo bianco
+  window.openKeywordResults = function(kw, isDark) {
     const q = kw.toLowerCase().trim();
     if (!q) return;
     const images = getImagesForKeyword(q);
     if (images.length === 0) return;
-    window.openViewAllOverlay(images, kw, true);
+    const dark = (isDark === undefined) ? true : !!isDark;
+    window.openViewAllOverlay(images, kw, dark);
   };
 
   // Aggiorna il link View all in base alla query
@@ -8895,42 +8998,59 @@ loadFromCMS();
 // VIEW ALL OVERLAY — stile Miechowski
 // ══════════════════════════════════════════════════════════════
 (function() {
-  const overlay   = document.getElementById('archive-viewall-overlay');
-  const vaoTitle  = document.getElementById('vao-title');
-  const vaoClose  = document.getElementById('vao-close');
-  const vaoSingle = document.getElementById('vao-single');
-  const vaoSingleImg = document.getElementById('vao-single-img');
-  const vaoGrid   = document.getElementById('vao-grid');
+  const overlay      = document.getElementById('archive-viewall-overlay');
+  const vaoTitle     = document.getElementById('vao-title');
+  const vaoClose     = document.getElementById('vao-close');
+  const vaoGrid      = document.getElementById('vao-grid');
+  const vaoThemeBtn  = document.getElementById('vao-theme-toggle');
+  // Viewer singolo interno al VAO
+  const vaoViewer    = document.getElementById('vao-viewer');
+  const vaoViewerImg = document.getElementById('vao-viewer-img');
+  const vaoViewerCounter = document.getElementById('vao-viewer-counter');
+  const vaoViewerPrev = document.getElementById('vao-viewer-prev');
+  const vaoViewerNext = document.getElementById('vao-viewer-next');
 
-  // Apri overlay: griglia diretta stile Overview (no animazione foto singola)
+  // Stato viewer singolo
+  let svImages = [], svIndex = 0, svTitle = '';
+  let _svOpen = false;
+
+  // ── Toggle Light / Dark mode ──────────────────────────────────────
+  if (vaoThemeBtn) {
+    vaoThemeBtn.addEventListener('click', e => {
+      e.stopPropagation();
+      const isDarkNow = overlay.classList.toggle('theme-dark');
+      vaoThemeBtn.textContent = isDarkNow ? 'Light mode' : 'Dark mode';
+      document.body.classList.toggle('vao-dark-mode', isDarkNow);
+    });
+  }
+
+  // ── Apri overlay: griglia diretta stile Overview ──────────────────
   window.openViewAllOverlay = function(images, title, isDark) {
     if (!images || images.length === 0) return;
     if (!overlay) return;
-
     const COLS = 9;
-
-    // Applica tema
-    overlay.classList.toggle('theme-dark', !!isDark);
-
-    // Reset stato
+    const dark = !!isDark;
+    overlay.classList.toggle('theme-dark', dark);
+    document.body.classList.toggle('vao-dark-mode', dark);
+    if (vaoThemeBtn) vaoThemeBtn.textContent = dark ? 'Light mode' : 'Dark mode';
     vaoTitle.textContent = title;
     vaoGrid.innerHTML = '';
     vaoGrid.classList.remove('visible');
-    // Nascondi subito la fase foto singola — non la usiamo
-    vaoSingle.classList.add('hidden');
-    vaoSingleImg.src = '';
+    vaoGrid.style.opacity = '';
+    vaoGrid.style.pointerEvents = '';
+    _closeViewer(true); // chiudi viewer senza resetCursor (overlay ancora aperto)
 
-    // Costruisci celle griglia: max 1 blank per riga, max 3 blank ogni 36 foto
+    // Costruisci celle griglia
     const maxBlanks = Math.max(1, Math.round(images.length / 36 * 3));
     const cells = [];
     let imgIdx = 0;
     let blanksInserted = 0;
     while (imgIdx < images.length) {
-      const photosLeft = images.length - imgIdx;
+      const photosLeft    = images.length - imgIdx;
       const photosThisRow = Math.min(photosLeft, COLS);
-      const blanksLeft = maxBlanks - blanksInserted;
-      const useBlank = blanksLeft > 0 && photosThisRow >= 2 && Math.random() < 0.55;
-      const blankCol = useBlank ? (1 + Math.floor(Math.random() * (photosThisRow - 1))) : -1;
+      const blanksLeft    = maxBlanks - blanksInserted;
+      const useBlank      = blanksLeft > 0 && photosThisRow >= 2 && Math.random() < 0.55;
+      const blankCol      = useBlank ? (1 + Math.floor(Math.random() * (photosThisRow - 1))) : -1;
       for (let col = 0; col < photosThisRow + (useBlank ? 1 : 0); col++) {
         if (useBlank && col === blankCol) {
           cells.push({ type: 'blank' });
@@ -8944,135 +9064,150 @@ loadFromCMS();
       }
     }
 
-    let vaoPhotoCounter = 0;
-    cells.forEach((cell, i) => {
+    const imgCells = cells.filter(c => c.type === 'img');
+    cells.forEach((cell) => {
       if (cell.type === 'blank') {
         const blank = document.createElement('div');
         blank.className = 'vao-grid-blank';
         vaoGrid.appendChild(blank);
         return;
       }
-      vaoPhotoCounter++;
-      const img = cell.img;
+      const img  = cell.img;
       const item = document.createElement('div');
       item.className = 'vao-grid-item';
-      // Nessun label sul cursore per le foto del View All
       const im = document.createElement('img');
       im.src = img.url;
       im.loading = 'lazy';
       im.alt = title;
       im.addEventListener('load', function() {
         if (this.naturalWidth > this.naturalHeight) {
-          // Conta le orizzontali già presenti nella stessa riga (ogni 9 celle)
-          const allItems = Array.from(vaoGrid.querySelectorAll('.vao-grid-item, .vao-grid-blank'));
-          const idx = allItems.indexOf(item);
-          const rowStart = Math.floor(idx / 9) * 9;
-          const rowEnd   = rowStart + 9;
-          const rowItems = allItems.slice(rowStart, rowEnd);
-          const landscapeInRow = rowItems.filter(el => el.classList.contains('is-landscape')).length;
-          if (landscapeInRow < 3) item.classList.add('is-landscape');
+          const allItems   = Array.from(vaoGrid.querySelectorAll('.vao-grid-item, .vao-grid-blank'));
+          const idx        = allItems.indexOf(item);
+          const rowStart   = Math.floor(idx / 9) * 9;
+          const rowEnd     = rowStart + 9;
+          const rowItems   = allItems.slice(rowStart, rowEnd);
+          const lscInRow   = rowItems.filter(el => el.classList.contains('is-landscape')).length;
+          if (lscInRow < 3) item.classList.add('is-landscape');
         }
       });
       item.appendChild(im);
-      item.addEventListener('mouseenter', () => {
-        // Nessun label: solo hover visivo
-        cursor.classList.add('hover');
-      });
+      item.addEventListener('mouseenter', () => { cursor.classList.add('hover'); });
       item.addEventListener('mouseleave', () => resetCursor());
       item.addEventListener('click', e => {
         e.stopPropagation();
-        openSingleViewer(images, cells.filter(c=>c.type==='img').indexOf(cell), title);
+        const imgI = imgCells.indexOf(cell);
+        _openViewer(imgCells.map(c => c.img), imgI, title);
       });
       vaoGrid.appendChild(item);
     });
 
     overlay.classList.add('open');
-
-    // Griglia appare direttamente con stagger diagonale
     requestAnimationFrame(() => {
       vaoGrid.classList.add('visible');
       const items = vaoGrid.querySelectorAll('.vao-grid-item, .vao-grid-blank');
       items.forEach((item, i) => {
-        const row = Math.floor(i / COLS);
-        const col = i % COLS;
+        const row   = Math.floor(i / COLS);
+        const col   = i % COLS;
         const delay = (row + col) * 40;
         setTimeout(() => item.classList.add('appeared'), delay);
       });
     });
   };
 
-  // Viewer singolo per navigazione dentro la griglia
-  let svImages = [], svIndex = 0, svTitle = '';
+  // ── Viewer singolo foto interno al VAO ────────────────────────────
+  function _openViewer(images, idx, title) {
+    svImages = images;
+    svIndex  = idx;
+    svTitle  = title;
+    _svOpen  = true;
+    _svRender();
+    if (vaoViewer) vaoViewer.classList.remove('hidden');
+    vaoGrid.style.opacity      = '0';
+    vaoGrid.style.pointerEvents = 'none';
+    cursorDot.style.visibility = '';
+    _svUpdateCursor();
+  }
 
-  function svUpdateCursor() {
+  function _closeViewer(silent) {
+    _svOpen  = false;
+    svImages = [];
+    if (vaoViewer) vaoViewer.classList.add('hidden');
+    if (vaoGrid) {
+      vaoGrid.style.opacity      = '';
+      vaoGrid.style.pointerEvents = '';
+    }
+    if (!silent) {
+      cursorDot.style.visibility = '';
+      resetCursor();
+    }
+  }
+
+  function _svRender() {
+    if (!svImages.length) return;
     const img = svImages[svIndex];
+    vaoViewerImg.classList.add('fade');
+    setTimeout(() => {
+      vaoViewerImg.src = img.url;
+      vaoViewerImg.classList.remove('fade');
+    }, 120);
+    vaoViewerCounter.textContent =
+      String(svIndex + 1).padStart(2, '0') + ' / ' + String(svImages.length).padStart(2, '0');
+  }
+
+  function _svNav(dir) {
+    if (!svImages.length) return;
+    svIndex = (svIndex + dir + svImages.length) % svImages.length;
+    _svRender();
+    _svUpdateCursor();
+  }
+
+  function _svUpdateCursor() {
+    const img      = svImages[svIndex];
     const catLabel = (img && img.project && (img.project.category || img.project.title)) || svTitle || '';
     const numLabel = String(svIndex + 1).padStart(2,'0') + ' / ' + String(svImages.length).padStart(2,'0');
     setCursorHover(catLabel, numLabel);
   }
 
-  function openSingleViewer(images, idx, title) {
-    svImages = images;
-    svIndex = idx;
-    svTitle = title;
-    // Riusa il viewer del lightbox principale
-    const lbEl = document.getElementById('lightbox');
-    if (lbEl) {
-      document.getElementById('lightbox-img').src = images[idx].url;
-      document.getElementById('lb-title').textContent = title;
-      document.getElementById('lb-count').textContent =
-        `${String(idx+1).padStart(2,'0')} / ${String(images.length).padStart(2,'0')}`;
-      lbEl.classList.add('open');
-      cursorDot.style.visibility = 'hidden'; // nasconde solo la freccia
-      svUpdateCursor();
-    }
-  }
+  // Frecce cliccabili
+  if (vaoViewerPrev) vaoViewerPrev.addEventListener('click', e => { e.stopPropagation(); _svNav(-1); });
+  if (vaoViewerNext) vaoViewerNext.addEventListener('click', e => { e.stopPropagation(); _svNav(1); });
 
-  // Click sul lightbox View All: metà destra = avanti, metà sinistra = indietro
-  const lbClickEl = document.getElementById('lightbox');
-  if (lbClickEl) {
-    lbClickEl.addEventListener('click', e => {
-      // Ignora click su pulsanti close/nav
-      if (e.target.closest('.lightbox-close, .lightbox-nav')) return;
-      if (!svImages.length) return; // non gestire se non siamo in View All
-      e.stopImmediatePropagation(); // blocca il handler Archive
+  // Click sul viewer: metà sinistra = indietro, metà destra = avanti
+  if (vaoViewer) {
+    vaoViewer.addEventListener('click', e => {
+      if (e.target.closest('.vao-viewer-nav')) return;
+      if (!_svOpen) return;
       const dir = e.clientX >= window.innerWidth / 2 ? 1 : -1;
-      svIndex = (svIndex + dir + svImages.length) % svImages.length;
-      const img = svImages[svIndex];
-      const lbImg = document.getElementById('lightbox-img');
-      lbImg.style.opacity = '0';
-      setTimeout(() => { lbImg.src = img.url; lbImg.style.opacity = '1'; }, 120);
-      document.getElementById('lb-count').textContent =
-        `${String(svIndex+1).padStart(2,'0')} / ${String(svImages.length).padStart(2,'0')}`;
-      svUpdateCursor();
+      _svNav(dir);
     });
   }
 
-  // Funzione globale di chiusura (usata anche da onclick nel HTML)
+  // Tasti freccia per navigazione nel viewer
+  document.addEventListener('keydown', e => {
+    if (!overlay.classList.contains('open')) return;
+    if (_svOpen) {
+      if (e.key === 'ArrowRight' || e.key === 'ArrowDown')  { e.preventDefault(); _svNav(1);  }
+      if (e.key === 'ArrowLeft'  || e.key === 'ArrowUp')    { e.preventDefault(); _svNav(-1); }
+      if (e.key === 'Escape')                                { _closeViewer(); }
+    } else {
+      if (e.key === 'Escape') window.closeViewAllOverlay();
+    }
+  });
+
+  // ── Chiusura overlay ──────────────────────────────────────────────
   window.closeViewAllOverlay = function() {
+    _closeViewer(true);
     overlay.classList.remove('open');
-    svImages = []; // reset per non interferire con Archive
-    cursorDot.style.visibility = ''; // ripristina freccia
+    document.body.classList.remove('vao-dark-mode');
+    cursorDot.style.visibility = '';
     resetCursor();
   };
 
-  // Chiudi overlay via click su close o back
   vaoClose.addEventListener('click', window.closeViewAllOverlay);
   const vaoBackBtn = document.getElementById('vao-back');
   if (vaoBackBtn) vaoBackBtn.addEventListener('click', window.closeViewAllOverlay);
-
-  // ESC per chiudere
-  document.addEventListener('keydown', e => {
-    if (e.key === 'Escape' && overlay.classList.contains('open')) {
-      overlay.classList.remove('open');
-      svImages = [];
-      cursorDot.style.visibility = '';
-      resetCursor();
-    }
-  });
 })();
 
-// ════════════════════════════════════════════════════════════════
 // CITIES THUMBNAIL — RAF loop per lerp continuo (anche a mouse fermo)
 // Quando il box si apre, la thumbnail scivola elegantemente verso il bordo
 // ════════════════════════════════════════════════════════════════
