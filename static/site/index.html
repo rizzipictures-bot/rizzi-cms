@@ -1001,6 +1001,7 @@
     .archive-search-wrap {
       padding: 16px 0 0;
       border-bottom: 1px solid var(--light);
+      position: relative;
     }
     .archive-search {
       font-family: var(--font-mono);
@@ -1036,11 +1037,11 @@
     .archive-col-header span:last-child {
       text-align: center;
     }
-    /* Controllo Order — posizionato in alto a destra sopra la colonna Media */
+    /* Controllo Order — alla stessa altezza di Type any keyword, allineato con Publication */
     #archive-order-ctrl {
       position: absolute;
-      top: 0;
-      right: 40px;   /* stesso padding del #view-archive */
+      top: 16px;     /* stesso padding-top di .archive-search-wrap */
+      right: 80px;   /* larghezza colonna Media = 80px, così Order inizia dove inizia Publication */
       display: flex;
       align-items: baseline;
       gap: 12px;
@@ -4496,11 +4497,11 @@
       <div class="archive-page-title">Archive<span class="title-sep"></span>Works Index</div>
       <div class="archive-search-wrap">
         <input class="archive-search" id="archive-search" type="text" placeholder="Type any keyword" autocomplete="off">
-      </div>
-      <div id="archive-order-ctrl">
-        <span class="archive-order-label">Order</span>
-        <button id="archive-order-chron" class="archive-order-btn active">Chronological</button>
-        <button id="archive-order-alpha" class="archive-order-btn">Alphabetical</button>
+        <div id="archive-order-ctrl">
+          <span class="archive-order-label">Order</span>
+          <button id="archive-order-chron" class="archive-order-btn active">Chronological</button>
+          <button id="archive-order-alpha" class="archive-order-btn">Alphabetical</button>
+        </div>
       </div>
       <div class="archive-col-header">
         <span>Year</span>
@@ -7355,18 +7356,6 @@ function buildArchive() {
   }
 
   renderRows(getSortedProjects(archiveProjects));
-
-  // Posiziona il controllo Order sopra la colonna Media nell'header
-  function _positionOrderCtrl() {
-    const ctrl = document.getElementById('archive-order-ctrl');
-    const colHdr = document.querySelector('.archive-col-header');
-    if (!ctrl || !colHdr) return;
-    const hdrRect = colHdr.getBoundingClientRect();
-    const viewRect = document.getElementById('view-archive').getBoundingClientRect();
-    // Allinea il top del controllo al top dell'header colonne (stessa riga di Publication)
-    ctrl.style.top = (hdrRect.top - viewRect.top + document.getElementById('view-archive').scrollTop) + 'px';
-  }
-  requestAnimationFrame(_positionOrderCtrl);
 
   // Bottoni Order
   const _btnChron = document.getElementById('archive-order-chron');
