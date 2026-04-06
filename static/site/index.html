@@ -1041,7 +1041,7 @@
     #archive-order-ctrl {
       position: absolute;
       top: 16px;     /* stesso padding-top di .archive-search-wrap */
-      right: 80px;   /* larghezza colonna Media = 80px, così Order inizia dove inizia Publication */
+      left: 0;       /* aggiornato via JS per allinearsi con la colonna Publication */
       display: flex;
       align-items: baseline;
       gap: 12px;
@@ -4498,7 +4498,7 @@
       <div class="archive-search-wrap">
         <input class="archive-search" id="archive-search" type="text" placeholder="Type any keyword" autocomplete="off">
         <div id="archive-order-ctrl">
-          <span class="archive-order-label">Order</span>
+          <span class="archive-order-label">Order:</span>
           <button id="archive-order-chron" class="archive-order-btn active">Chronological</button>
           <button id="archive-order-alpha" class="archive-order-btn">Alphabetical</button>
         </div>
@@ -7356,6 +7356,21 @@ function buildArchive() {
   }
 
   renderRows(getSortedProjects(archiveProjects));
+
+  // Allinea il controllo Order con la colonna Publication
+  function _alignOrderCtrl() {
+    const ctrl = document.getElementById('archive-order-ctrl');
+    const colHdr = document.querySelector('.archive-col-header');
+    if (!ctrl || !colHdr) return;
+    // La quinta colonna (Publication) è il quinto span (indice 4)
+    const pubCol = colHdr.querySelectorAll('span')[4];
+    if (!pubCol) return;
+    const pubRect = pubCol.getBoundingClientRect();
+    const wrapRect = ctrl.parentElement.getBoundingClientRect();
+    ctrl.style.left = (pubRect.left - wrapRect.left) + 'px';
+  }
+  requestAnimationFrame(_alignOrderCtrl);
+  window.addEventListener('resize', _alignOrderCtrl);
 
   // Bottoni Order
   const _btnChron = document.getElementById('archive-order-chron');
