@@ -5221,6 +5221,12 @@ document.addEventListener('mousemove', e => {
               _cipanel.querySelectorAll('.cip-img.selected').forEach(i => i.classList.remove('selected'));
             }
           }
+          // Nascondi subito le linee senza aspettare RAF
+          document.body.classList.remove('cities-box2-open');
+          const _lHm = document.getElementById('cities-line-h');
+          const _lVm = document.getElementById('cities-line-v');
+          if (_lHm) _lHm.style.display = 'none';
+          if (_lVm) _lVm.style.display = 'none';
           // Aggiorna sempre le linee quando il Box 1 si chiude (rimuove cities-box2-open)
           requestAnimationFrame(() => _updateCitiesLines());
         }
@@ -5856,6 +5862,9 @@ function _updateCitiesLines() {
   const bx2Open = _bx2 && _bx2.classList.contains('open');
   // Classe sul body: le linee (inclusa quella orizzontale) appaiono solo se Box 2 è aperto
   document.body.classList.toggle('cities-box2-open', !!bx2Open);
+  // Controllo display diretto via JS (più affidabile del solo CSS)
+  lineH.style.display = bx2Open ? 'block' : 'none';
+  lineV.style.display = bx2Open ? 'block' : 'none';
   if (bx2Open && _bx2 && _bx2.style.left) {
     lineV.style.left = _bx2.style.left;  // stesso left del Box 2 = bordo esterno
   }
@@ -5954,6 +5963,12 @@ if (_cipPhotoViewerClose) {
       _cipPhotoViewer.classList.remove('light-mode');
     }
     document.body.classList.remove('cip-light-mode');
+    document.body.classList.remove('cities-box2-open');
+    // Nascondi subito le linee senza aspettare RAF
+    const _lH = document.getElementById('cities-line-h');
+    const _lV = document.getElementById('cities-line-v');
+    if (_lH) _lH.style.display = 'none';
+    if (_lV) _lV.style.display = 'none';
     // Rimuovi light-mode anche dal Box 1
     const _cipBox1c = document.getElementById('cities-info-panel');
     if (_cipBox1c) _cipBox1c.classList.remove('light-mode');
@@ -5979,6 +5994,12 @@ function closeCityInfoPanel() {
     _cipPhotoViewer.classList.remove('light-mode');
   }
   document.body.classList.remove('cip-light-mode');
+  document.body.classList.remove('cities-box2-open');
+  // Nascondi subito le linee senza aspettare RAF
+  const _lHd = document.getElementById('cities-line-h');
+  const _lVd = document.getElementById('cities-line-v');
+  if (_lHd) _lHd.style.display = 'none';
+  if (_lVd) _lVd.style.display = 'none';
   // Rimuovi light-mode anche dal Box 1
   const _cipBox1d = document.getElementById('cities-info-panel');
   if (_cipBox1d) _cipBox1d.classList.remove('light-mode');
