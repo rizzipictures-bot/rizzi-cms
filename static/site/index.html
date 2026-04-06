@@ -2840,7 +2840,20 @@
     }
 
     /* Toggle tema Box2: bianco con bordo nero (light-mode = tema chiaro) */
-    #cip-photo-viewer.light-mode {
+    /* Bordo superiore del viewer in light mode — visibile come linea che chiude il pannello in alto */
+    #cip-viewer-top-border {
+      display: none;
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 0.5px;
+      background: rgba(0,0,0,0.20);
+      z-index: 10;
+      pointer-events: none;
+    }
+    #cip-photo-viewer.light-mode #cip-viewer-top-border {
+      display: block;
+    }
+        #cip-photo-viewer.light-mode {
       background: #ffffff;
       border-color: rgba(0,0,0,0.20);
       border-top: 0.5px solid rgba(0,0,0,0.20); /* chiude il box 1 in alto come il box 2 */
@@ -4523,6 +4536,8 @@
 
     <!-- Box foto secondario Cities (box 2, a sinistra del box 1) -->
     <div id="cip-photo-viewer">
+      <!-- Bordo superiore visibile in light mode (overflow:hidden taglia border/outline/lineH esterne) -->
+      <div id="cip-viewer-top-border"></div>
       <!-- Header: toggle tema + testo descrittivo + pallino chiudi -->
       <div id="cip-photo-viewer-header">
         <button id="cpv-theme-toggle" title="Cambia tema">
@@ -5871,6 +5886,28 @@ function _cipShowIndex(idx) {
 
 // Toggle tema Box 2: scuro ↔ bianco con bordo nero
 // Sincronizza anche il Box 1 (cities-info-panel) che diventa crema
+
+// ── Linea header per chiudere il viewer in alto (light-mode) ──────────────────
+function _updateHeaderCitiesLine(isLight) {
+  const hdr = document.querySelector('header');
+  if (!hdr) return;
+  let ln = document.getElementById('header-cities-line');
+  if (isLight) {
+    const vRect = _cipPhotoViewer ? _cipPhotoViewer.getBoundingClientRect() : null;
+    const leftPx = vRect ? Math.round(vRect.left) : 0;
+    if (!ln) {
+      ln = document.createElement('div');
+      ln.id = 'header-cities-line';
+      ln.style.cssText = 'position:absolute;bottom:0;height:1px;background:rgba(0,0,0,0.30);pointer-events:none;z-index:1001;';
+      hdr.appendChild(ln);
+    }
+    ln.style.left = leftPx + 'px';
+    ln.style.right = '0';
+    ln.style.display = 'block';
+  } else {
+    if (ln) ln.style.display = 'none';
+  }
+}
 const _cpvThemeToggle = document.getElementById('cpv-theme-toggle');
 if (_cpvThemeToggle && _cipPhotoViewer) {
   _cpvThemeToggle.addEventListener('click', e => {
@@ -5883,7 +5920,7 @@ if (_cpvThemeToggle && _cipPhotoViewer) {
     // Sincronizza classe body per cursore nero in light-mode
     document.body.classList.toggle('cip-light-mode', _isLight);
     // Aggiorna la linea orizzontale (larghezza cambia in light-mode)
-    requestAnimationFrame(() => _updateCitiesLines());
+    requestAnimationFrame(() => { _updateCitiesLines(); _updateHeaderCitiesLine(_isLight); });
   });
 }
 
@@ -5921,7 +5958,7 @@ if (_cipPhotoViewerClose) {
       _cipanel.querySelectorAll('.cip-img.selected').forEach(i => i.classList.remove('selected'));
     }
     // Aggiorna le linee (le nasconde perché Box 2 è chiuso)
-    requestAnimationFrame(() => _updateCitiesLines());
+    requestAnimationFrame(() => { _updateCitiesLines(); _updateHeaderCitiesLine(false); });
   });
 }
 
