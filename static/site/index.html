@@ -976,6 +976,7 @@
       overflow-y: auto;
       overflow-x: hidden;
       padding: 0 40px;
+      position: relative;
     }
     #view-archive::-webkit-scrollbar { display: none; }
     .archive-page-title {
@@ -1035,18 +1036,29 @@
     .archive-col-header span:last-child {
       text-align: center;
     }
-    /* Controllo Order inline */
-    .archive-order-wrap {
+    /* Controllo Order — posizionato in alto a destra sopra la colonna Media */
+    #archive-order-ctrl {
+      position: absolute;
+      top: 0;
+      right: 40px;   /* stesso padding del #view-archive */
       display: flex;
-      align-items: center;
-      gap: 0;
-      white-space: nowrap;
+      align-items: baseline;
+      gap: 12px;
+      padding: 0;
+      pointer-events: auto;
+    }
+    .archive-order-label {
+      font-family: var(--font-mono);
+      font-size: 13px;
+      font-weight: 700;
+      color: #000;
+      letter-spacing: 0;
     }
     .archive-order-btn {
       font-family: var(--font-mono);
-      font-size: 11px;
-      font-weight: 400;
-      color: var(--accent, #e00);
+      font-size: 13px;
+      font-weight: 700;
+      color: #e00;
       background: none;
       border: none;
       padding: 0;
@@ -1057,7 +1069,8 @@
     .archive-order-btn.active {
       color: #000;
     }
-    [data-theme="dark"] .archive-order-btn { color: var(--accent, #e00); }
+    [data-theme="dark"] .archive-order-label { color: #fff; }
+    [data-theme="dark"] .archive-order-btn { color: #e00; }
     [data-theme="dark"] .archive-order-btn.active { color: #fff; }
     .archive-row {
       display: grid;
@@ -4484,12 +4497,17 @@
       <div class="archive-search-wrap">
         <input class="archive-search" id="archive-search" type="text" placeholder="Type any keyword" autocomplete="off">
       </div>
+      <div id="archive-order-ctrl">
+        <span class="archive-order-label">Order</span>
+        <button id="archive-order-chron" class="archive-order-btn active">Chronological</button>
+        <button id="archive-order-alpha" class="archive-order-btn">Alphabetical</button>
+      </div>
       <div class="archive-col-header">
         <span>Year</span>
         <span>Project</span>
         <span>Subtitle</span>
         <span>Place</span>
-        <span class="archive-order-wrap">Order&nbsp;&nbsp;<button id="archive-order-chron" class="archive-order-btn active">Chronological</button>&nbsp;&nbsp;<button id="archive-order-alpha" class="archive-order-btn">Alphabetical</button></span>
+        <span>Publication</span>
         <span>Media</span>
       </div>
       <div id="archive-list">
@@ -7337,6 +7355,19 @@ function buildArchive() {
   }
 
   renderRows(getSortedProjects(archiveProjects));
+
+  // Posiziona il controllo Order sopra la colonna Media nell'header
+  function _positionOrderCtrl() {
+    const ctrl = document.getElementById('archive-order-ctrl');
+    const colHdr = document.querySelector('.archive-col-header');
+    if (!ctrl || !colHdr) return;
+    const hdrRect = colHdr.getBoundingClientRect();
+    const viewRect = document.getElementById('view-archive').getBoundingClientRect();
+    // Allinea il bottom del controllo al top dell'header colonne
+    const bottomFromTop = hdrRect.top - viewRect.top;
+    ctrl.style.top = (bottomFromTop - ctrl.offsetHeight - 4) + 'px';
+  }
+  requestAnimationFrame(_positionOrderCtrl);
 
   // Bottoni Order
   const _btnChron = document.getElementById('archive-order-chron');
