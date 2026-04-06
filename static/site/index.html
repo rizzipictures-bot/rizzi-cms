@@ -2827,7 +2827,8 @@
     /* Toggle tema Box2: bianco con bordo nero (light-mode = tema chiaro) */
     #cip-photo-viewer.light-mode {
       background: #ffffff;
-      border-color: #1a1a1a;
+      border-color: rgba(0,0,0,0.20);
+      border-top: 0.5px solid rgba(0,0,0,0.20); /* chiude il box 1 in alto come il box 2 */
       color: #222;
     }
     #cip-photo-viewer.light-mode #cip-photo-viewer-header {
