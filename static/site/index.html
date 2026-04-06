@@ -72,8 +72,8 @@
       --white:        #fff;
       --gray:         #666;
       --light:        #e7e7e7;
-      --accent:       #4a6e8a;
-      --accent-light: #6a8ea8;
+      --accent:       #c9a093;
+      --accent-light: #d3b3a8;
       --yellow:       #ffd600;
       --orange:       #ff8c00;
       --pad:          0px;
@@ -131,8 +131,8 @@
     }
     /* ── CURSORE RIDISEGNATO: pallino + croce bianca ── */
     #cursor-dot {
-      width: 22px;
-      height: 22px;
+      width: 15px;
+      height: 15px;
       border-radius: 50%;
       background: #111;
       display: flex;
@@ -153,12 +153,12 @@
     }
     #cursor-dot::before {
       width: 1px;
-      height: 11px;
+      height: 8px;
       top: 50%; left: 50%;
       transform: translate(-50%, -50%);
     }
     #cursor-dot::after {
-      width: 11px;
+      width: 8px;
       height: 1px;
       top: 50%; left: 50%;
       transform: translate(-50%, -50%);
@@ -167,21 +167,21 @@
     #cursor-dot.ring-mode {
       background: #111 !important;
       border: none;
-      width: 22px;
-      height: 22px;
+      width: 15px;
+      height: 15px;
     }
     /* Croce bianca nel cursore ring-mode: due barre perpendicolari */
     #cursor-dot.ring-mode::before {
       opacity: 1;
       background: #fff;
-      width: 10px;
+      width: 7px;
       height: 1.5px;
       transform: translate(-50%, -50%) rotate(0deg);
     }
     #cursor-dot.ring-mode::after {
       opacity: 1;
       background: #fff;
-      width: 10px;
+      width: 7px;
       height: 1.5px;
       transform: translate(-50%, -50%) rotate(90deg);
     }
@@ -295,8 +295,8 @@
       background: transparent !important;
       border: none !important;
       box-shadow: none !important;
-      width: 22px !important;
-      height: 22px !important;
+      width: 15px !important;
+      height: 15px !important;
     }
     body.archive-hero-next #cursor-dot::before {
       content: '→';
@@ -867,8 +867,8 @@
     }
     /* Quando il cursore è vicino alla barra Index/Thumbs: pallino nero visibile */
     body.ov-near-nav #cursor-dot {
-      width: 22px !important;
-      height: 22px !important;
+      width: 15px !important;
+      height: 15px !important;
       background: #111 !important;
       display: flex !important;
       opacity: 1 !important;
@@ -887,8 +887,8 @@
     /* ov-near-nav ha priorità su cursor-near-close: annulla la freccia */
     body.ov-near-nav.cursor-near-close #cursor-dot {
       background: #111 !important;
-      width: 22px !important;
-      height: 22px !important;
+      width: 15px !important;
+      height: 15px !important;
     }
     body.ov-near-nav.cursor-near-close #cursor-dot::before {
       content: '' !important;
@@ -1057,7 +1057,7 @@
       font-family: var(--font-mono);
       font-size: 11px;
       font-weight: 400;
-      color: #4a6e8a;
+      color: #c9a093;
       background: none;
       border: none;
       padding: 0;
@@ -1072,7 +1072,7 @@
       color: #000;
     }
     [data-theme="dark"] .archive-order-label { color: #fff; }
-    [data-theme="dark"] .archive-order-btn { color: #6a8ea8; }
+    [data-theme="dark"] .archive-order-btn { color: #d3b3a8; }
     [data-theme="dark"] .archive-order-btn.active { color: #fff; }
     [data-theme="dark"] .archive-order-btn:not(.active):hover { color: #fff; }
     .archive-row {
@@ -2034,7 +2034,7 @@
       right: -12px;
       width: 24px;
       height: 24px;
-      background: #4a6e8a;
+      background: #c9a093;
       border-radius: 50%;
       display: flex;
       align-items: center;
@@ -2298,8 +2298,8 @@
 
     /* Cursore uguale al base nella gallery */
     body.gallery-active #cursor-dot {
-      width: 22px !important;
-      height: 22px !important;
+      width: 15px !important;
+      height: 15px !important;
     }
     /* In gallery: cursore nero standard (non rosso) */
     body.gallery-active.cursor-red #cursor-dot,
@@ -2317,8 +2317,8 @@
       background: transparent !important;
       border: none !important;
       box-shadow: none !important;
-      width: 22px !important;
-      height: 22px !important;
+      width: 15px !important;
+      height: 15px !important;
     }
     body.gallery-cursor-down #cursor-dot::before {
       content: '↓';
@@ -2342,8 +2342,8 @@
       background: transparent !important;
       border: none !important;
       box-shadow: none !important;
-      width: 22px !important;
-      height: 22px !important;
+      width: 15px !important;
+      height: 15px !important;
     }
     body.gallery-cursor-up #cursor-dot::before {
       content: '↑';
@@ -2488,7 +2488,7 @@
       font-family: var(--font-mono);
       font-size: 11px;
       font-weight: 400;
-      color: #4a6e8a;
+      color: #c9a093;
       background: none;
       border: none;
       padding: 0;
@@ -2503,7 +2503,7 @@
       color: #000;
     }
     [data-theme="dark"] .cities-order-label { color: #fff; }
-    [data-theme="dark"] .cities-order-btn { color: #6a8ea8; }
+    [data-theme="dark"] .cities-order-btn { color: #d3b3a8; }
     [data-theme="dark"] .cities-order-btn.active { color: #fff; }
     [data-theme="dark"] .cities-order-btn:not(.active):hover { color: #fff; }
     .cities-toggle-btn {
@@ -2511,15 +2511,15 @@
       font-size: 8px;
       letter-spacing: 0.08em;
       color: #fff;
-      background: #4a6e8a;
-      border: 1px solid #4a6e8a;
+      background: #c9a093;
+      border: 1px solid #c9a093;
       padding: 4px 10px;
       cursor: none;
       border-radius: 4px;
       transition: color .15s, border-color .15s, background .15s;
       text-transform: none;
     }
-    .cities-toggle-btn:first-child { border-right: 1px solid #6a8ea8; margin-right: 2px; }
+    .cities-toggle-btn:first-child { border-right: 1px solid #d3b3a8; margin-right: 2px; }
     .cities-toggle-btn.active {
       color: #fff;
       border-color: #000;
@@ -2830,7 +2830,7 @@
 
     /* Pallino chiudi box 2 — viola acceso */
     #cip-photo-viewer-close {
-      --close-color: #4a6e8a !important;
+      --close-color: #c9a093 !important;
       width: 17px;
       height: 17px;
       margin-top: -13px;   /* alzato di ulteriori 5px */
@@ -4657,7 +4657,7 @@
           </svg>
         </button>
         <div id="cip-photo-viewer-header-text"></div>
-        <button class="btn-circle-close" id="cip-photo-viewer-close" style="--close-color:#4a6e8a"></button>
+        <button class="btn-circle-close" id="cip-photo-viewer-close" style="--close-color:#c9a093"></button>
       </div>
       <!-- 2 righe meta: Prints available e Print size -->
       <div id="cip-photo-viewer-meta">
@@ -4679,7 +4679,7 @@
           <p class="cip-title" id="cip-title">—</p>
           <p class="cip-subtitle" id="cip-subtitle"></p>
         </div>
-        <button class="cip-close btn-circle-close" id="cip-close" style="--close-color:#4a6e8a"></button>
+        <button class="cip-close btn-circle-close" id="cip-close" style="--close-color:#c9a093"></button>
       </div>
       <div class="cip-meta" id="cip-meta"></div>
       <!-- Riga sotto il testo header box 2 rimossa (border-bottom già nell'header) -->
