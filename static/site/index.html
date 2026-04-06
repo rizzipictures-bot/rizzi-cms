@@ -2633,7 +2633,7 @@
       bottom: 0;               /* arriva fino al fondo pagina */
       width: clamp(200px, 22vw, 300px);  /* responsivo: scala tra 200px e 300px */
       height: auto;            /* altezza calcolata da top+bottom */
-      background: rgba(17,17,17,0.85);             /* nero 85% — Box 1 */
+      background: #111;             /* nero 85% — Box 1 */
       border-right: 0.5px solid rgba(255,255,255,0.18); /* separatore bianco sottilissimo verso Box 2 */
       color: #e0e0e0;
       z-index: 700;
@@ -2751,7 +2751,7 @@
       /* left e width calcolati via JS in base alla larghezza reale del Box 1 */
       top: 0;                  /* JS sovrascrive con bordo inferiore titolo Cities */
       bottom: 0;               /* arriva fino al fondo pagina */
-      background: rgba(17,17,17,0.85);            /* nero 85% — Box 2 */
+      background: #111;            /* nero 85% — Box 2 */
       color: #e8e8e8;
       z-index: 695;
       flex-direction: column;
@@ -3037,14 +3037,14 @@
       flex: 1;                 /* occupa tutto lo spazio rimanente */
       width: 100%;
       min-height: 0;           /* necessario per flex-shrink corretto */
-      background: rgba(17,17,17,0.85);           /* stesso colore del box — uniforme su tutta la fascia */
+      background: #111;           /* stesso colore del box — uniforme su tutta la fascia */
       margin-top: 0;
     }
     #cip-photo-viewer-img.is-vertical {
       object-fit: contain;     /* verticale: mostra per intero */
       object-position: left bottom;  /* base allineata al fondo, partenza da sinistra */
       align-self: stretch;     /* si estende fino in fondo */
-      background: rgba(17,17,17,0.85);           /* stesso colore del box — nessuna zona diversa */
+      background: #111;           /* stesso colore del box — nessuna zona diversa */
     }
     /* Contenitore foto Box 2: colonna flex, foto riempie il fondo */
     #cip-photo-viewer {
