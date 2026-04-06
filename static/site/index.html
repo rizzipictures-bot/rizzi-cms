@@ -2464,7 +2464,43 @@
       border-bottom: 1px solid var(--light);
       margin-top: 10px;   /* più distante dal titolo */
       margin-bottom: -6px; /* più vicino alla riga header sotto */
+      position: relative;
     }
+    /* Controllo Order Cities — allineato con la colonna Place via JS */
+    #cities-order-ctrl {
+      position: absolute;
+      top: 0;
+      left: 0;   /* aggiornato via JS */
+      display: flex;
+      align-items: baseline;
+      gap: 12px;
+      pointer-events: auto;
+    }
+    .cities-order-label {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      font-weight: 400;
+      color: #000;
+      letter-spacing: 0;
+    }
+    .cities-order-btn {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      font-weight: 400;
+      color: #e00;
+      background: none;
+      border: none;
+      padding: 0;
+      cursor: pointer;
+      letter-spacing: 0;
+      line-height: 1;
+    }
+    .cities-order-btn.active {
+      color: #000;
+    }
+    [data-theme="dark"] .cities-order-label { color: #fff; }
+    [data-theme="dark"] .cities-order-btn { color: #e00; }
+    [data-theme="dark"] .cities-order-btn.active { color: #fff; }
     .cities-toggle-btn {
       font-family: var(--font-mono);
       font-size: 8px;
@@ -4560,6 +4596,11 @@
       <div class="cities-view-toggle">
         <button class="cities-toggle-btn active" id="cities-btn-list">lista</button>
         <button class="cities-toggle-btn" id="cities-btn-thumbs">thumbs</button>
+        <div id="cities-order-ctrl">
+          <span class="cities-order-label">Order:</span>
+          <button id="cities-order-std" class="cities-order-btn active">Standard</button>
+          <button id="cities-order-chron" class="cities-order-btn">Chronological</button>
+        </div>
       </div>
       <!-- Intestazione colonne (visibile solo in lista) -->
       <div class="cities-col-header" id="cities-col-header">
@@ -6466,10 +6507,27 @@ function buildCitiesIndex() {
   });
 
   // ── VISTA LISTA ─────────────────────────────────────────────
-  // Codice: prima lettera del titolo + numero progressivo per lettera
-  let letterCounts = {};
+  // Ordinamento corrente: 'std' (alfabetico, default) o 'chron' (per anno)
+  let _citiesOrder = 'std';
 
-  allProjects.forEach(p => {
+  function getCitiesSorted(base) {
+    const arr = [...base];
+    if (_citiesOrder === 'chron') {
+      arr.sort((a, b) => {
+        const ya = parseInt(a.year) || 0, yb = parseInt(b.year) || 0;
+        if (yb !== ya) return yb - ya;
+        return (a.title || '').localeCompare(b.title || '', 'it', {sensitivity: 'base'});
+      });
+    } else {
+      arr.sort((a, b) => (a.title || '').localeCompare(b.title || '', 'it'));
+    }
+    return arr;
+  }
+
+  function renderCitiesRows(projects) {
+    listView.innerHTML = '';
+    let letterCounts = {};
+    projects.forEach(p => {
     const firstLetter = (p.title || '?')[0].toUpperCase();
     if (!letterCounts[firstLetter]) letterCounts[firstLetter] = 0;
     letterCounts[firstLetter]++;
@@ -6679,7 +6737,38 @@ function buildCitiesIndex() {
     });
 
     listView.appendChild(row);
-  });
+    }); // fine forEach interno
+  } // fine renderCitiesRows
+
+  // Chiamata iniziale con ordine Standard (alfabetico)
+  renderCitiesRows(getCitiesSorted(allProjects));
+
+  // Bottoni Order Cities
+  const _btnCitStd   = document.getElementById('cities-order-std');
+  const _btnCitChron = document.getElementById('cities-order-chron');
+  function _setCitiesOrder(order) {
+    _citiesOrder = order;
+    if (_btnCitStd)   _btnCitStd.classList.toggle('active', order === 'std');
+    if (_btnCitChron) _btnCitChron.classList.toggle('active', order === 'chron');
+    renderCitiesRows(getCitiesSorted(allProjects));
+  }
+  if (_btnCitStd)   _btnCitStd.addEventListener('click',   () => _setCitiesOrder('std'));
+  if (_btnCitChron) _btnCitChron.addEventListener('click', () => _setCitiesOrder('chron'));
+
+  // Allinea il controllo Order Cities con la colonna Place via JS
+  function _alignCitiesOrderCtrl() {
+    const ctrl   = document.getElementById('cities-order-ctrl');
+    const colHdr = document.getElementById('cities-col-header');
+    if (!ctrl || !colHdr) return;
+    // La terza colonna (Place) è il terzo span (indice 2)
+    const placeCol = colHdr.querySelectorAll('span')[2];
+    if (!placeCol) return;
+    const placeRect = placeCol.getBoundingClientRect();
+    const wrapRect  = ctrl.parentElement.getBoundingClientRect();
+    ctrl.style.left = (placeRect.left - wrapRect.left) + 'px';
+  }
+  requestAnimationFrame(_alignCitiesOrderCtrl);
+  window.addEventListener('resize', _alignCitiesOrderCtrl);
 
   // ── TOGGLE ───────────────────────────────────────────────────
   const btnList   = document.getElementById('cities-btn-list');
