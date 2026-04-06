@@ -1035,6 +1035,30 @@
     .archive-col-header span:last-child {
       text-align: center;
     }
+    /* Controllo Order inline */
+    .archive-order-wrap {
+      display: flex;
+      align-items: center;
+      gap: 0;
+      white-space: nowrap;
+    }
+    .archive-order-btn {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      font-weight: 400;
+      color: var(--accent, #e00);
+      background: none;
+      border: none;
+      padding: 0;
+      cursor: pointer;
+      letter-spacing: 0;
+      line-height: 1;
+    }
+    .archive-order-btn.active {
+      color: #000;
+    }
+    [data-theme="dark"] .archive-order-btn { color: var(--accent, #e00); }
+    [data-theme="dark"] .archive-order-btn.active { color: #fff; }
     .archive-row {
       display: grid;
       grid-template-columns: 100px 1fr 1fr 1fr 1fr 80px;
@@ -4465,7 +4489,7 @@
         <span>Project</span>
         <span>Subtitle</span>
         <span>Place</span>
-        <span>Publication</span>
+        <span class="archive-order-wrap">Order&nbsp;&nbsp;<button id="archive-order-chron" class="archive-order-btn active">Chronological</button>&nbsp;&nbsp;<button id="archive-order-alpha" class="archive-order-btn">Alphabetical</button></span>
         <span>Media</span>
       </div>
       <div id="archive-list">
@@ -7294,7 +7318,40 @@ function buildArchive() {
     });
   }
 
-  renderRows(archiveProjects);
+  // Ordinamento corrente: 'chron' (default) o 'alpha'
+  let _archiveOrder = 'chron';
+
+  function getSortedProjects(base) {
+    const arr = [...base];
+    if (_archiveOrder === 'alpha') {
+      arr.sort((a, b) => (a.title || '').localeCompare(b.title || '', 'it', {sensitivity: 'base'}));
+    } else {
+      // Chronological: anno decrescente (più recente prima), poi titolo
+      arr.sort((a, b) => {
+        const ya = parseInt(a.year) || 0, yb = parseInt(b.year) || 0;
+        if (yb !== ya) return yb - ya;
+        return (a.title || '').localeCompare(b.title || '', 'it', {sensitivity: 'base'});
+      });
+    }
+    return arr;
+  }
+
+  renderRows(getSortedProjects(archiveProjects));
+
+  // Bottoni Order
+  const _btnChron = document.getElementById('archive-order-chron');
+  const _btnAlpha = document.getElementById('archive-order-alpha');
+  function _setOrder(order) {
+    _archiveOrder = order;
+    if (_btnChron) _btnChron.classList.toggle('active', order === 'chron');
+    if (_btnAlpha) _btnAlpha.classList.toggle('active', order === 'alpha');
+    const _si = document.getElementById('archive-search');
+    const q = _si ? _si.value.toLowerCase().trim() : '';
+    const base = q ? textSearch(q) : archiveProjects;
+    renderRows(getSortedProjects(base));
+  }
+  if (_btnChron) _btnChron.addEventListener('click', () => _setOrder('chron'));
+  if (_btnAlpha) _btnAlpha.addEventListener('click', () => _setOrder('alpha'));
 
   // Ricerca testuale + semantica AI
   const searchInput = document.getElementById('archive-search');
@@ -7336,11 +7393,11 @@ function buildArchive() {
   if (searchInput) {
     searchInput.addEventListener('input', () => {
       const q = searchInput.value.toLowerCase().trim();
-      if (!q) { renderRows(archiveProjects); return; }
+      if (!q) { renderRows(getSortedProjects(archiveProjects)); return; }
 
       // Ricerca testuale immediata
       const textResults = textSearch(q);
-      renderRows(textResults);
+      renderRows(getSortedProjects(textResults));
 
       // Ricerca semantica AI con debounce 600ms
       clearTimeout(searchTimer);
@@ -7350,7 +7407,7 @@ function buildArchive() {
           // Unisce i risultati: AI prima, poi quelli testuali non già presenti
           const aiIds = new Set(aiResults.map(p => p.id));
           const merged = [...aiResults, ...textResults.filter(p => !aiIds.has(p.id))];
-          renderRows(merged);
+          renderRows(getSortedProjects(merged));
         }
       }, 600);
     });
