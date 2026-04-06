@@ -2723,6 +2723,11 @@
     body.cip-light-mode #cities-line-v {
       background: rgba(0,0,0,0.20);
     }
+    /* In light-mode, le linee spariscono quando i box sono chiusi */
+    body.cip-light-mode:not(.cities-box2-open) #cities-line-h,
+    body.cip-light-mode:not(.cities-box2-open) #cities-line-v {
+      display: none !important;
+    }
 
     /* Header box 2 — icona monitor + testo descrittivo + pallino viola sulla stessa riga */
     #cip-photo-viewer-header {
