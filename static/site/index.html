@@ -1905,11 +1905,9 @@
       width: 14px;
       height: 14px;
       display: block;
-      stroke: #fff;
-      fill: none;
-      stroke-width: 1.6;
-      stroke-linecap: round;
-      stroke-linejoin: round;
+      fill: #fff;
+      stroke: none;
+      color: #fff;
     }
     /* Cities: bottone zoom più piccolo */
     #cip-photo-viewer .ae-zoom-btn {
@@ -1921,6 +1919,9 @@
     #cip-photo-viewer .ae-zoom-btn svg {
       width: 11px;
       height: 11px;
+      fill: #fff;
+      stroke: none;
+      color: #fff;
     }
     #cip-photo-viewer.open .ae-zoom-btn {
       opacity: 0;
@@ -1935,7 +1936,9 @@
       background: rgba(255,255,255,0.7);
     }
     .archive-expanded.box-white .ae-zoom-btn svg {
-      stroke: #222;
+      fill: #222;
+      stroke: none;
+      color: #222;
     }
 
     /* ══════════════════════════════════════════════════════════════
@@ -1972,11 +1975,11 @@
     }
     #ae-zoom-popup-close {
       position: absolute;
-      top: -9px;
-      right: -9px;
-      width: 18px;
-      height: 18px;
-      background: #e00;
+      top: -12px;
+      right: -12px;
+      width: 24px;
+      height: 24px;
+      background: #7b2fff;
       border-radius: 50%;
       display: flex;
       align-items: center;
@@ -1987,11 +1990,11 @@
       transition: background .15s;
     }
     #ae-zoom-popup-close:hover {
-      background: #c00;
+      background: #6a1fe0;
     }
     #ae-zoom-popup-close svg {
-      width: 7px;
-      height: 7px;
+      width: 9px;
+      height: 9px;
       display: block;
       stroke: #fff;
       fill: none;
@@ -4537,7 +4540,7 @@
         <div class="cpv-meta-row"><span class="cpv-meta-label">Print size</span><span class="cpv-meta-value" id="cpv-printsize"></span></div>
       </div>
       <img id="cip-photo-viewer-img" src="" alt="">
-      <button class="ae-zoom-btn" id="cip-zoom-btn" aria-label="Ingrandisci immagine" style="display:none"><svg viewBox="0 0 14 14"><circle cx="5.5" cy="5.5" r="3.5"/><line x1="8.5" y1="8.5" x2="13" y2="13"/></svg></button>
+      <button class="ae-zoom-btn" id="cip-zoom-btn" aria-label="Ingrandisci immagine" style="display:none"><svg viewBox="0 0 20 20" fill="currentColor"><path d="M8.5 2a6.5 6.5 0 1 0 3.9 11.7l3.7 3.7a1 1 0 0 0 1.4-1.4l-3.7-3.7A6.5 6.5 0 0 0 8.5 2zm0 2a4.5 4.5 0 1 1 0 9 4.5 4.5 0 0 1 0-9z"/></svg></button>
     </div>
 
     <!-- Box info fisso Cities (slide da destra) -->
@@ -8925,7 +8928,7 @@ loadFromCMS();
     const btn = document.createElement('button');
     btn.className = 'ae-zoom-btn';
     btn.setAttribute('aria-label', 'Ingrandisci immagine');
-    btn.innerHTML = '<svg viewBox="0 0 14 14"><circle cx="5.5" cy="5.5" r="3.5"/><line x1="8.5" y1="8.5" x2="13" y2="13"/></svg>';
+    btn.innerHTML = '<svg viewBox="0 0 20 20" fill="currentColor"><path d="M8.5 2a6.5 6.5 0 1 0 3.9 11.7l3.7 3.7a1 1 0 0 0 1.4-1.4l-3.7-3.7A6.5 6.5 0 0 0 8.5 2zm0 2a4.5 4.5 0 1 1 0 9 4.5 4.5 0 0 1 0-9z"/></svg>';
     return btn;
   }
 
@@ -8959,28 +8962,38 @@ loadFromCMS();
   // Calcola le dimensioni reali dell'immagine con object-fit:contain
   // e posiziona il bottone zoom nell'angolo basso-destra dell'immagine stessa
   function _positionZoomBtn(btn, imgEl) {
+    if (!imgEl.naturalWidth || !imgEl.naturalHeight) return;
     const container = imgEl.parentElement;
-    if (!container || !imgEl.naturalWidth || !imgEl.naturalHeight) return;
+    if (!container) return;
     const cW = container.clientWidth;
     const cH = container.clientHeight;
     const nW = imgEl.naturalWidth;
     const nH = imgEl.naturalHeight;
     const scale = Math.min(cW / nW, cH / nH);
-    const rendW = nW * scale;
-    const rendH = nH * scale;
-    // object-position: left center (Archive modalità 1) o center center (modalità 2)
+    const rendW = Math.round(nW * scale);
+    const rendH = Math.round(nH * scale);
+    // Calcola offset in base a object-position
     const style = window.getComputedStyle(imgEl);
-    const pos = style.objectPosition || 'left center';
+    const pos = (style.objectPosition || '').toLowerCase();
     let offX = 0, offY = 0;
-    if (pos.includes('center') && !pos.startsWith('left')) {
-      offX = (cW - rendW) / 2;
+    // X offset
+    if (pos.includes('center') && !pos.startsWith('left') && !pos.startsWith('right')) {
+      offX = Math.round((cW - rendW) / 2);
+    } else if (pos.startsWith('right') || pos.endsWith('right')) {
+      offX = cW - rendW;
     }
-    offY = (cH - rendH) / 2;
-    // Margine interno dal bordo dell'immagine
-    const margin = 10;
-    const btnSize = parseInt(window.getComputedStyle(btn).width) || 28;
-    btn.style.right  = Math.round(cW - offX - rendW + margin) + 'px';
-    btn.style.bottom = Math.round(offY + margin) + 'px';
+    // Y offset
+    if (pos.includes('center') && !pos.includes('top') && !pos.includes('bottom')) {
+      offY = Math.round((cH - rendH) / 2);
+    } else if (pos.includes('bottom')) {
+      offY = cH - rendH;
+    }
+    // Posiziona il bottone nell'angolo basso-destra dell'immagine reale
+    const margin = 8;
+    btn.style.right  = (cW - offX - rendW + margin) + 'px';
+    btn.style.bottom = (offY + margin) + 'px';
+    btn.style.left   = 'auto';
+    btn.style.top    = 'auto';
   }
 
   window._addAeZoomBtn = function(heroEl, getImgSrc) {
@@ -9023,21 +9036,24 @@ loadFromCMS();
   // Calcola le dimensioni reali dell'immagine con object-fit:contain
   // e posiziona il bottone zoom nell'angolo basso-destra dell'immagine stessa
   function _positionCipZoom() {
+    if (!_cipImg.naturalWidth || !_cipImg.naturalHeight) return;
     const container = _cipImg.parentElement;
-    if (!container || !_cipImg.naturalWidth || !_cipImg.naturalHeight) return;
+    if (!container) return;
     const cW = container.clientWidth;
     const cH = container.clientHeight;
     const nW = _cipImg.naturalWidth;
     const nH = _cipImg.naturalHeight;
     const scale = Math.min(cW / nW, cH / nH);
-    const rendW = nW * scale;
-    const rendH = nH * scale;
-    // object-position: left bottom (Cities)
-    const offX = 0;                  // allineato a sinistra
-    const offY = cH - rendH;         // allineato in basso
-    const margin = 10;
-    _cipZoomBtn.style.right  = Math.round(cW - offX - rendW + margin) + 'px';
-    _cipZoomBtn.style.bottom = Math.round(offY + margin) + 'px';
+    const rendW = Math.round(nW * scale);
+    const rendH = Math.round(nH * scale);
+    // object-position: left bottom (Cities) — allineato a sinistra e in basso
+    const offX = 0;
+    const offY = cH - rendH;
+    const margin = 8;
+    _cipZoomBtn.style.right  = (cW - offX - rendW + margin) + 'px';
+    _cipZoomBtn.style.bottom = (offY + margin) + 'px';
+    _cipZoomBtn.style.left   = 'auto';
+    _cipZoomBtn.style.top    = 'auto';
   }
 
   // Mostra/nasconde il bottone zoom in base allo stato del viewer
