@@ -6792,6 +6792,9 @@ function buildCitiesIndex() {
       thumbsView.style.display = 'none';
       if (colHeader) colHeader.style.display = '';
       document.body.classList.remove('cities-thumbs-active');
+      // Ripristina Order allineato con Place
+      const _ctrl = document.getElementById('cities-order-ctrl');
+      if (_ctrl) { _ctrl.style.left = ''; _ctrl.style.right = 'auto'; requestAnimationFrame(_alignCitiesOrderCtrl); }
     });
     btnThumbs.addEventListener('click', () => {
       btnThumbs.classList.add('active');
@@ -6801,6 +6804,9 @@ function buildCitiesIndex() {
       listView.style.display = 'none';
       if (colHeader) colHeader.style.display = 'none';
       document.body.classList.add('cities-thumbs-active');
+      // Sposta Order a destra in vista Thumbs
+      const _ctrl = document.getElementById('cities-order-ctrl');
+      if (_ctrl) { _ctrl.style.left = 'auto'; _ctrl.style.right = '0px'; }
       // Nascondi preview se visibile
       document.getElementById('cities-cursor-preview').classList.remove('visible');
       // Chiudi il box info (vale solo in modalità lista)
