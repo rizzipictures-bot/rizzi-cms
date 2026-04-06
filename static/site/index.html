@@ -1011,13 +1011,32 @@
       width: 100%;
       padding: 4px 0 8px;
       background: transparent;
-      color: var(--accent);   /* viola quando si digita */
+      color: #7b2fff;   /* viola quando si digita */
       letter-spacing: 0;
     }
     .archive-search::placeholder {
       color: #7b2fff;   /* viola */
       font-weight: 500;
       font-size: 12px;
+    }
+    /* Link "View all | keyword" sotto il campo di ricerca */
+    #archive-search-viewall {
+      display: none;
+      font-family: var(--font-mono);
+      font-size: 11px;
+      font-weight: 400;
+      color: #7b2fff;
+      padding: 3px 0 7px;
+      cursor: pointer;
+      letter-spacing: 0;
+      text-decoration: none;
+      transition: opacity 0.15s;
+    }
+    #archive-search-viewall:hover {
+      opacity: 0.65;
+    }
+    #archive-search-viewall.visible {
+      display: block;
     }
     .archive-col-header {
       display: grid;
@@ -4539,6 +4558,7 @@
       <div class="archive-page-title">Archive<span class="title-sep"></span>Works Index</div>
       <div class="archive-search-wrap">
         <input class="archive-search" id="archive-search" type="text" placeholder="Type any keyword" autocomplete="off">
+        <div id="archive-search-viewall"></div>
         <div id="archive-order-ctrl">
           <span class="archive-order-label">Order:</span>
           <button id="archive-order-chron" class="archive-order-btn active">Chronological</button>
@@ -4988,12 +5008,12 @@ const PROJECTS_STATIC = [
     count: 6,
     realImages: [23,24,25,0,1,2],
     images: [
-      { url: REAL_IMAGES[23].file, ar: REAL_IMAGES[23].ar },
-      { url: REAL_IMAGES[24].file, ar: REAL_IMAGES[24].ar },
-      { url: REAL_IMAGES[25].file, ar: REAL_IMAGES[25].ar },
-      { url: REAL_IMAGES[0].file,  ar: REAL_IMAGES[0].ar  },
-      { url: REAL_IMAGES[1].file,  ar: REAL_IMAGES[1].ar  },
-      { url: REAL_IMAGES[2].file,  ar: REAL_IMAGES[2].ar  },
+      { url: REAL_IMAGES[23].file, ar: REAL_IMAGES[23].ar, keywords: 'tokyo, urban, architecture, geometry, japan' },
+      { url: REAL_IMAGES[24].file, ar: REAL_IMAGES[24].ar, keywords: 'tokyo, street, people, japan, night' },
+      { url: REAL_IMAGES[25].file, ar: REAL_IMAGES[25].ar, keywords: 'tokyo, light, shadow, urban, japan' },
+      { url: REAL_IMAGES[0].file,  ar: REAL_IMAGES[0].ar,  keywords: 'tokyo, landscape, dawn, japan, silence' },
+      { url: REAL_IMAGES[1].file,  ar: REAL_IMAGES[1].ar,  keywords: 'tokyo, geometry, building, japan' },
+      { url: REAL_IMAGES[2].file,  ar: REAL_IMAGES[2].ar,  keywords: 'tokyo, street, architecture, japan, urban' },
     ]
   },
   {
@@ -5008,12 +5028,12 @@ const PROJECTS_STATIC = [
     count: 6,
     realImages: [7,8,9,10,11,12],
     images: [
-      { url: REAL_IMAGES[7].file,  ar: REAL_IMAGES[7].ar  },
-      { url: REAL_IMAGES[8].file,  ar: REAL_IMAGES[8].ar  },
-      { url: REAL_IMAGES[9].file,  ar: REAL_IMAGES[9].ar  },
-      { url: REAL_IMAGES[10].file, ar: REAL_IMAGES[10].ar },
-      { url: REAL_IMAGES[11].file, ar: REAL_IMAGES[11].ar },
-      { url: REAL_IMAGES[12].file, ar: REAL_IMAGES[12].ar },
+      { url: REAL_IMAGES[7].file,  ar: REAL_IMAGES[7].ar,  keywords: 'portrait, people, studio, light, milano' },
+      { url: REAL_IMAGES[8].file,  ar: REAL_IMAGES[8].ar,  keywords: 'portrait, face, studio, black and white' },
+      { url: REAL_IMAGES[9].file,  ar: REAL_IMAGES[9].ar,  keywords: 'portrait, people, natural light, studio' },
+      { url: REAL_IMAGES[10].file, ar: REAL_IMAGES[10].ar, keywords: 'portrait, identity, studio, milano' },
+      { url: REAL_IMAGES[11].file, ar: REAL_IMAGES[11].ar, keywords: 'portrait, shadow, face, studio' },
+      { url: REAL_IMAGES[12].file, ar: REAL_IMAGES[12].ar, keywords: 'portrait, people, light, studio, milano' },
     ]
   },
   {
@@ -5028,13 +5048,13 @@ const PROJECTS_STATIC = [
     count: 7,
     realImages: [13,14,16,17,18,19,20],
     images: [
-      { url: REAL_IMAGES[13].file, ar: REAL_IMAGES[13].ar },
-      { url: REAL_IMAGES[14].file, ar: REAL_IMAGES[14].ar },
-      { url: REAL_IMAGES[16].file, ar: REAL_IMAGES[16].ar },
-      { url: REAL_IMAGES[17].file, ar: REAL_IMAGES[17].ar },
-      { url: REAL_IMAGES[18].file, ar: REAL_IMAGES[18].ar },
-      { url: REAL_IMAGES[19].file, ar: REAL_IMAGES[19].ar },
-      { url: REAL_IMAGES[20].file, ar: REAL_IMAGES[20].ar },
+      { url: REAL_IMAGES[13].file, ar: REAL_IMAGES[13].ar, keywords: 'landscape, nature, light, italy, mountain' },
+      { url: REAL_IMAGES[14].file, ar: REAL_IMAGES[14].ar, keywords: 'landscape, industrial, north italy, fog' },
+      { url: REAL_IMAGES[16].file, ar: REAL_IMAGES[16].ar, keywords: 'landscape, field, italy, agriculture' },
+      { url: REAL_IMAGES[17].file, ar: REAL_IMAGES[17].ar, keywords: 'landscape, factory, industrial, north italy' },
+      { url: REAL_IMAGES[18].file, ar: REAL_IMAGES[18].ar, keywords: 'landscape, water, canal, italy, reflection' },
+      { url: REAL_IMAGES[19].file, ar: REAL_IMAGES[19].ar, keywords: 'landscape, sky, clouds, italy, nature' },
+      { url: REAL_IMAGES[20].file, ar: REAL_IMAGES[20].ar, keywords: 'landscape, mountain, light, italy, nature' },
     ]
   },
   {
@@ -5049,12 +5069,12 @@ const PROJECTS_STATIC = [
     count: 6,
     realImages: [21,22,3,4,5,6],
     images: [
-      { url: REAL_IMAGES[21].file, ar: REAL_IMAGES[21].ar },
-      { url: REAL_IMAGES[22].file, ar: REAL_IMAGES[22].ar },
-      { url: REAL_IMAGES[3].file,  ar: REAL_IMAGES[3].ar  },
-      { url: REAL_IMAGES[4].file,  ar: REAL_IMAGES[4].ar  },
-      { url: REAL_IMAGES[5].file,  ar: REAL_IMAGES[5].ar  },
-      { url: REAL_IMAGES[6].file,  ar: REAL_IMAGES[6].ar  },
+      { url: REAL_IMAGES[21].file, ar: REAL_IMAGES[21].ar, keywords: 'study, form, texture, abstract, light' },
+      { url: REAL_IMAGES[22].file, ar: REAL_IMAGES[22].ar, keywords: 'study, space, geometry, shadow' },
+      { url: REAL_IMAGES[3].file,  ar: REAL_IMAGES[3].ar,  keywords: 'study, nature, texture, detail' },
+      { url: REAL_IMAGES[4].file,  ar: REAL_IMAGES[4].ar,  keywords: 'study, light, abstract, form' },
+      { url: REAL_IMAGES[5].file,  ar: REAL_IMAGES[5].ar,  keywords: 'study, architecture, geometry, shadow' },
+      { url: REAL_IMAGES[6].file,  ar: REAL_IMAGES[6].ar,  keywords: 'study, landscape, nature, light' },
     ]
   },
 ];
@@ -6820,9 +6840,10 @@ function buildCitiesIndex() {
 function buildArchive() {
   const list = document.getElementById('archive-list');
   list.innerHTML = '';
-
   // Filtra solo i progetti con category_id 'archive'
-  const archiveProjects = PROJECTS.filter(p => (p.category_id || p.section) === 'archive');
+  // Se PROJECTS è vuoto (CMS non disponibile), usa PROJECTS_STATIC come fallback
+  const _allProjects = PROJECTS.length > 0 ? PROJECTS : PROJECTS_STATIC;
+  const archiveProjects = _allProjects.filter(p => (p.category_id || p.section) === 'archive' || (!p.category_id && !p.section));;
 
   let activeExpanded = null; // tiene traccia della riga espansa
 
@@ -7340,7 +7361,7 @@ function buildArchive() {
               tag.appendChild(kwText);
               tag.addEventListener('click', e => {
                 e.stopPropagation();
-                openKeywordResults(kw);
+                window.openKeywordResults(kw);
               });
               kwTagsWrap.appendChild(tag);
             });
@@ -7532,14 +7553,68 @@ function buildArchive() {
     } catch { return null; }
   }
 
+  // Elemento link "View all | keyword"
+  const searchViewAllEl = document.getElementById('archive-search-viewall');
+
+  // Funzione per raccogliere tutte le immagini che contengono la keyword
+  function getImagesForKeyword(q) {
+    const results = [];
+    const _allProjects = PROJECTS.length > 0 ? PROJECTS : PROJECTS_STATIC;
+    _allProjects.forEach(p => {
+      (p.images || []).forEach(img => {
+        const inKeywords = (img.keywords || '').toLowerCase().includes(q);
+        const inCaption  = (img.title || img.caption || '').toLowerCase().includes(q);
+        const inProject  = [p.title, p.subtitle, p.place, p.publication, p.description, String(p.year || '')]
+          .some(v => (v || '').toLowerCase().includes(q));
+        if (inKeywords || inCaption || inProject) {
+          results.push(img);
+        }
+      });
+    });
+    return results;
+  }
+
+  // Apre l'overlay View All per una keyword
+  window.openKeywordResults = function(kw) {
+    const q = kw.toLowerCase().trim();
+    if (!q) return;
+    const images = getImagesForKeyword(q);
+    if (images.length === 0) return;
+    window.openViewAllOverlay(images, kw, true);
+  };
+
+  // Aggiorna il link View all in base alla query
+  function updateSearchViewAll(q) {
+    if (!searchViewAllEl) return;
+    if (!q) {
+      searchViewAllEl.textContent = '';
+      searchViewAllEl.classList.remove('visible');
+      return;
+    }
+    searchViewAllEl.textContent = 'View all | ' + q;
+    searchViewAllEl.classList.add('visible');
+  }
+
+  if (searchViewAllEl) {
+    searchViewAllEl.addEventListener('click', () => {
+      const q = searchInput ? searchInput.value.toLowerCase().trim() : '';
+      if (q) openKeywordResults(q);
+    });
+  }
+
   if (searchInput) {
     searchInput.addEventListener('input', () => {
       const q = searchInput.value.toLowerCase().trim();
-      if (!q) { renderRows(getSortedProjects(archiveProjects)); return; }
+      if (!q) {
+        renderRows(getSortedProjects(archiveProjects));
+        updateSearchViewAll('');
+        return;
+      }
 
       // Ricerca testuale immediata
       const textResults = textSearch(q);
       renderRows(getSortedProjects(textResults));
+      updateSearchViewAll(q);
 
       // Ricerca semantica AI con debounce 600ms
       clearTimeout(searchTimer);
