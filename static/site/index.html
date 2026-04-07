@@ -1285,24 +1285,22 @@
 
     /* Contenuto interno del box nero */
     .archive-expanded-inner {
-      padding: 0;                    /* nessun padding — il padding-right è sulla colonna destra */
+      padding: 0;
       display: flex;
       flex-direction: row;
-      align-items: stretch;          /* colonne si estendono a tutta l'altezza */
-      /* altezza determinata dalla foto hero — non fissa */
-      min-height: 300px;
-      max-height: 600px;
+      align-items: flex-start;       /* la colonna destra NON si estende oltre l'altezza della hero */
+      height: 500px;                 /* altezza fissa del box — non cambia mai */
       gap: 0;
       box-sizing: border-box;
-      position: relative;            /* contesto per View all absolute */
-      overflow: hidden;              /* evita overflow orizzontale */
+      position: relative;
+      overflow: hidden;
     }
 
-    /* Foto hero grande a sinistra — BORDERLESS, altezza fissa, larghezza via aspect-ratio */
+    /* Foto hero grande a sinistra — dimensioni esatte impostate via JS */
     .archive-expanded-hero {
       flex-shrink: 0;
-      height: 500px;                 /* altezza fissa del box */
-      width: auto;                   /* larghezza calcolata via aspect-ratio impostata da JS */
+      height: 500px;                 /* altezza fissa */
+      width: 665px;                  /* larghezza default (AR 1.33 × 500), sovrascritta da JS */
       max-width: 700px;
       overflow: hidden;
       position: relative;
@@ -1318,8 +1316,7 @@
       display: block;
       width: 100%;
       height: 100%;
-      object-fit: contain;
-      object-position: left center;
+      object-fit: fill;              /* riempie esattamente il container — le proporzioni sono garantite dal JS */
       margin: 0;
       padding: 0;
       border: none;
@@ -7190,19 +7187,25 @@ function buildArchive() {
           // Indice corrente della foto nella hero (condiviso con le thumbs)
           let _heroIndex = 0;
 
-          // Imposta larghezza hero in base all'AR della foto (con altezza fissa 500px)
+          // Imposta larghezza hero in base alle dimensioni reali dell'immagine caricata
+          // Usa sempre naturalWidth/naturalHeight per evitare errori dall'AR del DB
           function _updateHeroWidth(imgAr) {
+            // Usato come fallback iniziale prima del caricamento
             const ar = imgAr || 1.33;
             const w = Math.min(Math.round(500 * ar), 700);
             hero.style.width = w + 'px';
           }
-          // Aggiorna larghezza quando l'immagine è caricata (AR reale dal browser)
+          // Aggiorna larghezza ESATTA dopo il caricamento dell'immagine
           heroImg.addEventListener('load', function() {
             if (this.naturalWidth && this.naturalHeight) {
               const realAr = this.naturalWidth / this.naturalHeight;
-              hero.style.width = Math.min(Math.round(500 * realAr), 700) + 'px';
+              const exactW = Math.min(Math.round(500 * realAr), 700);
+              hero.style.width = exactW + 'px';
+              // Forza anche l'immagine a occupare esattamente il container
+              this.style.width = '100%';
+              this.style.height = '100%';
             }
-          }, { once: false });
+          });
           _updateHeroWidth(images[0].ar);
 
           // Funzione per aggiornare la hero con animazione curtain
