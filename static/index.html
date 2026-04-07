@@ -889,7 +889,10 @@
             <input type="text" id="f-keywords" placeholder="architettura, bianco e nero, Istanbul" oninput="livePreview()">
           </div>
         </div>
-        <button class="save-btn" onclick="saveProjectInfo()">Salva</button>
+        <div style="display:flex;gap:10px;align-items:center">
+          <button class="save-btn" onclick="saveProjectInfo()">Salva</button>
+          <button class="btn-text danger" onclick="deleteCurrentProject()" style="font-size:10px;color:#c0392b;border:1px solid #c0392b;padding:4px 10px;border-radius:3px;cursor:pointer">× Elimina progetto</button>
+        </div>
       </div>
 
       <!-- TAB: FOTO -->
@@ -907,6 +910,7 @@
           <button class="btn-text" onclick="toggleSelectMode()" id="btn-select-mode">☐ Seleziona</button>
           <button class="btn-text" onclick="selectAllImages()" id="btn-sel-all" style="display:none">Tutte</button>
           <button class="btn-text" onclick="clearSelection()" id="btn-sel-clear" style="display:none">Deseleziona</button>
+          <button class="btn-text" onclick="deleteSelectedImages()" id="btn-del-sel" style="display:none;color:#c0392b">× Elimina selezionate</button>
           <button class="btn-text" onclick="rescanIptcAll()">↻ IPTC</button>
           <button class="btn-text" id="btn-tag-ai-proj" onclick="tagProjectImages()">✶ Tag AI</button>
           <button class="btn-ai-write" onclick="toggleProcPanel()" id="btn-proc">⚙ Elabora</button>
@@ -1362,6 +1366,18 @@ async function saveProjectInfo() {
   toast('Salvato');
 }
 
+async function deleteCurrentProject() {
+  if (!currentProject) return;
+  const ok = confirm(`Eliminare il progetto "${currentProject.title}" e tutte le sue foto? Questa operazione non può essere annullata.`);
+  if (!ok) return;
+  await fetch(`${API}/projects/${currentProject.id}`, { method: 'DELETE' });
+  currentProject = null;
+  document.getElementById('editor-empty').style.display = '';
+  document.getElementById('editor-project').style.display = 'none';
+  await loadProjects();
+  toast('Progetto eliminato');
+}
+
 async function showNewProjectModal() {
   const title = prompt('Titolo del progetto:');
   if (!title) return;
@@ -1422,16 +1438,19 @@ function toggleSelectMode() {
   const btn = document.getElementById('btn-select-mode');
   const btnAll   = document.getElementById('btn-sel-all');
   const btnClear = document.getElementById('btn-sel-clear');
+  const btnDelSel = document.getElementById('btn-del-sel');
   if (_selectMode) {
     btn.textContent = '☑ Seleziona';
     btn.style.color = '#9b6fd4';
     btnAll.style.display   = '';
     btnClear.style.display = '';
+    btnDelSel.style.display = '';
   } else {
     btn.textContent = '☐ Seleziona';
     btn.style.color = '';
     btnAll.style.display   = 'none';
     btnClear.style.display = 'none';
+    btnDelSel.style.display = 'none';
     _selectedImgIds.clear();
     renderImageGrid();
   }
@@ -1694,6 +1713,21 @@ async function deleteImage(iid) {
   renderImageGrid();
   renderPreview();
   toast('Foto eliminata');
+}
+
+async function deleteSelectedImages() {
+  if (_selectedImgIds.size === 0) { toast('Nessuna foto selezionata'); return; }
+  const n = _selectedImgIds.size;
+  if (!confirm(`Eliminare ${n} foto selezionate? Questa operazione non può essere annullata.`)) return;
+  const ids = [..._selectedImgIds];
+  for (const iid of ids) {
+    await fetch(`${API}/projects/${currentProject.id}/images/${iid}`, { method: 'DELETE' });
+    currentProject.images = currentProject.images.filter(i => i.id !== iid);
+  }
+  _selectedImgIds.clear();
+  renderImageGrid();
+  renderPreview();
+  toast(`${n} foto eliminate`);
 }
 
 // Mostra le keyword di una singola foto in un alert leggibile
