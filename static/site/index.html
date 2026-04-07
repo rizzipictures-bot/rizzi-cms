@@ -8962,13 +8962,17 @@ loadFromCMS();
     } catch(e) {}
   }
 
-  // Sblocca al primo click o touchstart ovunque nella pagina
+  // Sblocca al primo gesto utente (click, touch, keydown, mousemove)
+  // mousemove garantisce lo sblocco anche prima del primo click
   document.addEventListener('click', unlockAudio, { once: false, passive: true });
   document.addEventListener('touchstart', unlockAudio, { once: false, passive: true });
   document.addEventListener('keydown', unlockAudio, { once: false, passive: true });
+  document.addEventListener('mousemove', unlockAudio, { once: true, passive: true });
 
   window.archiveRowClick = function() {
     try {
+      // Tenta lo sblocco anche qui (sicurezza extra per Safari)
+      if (!_unlocked) unlockAudio();
       const ctx = getCtx();
       // Click secco: impulso brevissimo (4ms) + filtro high-pass
       const sr = ctx.sampleRate;
