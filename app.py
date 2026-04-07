@@ -15,8 +15,16 @@ from PIL import Image
 import numpy as np
 
 BASE   = Path(__file__).parent
-DATA   = BASE / 'data'
-UPLOAD = BASE / 'uploads'
+
+# Su Render il Disk è montato su /opt/render/project/src/uploads
+# In locale usiamo la cartella uploads/ relativa al progetto
+_RENDER_UPLOAD = Path('/opt/render/project/src/uploads')
+UPLOAD = _RENDER_UPLOAD if _RENDER_UPLOAD.parent.exists() and os.environ.get('RENDER') else BASE / 'uploads'
+
+# Il file projects.json viene salvato nel Disk su Render (persistente)
+# oppure in data/ in locale
+_RENDER_DATA = Path('/opt/render/project/src/data')
+DATA = _RENDER_DATA if _RENDER_UPLOAD.parent.exists() and os.environ.get('RENDER') else BASE / 'data'
 
 # ── AUTO-TRIM BORDI MONOCROMATICI ──────────────────────────────────────────────
 def auto_trim_border(im, threshold=18, min_strip=2, max_strip_pct=0.08):
