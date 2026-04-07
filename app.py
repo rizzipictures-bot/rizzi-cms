@@ -75,7 +75,10 @@ def read_iptc_keywords(fpath):
     Legge le keywords IPTC/XMP da un file immagine.
     Restituisce una lista di stringhe (mai None).
     NON legge caption/description — solo keywords.
+    Supporta: IPTC IIM (tag 2:25), XMP dc:subject, XMP lr:hierarchicalSubject.
+    Legge anche dai raw bytes per massima compatibilità con DxO/Photoshop/Lightroom.
     """
+    import re as _re
     keywords = []
     try:
         # Metodo 1: iptcinfo3 (IPTC IIM standard, tag 2:25)
@@ -95,18 +98,15 @@ def read_iptc_keywords(fpath):
         except Exception:
             pass
 
-        # Metodo 2: Pillow EXIF/XMP fallback
+        # Metodo 2: Pillow EXIF/XMP (info dict)
         if not keywords:
             try:
                 from PIL import Image as _PILImg
                 with _PILImg.open(str(fpath)) as im:
-                    # XMP sidecar embedded
                     xmp = im.info.get('xmp', b'')
                     if isinstance(xmp, bytes):
                         xmp = xmp.decode('utf-8', errors='ignore')
                     if xmp:
-                        import re as _re
-                        # Cerca <dc:subject> o <lr:hierarchicalSubject>
                         matches = _re.findall(
                             r'<(?:dc:subject|lr:hierarchicalSubject)>.*?<rdf:Bag>(.*?)</rdf:Bag>',
                             xmp, _re.DOTALL
@@ -116,6 +116,47 @@ def read_iptc_keywords(fpath):
                             keywords.extend([i.strip() for i in items if i.strip()])
             except Exception:
                 pass
+
+        # Metodo 3: raw bytes — legge XMP direttamente dal file binario
+        # Funziona con JPEG/JPG salvati da DxO PhotoLab, Photoshop, Lightroom
+        # anche quando Pillow non espone l'XMP nell'info dict
+        if not keywords:
+            try:
+                with open(str(fpath), 'rb') as _f:
+                    _raw = _f.read()
+                # Cerca il blocco XMP (<?xpacket o <x:xmpmeta)
+                for _marker in (b'<?xpacket', b'<x:xmpmeta'):
+                    _pos = _raw.find(_marker)
+                    if _pos != -1:
+                        _end = _raw.find(b'</x:xmpmeta>', _pos)
+                        if _end == -1:
+                            _end = _pos + 65536  # max 64 KB
+                        _xmp = _raw[_pos:_end + len(b'</x:xmpmeta>')].decode('utf-8', errors='ignore')
+                        # dc:subject (standard XMP)
+                        _matches = _re.findall(
+                            r'<dc:subject>\s*<rdf:(?:Bag|Seq|Alt)>(.*?)</rdf:(?:Bag|Seq|Alt)>',
+                            _xmp, _re.DOTALL
+                        )
+                        for _bag in _matches:
+                            _items = _re.findall(r'<rdf:li[^>]*>(.*?)</rdf:li>', _bag)
+                            keywords.extend([i.strip() for i in _items if i.strip()])
+                        # lr:hierarchicalSubject (Lightroom)
+                        _matches2 = _re.findall(
+                            r'<lr:hierarchicalSubject>\s*<rdf:(?:Bag|Seq|Alt)>(.*?)</rdf:(?:Bag|Seq|Alt)>',
+                            _xmp, _re.DOTALL
+                        )
+                        for _bag in _matches2:
+                            _items = _re.findall(r'<rdf:li[^>]*>(.*?)</rdf:li>', _bag)
+                            keywords.extend([i.strip() for i in _items if i.strip()])
+                        # photoshop:Keywords (attributo inline, formato alternativo)
+                        _kw_attr = _re.findall(r'photoshop:Keywords="([^"]+)"', _xmp)
+                        for _kw in _kw_attr:
+                            keywords.extend([k.strip() for k in _kw.split(';') if k.strip()])
+                        if keywords:
+                            break
+            except Exception:
+                pass
+
     except Exception:
         pass
 
@@ -419,6 +460,11 @@ def upload_images(pid):
         fpath = UPLOAD / fname
         file.save(str(fpath))
 
+        # ── LEGGI KEYWORDS DAL FILE ORIGINALE (prima dell'ottimizzazione) ──
+        # IMPORTANTE: Pillow rimuove l'XMP durante il salvataggio ottimizzato.
+        # Bisogna leggere i metadati dal file originale prima di qualsiasi conversione.
+        iptc_kws_original = read_iptc_keywords(fpath)
+
         # Conversione automatica + aspect ratio + thumbnail
         MAX_SIDE = 2500   # px lato lungo massimo
         WEB_QUALITY = 88  # qualità JPG per l'originale ottimizzato
@@ -466,8 +512,8 @@ def upload_images(pid):
             ar    = 1.0
             tname = fname
 
-        # ── LEGGI KEYWORDS IPTC (sincrono, prima dell'AI) ──
-        iptc_kws = read_iptc_keywords(fpath)
+        # ── USA LE KEYWORDS LETTE DAL FILE ORIGINALE (prima dell'ottimizzazione) ──
+        iptc_kws = iptc_kws_original
         iptc_str = ', '.join(iptc_kws) if iptc_kws else ''
 
         img_data = {
