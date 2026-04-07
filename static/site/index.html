@@ -8795,6 +8795,11 @@ async function loadFromCMS() {
               keywords: img.keywords || ''   /* IPTC + AI + manuali */
             };
           }) : [],
+          technique:       p.technique || '',
+          medium:          p.medium || '',
+          prints:          p.prints || '',
+          editions:        p.editions || '',
+          keywords_manual: p.keywords_manual || '',
           texts: p.texts || []
         };
         PROJECTS.push(proj);
