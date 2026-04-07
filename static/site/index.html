@@ -8891,7 +8891,7 @@ let CMS_CATEGORIES = [];
 // ─────────────────────────────────────────────────────────────────
 function buildDynamicMenu(categories, projects) {
   // Categorie con layout 'cities' che non sono già hardcodate nella navbar
-  const HARDCODED_NAV = new Set(['cities', 'archive', 'interview', 'books', 'sculptures', 'biography', 'contact', 'index']);
+  const HARDCODED_NAV = new Set(['cities', 'miscellanea', 'archive', 'interview', 'books', 'sculptures', 'biography', 'contact', 'index']);
   const CITIES_LAYOUT_CATS = categories.filter(c =>
     c.layout === 'cities' && !HARDCODED_NAV.has(c.id) && c.visible !== false
   );
