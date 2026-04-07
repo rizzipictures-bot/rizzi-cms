@@ -333,12 +333,17 @@ def create_category():
     name = data.get('name', '').strip()
     if not name:
         return jsonify({'error': 'name required'}), 400
+    # Accetta ID personalizzato se fornito, altrimenti genera UUID
+    custom_id = data.get('id', '').strip()
+    cat_id = custom_id if custom_id else str(uuid.uuid4())[:8]
     cat = {
-        'id':      str(uuid.uuid4())[:8],
+        'id':      cat_id,
         'name':    name,
-        'order':   len(db['categories']),
+        'order':   data.get('order', len(db['categories'])),
         'visible': data.get('visible', True),
     }
+    if data.get('layout'):
+        cat['layout'] = data['layout']
     db['categories'].append(cat)
     save_db(db)
     return jsonify(cat), 201
