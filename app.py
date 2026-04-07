@@ -478,6 +478,12 @@ def upload_images(pid):
                 if im.mode not in ('RGB', 'L'):
                     im = im.convert('RGB')
 
+                # ── CORREGGI ORIENTAMENTO EXIF (fondamentale per foto da fotocamera) ──
+                # Senza questo, una foto orizzontale con EXIF rotation=6 viene letta
+                # come verticale e l'aspect ratio risulta invertita.
+                from PIL import ImageOps
+                im = ImageOps.exif_transpose(im)
+
                 # ── RIMUOVI BORDI MONOCROMATICI (bianco/grigio/nero) ──
                 im = auto_trim_border(im)
 
@@ -1312,6 +1318,35 @@ def auto_balance(pid):
     save_db(db)
     return jsonify({'ok': True, 'updated': updated,
                     'target': {'brightness': mean_brightness, 'r': mean_r, 'g': mean_g, 'b': mean_b}})
+
+
+# ── RICALCOLA ASPECT RATIO (correzione EXIF orientation) ────────────────────
+@app.route('/api/fix-ar', methods=['POST'])
+def fix_aspect_ratios():
+    """Ricalcola l'aspect ratio di tutte le foto applicando la correzione EXIF orientation.
+    Da chiamare una volta dopo l'aggiornamento per correggere le foto già caricate."""
+    from PIL import ImageOps
+    db = load_db()
+    fixed = 0
+    errors = []
+    for p in db['projects']:
+        for img in p.get('images', []):
+            fpath = UPLOAD / img.get('file', '')
+            if not fpath.exists():
+                continue
+            try:
+                with Image.open(str(fpath)) as im:
+                    im = ImageOps.exif_transpose(im)
+                    w, h = im.size
+                    new_ar = round(w / h, 4)
+                    old_ar = img.get('ar', 1.0)
+                    if abs(new_ar - old_ar) > 0.01:  # aggiorna solo se cambia significativamente
+                        img['ar'] = new_ar
+                        fixed += 1
+            except Exception as e:
+                errors.append({'file': img.get('file', ''), 'error': str(e)})
+    save_db(db)
+    return jsonify({'ok': True, 'fixed': fixed, 'errors': errors})
 
 
 if __name__ == '__main__':
