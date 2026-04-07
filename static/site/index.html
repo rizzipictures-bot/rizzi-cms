@@ -4774,8 +4774,8 @@
       </div>
       <!-- 2 righe meta: Prints available e Print size -->
       <div id="cip-photo-viewer-meta">
-        <div class="cpv-meta-row"><span class="cpv-meta-label">Prints available</span><span class="cpv-meta-value" id="cpv-prints"></span></div>
-        <div class="cpv-meta-row"><span class="cpv-meta-label">Print size</span><span class="cpv-meta-value" id="cpv-printsize"></span></div>
+        <div class="cpv-meta-row"><span class="cpv-meta-label">Stampe</span><span class="cpv-meta-value" id="cpv-prints"></span></div>
+        <div class="cpv-meta-row"><span class="cpv-meta-label">Tecnica</span><span class="cpv-meta-value" id="cpv-printsize"></span></div>
       </div>
       <img id="cip-photo-viewer-img" src="" alt="">
       <button class="ae-zoom-btn" id="cip-zoom-btn" aria-label="Ingrandisci immagine" style="display:none"><svg viewBox="0 0 14 14"><line x1="7" y1="1" x2="7" y2="13"/><line x1="1" y1="7" x2="13" y2="7"/></svg></button>
@@ -5861,12 +5861,22 @@ function populateCityInfoPanel(project, imageUrls) {
     _cipanel._topSet = true;
   }
 
-  // Metadati: Luogo, Anno, Pubblicazione
+  // Metadati: Luogo, Anno, Pubblicazione, Tecnica, Medium, Stampe, Edizioni, Keywords
   if (_cipMeta) {
     const rows = [];
-    if (project.place)       rows.push(['Luogo', project.place]);
-    if (project.year)        rows.push(['Anno',  project.year]);
-    if (project.publication) rows.push(['Pub.',  project.publication]);
+    if (project.place)           rows.push(['Luogo',    project.place]);
+    if (project.year)            rows.push(['Anno',     project.year]);
+    if (project.publication)     rows.push(['Pub.',     project.publication]);
+    if (project.technique)       rows.push(['Tecnica',  project.technique]);
+    if (project.medium)          rows.push(['Supporto', project.medium]);
+    // Stampe + edizioni sulla stessa riga se entrambi presenti
+    const stampeVal = [project.prints, project.editions].filter(Boolean).join(' · ed. ');
+    if (stampeVal)               rows.push(['Stampe',   stampeVal]);
+    // Keywords manuali: mostra come tag compatti
+    if (project.keywords_manual) {
+      const kwList = project.keywords_manual.split(',').map(k => k.trim()).filter(Boolean);
+      if (kwList.length) rows.push(['Keywords', kwList.join(', ')]);
+    }
     _cipMeta.innerHTML = rows.map(([k, v]) =>
       `<div class="cip-meta-row"><span class="cip-meta-label">${k}</span><span class="cip-meta-value">${v}</span></div>`
     ).join('');
@@ -5941,10 +5951,11 @@ if (_cipImages) {
       _headerTextEl.textContent = _desc || _simulated;
     }
     // 2 righe meta: Prints available e Print size
-    _setField('cpv-prints',    (proj && (proj.prints || proj.editions)) || '');
-    _setField('cpv-printsize', (proj && (proj.print_size || proj.printSize || proj.print_format)) || '');
-
-    // Posizionamento box 2:
+    const _stampeVal = proj ? [proj.prints ? `${proj.prints} stampe` : '', proj.editions ? `ed. ${proj.editions}` : ''].filter(Boolean).join(' · ') : '';
+    _setField('cpv-prints',    _stampeVal);
+    const _techVal = proj ? [proj.technique, proj.medium].filter(Boolean).join(' · ') : '';
+    _setField('cpv-printsize', _techVal);
+    // Posizionamento box 2::
     // - top: sotto il titolo "Cities — Works by Location"
     // - height: adattativa = header + meta + foto reale (no clip)
     // - left: rispetta l'alfabeto (minimo 60px dal bordo sinistro)
@@ -6791,8 +6802,10 @@ function buildCitiesIndex() {
         const _simulated = 'La serie esplora la relazione tra architettura industriale e luce naturale, documentando spazi urbani in transizione tra abbandono e memoria collettiva.';
         _headerTextEl.textContent = _desc || _simulated;
       }
-      _setField('cpv-prints',    (proj && (proj.prints || proj.editions)) || '');
-      _setField('cpv-printsize', (proj && (proj.print_size || proj.printSize || proj.print_format)) || '');
+      const _stampeVal2 = proj ? [proj.prints ? `${proj.prints} stampe` : '', proj.editions ? `ed. ${proj.editions}` : ''].filter(Boolean).join(' · ') : '';
+      _setField('cpv-prints',    _stampeVal2);
+      const _techVal2 = proj ? [proj.technique, proj.medium].filter(Boolean).join(' · ') : '';
+      _setField('cpv-printsize', _techVal2);
 
       // Nascondi la thumbnail subito
       const _citPreview = document.getElementById('cities-cursor-preview');
@@ -7023,10 +7036,12 @@ function buildArchive() {
           body.className = 'media-popup-body';
 
           if (type === 'photo') {
-            const technique = p.technique || p.medium || 'Pellicola medio formato';
+            const technique = p.technique || p.medium || null;
             const prints    = p.prints    || p.editions || null;
-            body.innerHTML = `<strong>Tecnica</strong><br>${technique}`
-              + (prints ? `<br><br><strong>Stampe disponibili</strong><br>${prints}` : '<br><br><span style="color:#aaa">Nessuna stampa disponibile</span>');
+            const techLine  = technique ? `<strong>Tecnica</strong><br>${technique}` : '';
+            const edLine    = p.editions ? `<br><strong>Edizione</strong><br>${p.editions}` : '';
+            const printLine = prints ? `<br><br><strong>Stampe disponibili</strong><br>${prints}` : '';
+            body.innerHTML = (techLine || '<span style="color:#aaa">Tecnica non specificata</span>') + edLine + printLine;
           } else {
             // Testo: primo blocco testo + thumb se c'è
             const firstText = (p.texts || [])[0];
