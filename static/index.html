@@ -375,6 +375,85 @@
   .image-cell:hover .ov-star { display: none; }
   .image-cell:hover .ov-toggle-btn { display: block; }
 
+  /* Selezione multipla foto */
+  .image-cell.selected {
+    outline: 2px solid #9b6fd4;
+    outline-offset: -2px;
+  }
+  .image-cell .sel-check {
+    position: absolute; top: 4px; left: 4px;
+    width: 16px; height: 16px;
+    background: rgba(0,0,0,.55); border: 1.5px solid rgba(255,255,255,.5);
+    border-radius: 3px; cursor: pointer; z-index: 20;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 10px; color: #fff; opacity: 0;
+    transition: opacity .15s;
+  }
+  .image-cell:hover .sel-check,
+  .image-cell.selected .sel-check { opacity: 1; }
+  .image-cell.selected .sel-check { background: #9b6fd4; border-color: #9b6fd4; }
+
+  /* Pannello elaborazione immagini */
+  .img-proc-panel {
+    background: var(--surface);
+    border: 1px solid #c9a8f0;
+    border-radius: var(--radius);
+    padding: 14px 16px;
+    margin-bottom: 12px;
+    display: none;
+  }
+  .img-proc-panel.open { display: block; }
+  .img-proc-panel .proc-title {
+    font-size: 9px; letter-spacing: .5px; text-transform: uppercase;
+    color: #9b6fd4; margin-bottom: 12px;
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .img-proc-panel .proc-title button {
+    background: none; border: none; font-size: 12px;
+    color: var(--gray); cursor: pointer; padding: 0;
+  }
+  .proc-sliders { display: grid; grid-template-columns: 1fr 1fr; gap: 10px 20px; margin-bottom: 12px; }
+  .proc-slider-row { display: flex; flex-direction: column; gap: 4px; }
+  .proc-slider-row label {
+    font-size: 9px; letter-spacing: .3px; color: var(--gray);
+    display: flex; justify-content: space-between;
+  }
+  .proc-slider-row label span { color: var(--text); font-weight: 500; }
+  .proc-slider-row input[type=range] {
+    width: 100%; accent-color: #9b6fd4; cursor: pointer;
+  }
+  .proc-actions {
+    display: flex; gap: 8px; flex-wrap: wrap; align-items: center;
+    padding-top: 10px; border-top: 1px solid var(--border);
+  }
+  .proc-apply-btn {
+    background: #9b6fd4; color: #fff; border: none;
+    border-radius: var(--radius); padding: 6px 14px;
+    font-family: var(--font); font-size: 9px;
+    letter-spacing: .4px; cursor: pointer; transition: opacity .15s;
+  }
+  .proc-apply-btn:hover { opacity: .8; }
+  .proc-apply-btn:disabled { opacity: .4; cursor: default; }
+  .proc-apply-btn.secondary {
+    background: none; color: #9b6fd4;
+    border: 1px solid #c9a8f0;
+  }
+  .proc-sel-info {
+    font-size: 9px; color: var(--gray); flex: 1;
+  }
+  .proc-master-row {
+    display: flex; align-items: center; gap: 8px;
+    margin-bottom: 10px; padding: 8px 10px;
+    background: var(--light); border-radius: var(--radius);
+  }
+  .proc-master-row span {
+    font-size: 9px; color: var(--gray); flex: 1;
+  }
+  .proc-master-thumb {
+    width: 40px; height: 40px; object-fit: cover;
+    border-radius: 3px; border: 2px solid #9b6fd4;
+  }
+
   /* Toolbar sopra la griglia foto */
   .images-toolbar {
     display: flex; align-items: center; gap: 8px;
@@ -823,12 +902,67 @@
         </div>
         <input type="file" id="file-input" multiple accept=".jpg,.jpeg,.png,.webp,.tiff,.tif"
                style="display:none" onchange="uploadFiles(this.files)">
-        <!-- Toolbar IPTC / AI -->
+        <!-- Toolbar IPTC / AI / Elaborazione -->
         <div class="images-toolbar" id="images-toolbar" style="display:none">
-          <button class="btn-text" onclick="rescanIptcAll()">↻ Rescan IPTC</button>
-          <button class="btn-text" id="btn-tag-ai-proj" onclick="tagProjectImages()">✶ Tag AI (questo progetto)</button>
+          <button class="btn-text" onclick="toggleSelectMode()" id="btn-select-mode">☐ Seleziona</button>
+          <button class="btn-text" onclick="selectAllImages()" id="btn-sel-all" style="display:none">Tutte</button>
+          <button class="btn-text" onclick="clearSelection()" id="btn-sel-clear" style="display:none">Deseleziona</button>
+          <button class="btn-text" onclick="rescanIptcAll()">↻ IPTC</button>
+          <button class="btn-text" id="btn-tag-ai-proj" onclick="tagProjectImages()">✶ Tag AI</button>
+          <button class="btn-ai-write" onclick="toggleProcPanel()" id="btn-proc">⚙ Elabora</button>
           <span id="iptc-status" class="iptc-status-bar" style="flex:1"></span>
         </div>
+
+        <!-- Pannello elaborazione immagini -->
+        <div class="img-proc-panel" id="img-proc-panel">
+          <div class="proc-title">
+            <span>⚙ Elaborazione immagini</span>
+            <button onclick="toggleProcPanel()">×</button>
+          </div>
+
+          <!-- Master per color matching -->
+          <div class="proc-master-row" id="proc-master-row">
+            <span id="proc-master-label">Nessuna foto master selezionata — clicca ★M su una foto per impostarla come riferimento colore</span>
+          </div>
+
+          <!-- Sliders -->
+          <div class="proc-sliders">
+            <div class="proc-slider-row">
+              <label>Luminosità <span id="lbl-brightness">1.0</span></label>
+              <input type="range" id="sl-brightness" min="0.3" max="2.0" step="0.05" value="1.0"
+                     oninput="document.getElementById('lbl-brightness').textContent=parseFloat(this.value).toFixed(2)">
+            </div>
+            <div class="proc-slider-row">
+              <label>Contrasto <span id="lbl-contrast">1.0</span></label>
+              <input type="range" id="sl-contrast" min="0.3" max="2.5" step="0.05" value="1.0"
+                     oninput="document.getElementById('lbl-contrast').textContent=parseFloat(this.value).toFixed(2)">
+            </div>
+            <div class="proc-slider-row">
+              <label>Saturazione <span id="lbl-saturation">1.0</span></label>
+              <input type="range" id="sl-saturation" min="0" max="2.5" step="0.05" value="1.0"
+                     oninput="document.getElementById('lbl-saturation').textContent=parseFloat(this.value).toFixed(2)">
+            </div>
+            <div class="proc-slider-row">
+              <label>Nitidezza <span id="lbl-sharpness">1.0</span></label>
+              <input type="range" id="sl-sharpness" min="0" max="3.0" step="0.1" value="1.0"
+                     oninput="document.getElementById('lbl-sharpness').textContent=parseFloat(this.value).toFixed(1)">
+            </div>
+            <div class="proc-slider-row">
+              <label>Temperatura <span id="lbl-temp">0</span></label>
+              <input type="range" id="sl-temp" min="-50" max="50" step="1" value="0"
+                     oninput="document.getElementById('lbl-temp').textContent=this.value">
+            </div>
+          </div>
+
+          <div class="proc-actions">
+            <span class="proc-sel-info" id="proc-sel-info">Applica a tutte le foto</span>
+            <button class="proc-apply-btn" onclick="applyAdjust()" id="btn-apply-adjust">Applica correzioni</button>
+            <button class="proc-apply-btn secondary" onclick="applyMatchMaster()" id="btn-match-master">★ Match master</button>
+            <button class="proc-apply-btn secondary" onclick="applyAutoBalance()">✶ Auto-balance AI</button>
+            <button class="proc-apply-btn secondary" onclick="resetSliders()">Reset</button>
+          </div>
+        </div>
+
         <div class="image-grid" id="image-grid"></div>
       </div>
 
@@ -1278,13 +1412,167 @@ function updateIptcStatusBar() {
 // ── VARIABILI DRAG & DROP ──
 let _dragSrcId = null;
 
+// ── VARIABILI SELEZIONE & ELABORAZIONE ──
+let _selectedImgIds = new Set();
+let _selectMode     = false;
+let _masterImgId    = null;
+
+function toggleSelectMode() {
+  _selectMode = !_selectMode;
+  const btn = document.getElementById('btn-select-mode');
+  const btnAll   = document.getElementById('btn-sel-all');
+  const btnClear = document.getElementById('btn-sel-clear');
+  if (_selectMode) {
+    btn.textContent = '☑ Seleziona';
+    btn.style.color = '#9b6fd4';
+    btnAll.style.display   = '';
+    btnClear.style.display = '';
+  } else {
+    btn.textContent = '☐ Seleziona';
+    btn.style.color = '';
+    btnAll.style.display   = 'none';
+    btnClear.style.display = 'none';
+    _selectedImgIds.clear();
+    renderImageGrid();
+  }
+  updateProcSelInfo();
+}
+
+function toggleSelectImg(iid, e) {
+  if (e) e.stopPropagation();
+  if (_selectedImgIds.has(iid)) _selectedImgIds.delete(iid);
+  else _selectedImgIds.add(iid);
+  renderImageGrid();
+  updateProcSelInfo();
+}
+
+function selectAllImages() {
+  (currentProject?.images || []).forEach(i => _selectedImgIds.add(i.id));
+  renderImageGrid();
+  updateProcSelInfo();
+}
+
+function clearSelection() {
+  _selectedImgIds.clear();
+  renderImageGrid();
+  updateProcSelInfo();
+}
+
+function setMasterImg(iid) {
+  _masterImgId = (_masterImgId === iid) ? null : iid;
+  renderImageGrid();
+  // Aggiorna label master nel pannello
+  const img = (currentProject?.images || []).find(i => i.id === iid);
+  const label = document.getElementById('proc-master-label');
+  const row   = document.getElementById('proc-master-row');
+  if (_masterImgId && img) {
+    const src = `/uploads/${img.thumb || img.file}`;
+    row.innerHTML = `<img class="proc-master-thumb" src="${src}">
+      <span>Foto master impostata — le altre foto verranno uniformate a questa</span>
+      <button class="proc-apply-btn secondary" style="padding:4px 8px" onclick="setMasterImg('${iid}')">Rimuovi</button>`;
+  } else {
+    row.innerHTML = `<span id="proc-master-label">Nessuna foto master — clicca ★M su una foto per impostarla come riferimento colore</span>`;
+  }
+}
+
+function updateProcSelInfo() {
+  const n = _selectedImgIds.size;
+  const el = document.getElementById('proc-sel-info');
+  if (el) el.textContent = n > 0 ? `Applica a ${n} foto selezionate` : 'Applica a tutte le foto';
+}
+
+function toggleProcPanel() {
+  const panel = document.getElementById('img-proc-panel');
+  panel.classList.toggle('open');
+}
+
+function resetSliders() {
+  ['brightness','contrast','saturation','sharpness'].forEach(k => {
+    const sl = document.getElementById('sl-'+k);
+    const lb = document.getElementById('lbl-'+k);
+    if (sl) { sl.value = '1.0'; if (lb) lb.textContent = '1.0'; }
+  });
+  const slT = document.getElementById('sl-temp');
+  const lbT = document.getElementById('lbl-temp');
+  if (slT) { slT.value = '0'; if (lbT) lbT.textContent = '0'; }
+}
+
+async function applyAdjust() {
+  if (!currentProject) return;
+  const btn = document.getElementById('btn-apply-adjust');
+  btn.disabled = true; btn.textContent = 'Elaborando...';
+  const ids = _selectedImgIds.size > 0 ? [..._selectedImgIds] : [];
+  const body = {
+    ids,
+    brightness: parseFloat(document.getElementById('sl-brightness').value),
+    contrast:   parseFloat(document.getElementById('sl-contrast').value),
+    saturation: parseFloat(document.getElementById('sl-saturation').value),
+    sharpness:  parseFloat(document.getElementById('sl-sharpness').value),
+    temp_shift: parseFloat(document.getElementById('sl-temp').value),
+  };
+  try {
+    const res  = await fetch(`${API}/projects/${currentProject.id}/images/adjust`, {
+      method: 'POST', headers: {'Content-Type':'application/json'},
+      body: JSON.stringify(body)
+    });
+    const data = await res.json();
+    toast(`Correzioni applicate a ${data.updated?.length || 0} foto ✔`);
+    // Forza reload thumbnail aggiungendo timestamp
+    document.querySelectorAll('.image-cell img').forEach(img => {
+      img.src = img.src.split('?')[0] + '?t=' + Date.now();
+    });
+    resetSliders();
+  } catch(e) { toast('Errore elaborazione'); }
+  finally { btn.disabled = false; btn.textContent = 'Applica correzioni'; }
+}
+
+async function applyMatchMaster() {
+  if (!currentProject) return;
+  if (!_masterImgId) { toast('Imposta prima una foto master (★M)'); return; }
+  const btn = document.getElementById('btn-match-master');
+  btn.disabled = true; btn.textContent = 'Matching...';
+  const ids = _selectedImgIds.size > 0 ? [..._selectedImgIds] : [];
+  try {
+    const res  = await fetch(`${API}/projects/${currentProject.id}/images/match-master`, {
+      method: 'POST', headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({ master_id: _masterImgId, ids })
+    });
+    const data = await res.json();
+    toast(`Color match applicato a ${data.updated?.length || 0} foto ✔`);
+    document.querySelectorAll('.image-cell img').forEach(img => {
+      img.src = img.src.split('?')[0] + '?t=' + Date.now();
+    });
+  } catch(e) { toast('Errore color match'); }
+  finally { btn.disabled = false; btn.textContent = '★ Match master'; }
+}
+
+async function applyAutoBalance() {
+  if (!currentProject) return;
+  if (!confirm('Auto-balance uniformerà colore e luminosità di tutte le foto selezionate verso la media. Continuare?')) return;
+  const ids = _selectedImgIds.size > 0 ? [..._selectedImgIds] : [];
+  toast('Auto-balance in corso...');
+  try {
+    const res  = await fetch(`${API}/projects/${currentProject.id}/images/auto-balance`, {
+      method: 'POST', headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({ ids })
+    });
+    const data = await res.json();
+    toast(`Auto-balance completato su ${data.updated?.length || 0} foto ✔`);
+    document.querySelectorAll('.image-cell img').forEach(img => {
+      img.src = img.src.split('?')[0] + '?t=' + Date.now();
+    });
+  } catch(e) { toast('Errore auto-balance'); }
+}
+
 function renderImageGrid() {
   const grid = document.getElementById('image-grid');
   grid.innerHTML = '';
   (currentProject.images || []).forEach((img, idx) => {
     const cell = document.createElement('div');
     const inOv = img.in_overview ? 'in-overview' : '';
-    cell.className = `image-cell ${inOv}`;
+    const isMaster = _masterImgId === img.id;
+    const isSelected = _selectedImgIds.has(img.id);
+    cell.className = `image-cell ${inOv} ${isSelected ? 'selected' : ''}`;
     cell.dataset.imgId = img.id;
     cell.draggable = true;
     const badge = getKwBadgeInfo(img);
@@ -1293,17 +1581,20 @@ function renderImageGrid() {
       <img src="${imgSrc}" alt="" loading="lazy">
       <span class="img-kw-badge ${badge.cls}">${badge.label}</span>
       ${badge.count > 0 ? `<span class="img-kw-count">${badge.count} kw</span>` : ''}
+      <div class="sel-check" onclick="toggleSelectImg('${img.id}', event)" title="Seleziona">${isSelected ? '✓' : ''}</div>
       <div class="drag-handle" title="Trascina per riordinare">☰</div>
       <span class="ov-star" title="In Overview">★</span>
       <button class="ov-toggle-btn" onclick="toggleOverviewImg('${img.id}')" title="Aggiungi/Rimuovi da Overview">
         ${img.in_overview ? '★ OV' : '☆ OV'}
       </button>
+      ${isMaster ? '<div style="position:absolute;bottom:22px;left:4px;background:#9b6fd4;color:#fff;font-size:7px;padding:2px 5px;border-radius:2px;pointer-events:none">MASTER</div>' : ''}
       <div class="img-overlay">
         <div class="img-actions">
           <button class="img-action-btn" onclick="showImgKeywords('${img.id}')" title="Vedi keyword">KW</button>
           <button class="img-action-btn" onclick="rescanIptcSingle('${img.id}')" title="Rescan IPTC">↻</button>
           <button class="img-action-btn" onclick="tagSingleImageAi('${img.id}')" title="Tag AI">✶</button>
           <button class="img-action-btn" onclick="showCaptionAi('${img.id}')" title="Genera didascalia AI" style="color:#9b6fd4">✶C</button>
+          <button class="img-action-btn" onclick="setMasterImg('${img.id}')" title="Imposta come master colore" style="color:#f0c040">★M</button>
           <button class="img-action-btn danger" onclick="deleteImage('${img.id}')" title="Elimina">×</button>
         </div>
       </div>

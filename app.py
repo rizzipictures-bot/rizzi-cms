@@ -1115,6 +1115,199 @@ def sysinfo():
         'cwd': os.getcwd(),
     })
 
+# ── IMAGE PROCESSING ────────────────────────────────────────────────────────
+
+@app.route('/api/projects/<pid>/images/adjust', methods=['POST'])
+def adjust_images(pid):
+    """Applica correzioni manuali (luminosità, contrasto, saturazione) a una o più foto."""
+    from PIL import ImageEnhance
+    db   = load_db()
+    p    = next((x for x in db['projects'] if x['id'] == pid), None)
+    if not p: return jsonify({'error': 'not found'}), 404
+
+    data       = request.json or {}
+    image_ids  = data.get('ids', [])          # lista id foto; vuota = tutte
+    brightness = float(data.get('brightness', 1.0))   # 0.5 – 2.0
+    contrast   = float(data.get('contrast',   1.0))
+    saturation = float(data.get('saturation', 1.0))
+    sharpness  = float(data.get('sharpness',  1.0))
+    temp_shift = float(data.get('temp_shift', 0.0))   # -50 … +50 (caldo/freddo)
+
+    targets = [i for i in p.get('images', []) if not image_ids or i['id'] in image_ids]
+    updated = []
+
+    for img in targets:
+        fpath = UPLOAD / img['file']
+        if not fpath.exists(): continue
+        try:
+            with Image.open(str(fpath)) as im:
+                if im.mode != 'RGB': im = im.convert('RGB')
+
+                if brightness != 1.0:
+                    im = ImageEnhance.Brightness(im).enhance(brightness)
+                if contrast != 1.0:
+                    im = ImageEnhance.Contrast(im).enhance(contrast)
+                if saturation != 1.0:
+                    im = ImageEnhance.Color(im).enhance(saturation)
+                if sharpness != 1.0:
+                    im = ImageEnhance.Sharpness(im).enhance(sharpness)
+
+                # Temperatura colore: shift canali R e B
+                if abs(temp_shift) > 0.5:
+                    import numpy as np
+                    arr = np.array(im, dtype=np.float32)
+                    shift = temp_shift * 0.8
+                    arr[:,:,0] = np.clip(arr[:,:,0] + shift, 0, 255)   # R
+                    arr[:,:,2] = np.clip(arr[:,:,2] - shift, 0, 255)   # B
+                    im = Image.fromarray(arr.astype(np.uint8))
+
+                im.save(str(fpath), 'JPEG', quality=88, optimize=True)
+
+                # Rigenera thumbnail
+                tpath = UPLOAD / img.get('thumb', 'thumbs/' + img['file'])
+                tpath.parent.mkdir(exist_ok=True)
+                thumb = im.copy()
+                thumb.thumbnail((400, 400), Image.LANCZOS)
+                thumb.save(str(tpath), 'JPEG', quality=82)
+
+            updated.append(img['id'])
+        except Exception as e:
+            pass
+
+    save_db(db)
+    return jsonify({'ok': True, 'updated': updated})
+
+
+@app.route('/api/projects/<pid>/images/match-master', methods=['POST'])
+def match_master(pid):
+    """Applica il colore/luminosità di una foto master alle foto selezionate (histogram matching)."""
+    try:
+        from skimage import exposure, io as skio
+        import numpy as np
+    except ImportError:
+        return jsonify({'error': 'scikit-image non installato'}), 500
+
+    db   = load_db()
+    p    = next((x for x in db['projects'] if x['id'] == pid), None)
+    if not p: return jsonify({'error': 'not found'}), 404
+
+    data      = request.json or {}
+    master_id = data.get('master_id')
+    image_ids = data.get('ids', [])   # foto da uniformare; vuota = tutte tranne master
+
+    master_img = next((i for i in p.get('images', []) if i['id'] == master_id), None)
+    if not master_img: return jsonify({'error': 'master non trovato'}), 404
+
+    master_path = UPLOAD / master_img['file']
+    if not master_path.exists(): return jsonify({'error': 'file master mancante'}), 404
+
+    try:
+        master_arr = np.array(Image.open(str(master_path)).convert('RGB'), dtype=np.uint8)
+    except Exception as e:
+        return jsonify({'error': f'Errore lettura master: {e}'}), 500
+
+    targets = [
+        i for i in p.get('images', [])
+        if i['id'] != master_id and (not image_ids or i['id'] in image_ids)
+    ]
+    updated = []
+
+    for img in targets:
+        fpath = UPLOAD / img['file']
+        if not fpath.exists(): continue
+        try:
+            src_arr = np.array(Image.open(str(fpath)).convert('RGB'), dtype=np.uint8)
+            matched = exposure.match_histograms(src_arr, master_arr, channel_axis=-1)
+            matched = matched.astype(np.uint8)
+            result  = Image.fromarray(matched)
+            result.save(str(fpath), 'JPEG', quality=88, optimize=True)
+
+            # Rigenera thumbnail
+            tpath = UPLOAD / img.get('thumb', 'thumbs/' + img['file'])
+            tpath.parent.mkdir(exist_ok=True)
+            thumb = result.copy()
+            thumb.thumbnail((400, 400), Image.LANCZOS)
+            thumb.save(str(tpath), 'JPEG', quality=82)
+
+            updated.append(img['id'])
+        except Exception as e:
+            pass
+
+    save_db(db)
+    return jsonify({'ok': True, 'updated': updated, 'master': master_id})
+
+
+@app.route('/api/projects/<pid>/images/auto-balance', methods=['POST'])
+def auto_balance(pid):
+    """Uniforma automaticamente colore e luminosità di tutte le foto selezionate verso la media."""
+    try:
+        from skimage import exposure
+        import numpy as np
+    except ImportError:
+        return jsonify({'error': 'scikit-image non installato'}), 500
+
+    db   = load_db()
+    p    = next((x for x in db['projects'] if x['id'] == pid), None)
+    if not p: return jsonify({'error': 'not found'}), 404
+
+    data      = request.json or {}
+    image_ids = data.get('ids', [])   # vuota = tutte
+
+    targets = [
+        i for i in p.get('images', [])
+        if not image_ids or i['id'] in image_ids
+    ]
+    if not targets: return jsonify({'error': 'nessuna foto selezionata'}), 400
+
+    # Carica tutte le immagini e calcola l'istogramma medio per canale
+    arrays = []
+    for img in targets:
+        fpath = UPLOAD / img['file']
+        if fpath.exists():
+            try:
+                arrays.append(np.array(Image.open(str(fpath)).convert('RGB'), dtype=np.float32))
+            except: pass
+
+    if not arrays: return jsonify({'error': 'nessun file leggibile'}), 400
+
+    # Calcola immagine di riferimento media (media pixel per pixel, stessa dimensione)
+    # Usiamo la mediana delle medie di luminosità come target
+    mean_brightness = float(np.median([a.mean() for a in arrays]))
+    mean_r = float(np.median([a[:,:,0].mean() for a in arrays]))
+    mean_g = float(np.median([a[:,:,1].mean() for a in arrays]))
+    mean_b = float(np.median([a[:,:,2].mean() for a in arrays]))
+
+    updated = []
+    for img, arr in zip(targets, arrays):
+        fpath = UPLOAD / img['file']
+        if not fpath.exists(): continue
+        try:
+            # Correggi ogni canale verso la media
+            corrected = arr.copy()
+            for ch, target_mean in enumerate([mean_r, mean_g, mean_b]):
+                ch_mean = corrected[:,:,ch].mean()
+                if ch_mean > 1:
+                    corrected[:,:,ch] = np.clip(corrected[:,:,ch] * (target_mean / ch_mean), 0, 255)
+
+            result = Image.fromarray(corrected.astype(np.uint8))
+            result.save(str(fpath), 'JPEG', quality=88, optimize=True)
+
+            # Rigenera thumbnail
+            tpath = UPLOAD / img.get('thumb', 'thumbs/' + img['file'])
+            tpath.parent.mkdir(exist_ok=True)
+            thumb = result.copy()
+            thumb.thumbnail((400, 400), Image.LANCZOS)
+            thumb.save(str(tpath), 'JPEG', quality=82)
+
+            updated.append(img['id'])
+        except Exception as e:
+            pass
+
+    save_db(db)
+    return jsonify({'ok': True, 'updated': updated,
+                    'target': {'brightness': mean_brightness, 'r': mean_r, 'g': mean_g, 'b': mean_b}})
+
+
 if __name__ == '__main__':
     print('\n  Rizzi CMS — avviato su http://localhost:5151')
     print('  Sito:  http://localhost:5151/')
