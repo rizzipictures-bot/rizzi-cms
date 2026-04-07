@@ -1298,12 +1298,12 @@
       overflow: hidden;              /* evita overflow orizzontale */
     }
 
-    /* Foto hero grande a sinistra — BORDERLESS, proporzioni reali */
+    /* Foto hero grande a sinistra — BORDERLESS, altezza fissa, larghezza via aspect-ratio */
     .archive-expanded-hero {
       flex-shrink: 0;
-      width: auto;                   /* larghezza si adatta all'aspect ratio */
-      max-width: 700px;              /* limite massimo per foto molto orizzontali */
-      height: auto;                  /* altezza determinata dall'immagine */
+      height: 500px;                 /* altezza fissa del box */
+      width: auto;                   /* larghezza calcolata via aspect-ratio impostata da JS */
+      max-width: 700px;
       overflow: hidden;
       position: relative;
       cursor: none;
@@ -1316,12 +1316,10 @@
     }
     .archive-expanded-hero img {
       display: block;
-      width: auto;                   /* larghezza automatica proporzionale */
-      height: auto;                  /* altezza automatica — rispetta proporzioni reali */
-      max-height: 600px;             /* limite massimo altezza */
-      max-width: 700px;              /* limite massimo larghezza */
+      width: 100%;
+      height: 100%;
       object-fit: contain;
-      object-position: left top;
+      object-position: left center;
       margin: 0;
       padding: 0;
       border: none;
@@ -7192,6 +7190,21 @@ function buildArchive() {
           // Indice corrente della foto nella hero (condiviso con le thumbs)
           let _heroIndex = 0;
 
+          // Imposta larghezza hero in base all'AR della foto (con altezza fissa 500px)
+          function _updateHeroWidth(imgAr) {
+            const ar = imgAr || 1.33;
+            const w = Math.min(Math.round(500 * ar), 700);
+            hero.style.width = w + 'px';
+          }
+          // Aggiorna larghezza quando l'immagine è caricata (AR reale dal browser)
+          heroImg.addEventListener('load', function() {
+            if (this.naturalWidth && this.naturalHeight) {
+              const realAr = this.naturalWidth / this.naturalHeight;
+              hero.style.width = Math.min(Math.round(500 * realAr), 700) + 'px';
+            }
+          }, { once: false });
+          _updateHeroWidth(images[0].ar);
+
           // Funzione per aggiornare la hero con animazione curtain
           function _setHeroImage(idx) {
             _heroIndex = ((idx % images.length) + images.length) % images.length;
@@ -7202,6 +7215,8 @@ function buildArchive() {
             heroImg.classList.remove('hero-curtain-reset');
             heroImg.classList.add('hero-curtain-in');
             setTimeout(() => heroImg.classList.remove('hero-curtain-in'), 500);
+            // Aggiorna larghezza in base all'AR della nuova foto
+            _updateHeroWidth(images[_heroIndex].ar);
             // Aggiorna thumb attiva
             if (strip) {
               strip.querySelectorAll('.archive-expanded-thumb').forEach((el, i) => {
