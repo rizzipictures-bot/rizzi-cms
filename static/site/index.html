@@ -8787,12 +8787,13 @@ async function loadFromCMS() {
                  : base + '/uploads/' + img.thumb)
               : imgUrl;
             return {
-              url:      imgUrl,
-              thumb:    thumbUrl,
-              ar:       img.ar || 1.33,
-              title:    img.caption || fname,
-              year:     p.year || '',
-              keywords: img.keywords || ''   /* IPTC + AI + manuali */
+              url:        imgUrl,
+              thumb:      thumbUrl,
+              ar:         img.ar || 1.33,
+              title:      img.caption || fname,
+              year:       p.year || '',
+              keywords:   img.keywords || '',   /* IPTC + AI + manuali */
+              in_overview: img.in_overview || false
             };
           }) : [],
           technique:       p.technique || '',
@@ -8805,12 +8806,20 @@ async function loadFromCMS() {
         PROJECTS.push(proj);
       });
 
-      // ALL_IMAGES: tutte le immagini dei progetti CMS per la Overview grid
+      // ALL_IMAGES: logica Overview con selezione manuale
+      // Per ogni progetto: usa le foto marcate in_overview=true
+      // Se nessuna è marcata, usa la prima foto come fallback
       ALL_IMAGES.length = 0;
       PROJECTS.forEach(p => {
-        p.images.forEach(img => {
-          ALL_IMAGES.push({ url: img.url, ar: img.ar, project: p });
-        });
+        if (!p.images || p.images.length === 0) return;
+        const ovImgs = p.images.filter(img => img.in_overview);
+        if (ovImgs.length > 0) {
+          ovImgs.forEach(img => ALL_IMAGES.push({ url: img.url, ar: img.ar, project: p }));
+        } else {
+          // Fallback: prima foto del progetto
+          const first = p.images[0];
+          ALL_IMAGES.push({ url: first.url, ar: first.ar, project: p });
+        }
       });
 
       usedCMS = true;

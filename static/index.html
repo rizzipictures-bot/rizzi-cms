@@ -337,6 +337,44 @@
     font-size: 7px; color: rgba(255,255,255,.6);
     pointer-events: none;
   }
+  /* ── DRAG & DROP RIORDINAMENTO ── */
+  .image-cell.dragging {
+    opacity: .35;
+    outline: 2px dashed var(--accent);
+  }
+  .image-cell.drag-over-target {
+    outline: 2px solid var(--accent);
+    outline-offset: -2px;
+  }
+  .image-cell .drag-handle {
+    position: absolute; top: 4px; right: 4px;
+    width: 16px; height: 16px;
+    display: flex; align-items: center; justify-content: center;
+    cursor: grab; z-index: 10;
+    color: rgba(255,255,255,.7); font-size: 10px;
+    opacity: 0; transition: opacity .15s;
+  }
+  .image-cell:hover .drag-handle { opacity: 1; }
+  .image-cell.dragging .drag-handle { cursor: grabbing; }
+  /* Indicatore foto in Overview */
+  .image-cell .ov-star {
+    position: absolute; bottom: 4px; left: 4px;
+    font-size: 10px; line-height: 1;
+    color: gold; text-shadow: 0 0 4px rgba(0,0,0,.8);
+    pointer-events: none; opacity: 0;
+    transition: opacity .15s;
+  }
+  .image-cell.in-overview .ov-star { opacity: 1; }
+  .image-cell .ov-toggle-btn {
+    display: none;
+    position: absolute; bottom: 4px; left: 4px;
+    background: rgba(0,0,0,.6); border: 1px solid rgba(255,255,255,.3);
+    color: #fff; font-size: 8px; letter-spacing: .3px;
+    cursor: pointer; padding: 2px 5px; border-radius: 2px;
+  }
+  .image-cell:hover .ov-star { display: none; }
+  .image-cell:hover .ov-toggle-btn { display: block; }
+
   /* Toolbar sopra la griglia foto */
   .images-toolbar {
     display: flex; align-items: center; gap: 8px;
@@ -1030,17 +1068,29 @@ function updateIptcStatusBar() {
   status.innerHTML = `<strong>${withKw}/${imgs.length}</strong> foto con keyword &nbsp;·&nbsp; <strong>${withIptc}</strong> IPTC &nbsp;·&nbsp; <strong>${withAi}</strong> AI`;
 }
 
+// ── VARIABILI DRAG & DROP ──
+let _dragSrcId = null;
+
 function renderImageGrid() {
   const grid = document.getElementById('image-grid');
   grid.innerHTML = '';
   (currentProject.images || []).forEach((img, idx) => {
     const cell = document.createElement('div');
-    cell.className = 'image-cell';
+    const inOv = img.in_overview ? 'in-overview' : '';
+    cell.className = `image-cell ${inOv}`;
+    cell.dataset.imgId = img.id;
+    cell.draggable = true;
     const badge = getKwBadgeInfo(img);
+    const imgSrc = `/uploads/${img.thumb || img.file}`;
     cell.innerHTML = `
-      <img src="http://localhost:5151/uploads/${img.thumb || img.file}" alt="" loading="lazy">
+      <img src="${imgSrc}" alt="" loading="lazy">
       <span class="img-kw-badge ${badge.cls}">${badge.label}</span>
       ${badge.count > 0 ? `<span class="img-kw-count">${badge.count} kw</span>` : ''}
+      <div class="drag-handle" title="Trascina per riordinare">☰</div>
+      <span class="ov-star" title="In Overview">★</span>
+      <button class="ov-toggle-btn" onclick="toggleOverviewImg('${img.id}')" title="Aggiungi/Rimuovi da Overview">
+        ${img.in_overview ? '★ OV' : '☆ OV'}
+      </button>
       <div class="img-overlay">
         <div class="img-actions">
           <button class="img-action-btn" onclick="showImgKeywords('${img.id}')" title="Vedi keyword">KW</button>
@@ -1051,9 +1101,77 @@ function renderImageGrid() {
       </div>
       ${img.caption ? `<div class="img-caption">${img.caption}</div>` : ''}
     `;
+    // ── Drag & Drop handlers ──
+    cell.addEventListener('dragstart', e => {
+      _dragSrcId = img.id;
+      cell.classList.add('dragging');
+      e.dataTransfer.effectAllowed = 'move';
+    });
+    cell.addEventListener('dragend', () => {
+      cell.classList.remove('dragging');
+      grid.querySelectorAll('.drag-over-target').forEach(c => c.classList.remove('drag-over-target'));
+    });
+    cell.addEventListener('dragover', e => {
+      e.preventDefault();
+      e.dataTransfer.dropEffect = 'move';
+      grid.querySelectorAll('.drag-over-target').forEach(c => c.classList.remove('drag-over-target'));
+      if (img.id !== _dragSrcId) cell.classList.add('drag-over-target');
+    });
+    cell.addEventListener('dragleave', () => {
+      cell.classList.remove('drag-over-target');
+    });
+    cell.addEventListener('drop', e => {
+      e.preventDefault();
+      cell.classList.remove('drag-over-target');
+      if (!_dragSrcId || _dragSrcId === img.id) return;
+      // Riordina l'array locale
+      const imgs = currentProject.images;
+      const fromIdx = imgs.findIndex(i => i.id === _dragSrcId);
+      const toIdx   = imgs.findIndex(i => i.id === img.id);
+      if (fromIdx === -1 || toIdx === -1) return;
+      const [moved] = imgs.splice(fromIdx, 1);
+      imgs.splice(toIdx, 0, moved);
+      renderImageGrid();
+      renderPreview();
+      // Salva il nuovo ordine sul backend
+      _saveImageOrder();
+    });
     grid.appendChild(cell);
   });
   updateIptcStatusBar();
+}
+
+async function _saveImageOrder() {
+  if (!currentProject) return;
+  const order = (currentProject.images || []).map(i => i.id);
+  try {
+    await fetch(`${API}/projects/${currentProject.id}/images/reorder`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ order })
+    });
+    toast('Ordine salvato ✔');
+  } catch(e) {
+    toast('Errore salvataggio ordine');
+  }
+}
+
+async function toggleOverviewImg(iid) {
+  const img = (currentProject.images || []).find(i => i.id === iid);
+  if (!img) return;
+  img.in_overview = !img.in_overview;
+  // Salva subito il progetto aggiornato
+  try {
+    await fetch(`${API}/projects/${currentProject.id}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ images: currentProject.images })
+    });
+    renderImageGrid();
+    toast(img.in_overview ? '★ Aggiunta all\'Overview' : '☆ Rimossa dall\'Overview');
+  } catch(e) {
+    toast('Errore salvataggio Overview');
+  }
 }
 
 async function uploadFiles(files) {

@@ -4,5 +4,12 @@ __pycache__/
 *.log
 .DS_Store
 *.zip
-data/db.json
-uploads/
+# db.json viene committato per avere i dati iniziali
+# data/db.json
+# Uploads: le foto NON vanno in git (troppo grandi)
+# Su Render vengono gestite con un Disk persistente
+uploads/*
+!uploads/.gitkeep
+!uploads/thumbs/
+uploads/thumbs/*
+!uploads/thumbs/.gitkeep
