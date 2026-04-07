@@ -8,7 +8,8 @@
     {"id": "sculptures", "name": "Sculptures Project",    "order": 4, "visible": true},
     {"id": "biography",  "name": "Biography",             "order": 5, "visible": true},
     {"id": "contact",    "name": "Contact",               "order": 6, "visible": true},
-    {"id": "index",      "name": "Index (foto laterale)", "order": 7, "visible": true}
+    {"id": "index",      "name": "Index (foto laterale)", "order": 7, "visible": true},
+    {"id": "miscellanea", "name": "Miscellanea",            "order": 8, "visible": true}
   ],
   "texts": {},
   "settings": {}

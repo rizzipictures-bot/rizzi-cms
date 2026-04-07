@@ -4604,6 +4604,7 @@
     <div class="menu-col" id="menu-col-1">
       <a href="#" class="bold" data-view="home" id="menu-link-overview">Overview</a>
       <a href="#" data-view="cities-index" id="menu-link-cities">Cities</a>
+      <a href="#" data-view="miscellanea" id="menu-link-miscellanea">Miscellanea</a>
       <a href="#" data-view="archive" id="menu-link-archive">Archive</a>
       <a href="#" data-view="interview">Interview</a>
     </div>
@@ -4863,6 +4864,28 @@
     </div>
     <!-- Preview thumbnail al cursore per Sculptures -->
     <div id="sculptures-cursor-preview"><img id="sculptures-cursor-preview-img" src="" alt=""></div>
+
+    <!-- ── VIEW: MISCELLANEA ── -->
+    <div class="view" id="view-miscellanea" style="position:relative;">
+      <div class="cities-page-title">Miscellanea</div>
+      <!-- Toggle lista / thumbs (stesso pattern Cities) -->
+      <div class="cities-view-toggle">
+        <button class="cities-toggle-btn active" id="miscellanea-btn-list">lista</button>
+        <button class="cities-toggle-btn" id="miscellanea-btn-thumbs">thumbs</button>
+      </div>
+      <!-- Vista Lista -->
+      <div id="miscellanea-list-view" class="active">
+        <!-- Generata via JS -->
+      </div>
+      <!-- Vista Thumbs -->
+      <div id="miscellanea-thumbs-view" style="display:none">
+        <div class="cities-index-grid" id="miscellanea-index-grid">
+          <!-- Generata via JS -->
+        </div>
+      </div>
+    </div>
+    <!-- Preview thumbnail al cursore per Miscellanea -->
+    <div id="miscellanea-cursor-preview"><img id="miscellanea-cursor-preview-img" src="" alt=""></div>
 
     <!-- ── VIEW: BIOGRAPHY ── -->
     <div class="view" id="view-biography">
@@ -7865,6 +7888,22 @@ function galleryGoBack() {
       if (btnList)   btnList.classList.remove('active');
       if (btnThumbs) btnThumbs.classList.add('active');
     });
+  } else if (window._galleryOrigin === 'miscellanea-thumbs') {
+    window._galleryOrigin = null;
+    switchView('miscellanea');
+    // Assicura che sia attiva la tab thumbs
+    requestAnimationFrame(() => {
+      const thumbsView = document.getElementById('miscellanea-thumbs-view');
+      const listView   = document.getElementById('miscellanea-list-view');
+      const btnList    = document.getElementById('miscellanea-btn-list');
+      const btnThumbs  = document.getElementById('miscellanea-btn-thumbs');
+      if (thumbsView && listView) {
+        thumbsView.style.display = '';
+        listView.style.display   = 'none';
+      }
+      if (btnList)   btnList.classList.remove('active');
+      if (btnThumbs) btnThumbs.classList.add('active');
+    });
   } else {
     window._galleryOrigin = null;
     switchView('cities-index');
@@ -8112,6 +8151,8 @@ function buildMenuSubItems() {
   if (linkOverview) linkOverview.onclick = e => { e.preventDefault(); document.getElementById('menu-overlay').classList.remove('open'); switchView('home'); };
   if (linkCities)   linkCities.onclick   = e => { e.preventDefault(); document.getElementById('menu-overlay').classList.remove('open'); switchView('cities-index'); };
   if (linkArchive)  linkArchive.onclick  = e => { e.preventDefault(); document.getElementById('menu-overlay').classList.remove('open'); switchView('archive'); };
+  const linkMisc = document.getElementById('menu-link-miscellanea');
+  if (linkMisc) linkMisc.onclick = e => { e.preventDefault(); document.getElementById('menu-overlay').classList.remove('open'); switchView('miscellanea'); };
 }
 
 // ══════════════════════════════════════════════════════════════════
@@ -8360,6 +8401,118 @@ function buildSculpturesIndex() {
   if (previewEl) {
     document.addEventListener('mousemove', e => {
       if (currentView !== 'sculptures') return;
+      previewEl.style.transform = `translate(${e.clientX + 16}px, ${e.clientY - 40}px)`;
+    });
+  }
+}
+
+// ════════════════════════════════════════════════════════════════
+// MISCELLANEA
+// ════════════════════════════════════════════════════════════════
+function buildMiscellaneaIndex() {
+  const grid     = document.getElementById('miscellanea-index-grid');
+  const listView = document.getElementById('miscellanea-list-view');
+  if (!grid || !listView) return;
+  grid.innerHTML = '';
+  listView.innerHTML = '';
+
+  // Filtra i progetti con category_id === 'miscellanea'
+  const projects = PROJECTS.filter(p => p.category_id === 'miscellanea');
+
+  if (projects.length === 0) {
+    listView.innerHTML = '<div style="padding:40px;font-family:var(--font-mono);font-size:10px;color:var(--gray);letter-spacing:.06em">Nessun progetto ancora. Aggiungilo dal CMS.</div>';
+    grid.innerHTML = listView.innerHTML;
+    return;
+  }
+
+  // ── Vista Lista (stesso stile Cities) ──
+  projects.forEach((p, idx) => {
+    const coverUrl = p.images.length > 0 ? p.images[0].url : '';
+    const row = document.createElement('div');
+    row.className = 'cities-list-row';
+    const code = String.fromCharCode(65 + Math.floor(idx / 26)) + String(idx + 1).padStart(2, '0');
+    row.innerHTML = `
+      <span class="cities-list-code"><span class="code-letter">${code[0]}</span>${code.slice(1)}</span>
+      <span class="cities-list-name">${p.title || ''}</span>
+      <span class="cities-list-year">${p.year || ''}</span>
+    `;
+    const previewEl  = document.getElementById('miscellanea-cursor-preview');
+    const previewImg = document.getElementById('miscellanea-cursor-preview-img');
+    row.addEventListener('mouseenter', () => {
+      if (coverUrl && previewImg) {
+        previewImg.src = coverUrl;
+        previewEl.classList.add('visible');
+      }
+    });
+    row.addEventListener('mouseleave', () => {
+      if (previewEl) previewEl.classList.remove('visible');
+    });
+    row.addEventListener('click', () => {
+      window._galleryOrigin = 'miscellanea-thumbs';
+      switchView('gallery');
+      openGallery(p);
+      requestAnimationFrame(() => {
+        const vg = document.getElementById('view-gallery');
+        if (vg) vg.scrollTop = 0;
+        const bb = document.getElementById('gallery-back-btn');
+        if (bb) bb.style.display = 'flex';
+      });
+    });
+    listView.appendChild(row);
+  });
+
+  // ── Vista Thumbs (stesso stile Cities) ──
+  projects.forEach(p => {
+    const coverUrl = p.images.length > 0 ? p.images[0].url : '';
+    const card = document.createElement('div');
+    card.className = 'cities-card';
+    card.innerHTML = `
+      <div class="cities-card-cover">
+        ${coverUrl ? `<img src="${coverUrl}" alt="${p.title}" loading="lazy">` : ''}
+      </div>
+      <div class="cities-card-title">${p.title || ''}</div>
+      <div class="cities-card-sub">${p.subtitle || p.place || ''}</div>
+    `;
+    card.addEventListener('click', () => {
+      window._galleryOrigin = 'miscellanea-thumbs';
+      switchView('gallery');
+      openGallery(p);
+      requestAnimationFrame(() => {
+        const vg = document.getElementById('view-gallery');
+        if (vg) vg.scrollTop = 0;
+        const bb = document.getElementById('gallery-back-btn');
+        if (bb) bb.style.display = 'flex';
+      });
+    });
+    grid.appendChild(card);
+  });
+
+  // Toggle lista/thumbs
+  const btnList    = document.getElementById('miscellanea-btn-list');
+  const btnThumbs  = document.getElementById('miscellanea-btn-thumbs');
+  const thumbsView = document.getElementById('miscellanea-thumbs-view');
+  if (btnList && btnThumbs) {
+    btnList.addEventListener('click', () => {
+      btnList.classList.add('active');
+      btnThumbs.classList.remove('active');
+      listView.style.display = '';
+      listView.classList.add('active');
+      thumbsView.style.display = 'none';
+    });
+    btnThumbs.addEventListener('click', () => {
+      btnThumbs.classList.add('active');
+      btnList.classList.remove('active');
+      thumbsView.style.display = '';
+      listView.classList.remove('active');
+      listView.style.display = 'none';
+    });
+  }
+
+  // Preview al mousemove
+  const previewEl  = document.getElementById('miscellanea-cursor-preview');
+  if (previewEl) {
+    document.addEventListener('mousemove', e => {
+      if (currentView !== 'miscellanea') return;
       previewEl.style.transform = `translate(${e.clientX + 16}px, ${e.clientY - 40}px)`;
     });
   }
@@ -8857,6 +9010,7 @@ async function loadFromCMS() {
   buildInterview();
   buildBooks();
   buildSculpturesIndex();
+  buildMiscellaneaIndex();
   buildBiography();
   buildContact();
   buildInformation();
