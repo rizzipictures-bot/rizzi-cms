@@ -615,6 +615,49 @@ def update_settings():
     save_db(db)
     return jsonify(db['settings'])
 
+# ── LANDING PHOTO ──────────────────────────────────────────
+@app.route('/api/settings/landing-photo', methods=['POST'])
+def upload_landing_photo():
+    """Carica la foto della landing page (sostituisce quella precedente)."""
+    if 'file' not in request.files:
+        return jsonify({'error': 'nessun file'}), 400
+    f = request.files['file']
+    if not f.filename:
+        return jsonify({'error': 'nome file vuoto'}), 400
+
+    UPLOAD.mkdir(exist_ok=True)
+    ext = Path(f.filename).suffix.lower() or '.jpg'
+    fname = f'landing{ext}'
+    fpath = UPLOAD / fname
+
+    # Salva e ottimizza
+    img = Image.open(f.stream).convert('RGB')
+    max_side = 2500
+    if max(img.size) > max_side:
+        img.thumbnail((max_side, max_side), Image.LANCZOS)
+    img.save(str(fpath), 'JPEG', quality=88, optimize=True)
+    # Rinomina sempre come .jpg
+    final_path = UPLOAD / 'landing.jpg'
+    if fpath != final_path:
+        fpath.rename(final_path)
+
+    # Salva il riferimento nel db
+    db = load_db()
+    db['settings']['landing_photo'] = 'landing.jpg'
+    save_db(db)
+    return jsonify({'ok': True, 'file': 'landing.jpg', 'url': f'/uploads/landing.jpg'})
+
+@app.route('/api/settings/landing-photo', methods=['DELETE'])
+def delete_landing_photo():
+    """Rimuove la foto landing personalizzata (torna alla foto di default)."""
+    db = load_db()
+    db['settings'].pop('landing_photo', None)
+    save_db(db)
+    fpath = UPLOAD / 'landing.jpg'
+    if fpath.exists():
+        fpath.unlink()
+    return jsonify({'ok': True})
+
 # ── REORDER IMAGES ──────────────────────────────────────────
 @app.route('/api/projects/<pid>/images/reorder', methods=['PUT'])
 def reorder_images(pid):

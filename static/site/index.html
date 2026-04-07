@@ -8749,7 +8749,22 @@ async function loadFromCMS() {
     if (!catRes.ok) throw new Error('CMS non disponibile');
     CMS_CATEGORIES = await catRes.json();
 
-    // 2. Carica progetti
+    // 2. Carica impostazioni globali (foto landing, ecc.)
+    try {
+      const settingsRes = await fetch(CMS_API + '/settings');
+      if (settingsRes.ok) {
+        const settings = await settingsRes.json();
+        if (settings.landing_photo) {
+          const base = CMS_API.replace('/api', '');
+          const landingImg = document.querySelector('#landing-photo img');
+          if (landingImg) {
+            landingImg.src = base + '/uploads/' + settings.landing_photo;
+          }
+        }
+      }
+    } catch(e) { /* impostazioni non disponibili, usa default */ }
+
+    // 3. Carica progetti
     const projRes = await fetch(CMS_API + '/projects');
     if (!projRes.ok) throw new Error('CMS non disponibile');
     const cmsProjects = await projRes.json();

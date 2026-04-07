@@ -610,6 +610,24 @@
             <button class="btn-text" onclick="showNewCategoryModal()" style="font-size:9px">+ Nuova sezione</button>
           </div>
         </div>
+
+        <!-- FOTO LANDING -->
+        <div style="text-align:left;max-width:400px;margin:24px auto 0;border-top:1px solid var(--border);padding-top:20px">
+          <h4 style="margin-bottom:12px">Foto Landing (schermo intero)</h4>
+          <div id="landing-photo-preview" style="margin-bottom:12px;display:none">
+            <img id="landing-photo-thumb" src="" alt="" style="max-width:100%;max-height:160px;object-fit:cover;border:1px solid var(--border)">
+            <div style="margin-top:6px;font-size:9px;color:var(--gray)" id="landing-photo-label">—</div>
+          </div>
+          <div id="landing-photo-empty" style="margin-bottom:12px;font-size:10px;color:var(--gray)">Nessuna foto impostata — viene usata la foto di default.</div>
+          <div style="display:flex;gap:8px;align-items:center">
+            <label class="btn-text" style="cursor:pointer;font-size:9px">
+              Carica foto
+              <input type="file" id="landing-photo-input" accept="image/*" style="display:none" onchange="uploadLandingPhoto(this)">
+            </label>
+            <button class="btn-text" id="landing-photo-delete-btn" onclick="deleteLandingPhoto()" style="font-size:9px;display:none">Rimuovi</button>
+          </div>
+          <div style="margin-top:8px;font-size:9px;color:var(--gray)">La foto viene ottimizzata automaticamente (max 2500px). Sostituisce quella attuale.</div>
+        </div>
       </div>
     </div>
     <div id="editor-content" style="display:none">
@@ -761,6 +779,74 @@ async function init() {
   await loadCategories();
   await loadProjects();
   renderCategoryManager();
+  await loadLandingPhotoSettings();
+}
+
+// ─────────────────────────────────────────────
+// FOTO LANDING
+// ─────────────────────────────────────────────
+async function loadLandingPhotoSettings() {
+  try {
+    const res = await fetch(`${API}/settings`);
+    const settings = await res.json();
+    renderLandingPhotoUI(settings.landing_photo || null);
+  } catch(e) {
+    renderLandingPhotoUI(null);
+  }
+}
+
+function renderLandingPhotoUI(filename) {
+  const preview = document.getElementById('landing-photo-preview');
+  const empty   = document.getElementById('landing-photo-empty');
+  const thumb   = document.getElementById('landing-photo-thumb');
+  const label   = document.getElementById('landing-photo-label');
+  const delBtn  = document.getElementById('landing-photo-delete-btn');
+  if (!preview) return;
+  if (filename) {
+    thumb.src = `/uploads/${filename}?t=${Date.now()}`;
+    label.textContent = filename;
+    preview.style.display = 'block';
+    empty.style.display   = 'none';
+    if (delBtn) delBtn.style.display = 'inline-block';
+  } else {
+    preview.style.display = 'none';
+    empty.style.display   = 'block';
+    if (delBtn) delBtn.style.display = 'none';
+  }
+}
+
+async function uploadLandingPhoto(input) {
+  const file = input.files[0];
+  if (!file) return;
+  const fd = new FormData();
+  fd.append('file', file);
+  try {
+    const res = await fetch(`${API}/settings/landing-photo`, { method: 'POST', body: fd });
+    const data = await res.json();
+    if (data.ok) {
+      renderLandingPhotoUI('landing.jpg');
+      toast('Foto landing aggiornata');
+    } else {
+      toast('Errore: ' + (data.error || 'upload fallito'));
+    }
+  } catch(e) {
+    toast('Errore upload foto landing');
+  }
+  input.value = '';
+}
+
+async function deleteLandingPhoto() {
+  if (!confirm('Rimuovere la foto landing? Verra\u2019 usata la foto di default.')) return;
+  try {
+    const res = await fetch(`${API}/settings/landing-photo`, { method: 'DELETE' });
+    const data = await res.json();
+    if (data.ok) {
+      renderLandingPhotoUI(null);
+      toast('Foto landing rimossa');
+    }
+  } catch(e) {
+    toast('Errore rimozione foto landing');
+  }
 }
 
 // ─────────────────────────────────────────────
