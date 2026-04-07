@@ -16,15 +16,14 @@ import numpy as np
 
 BASE   = Path(__file__).parent
 
-# Su Render il Disk è montato su /opt/render/project/src/uploads
-# In locale usiamo la cartella uploads/ relativa al progetto
-_RENDER_UPLOAD = Path('/opt/render/project/src/uploads')
-UPLOAD = _RENDER_UPLOAD if _RENDER_UPLOAD.parent.exists() and os.environ.get('RENDER') else BASE / 'uploads'
+# Su Render il Disk DEVE essere montato su /opt/render/project/storage
+# (path FUORI dal repo, così i deploy non sovrascrivono mai i dati)
+# In locale usiamo le cartelle uploads/ e data/ relative al progetto
+_RENDER_STORAGE = Path('/opt/render/project/storage')
+_IS_RENDER = bool(os.environ.get('RENDER')) and _RENDER_STORAGE.exists()
 
-# Il file projects.json viene salvato nel Disk su Render (persistente)
-# oppure in data/ in locale
-_RENDER_DATA = Path('/opt/render/project/src/data')
-DATA = _RENDER_DATA if _RENDER_UPLOAD.parent.exists() and os.environ.get('RENDER') else BASE / 'data'
+UPLOAD = _RENDER_STORAGE / 'uploads' if _IS_RENDER else BASE / 'uploads'
+DATA   = _RENDER_STORAGE / 'data'    if _IS_RENDER else BASE / 'data'
 
 # ── AUTO-TRIM BORDI MONOCROMATICI ──────────────────────────────────────────────
 def auto_trim_border(im, threshold=18, min_strip=2, max_strip_pct=0.08):
@@ -1011,15 +1010,12 @@ def seed_istanbul_images():
 def sysinfo():
     """Endpoint di diagnostica: mostra i path reali usati dal server."""
     import os
-    render_env = os.environ.get('RENDER', '')
-    upload_parent = Path('/opt/render/project/src').exists()
-    disk_path = Path('/opt/render/project/src/uploads')
-    data_path = Path('/opt/render/project/src/data')
+    storage = Path('/opt/render/project/storage')
     return jsonify({
-        'RENDER_env': render_env,
-        'upload_parent_exists': upload_parent,
-        'disk_upload_exists': disk_path.exists(),
-        'disk_data_exists': data_path.exists(),
+        'RENDER_env': os.environ.get('RENDER', ''),
+        'IS_RENDER': _IS_RENDER,
+        'storage_exists': storage.exists(),
+        'storage_ls': os.listdir(str(storage)) if storage.exists() else [],
         'UPLOAD_path': str(UPLOAD),
         'DATA_path': str(DATA),
         'DB_FILE_path': str(DB_FILE),
@@ -1027,8 +1023,6 @@ def sysinfo():
         'uploads_count': len(list(UPLOAD.glob('*.jpg'))) if UPLOAD.exists() else -1,
         'BASE_path': str(BASE),
         'cwd': os.getcwd(),
-        # Lista directory /opt/render/project/src se esiste
-        'opt_render_ls': os.listdir('/opt/render/project/src') if Path('/opt/render/project/src').exists() else [],
     })
 
 if __name__ == '__main__':
