@@ -4624,11 +4624,13 @@
     <!-- Back button gallery — visibile solo se si arriva da Cities Thumbs -->
     <button id="gallery-back-btn" onclick="galleryGoBack()" style="display:none">&#8592;&nbsp;&nbsp;Back</button>
     <!-- 3 voci principali a destra -->
-    <nav class="pill-nav">
+    <nav class="pill-nav" id="main-pill-nav">
       <button data-view="index">Index</button>
       <button class="active" data-view="home">Overview</button>
       <button data-view="archive">Archive</button>
+      <button data-view="miscellanea">Miscellanea</button>
       <button data-view="cities-index">Cities</button>
+      <!-- Voci dinamiche dal CMS inserite qui via JS -->
       <button id="btn-update" style="display:none" title="Aggiorna sito da GitHub">↻ Aggiorna</button>
     </nav>
   </header>
@@ -8888,9 +8890,66 @@ let CMS_CATEGORIES = [];
 // Ogni categoria diventa una voce espandibile nel menu
 // ─────────────────────────────────────────────────────────────────
 function buildDynamicMenu(categories, projects) {
-  // Con la nuova struttura a griglia, buildMenuSubItems gestisce tutto
+  // Categorie con layout 'cities' che non sono già hardcodate nella navbar
+  const HARDCODED_NAV = new Set(['cities', 'archive', 'interview', 'books', 'sculptures', 'biography', 'contact', 'index']);
+  const CITIES_LAYOUT_CATS = categories.filter(c =>
+    c.layout === 'cities' && !HARDCODED_NAV.has(c.id) && c.visible !== false
+  );
+
+  // ── 1. Aggiungi voci dinamiche nella navbar pill-nav ──
+  const nav = document.getElementById('main-pill-nav');
+  const btnUpdate = document.getElementById('btn-update');
+  if (nav) {
+    // Rimuovi eventuali voci dinamiche precedenti
+    nav.querySelectorAll('.pill-nav-dynamic').forEach(el => el.remove());
+    CITIES_LAYOUT_CATS.forEach(cat => {
+      // Controlla se esiste già una view per questa categoria
+      const viewId = 'view-' + cat.id;
+      const viewEl = document.getElementById(viewId);
+      if (!viewEl) return; // skip se non esiste la view
+      const btn = document.createElement('button');
+      btn.className = 'pill-nav-dynamic';
+      btn.textContent = cat.name;
+      btn.dataset.view = cat.id;
+      btn.addEventListener('click', () => switchView(cat.id));
+      // Inserisci prima del btn-update
+      nav.insertBefore(btn, btnUpdate);
+    });
+  }
+
+  // ── 2. Aggiungi voci dinamiche nel menu overlay ──
+  const menuCol = document.getElementById('menu-col-1');
+  if (menuCol) {
+    // Rimuovi voci dinamiche precedenti
+    menuCol.querySelectorAll('.menu-link-dynamic').forEach(el => el.remove());
+    CITIES_LAYOUT_CATS.forEach(cat => {
+      const viewId = 'view-' + cat.id;
+      if (!document.getElementById(viewId)) return;
+      // Controlla se esiste già un link hardcodato per questa categoria
+      if (document.getElementById('menu-link-' + cat.id)) return;
+      const a = document.createElement('a');
+      a.href = '#';
+      a.className = 'menu-link-dynamic';
+      a.dataset.view = cat.id;
+      a.textContent = cat.name;
+      a.addEventListener('click', e => {
+        e.preventDefault();
+        document.getElementById('menu-overlay').classList.remove('open');
+        switchView(cat.id);
+      });
+      // Inserisci dopo il link Cities
+      const citiesLink = document.getElementById('menu-link-cities');
+      if (citiesLink && citiesLink.nextSibling) {
+        menuCol.insertBefore(a, citiesLink.nextSibling);
+      } else {
+        menuCol.appendChild(a);
+      }
+    });
+  }
+
+  // ── 3. Gestisci click voci hardcodate ──
   buildMenuSubItems();
-  console.log(`Menu griglia: ${categories.length} categorie, ${projects.length} progetti`);
+  console.log(`Menu dinamico: ${categories.length} categorie, ${CITIES_LAYOUT_CATS.length} dinamiche`);
 }
 
 async function loadFromCMS() {

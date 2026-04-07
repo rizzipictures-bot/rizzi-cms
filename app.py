@@ -245,14 +245,15 @@ def load_db():
     db.setdefault('settings', {})
     # Migrazione: garantisce che tutte le categorie del sito siano presenti
     REQUIRED_CATS = [
-        {'id': 'cities',     'name': 'Cities',              'order': 0, 'visible': True},
-        {'id': 'archive',    'name': 'Archive',             'order': 1, 'visible': True},
-        {'id': 'interview',  'name': 'Interview',           'order': 2, 'visible': True},
-        {'id': 'books',      'name': 'Books',               'order': 3, 'visible': True},
-        {'id': 'sculptures', 'name': 'Sculptures Project',  'order': 4, 'visible': True},
-        {'id': 'biography',  'name': 'Biography',           'order': 5, 'visible': True},
-        {'id': 'contact',    'name': 'Contact',             'order': 6, 'visible': True},
-        {'id': 'index',      'name': 'Index (foto laterale)', 'order': 7, 'visible': True},
+        {'id': 'cities',       'name': 'Cities',              'order': 0, 'visible': True},
+        {'id': 'miscellanea',  'name': 'Miscellanea',          'order': 1, 'visible': True, 'layout': 'cities'},
+        {'id': 'archive',      'name': 'Archive',             'order': 2, 'visible': True},
+        {'id': 'interview',    'name': 'Interview',           'order': 3, 'visible': True},
+        {'id': 'books',        'name': 'Books',               'order': 4, 'visible': True},
+        {'id': 'sculptures',   'name': 'Sculptures Project',  'order': 5, 'visible': True},
+        {'id': 'biography',    'name': 'Biography',           'order': 6, 'visible': True},
+        {'id': 'contact',      'name': 'Contact',             'order': 7, 'visible': True},
+        {'id': 'index',        'name': 'Index (foto laterale)', 'order': 8, 'visible': True},
     ]
     existing_ids = {c['id'] for c in db['categories']}
     changed = False
