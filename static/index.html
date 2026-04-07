@@ -461,6 +461,56 @@
     border-radius: 3px; border: 2px solid #9b6fd4;
   }
 
+  /* ── COLOR WHEELS ── */
+  .proc-wheels {
+    display: flex; gap: 16px; margin-bottom: 12px;
+    padding-bottom: 12px; border-bottom: 1px solid var(--border);
+    flex-wrap: wrap;
+  }
+  .proc-wheel-group {
+    display: flex; flex-direction: column; align-items: center; gap: 4px;
+    flex: 1; min-width: 80px;
+  }
+  .proc-wheel-label {
+    font-size: 8px; letter-spacing: .4px; text-transform: uppercase;
+    color: var(--gray);
+  }
+  .proc-wheel-canvas {
+    cursor: crosshair; border-radius: 50%;
+    touch-action: none;
+  }
+  .proc-wheel-reset {
+    font-size: 8px; color: #9b6fd4; background: none; border: none;
+    cursor: pointer; padding: 0; letter-spacing: .3px;
+    font-family: var(--font);
+  }
+  .proc-wheel-reset:hover { text-decoration: underline; }
+
+  /* ── LIVE PREVIEW ZOOM POPUP ── */
+  #proc-zoom-popup {
+    display: none; position: fixed; inset: 0;
+    background: rgba(0,0,0,0.88); z-index: 9000;
+    align-items: center; justify-content: center;
+    flex-direction: column; gap: 12px;
+  }
+  #proc-zoom-popup.open { display: flex; }
+  #proc-zoom-popup-img {
+    max-width: 80vw; max-height: 78vh;
+    display: block; object-fit: contain;
+    box-shadow: 0 8px 40px rgba(0,0,0,0.5);
+  }
+  #proc-zoom-popup-close {
+    position: absolute; top: 16px; right: 20px;
+    background: none; border: none; color: rgba(255,255,255,0.6);
+    font-size: 20px; cursor: pointer; font-family: var(--font);
+    line-height: 1;
+  }
+  #proc-zoom-popup-close:hover { color: #fff; }
+  #proc-zoom-popup-label {
+    font-family: var(--font); font-size: 9px; letter-spacing: .4px;
+    color: rgba(255,255,255,0.5); text-align: center;
+  }
+
   /* Toolbar sopra la griglia foto */
   .images-toolbar {
     display: flex; align-items: center; gap: 8px;
@@ -936,6 +986,25 @@
             <span id="proc-master-label">Nessuna foto master selezionata — clicca ★M su una foto per impostarla come riferimento colore</span>
           </div>
 
+          <!-- Color Wheels: Shadows / Midtones / Highlights -->
+          <div class="proc-wheels">
+            <div class="proc-wheel-group">
+              <div class="proc-wheel-label">Shadows</div>
+              <canvas id="wheel-shadows" class="proc-wheel-canvas" width="90" height="90"></canvas>
+              <button class="proc-wheel-reset" onclick="resetWheel('shadows')">reset</button>
+            </div>
+            <div class="proc-wheel-group">
+              <div class="proc-wheel-label">Midtones</div>
+              <canvas id="wheel-midtones" class="proc-wheel-canvas" width="90" height="90"></canvas>
+              <button class="proc-wheel-reset" onclick="resetWheel('midtones')">reset</button>
+            </div>
+            <div class="proc-wheel-group">
+              <div class="proc-wheel-label">Highlights</div>
+              <canvas id="wheel-highlights" class="proc-wheel-canvas" width="90" height="90"></canvas>
+              <button class="proc-wheel-reset" onclick="resetWheel('highlights')">reset</button>
+            </div>
+          </div>
+
           <!-- Sliders -->
           <div class="proc-sliders">
             <div class="proc-slider-row">
@@ -969,8 +1038,9 @@
             <span class="proc-sel-info" id="proc-sel-info">Applica a tutte le foto</span>
             <button class="proc-apply-btn" onclick="applyAdjust()" id="btn-apply-adjust">Applica correzioni</button>
             <button class="proc-apply-btn secondary" onclick="applyMatchMaster()" id="btn-match-master">★ Match master</button>
-            <button class="proc-apply-btn secondary" onclick="applyAutoBalance()">✶ Auto-balance AI</button>
-            <button class="proc-apply-btn secondary" onclick="resetSliders(); resetLivePreview()">Reset</button>
+            <button class="proc-apply-btn secondary" onclick="applyAutoBalance()">✾ Auto-balance AI</button>
+            <button class="proc-apply-btn secondary" onclick="openProcZoom()">⚬ Zoom preview</button>
+            <button class="proc-apply-btn secondary" onclick="resetAllCorrections()">Reset tutto</button>
           </div>
         </div>
 
@@ -1665,9 +1735,10 @@ function renderImageGrid() {
         <div class="img-actions">
           <button class="img-action-btn" onclick="showImgKeywords('${img.id}')" title="Vedi keyword">KW</button>
           <button class="img-action-btn" onclick="rescanIptcSingle('${img.id}')" title="Rescan IPTC">↻</button>
-          <button class="img-action-btn" onclick="tagSingleImageAi('${img.id}')" title="Tag AI">✶</button>
-          <button class="img-action-btn" onclick="showCaptionAi('${img.id}')" title="Genera didascalia AI" style="color:#9b6fd4">✶C</button>
+          <button class="img-action-btn" onclick="tagSingleImageAi('${img.id}')" title="Tag AI">✾</button>
+          <button class="img-action-btn" onclick="showCaptionAi('${img.id}')" title="Genera didascalia AI" style="color:#9b6fd4">✾C</button>
           <button class="img-action-btn" onclick="setMasterImg('${img.id}')" title="Imposta come master colore" style="color:#f0c040">★M</button>
+          <button class="img-action-btn" onclick="openProcZoomFromCell(this)" title="Zoom live preview" style="color:#7dd3fc">⚬</button>
           <button class="img-action-btn danger" onclick="deleteImage('${img.id}')" title="Elimina">×</button>
         </div>
       </div>
@@ -2329,6 +2400,266 @@ async function acceptCaptionAi(iid) {
 }
 
 init();
+
+// ════════════════════════════════════════════════════════════════
+// COLOR WHEELS — Shadows / Midtones / Highlights
+// ════════════════════════════════════════════════════════════════
+(function() {
+  // Stato interno: per ogni wheel, offset hue (0-360) e strength (0-1)
+  const _wheels = {
+    shadows:    { hue: 0, strength: 0, x: 0, y: 0 },
+    midtones:   { hue: 0, strength: 0, x: 0, y: 0 },
+    highlights: { hue: 0, strength: 0, x: 0, y: 0 }
+  };
+
+  const WHEEL_R = 45; // raggio canvas = 90/2
+  const DOT_R   = 5;  // raggio pallino
+
+  // Disegna una color wheel su canvas
+  function drawWheel(canvasId, wx, wy) {
+    const canvas = document.getElementById('wheel-' + canvasId);
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    const cx = WHEEL_R, cy = WHEEL_R;
+
+    // Sfondo trasparente
+    ctx.clearRect(0, 0, 90, 90);
+
+    // Cerchio colori: gradiente conico (hue)
+    for (let angle = 0; angle < 360; angle += 1) {
+      const rad = (angle - 90) * Math.PI / 180;
+      const rad2 = (angle - 89) * Math.PI / 180;
+      ctx.beginPath();
+      ctx.moveTo(cx, cy);
+      ctx.arc(cx, cy, WHEEL_R - 1, rad, rad2);
+      ctx.closePath();
+      ctx.fillStyle = `hsl(${angle}, 100%, 50%)`;
+      ctx.fill();
+    }
+
+    // Overlay bianco al centro (desatura verso il centro)
+    const grad = ctx.createRadialGradient(cx, cy, 0, cx, cy, WHEEL_R - 1);
+    grad.addColorStop(0, 'rgba(255,255,255,1)');
+    grad.addColorStop(0.5, 'rgba(255,255,255,0.3)');
+    grad.addColorStop(1, 'rgba(255,255,255,0)');
+    ctx.beginPath();
+    ctx.arc(cx, cy, WHEEL_R - 1, 0, Math.PI * 2);
+    ctx.fillStyle = grad;
+    ctx.fill();
+
+    // Bordo cerchio
+    ctx.beginPath();
+    ctx.arc(cx, cy, WHEEL_R - 1, 0, Math.PI * 2);
+    ctx.strokeStyle = 'rgba(0,0,0,0.15)';
+    ctx.lineWidth = 1;
+    ctx.stroke();
+
+    // Pallino posizione corrente
+    const dotX = cx + wx * (WHEEL_R - DOT_R - 2);
+    const dotY = cy + wy * (WHEEL_R - DOT_R - 2);
+    ctx.beginPath();
+    ctx.arc(dotX, dotY, DOT_R, 0, Math.PI * 2);
+    ctx.fillStyle = '#fff';
+    ctx.fill();
+    ctx.strokeStyle = '#333';
+    ctx.lineWidth = 1.5;
+    ctx.stroke();
+  }
+
+  // Inizializza tutte le wheels
+  function initWheels() {
+    ['shadows', 'midtones', 'highlights'].forEach(name => {
+      drawWheel(name, 0, 0);
+      setupWheelInteraction(name);
+    });
+  }
+
+  // Gestisce drag sulla wheel
+  function setupWheelInteraction(name) {
+    const canvas = document.getElementById('wheel-' + name);
+    if (!canvas) return;
+    let dragging = false;
+
+    function handlePos(e) {
+      const rect = canvas.getBoundingClientRect();
+      const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+      const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+      let dx = (clientX - rect.left - WHEEL_R) / (WHEEL_R - DOT_R - 2);
+      let dy = (clientY - rect.top  - WHEEL_R) / (WHEEL_R - DOT_R - 2);
+      // Clamp al cerchio unitario
+      const dist = Math.sqrt(dx*dx + dy*dy);
+      if (dist > 1) { dx /= dist; dy /= dist; }
+      // Calcola hue e strength
+      const hue = ((Math.atan2(dy, dx) * 180 / Math.PI) + 90 + 360) % 360;
+      const strength = Math.min(dist, 1);
+      _wheels[name] = { hue, strength, x: dx, y: dy };
+      drawWheel(name, dx, dy);
+      updateLivePreview();
+    }
+
+    canvas.addEventListener('mousedown',  e => { dragging = true; handlePos(e); });
+    canvas.addEventListener('mousemove',  e => { if (dragging) handlePos(e); });
+    canvas.addEventListener('mouseup',    () => { dragging = false; });
+    canvas.addEventListener('mouseleave', () => { dragging = false; });
+    canvas.addEventListener('touchstart', e => { dragging = true; handlePos(e); e.preventDefault(); }, { passive: false });
+    canvas.addEventListener('touchmove',  e => { if (dragging) { handlePos(e); e.preventDefault(); } }, { passive: false });
+    canvas.addEventListener('touchend',   () => { dragging = false; });
+  }
+
+  // Reset singola wheel
+  window.resetWheel = function(name) {
+    _wheels[name] = { hue: 0, strength: 0, x: 0, y: 0 };
+    drawWheel(name, 0, 0);
+    updateLivePreview();
+  };
+
+  // Espone i valori wheels per updateLivePreview e applyAdjust
+  window.getWheelValues = function() { return _wheels; };
+
+  // Inizializza quando il pannello viene aperto
+  window.initWheelsIfNeeded = function() {
+    const canvas = document.getElementById('wheel-shadows');
+    if (canvas && canvas.dataset.initialized !== '1') {
+      canvas.dataset.initialized = '1';
+      initWheels();
+    }
+  };
+
+  // Auto-init al caricamento
+  document.addEventListener('DOMContentLoaded', () => setTimeout(initWheels, 200));
+  setTimeout(initWheels, 500);
+})();
+
+// ════════════════════════════════════════════════════════════════
+// LIVE PREVIEW ZOOM
+// ════════════════════════════════════════════════════════════════
+(function() {
+  let _zoomSrc = null;
+
+  // Apre il zoom da un pulsante dentro la thumbnail
+  window.openProcZoomFromCell = function(btn) {
+    const cell = btn.closest('.image-cell');
+    const imgEl = cell ? cell.querySelector('img') : null;
+    if (!imgEl) return;
+    const popup = document.getElementById('proc-zoom-popup');
+    const img   = document.getElementById('proc-zoom-popup-img');
+    _zoomSrc = imgEl.src.split('?')[0];
+    img.src = _zoomSrc;
+    _applyZoomFilter();
+    popup.classList.add('open');
+    document.addEventListener('keydown', _zoomKeyClose);
+  };
+
+  window.openProcZoom = function() {
+    // Prendi la prima foto selezionata, o la prima della griglia
+    const selected = document.querySelector('.image-cell.selected img') ||
+                     document.querySelector('.image-cell img');
+    if (!selected) { toast('Nessuna foto disponibile per il preview'); return; }
+    _zoomSrc = selected.src.split('?')[0];
+    const popup = document.getElementById('proc-zoom-popup');
+    const img   = document.getElementById('proc-zoom-popup-img');
+    img.src = _zoomSrc;
+    // Applica il filtro corrente
+    _applyZoomFilter();
+    popup.classList.add('open');
+    document.addEventListener('keydown', _zoomKeyClose);
+  };
+
+  window.closeProcZoom = function() {
+    document.getElementById('proc-zoom-popup').classList.remove('open');
+    document.removeEventListener('keydown', _zoomKeyClose);
+  };
+
+  function _zoomKeyClose(e) {
+    if (e.key === 'Escape') window.closeProcZoom();
+  }
+
+  // Aggiorna il filtro sull'immagine zoom quando cambiano i controlli
+  window._applyZoomFilter = function() {
+    const img = document.getElementById('proc-zoom-popup-img');
+    if (!img || !document.getElementById('proc-zoom-popup').classList.contains('open')) return;
+    img.style.filter = _buildCssFilter();
+  };
+
+  // Chiudi cliccando lo sfondo
+  document.getElementById('proc-zoom-popup')?.addEventListener('click', e => {
+    if (e.target.id === 'proc-zoom-popup') window.closeProcZoom();
+  });
+})();
+
+// ════════════════════════════════════════════════════════════════
+// HELPER: costruisce il filtro CSS completo (sliders + wheels)
+// ════════════════════════════════════════════════════════════════
+function _buildCssFilter() {
+  const brightness = parseFloat(document.getElementById('sl-brightness')?.value || 1);
+  const contrast   = parseFloat(document.getElementById('sl-contrast')?.value   || 1);
+  const saturation = parseFloat(document.getElementById('sl-saturation')?.value || 1);
+  const sharpness  = parseFloat(document.getElementById('sl-sharpness')?.value  || 1);
+  const temp       = parseFloat(document.getElementById('sl-temp')?.value        || 0);
+
+  const sharpBoost = sharpness > 1 ? 1 + (sharpness - 1) * 0.15 : 1;
+  let filter = `brightness(${brightness}) contrast(${contrast * sharpBoost}) saturate(${saturation})`;
+
+  if (temp !== 0) {
+    const hueShift = temp * 0.3;
+    const sepiaWarm = temp > 0 ? Math.min(temp / 100, 0.3) : 0;
+    if (temp > 0) filter += ` sepia(${sepiaWarm}) hue-rotate(${-hueShift}deg)`;
+    else          filter += ` hue-rotate(${-hueShift}deg)`;
+  }
+
+  // Wheels: approssimazione CSS tramite hue-rotate e saturate addizionali
+  // (il vero color grading per toni richiede canvas/WebGL; qui usiamo un'approssimazione visiva)
+  const wheels = window.getWheelValues ? window.getWheelValues() : null;
+  if (wheels) {
+    const totalHue = (wheels.shadows.hue * wheels.shadows.strength * 0.4 +
+                      wheels.midtones.hue * wheels.midtones.strength * 0.6 +
+                      wheels.highlights.hue * wheels.highlights.strength * 0.3);
+    const totalStr = wheels.shadows.strength + wheels.midtones.strength + wheels.highlights.strength;
+    if (totalStr > 0.01) {
+      filter += ` hue-rotate(${totalHue.toFixed(1)}deg)`;
+      filter += ` saturate(${(1 + totalStr * 0.3).toFixed(2)})`;
+    }
+  }
+
+  return filter;
+}
+
+// Ridefinisce updateLivePreview per usare _buildCssFilter e aggiornare anche lo zoom
+function updateLivePreview() {
+  const filter = _buildCssFilter();
+  const cells = document.querySelectorAll('.image-cell');
+  cells.forEach(cell => {
+    const iid = cell.dataset.imgId;
+    const isTarget = _selectedImgIds.size === 0 || _selectedImgIds.has(iid);
+    const imgEl = cell.querySelector('img');
+    if (imgEl) {
+      imgEl.style.filter = isTarget ? filter : '';
+      if (isTarget) cell.classList.add('live-preview-active');
+      else cell.classList.remove('live-preview-active');
+    }
+  });
+  // Aggiorna anche il popup zoom se aperto
+  if (window._applyZoomFilter) window._applyZoomFilter();
+}
+
+// Reset completo (sliders + wheels)
+function resetAllCorrections() {
+  resetSliders();
+  ['shadows','midtones','highlights'].forEach(n => {
+    if (window.resetWheel) window.resetWheel(n);
+  });
+  resetLivePreview();
+}
+
+init();
 </script>
+
+<!-- Popup Live Preview Zoom -->
+<div id="proc-zoom-popup">
+  <button id="proc-zoom-popup-close" onclick="closeProcZoom()">&#x2715;</button>
+  <img id="proc-zoom-popup-img" src="" alt="">
+  <div id="proc-zoom-popup-label">Live preview &mdash; le correzioni sono applicate in tempo reale</div>
+</div>
+
 </body>
 </html>
