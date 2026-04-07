@@ -7217,6 +7217,8 @@ function buildArchive() {
             setTimeout(() => heroImg.classList.remove('hero-curtain-in'), 500);
             // Aggiorna larghezza in base all'AR della nuova foto
             _updateHeroWidth(images[_heroIndex].ar);
+            // Aggiorna keywords della foto corrente
+            if (typeof _updateKwPanel === 'function') _updateKwPanel(_heroIndex);
             // Aggiorna thumb attiva
             if (strip) {
               strip.querySelectorAll('.archive-expanded-thumb').forEach((el, i) => {
@@ -7479,35 +7481,29 @@ function buildArchive() {
 
           inner.appendChild(bottomBar);
 
-          // ── KEYWORDS: sempre visibili nella zona kw-col ──
-          const allKws = new Set();
-          images.forEach(img => {
-            if (img.keywords) {
-              img.keywords.split(',').forEach(k => {
-                const kk = k.trim().toLowerCase();
-                if (kk) allKws.add(kk);
-              });
-            }
-          });
+          // ── KEYWORDS: mostra le keywords della foto corrente nella hero ──
+          const kwPanel = document.createElement('div');
+          kwPanel.className = 'archive-kw-panel';
 
-          if (allKws.size > 0) {
-            // Costruisci il pannello keywords nella zona kw-col
-            const kwPanel = document.createElement('div');
-            kwPanel.className = 'archive-kw-panel';
+          const kwLabel = document.createElement('div');
+          kwLabel.className = 'archive-kw-label';
+          kwLabel.textContent = 'Index';
+          kwPanel.appendChild(kwLabel);
 
-            const kwLabel = document.createElement('div');
-            kwLabel.className = 'archive-kw-label';
-            kwLabel.textContent = 'Index';
-            kwPanel.appendChild(kwLabel);
+          const kwTagsWrap = document.createElement('div');
+          kwTagsWrap.className = 'archive-kw-tags';
+          kwPanel.appendChild(kwTagsWrap);
 
-            const kwTagsWrap = document.createElement('div');
-            kwTagsWrap.className = 'archive-kw-tags';
-
-            const kwArr = [...allKws].sort();
-            kwArr.forEach((kw, i) => {
+          // Funzione per aggiornare le keywords in base alla foto corrente
+          function _updateKwPanel(imgIdx) {
+            const img = images[imgIdx];
+            const kws = img && img.keywords
+              ? [...new Set(img.keywords.split(',').map(k => k.trim().toLowerCase()).filter(Boolean))].sort()
+              : [];
+            kwTagsWrap.innerHTML = '';
+            kws.forEach((kw, i) => {
               const tag = document.createElement('div');
               tag.className = 'archive-kw-tag';
-              // Numero indice archivistico
               const idx = document.createElement('span');
               idx.className = 'archive-kw-tag-idx';
               idx.textContent = String(i + 1).padStart(2, '0');
@@ -7517,15 +7513,16 @@ function buildArchive() {
               tag.appendChild(kwText);
               tag.addEventListener('click', e => {
                 e.stopPropagation();
-                // Eredita il tema dal box di provenienza: box-white = light, altrimenti dark
                 const _panel = tag.closest('.archive-expanded');
                 const _isLight = _panel && _panel.classList.contains('box-white');
                 window.openKeywordResults(kw, !_isLight);
               });
               kwTagsWrap.appendChild(tag);
             });
+          }
+          _updateKwPanel(0);
 
-            kwPanel.appendChild(kwTagsWrap);
+          if (true) {  // blocco sempre attivo
 
             // ── Linea verticale sinistra con pallino scorrevole smooth ──
             const kwVline = document.createElement('div');
