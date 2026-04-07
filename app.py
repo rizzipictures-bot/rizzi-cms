@@ -1007,6 +1007,30 @@ def seed_istanbul_images():
     save_db(db)
     return jsonify({'ok': True, 'added': len(added), 'files': added})
 
+@app.route('/api/sysinfo')
+def sysinfo():
+    """Endpoint di diagnostica: mostra i path reali usati dal server."""
+    import os
+    render_env = os.environ.get('RENDER', '')
+    upload_parent = Path('/opt/render/project/src').exists()
+    disk_path = Path('/opt/render/project/src/uploads')
+    data_path = Path('/opt/render/project/src/data')
+    return jsonify({
+        'RENDER_env': render_env,
+        'upload_parent_exists': upload_parent,
+        'disk_upload_exists': disk_path.exists(),
+        'disk_data_exists': data_path.exists(),
+        'UPLOAD_path': str(UPLOAD),
+        'DATA_path': str(DATA),
+        'DB_FILE_path': str(DB_FILE),
+        'DB_FILE_exists': DB_FILE.exists(),
+        'uploads_count': len(list(UPLOAD.glob('*.jpg'))) if UPLOAD.exists() else -1,
+        'BASE_path': str(BASE),
+        'cwd': os.getcwd(),
+        # Lista directory /opt/render/project/src se esiste
+        'opt_render_ls': os.listdir('/opt/render/project/src') if Path('/opt/render/project/src').exists() else [],
+    })
+
 if __name__ == '__main__':
     print('\n  Rizzi CMS — avviato su http://localhost:5151')
     print('  Sito:  http://localhost:5151/')
