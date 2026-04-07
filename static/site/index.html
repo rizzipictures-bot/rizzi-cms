@@ -1289,19 +1289,21 @@
       display: flex;
       flex-direction: row;
       align-items: stretch;          /* colonne si estendono a tutta l'altezza */
-      height: 500px;                 /* box più alto */
+      /* altezza determinata dalla foto hero — non fissa */
+      min-height: 300px;
+      max-height: 600px;
       gap: 0;
       box-sizing: border-box;
       position: relative;            /* contesto per View all absolute */
       overflow: hidden;              /* evita overflow orizzontale */
     }
 
-    /* Foto hero grande a sinistra — BORDERLESS, altezza fissa, larghezza automatica */
+    /* Foto hero grande a sinistra — BORDERLESS, proporzioni reali */
     .archive-expanded-hero {
       flex-shrink: 0;
       width: auto;                   /* larghezza si adatta all'aspect ratio */
       max-width: 700px;              /* limite massimo per foto molto orizzontali */
-      height: 500px;                 /* altezza fissa = altezza del box */
+      height: auto;                  /* altezza determinata dall'immagine */
       overflow: hidden;
       position: relative;
       cursor: none;
@@ -1315,16 +1317,17 @@
     .archive-expanded-hero img {
       display: block;
       width: auto;                   /* larghezza automatica proporzionale */
-      height: 100%;                  /* altezza = 100% del contenitore (500px) */
-      object-fit: contain;           /* mostra la foto intera senza crop */
-      object-position: left center;
+      height: auto;                  /* altezza automatica — rispetta proporzioni reali */
+      max-height: 600px;             /* limite massimo altezza */
+      max-width: 700px;              /* limite massimo larghezza */
+      object-fit: contain;
+      object-position: left top;
       margin: 0;
       padding: 0;
       border: none;
       outline: none;
       box-shadow: none;
       background: transparent;
-      max-width: 700px;
     }
     /* BUG FIX: rimosso hover opaco sulla foto grande del box nero Archive */
     /* .archive-expanded-hero:hover img { opacity: 0.92; } */
@@ -7189,17 +7192,6 @@ function buildArchive() {
           // Indice corrente della foto nella hero (condiviso con le thumbs)
           let _heroIndex = 0;
 
-          // Imposta la larghezza del container hero in base all'ar della foto
-          // (necessario perché width:auto non funziona correttamente con height:100%)
-          function _updateHeroWidth(imgAr) {
-            const BOX_H = 500;
-            const MAX_W = 700;
-            const ar = imgAr || 1.33;
-            const w = Math.min(Math.round(BOX_H * ar), MAX_W);
-            hero.style.width = w + 'px';
-          }
-          _updateHeroWidth(images[0].ar);
-
           // Funzione per aggiornare la hero con animazione curtain
           function _setHeroImage(idx) {
             _heroIndex = ((idx % images.length) + images.length) % images.length;
@@ -7210,8 +7202,6 @@ function buildArchive() {
             heroImg.classList.remove('hero-curtain-reset');
             heroImg.classList.add('hero-curtain-in');
             setTimeout(() => heroImg.classList.remove('hero-curtain-in'), 500);
-            // Aggiorna larghezza hero in base all'ar della nuova foto
-            _updateHeroWidth(images[_heroIndex].ar);
             // Aggiorna thumb attiva
             if (strip) {
               strip.querySelectorAll('.archive-expanded-thumb').forEach((el, i) => {
