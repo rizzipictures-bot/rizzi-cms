@@ -16,14 +16,12 @@ import numpy as np
 
 BASE   = Path(__file__).parent
 
-# Su Render il Disk DEVE essere montato su /opt/render/project/storage
-# (path FUORI dal repo, così i deploy non sovrascrivono mai i dati)
-# In locale usiamo le cartelle uploads/ e data/ relative al progetto
-_RENDER_STORAGE = Path('/opt/render/project/storage')
-_IS_RENDER = bool(os.environ.get('RENDER')) and _RENDER_STORAGE.exists()
+# Su Render il Disk è montato su /opt/render/project/src/uploads
+# Il db.json è escluso da Git (.gitignore) quindi i deploy non lo sovrascrivono
+_IS_RENDER = bool(os.environ.get('RENDER'))
 
-UPLOAD = _RENDER_STORAGE / 'uploads' if _IS_RENDER else BASE / 'uploads'
-DATA   = _RENDER_STORAGE / 'data'    if _IS_RENDER else BASE / 'data'
+UPLOAD = BASE / 'uploads'
+DATA   = BASE / 'data'
 
 # ── AUTO-TRIM BORDI MONOCROMATICI ──────────────────────────────────────────────
 def auto_trim_border(im, threshold=18, min_strip=2, max_strip_pct=0.08):
