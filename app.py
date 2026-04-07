@@ -484,8 +484,10 @@ def upload_images(pid):
                 from PIL import ImageOps
                 im = ImageOps.exif_transpose(im)
 
-                # ── RIMUOVI BORDI MONOCROMATICI (bianco/grigio/nero) ──
-                im = auto_trim_border(im)
+                # ── auto_trim_border DISABILITATO ──
+                # Rimosso: ritagliava i bordi monocromatici modificando le proporzioni
+                # originali delle foto in modo indesiderato.
+                # im = auto_trim_border(im)
 
                 w, h = im.size
                 ar   = round(w / h, 4)
