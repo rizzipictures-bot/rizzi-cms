@@ -814,6 +814,97 @@ Return ONLY a JSON array of matching project IDs (strings), e.g. ["abc123", "def
     except Exception as e:
         return jsonify({'ids': [], 'error': str(e)})
 
+# ── GENERAZIONE TESTI AI ──────────────────────────────────────
+@app.route('/api/ai-write', methods=['POST'])
+def ai_write():
+    """Genera testi AI per i campi del CMS su richiesta dell'utente."""
+    try:
+        import openai
+        data = request.json
+        field   = data.get('field', '')      # es. 'description', 'caption', 'biography'
+        hint    = data.get('hint', '').strip()  # indicazione breve dell'utente
+        context = data.get('context', {})    # dati del progetto/foto per contestualizzare
+        lang    = data.get('lang', 'it')     # lingua output: 'it' o 'en'
+
+        lang_label = 'Italian' if lang == 'it' else 'English'
+
+        # Costruisce il prompt in base al campo richiesto
+        if field == 'description':
+            title    = context.get('title', '')
+            year     = context.get('year', '')
+            place    = context.get('place', '')
+            subtitle = context.get('subtitle', '')
+            keywords = context.get('keywords', '')
+            prompt = f"""You are a professional photography critic and writer. Write a short project description (2-4 sentences, max 120 words) in {lang_label} for a photography project with these details:
+- Title: {title}
+- Year: {year}
+- Place: {place}
+- Subtitle/genre: {subtitle}
+- Keywords: {keywords}
+- Photographer's note: {hint}
+
+Write in a concise, evocative style suitable for a photography portfolio. Do not use marketing language. Return only the text, no titles or labels."""
+
+        elif field == 'caption':
+            title    = context.get('title', '')
+            place    = context.get('place', '')
+            year     = context.get('year', '')
+            keywords = context.get('keywords', '')
+            prompt = f"""You are a photography editor. Write a short caption (1-2 sentences, max 60 words) in {lang_label} for a photograph from the series "{title}" ({place}, {year}).
+Keywords visible in the image: {keywords}
+Photographer's note: {hint}
+
+Return only the caption text, no labels."""
+
+        elif field == 'biography':
+            prompt = f"""You are a professional writer specializing in artist biographies. Write a short biography (3-5 sentences, max 200 words) in {lang_label} for a photographer.
+Notes provided: {hint}
+
+Write in third person, professional tone. Return only the biography text."""
+
+        elif field == 'interview':
+            prompt = f"""You are a journalist writing an interview with a photographer. Based on these notes or bullet points, write a flowing interview excerpt (Q&A format or narrative, max 300 words) in {lang_label}.
+Notes: {hint}
+
+Return only the interview text."""
+
+        elif field == 'book_description':
+            title    = context.get('title', '')
+            year     = context.get('year', '')
+            prompt = f"""You are a publisher's editor. Write a short book description (2-4 sentences, max 120 words) in {lang_label} for a photography book.
+- Book title: {title}
+- Year: {year}
+- Notes: {hint}
+
+Return only the description text."""
+
+        elif field == 'title_suggestion':
+            place    = context.get('place', '')
+            year     = context.get('year', '')
+            subtitle = context.get('subtitle', '')
+            prompt = f"""Suggest 5 short, evocative titles (max 4 words each) in {lang_label} for a photography project.
+- Place: {place}
+- Year: {year}
+- Genre/subtitle: {subtitle}
+- Notes: {hint}
+
+Return only a numbered list of 5 titles, one per line."""
+
+        else:
+            return jsonify({'error': 'Campo non supportato'}), 400
+
+        client = openai.OpenAI()
+        resp = client.chat.completions.create(
+            model='gpt-4.1-mini',
+            max_tokens=400,
+            messages=[{'role': 'user', 'content': prompt}]
+        )
+        text = resp.choices[0].message.content.strip()
+        return jsonify({'text': text})
+
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
 # ── SEED CITIES ───────────────────────────────────────────
 @app.route('/api/seed-cities', methods=['POST'])
 def seed_cities():

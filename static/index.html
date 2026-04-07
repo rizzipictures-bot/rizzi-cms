@@ -424,6 +424,84 @@
   }
   .text-block textarea:focus { outline: none; }
 
+  /* ── AI WRITE BUTTON ── */
+  .btn-ai-write {
+    background: none; border: none;
+    font-family: var(--font); font-size: 9px;
+    letter-spacing: 0.5px; color: #9b6fd4;
+    cursor: pointer; padding: 0 0 0 6px;
+    transition: color .15s; white-space: nowrap;
+  }
+  .btn-ai-write:hover { color: #7a4fb8; }
+  .ai-write-panel {
+    background: var(--surface);
+    border: 1px solid #c9a8f0;
+    border-radius: var(--radius);
+    padding: 12px 14px;
+    margin-top: 6px;
+    display: none;
+  }
+  .ai-write-panel.open { display: block; }
+  .ai-write-panel label {
+    font-size: 9px; letter-spacing: 0.5px;
+    text-transform: uppercase; color: #9b6fd4;
+    display: block; margin-bottom: 6px;
+  }
+  .ai-write-panel .ai-row {
+    display: flex; gap: 6px; align-items: flex-start;
+  }
+  .ai-write-panel textarea {
+    flex: 1; border: 1px solid var(--border);
+    border-radius: var(--radius); padding: 6px 8px;
+    font-family: var(--font); font-size: 11px;
+    resize: none; min-height: 36px; background: var(--bg);
+  }
+  .ai-write-panel .ai-lang {
+    font-size: 9px; border: 1px solid var(--border);
+    border-radius: var(--radius); padding: 4px 6px;
+    background: var(--bg); font-family: var(--font);
+    color: var(--gray); cursor: pointer;
+  }
+  .ai-write-panel .ai-gen-btn {
+    background: #9b6fd4; color: #fff; border: none;
+    border-radius: var(--radius); padding: 6px 12px;
+    font-family: var(--font); font-size: 9px;
+    letter-spacing: 0.4px; cursor: pointer;
+    white-space: nowrap; transition: opacity .15s;
+  }
+  .ai-write-panel .ai-gen-btn:hover { opacity: .8; }
+  .ai-write-panel .ai-gen-btn:disabled { opacity: .4; cursor: default; }
+  .ai-write-result {
+    margin-top: 10px; display: none;
+  }
+  .ai-write-result textarea {
+    width: 100%; border: 1px solid var(--border);
+    border-radius: var(--radius); padding: 8px 10px;
+    font-family: var(--font); font-size: 11px;
+    resize: vertical; min-height: 80px;
+    background: var(--bg); box-sizing: border-box;
+  }
+  .ai-write-result .ai-result-actions {
+    display: flex; gap: 8px; margin-top: 6px;
+  }
+  .ai-write-result .ai-accept-btn {
+    background: #2a2a2a; color: #fff; border: none;
+    border-radius: var(--radius); padding: 5px 12px;
+    font-family: var(--font); font-size: 9px;
+    letter-spacing: 0.4px; cursor: pointer;
+  }
+  .ai-write-result .ai-discard-btn {
+    background: none; border: 1px solid var(--border);
+    border-radius: var(--radius); padding: 5px 10px;
+    font-family: var(--font); font-size: 9px;
+    letter-spacing: 0.4px; cursor: pointer; color: var(--gray);
+  }
+  .ai-write-result .ai-regen-btn {
+    background: none; border: none;
+    font-family: var(--font); font-size: 9px;
+    color: #9b6fd4; cursor: pointer; padding: 0;
+  }
+
   .add-block-bar {
     display: flex; gap: 8px; flex-wrap: wrap;
   }
@@ -680,8 +758,27 @@
         </div>
         <div class="field-group full">
           <div class="field">
-            <label>Descrizione breve</label>
+            <label style="display:flex;align-items:center;gap:6px">
+              Descrizione breve
+              <button class="btn-ai-write" onclick="toggleAiPanel('ai-desc-panel')" title="Genera con AI">✶ AI</button>
+            </label>
             <textarea id="f-description" rows="3" oninput="livePreview()"></textarea>
+            <div class="ai-write-panel" id="ai-desc-panel">
+              <label>✶ Assistente AI — Descrizione progetto</label>
+              <div class="ai-row">
+                <textarea id="ai-desc-hint" rows="2" placeholder="Aggiungi note o indicazioni (opzionale)..."></textarea>
+                <select class="ai-lang" id="ai-desc-lang"><option value="it">IT</option><option value="en">EN</option></select>
+                <button class="ai-gen-btn" onclick="aiGenerate('description', 'f-description', 'ai-desc-hint', 'ai-desc-lang', 'ai-desc-result')">Genera ✶</button>
+              </div>
+              <div class="ai-write-result" id="ai-desc-result">
+                <textarea id="ai-desc-output" rows="4"></textarea>
+                <div class="ai-result-actions">
+                  <button class="ai-accept-btn" onclick="aiAccept('f-description', 'ai-desc-output', 'ai-desc-panel')">Accetta</button>
+                  <button class="ai-regen-btn" onclick="aiGenerate('description', 'f-description', 'ai-desc-hint', 'ai-desc-lang', 'ai-desc-result')">Rigenera</button>
+                  <button class="ai-discard-btn" onclick="aiDiscard('ai-desc-panel')">Scarta</button>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
         <div class="field-group">
@@ -744,6 +841,30 @@
           <button class="add-block-btn" onclick="addBlock('caption')">+ Didascalia</button>
           <button class="add-block-btn" onclick="addBlock('question')">+ Domanda</button>
           <button class="add-block-btn" onclick="addBlock('answer')">+ Risposta</button>
+          <button class="btn-ai-write" style="margin-left:auto" onclick="toggleAiPanel('ai-text-panel')">✶ AI Testo</button>
+        </div>
+        <div class="ai-write-panel" id="ai-text-panel" style="margin-top:10px">
+          <label>✶ Assistente AI — Genera blocco testo</label>
+          <div class="ai-row">
+            <textarea id="ai-text-hint" rows="2" placeholder="Descrivi cosa vuoi scrivere (es: testo critico sul progetto, domanda per intervista, didascalia evocativa...)"></textarea>
+            <select class="ai-lang" id="ai-text-lang"><option value="it">IT</option><option value="en">EN</option></select>
+            <select class="ai-lang" id="ai-text-type" style="min-width:80px">
+              <option value="body">Testo</option>
+              <option value="pullquote">Pull quote</option>
+              <option value="caption">Didascalia</option>
+              <option value="question">Domanda</option>
+              <option value="answer">Risposta</option>
+            </select>
+            <button class="ai-gen-btn" onclick="aiGenerateBlock('ai-text-hint', 'ai-text-lang', 'ai-text-type', 'ai-text-result')">Genera ✶</button>
+          </div>
+          <div class="ai-write-result" id="ai-text-result">
+            <textarea id="ai-text-output" rows="5"></textarea>
+            <div class="ai-result-actions">
+              <button class="ai-accept-btn" onclick="aiAcceptBlock('ai-text-output', 'ai-text-type', 'ai-text-panel')">Aggiungi come blocco</button>
+              <button class="ai-regen-btn" onclick="aiGenerateBlock('ai-text-hint', 'ai-text-lang', 'ai-text-type', 'ai-text-result')">Rigenera</button>
+              <button class="ai-discard-btn" onclick="aiDiscard('ai-text-panel')">Scarta</button>
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -1182,6 +1303,7 @@ function renderImageGrid() {
           <button class="img-action-btn" onclick="showImgKeywords('${img.id}')" title="Vedi keyword">KW</button>
           <button class="img-action-btn" onclick="rescanIptcSingle('${img.id}')" title="Rescan IPTC">↻</button>
           <button class="img-action-btn" onclick="tagSingleImageAi('${img.id}')" title="Tag AI">✶</button>
+          <button class="img-action-btn" onclick="showCaptionAi('${img.id}')" title="Genera didascalia AI" style="color:#9b6fd4">✶C</button>
           <button class="img-action-btn danger" onclick="deleteImage('${img.id}')" title="Elimina">×</button>
         </div>
       </div>
@@ -1592,6 +1714,239 @@ function toast(msg) {
   el.textContent = msg;
   el.classList.add('show');
   setTimeout(() => el.classList.remove('show'), 2200);
+}
+
+// ─────────────────────────────────────────────
+// AI WRITE HELPERS
+// ─────────────────────────────────────────────
+function toggleAiPanel(panelId) {
+  const panel = document.getElementById(panelId);
+  if (!panel) return;
+  panel.classList.toggle('open');
+  // Chiudi tutti gli altri pannelli AI aperti
+  document.querySelectorAll('.ai-write-panel.open').forEach(p => {
+    if (p.id !== panelId) p.classList.remove('open');
+  });
+}
+
+async function aiGenerate(field, targetFieldId, hintId, langId, resultId) {
+  if (!currentProject) { toast('Seleziona un progetto prima'); return; }
+  const hint = document.getElementById(hintId)?.value || '';
+  const lang = document.getElementById(langId)?.value || 'it';
+  const btn  = event?.target;
+  if (btn) { btn.disabled = true; btn.textContent = 'Generando...'; }
+
+  // Raccoglie tutte le keyword delle foto del progetto
+  const allKw = (currentProject.images || [])
+    .map(i => i.keywords || '').filter(Boolean).join(', ');
+
+  const context = {
+    title:    currentProject.title    || '',
+    year:     currentProject.year     || '',
+    place:    currentProject.place    || '',
+    subtitle: currentProject.subtitle || '',
+    keywords: allKw
+  };
+
+  try {
+    const res  = await fetch(`${API}/ai-write`, {
+      method: 'POST',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({ field, hint, context, lang })
+    });
+    const data = await res.json();
+    if (data.error) { toast('Errore AI: ' + data.error); return; }
+
+    const resultDiv    = document.getElementById(resultId);
+    const outputArea   = resultDiv.querySelector('textarea');
+    outputArea.value   = data.text;
+    resultDiv.style.display = 'block';
+  } catch(e) {
+    toast('Errore connessione AI');
+  } finally {
+    if (btn) { btn.disabled = false; btn.textContent = 'Genera ✶'; }
+  }
+}
+
+function aiAccept(targetFieldId, outputId, panelId) {
+  const target = document.getElementById(targetFieldId);
+  const output = document.getElementById(outputId);
+  if (target && output) {
+    target.value = output.value;
+    target.dispatchEvent(new Event('input')); // aggiorna preview
+  }
+  aiDiscard(panelId);
+  toast('Testo inserito ✔');
+}
+
+function aiDiscard(panelId) {
+  const panel = document.getElementById(panelId);
+  if (!panel) return;
+  panel.classList.remove('open');
+  // Nascondi il risultato
+  const resultDiv = panel.querySelector('.ai-write-result');
+  if (resultDiv) resultDiv.style.display = 'none';
+}
+
+async function aiGenerateBlock(hintId, langId, typeId, resultId) {
+  if (!currentProject) { toast('Seleziona un progetto prima'); return; }
+  const hint = document.getElementById(hintId)?.value || '';
+  const lang = document.getElementById(langId)?.value || 'it';
+  const type = document.getElementById(typeId)?.value || 'body';
+  const btn  = event?.target;
+  if (btn) { btn.disabled = true; btn.textContent = 'Generando...'; }
+
+  // Mappa il tipo blocco al field AI
+  const fieldMap = {
+    body: 'description', pullquote: 'description',
+    caption: 'caption', question: 'interview', answer: 'interview'
+  };
+  const field = fieldMap[type] || 'description';
+
+  const allKw = (currentProject.images || [])
+    .map(i => i.keywords || '').filter(Boolean).join(', ');
+  const context = {
+    title:    currentProject.title    || '',
+    year:     currentProject.year     || '',
+    place:    currentProject.place    || '',
+    subtitle: currentProject.subtitle || '',
+    keywords: allKw
+  };
+
+  try {
+    const res  = await fetch(`${API}/ai-write`, {
+      method: 'POST',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({ field, hint, context, lang })
+    });
+    const data = await res.json();
+    if (data.error) { toast('Errore AI: ' + data.error); return; }
+
+    const resultDiv  = document.getElementById(resultId);
+    const outputArea = resultDiv.querySelector('textarea');
+    outputArea.value = data.text;
+    resultDiv.style.display = 'block';
+  } catch(e) {
+    toast('Errore connessione AI');
+  } finally {
+    if (btn) { btn.disabled = false; btn.textContent = 'Genera ✶'; }
+  }
+}
+
+async function aiAcceptBlock(outputId, typeId, panelId) {
+  const output = document.getElementById(outputId);
+  const type   = document.getElementById(typeId)?.value || 'body';
+  if (!output || !currentProject) return;
+
+  const res = await fetch(`${API}/projects/${currentProject.id}/texts`, {
+    method: 'POST',
+    headers: {'Content-Type':'application/json'},
+    body: JSON.stringify({ type, content: output.value })
+  });
+  const block = await res.json();
+  if (!currentProject.texts) currentProject.texts = [];
+  currentProject.texts.push(block);
+  renderTextBlocks();
+  renderPreview();
+  aiDiscard(panelId);
+  toast('Blocco aggiunto ✔');
+}
+
+// Modal AI per didascalia singola foto
+function showCaptionAi(iid) {
+  const img = (currentProject?.images || []).find(i => i.id === iid);
+  if (!img) return;
+
+  // Rimuovi modal precedente se esiste
+  const existing = document.getElementById('caption-ai-modal');
+  if (existing) existing.remove();
+
+  const modal = document.createElement('div');
+  modal.id = 'caption-ai-modal';
+  modal.style.cssText = `position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:9999;
+    display:flex;align-items:center;justify-content:center`;
+  modal.innerHTML = `
+    <div style="background:var(--bg);border-radius:8px;padding:24px;width:460px;max-width:90vw;font-family:var(--font)">
+      <div style="font-size:10px;letter-spacing:.5px;color:#9b6fd4;margin-bottom:12px">✶ AI — DIDASCALIA FOTO</div>
+      <div style="font-size:9px;color:var(--gray);margin-bottom:8px">Keyword: ${img.keywords || '(nessuna)'}</div>
+      <textarea id="cap-ai-hint" rows="2" style="width:100%;border:1px solid var(--border);border-radius:4px;
+        padding:6px 8px;font-family:var(--font);font-size:11px;box-sizing:border-box;background:var(--bg)"
+        placeholder="Note opzionali..."></textarea>
+      <div style="display:flex;gap:8px;margin-top:8px;align-items:center">
+        <select id="cap-ai-lang" style="font-size:9px;border:1px solid var(--border);border-radius:4px;
+          padding:4px 6px;background:var(--bg);font-family:var(--font);color:var(--gray)">
+          <option value="it">IT</option><option value="en">EN</option>
+        </select>
+        <button onclick="runCaptionAi('${iid}')" style="background:#9b6fd4;color:#fff;border:none;
+          border-radius:4px;padding:6px 14px;font-family:var(--font);font-size:9px;cursor:pointer">
+          Genera ✶
+        </button>
+        <button onclick="document.getElementById('caption-ai-modal').remove()" style="background:none;
+          border:1px solid var(--border);border-radius:4px;padding:6px 10px;
+          font-family:var(--font);font-size:9px;cursor:pointer;color:var(--gray)">
+          Chiudi
+        </button>
+      </div>
+      <div id="cap-ai-result" style="display:none;margin-top:12px">
+        <textarea id="cap-ai-output" rows="3" style="width:100%;border:1px solid var(--border);
+          border-radius:4px;padding:8px;font-family:var(--font);font-size:11px;
+          box-sizing:border-box;background:var(--bg)"></textarea>
+        <div style="display:flex;gap:8px;margin-top:6px">
+          <button onclick="acceptCaptionAi('${iid}')" style="background:#2a2a2a;color:#fff;border:none;
+            border-radius:4px;padding:5px 12px;font-family:var(--font);font-size:9px;cursor:pointer">
+            Accetta
+          </button>
+          <button onclick="runCaptionAi('${iid}')" style="background:none;border:none;
+            font-family:var(--font);font-size:9px;color:#9b6fd4;cursor:pointer">
+            Rigenera
+          </button>
+        </div>
+      </div>
+    </div>
+  `;
+  document.body.appendChild(modal);
+  modal.addEventListener('click', e => { if (e.target === modal) modal.remove(); });
+}
+
+async function runCaptionAi(iid) {
+  const img  = (currentProject?.images || []).find(i => i.id === iid);
+  if (!img) return;
+  const hint = document.getElementById('cap-ai-hint')?.value || '';
+  const lang = document.getElementById('cap-ai-lang')?.value || 'it';
+  const context = {
+    title:    currentProject.title || '',
+    place:    currentProject.place || '',
+    year:     currentProject.year  || '',
+    keywords: img.keywords || ''
+  };
+  try {
+    const res  = await fetch(`${API}/ai-write`, {
+      method: 'POST',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({ field: 'caption', hint, context, lang })
+    });
+    const data = await res.json();
+    if (data.error) { toast('Errore AI: ' + data.error); return; }
+    document.getElementById('cap-ai-output').value = data.text;
+    document.getElementById('cap-ai-result').style.display = 'block';
+  } catch(e) { toast('Errore connessione AI'); }
+}
+
+async function acceptCaptionAi(iid) {
+  const text = document.getElementById('cap-ai-output')?.value || '';
+  if (!text || !currentProject) return;
+  // Salva la caption sul backend
+  await fetch(`${API}/projects/${currentProject.id}/images/${iid}/caption`, {
+    method: 'PUT',
+    headers: {'Content-Type':'application/json'},
+    body: JSON.stringify({ caption: text })
+  });
+  // Aggiorna localmente
+  const img = (currentProject.images || []).find(i => i.id === iid);
+  if (img) img.caption = text;
+  renderImageGrid();
+  document.getElementById('caption-ai-modal')?.remove();
+  toast('Didascalia salvata ✔');
 }
 
 init();
