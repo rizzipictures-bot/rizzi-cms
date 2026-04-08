@@ -1583,6 +1583,58 @@
       display: block;
     }
 
+    /* ── Pannello keyword nella vista thumbs (posizionato fixed accanto alla foto) ── */
+    .ae-thumbs-kw-panel {
+      position: fixed;
+      display: flex;
+      flex-direction: column;
+      pointer-events: all;
+      z-index: 80;
+      /* larghezza sufficiente per le keyword */
+      width: 220px;
+    }
+    .ae-thumbs-kw-panel .archive-kw-label {
+      color: rgba(0,0,0,0.7);
+    }
+    .ae-thumbs-kw-panel .archive-kw-tag {
+      color: rgba(0,0,0,0.5);
+      border-bottom: none;
+    }
+    .ae-thumbs-kw-panel .archive-kw-tag:hover {
+      color: rgba(0,0,0,0.9);
+    }
+    .ae-thumbs-kw-panel .archive-kw-tag-idx {
+      color: rgba(0,0,0,0.45);
+    }
+    /* In tema scuro (box-white assente) */
+    .archive-expanded:not(.box-white) .ae-thumbs-kw-panel .archive-kw-label {
+      color: rgba(255,255,255,0.85);
+    }
+    .archive-expanded:not(.box-white) .ae-thumbs-kw-panel .archive-kw-tag {
+      color: rgba(255,255,255,0.80);
+      border-bottom: 1px solid rgba(255,255,255,0.04);
+    }
+    .archive-expanded:not(.box-white) .ae-thumbs-kw-panel .archive-kw-tag:hover {
+      color: rgba(255,255,255,0.9);
+    }
+    .archive-expanded:not(.box-white) .ae-thumbs-kw-panel .archive-kw-tag-idx {
+      color: rgba(255,255,255,0.65);
+    }
+    /* Linea verticale nel pannello thumbs */
+    .ae-thumbs-kw-panel .archive-kw-vline {
+      background: rgba(0,0,0,0.25);
+    }
+    .archive-expanded:not(.box-white) .ae-thumbs-kw-panel .archive-kw-vline {
+      background: rgba(255,255,255,0.25);
+    }
+    /* Pallino nel pannello thumbs */
+    .ae-thumbs-kw-panel .archive-kw-dot {
+      background: #000;
+    }
+    .archive-expanded:not(.box-white) .ae-thumbs-kw-panel .archive-kw-dot {
+      background: #fff;
+    }
+
     /* Toggle tema Archive: icona monitor SVG — nella bottom-bar */
     .archive-expanded-toggle {
       width: 19px;   /* 17 * 1.14 ≈ 19 (+14%) */
@@ -7204,6 +7256,9 @@ function buildArchive() {
         if (activeExpanded) {
           if (activeExpanded._textBlock) activeExpanded._textBlock.remove();
           if (activeExpanded._kwPanel) activeExpanded._kwPanel.remove();
+          // Rimuovi anche il pannello keyword della vista thumbs (appeso al body)
+          const _aeTV = activeExpanded.querySelector('.ae-thumbs-view');
+          if (_aeTV && _aeTV._kwPanel) _aeTV._kwPanel.remove();
           if (activeExpanded._scrollListener) window.removeEventListener('scroll', activeExpanded._scrollListener, true);
           activeExpanded.remove();
           document.body.classList.add('cursor-red');          // ripristina rosso (box chiuso)
@@ -7478,6 +7533,8 @@ function buildArchive() {
               // Torna alla vista normale
               inner.style.display = '';
               _aeThumbsView.style.display = 'none';
+              // Nasconde il pannello keyword
+              if (_aeThumbsView._kwPanel) _aeThumbsView._kwPanel.style.display = 'none';
             });
             const aeCtr = document.createElement('div');
             aeCtr.className = 'ae-thumbs-counter';
@@ -7522,6 +7579,130 @@ function buildArchive() {
             aeInfo.appendChild(aeToggleClone);
             aeInfo.appendChild(aeCtr);  // rimuovi e riappendi per mettere contatore dopo TV
 
+            // ── PANNELLO KEYWORD: linea verticale + pallino + keyword ──
+            // Creato una sola volta, posizionato in fixed accanto alla foto
+            const aeKwPanel = document.createElement('div');
+            aeKwPanel.className = 'ae-thumbs-kw-panel';
+
+            // Linea verticale con pallino
+            const aeKwVline = document.createElement('div');
+            aeKwVline.className = 'archive-kw-vline';
+            aeKwVline.style.position = 'absolute';
+            aeKwVline.style.left = '22px';
+            aeKwVline.style.top = '0';
+            aeKwVline.style.bottom = '0';
+            const aeKwDot = document.createElement('div');
+            aeKwDot.className = 'archive-kw-dot';
+            aeKwVline.appendChild(aeKwDot);
+
+            // Container interno con padding per allineare a linea
+            const aeKwInner = document.createElement('div');
+            aeKwInner.style.cssText = 'position:relative; padding-left:36px; display:flex; flex-direction:column; flex:1; min-height:0; overflow:hidden;';
+            aeKwInner.appendChild(aeKwVline);
+
+            // Label INDEX
+            const aeKwLabel = document.createElement('div');
+            aeKwLabel.className = 'archive-kw-label';
+            aeKwLabel.textContent = 'Index';
+            aeKwInner.appendChild(aeKwLabel);
+
+            // Tags container
+            const aeKwTags = document.createElement('div');
+            aeKwTags.className = 'archive-kw-tags';
+            aeKwInner.appendChild(aeKwTags);
+            aeKwPanel.appendChild(aeKwInner);
+
+            // Funzione aggiorna keyword
+            function _aeUpdateKw(imgIdx) {
+              const img = images[imgIdx];
+              const kws = img && img.keywords
+                ? [...new Set(img.keywords.split(',').map(k => k.trim().toLowerCase()).filter(Boolean))].sort()
+                : [];
+              aeKwTags.innerHTML = '';
+              kws.forEach((kw, i) => {
+                const tag = document.createElement('div');
+                tag.className = 'archive-kw-tag';
+                const idxEl = document.createElement('span');
+                idxEl.className = 'archive-kw-tag-idx';
+                idxEl.textContent = String(i + 1).padStart(2, '0');
+                const kwText = document.createElement('span');
+                kwText.textContent = kw;
+                tag.appendChild(idxEl);
+                tag.appendChild(kwText);
+                tag.addEventListener('click', e => {
+                  e.stopPropagation();
+                  const _isLight = panel.classList.contains('box-white');
+                  window.openKeywordResults(kw, !_isLight);
+                });
+                aeKwTags.appendChild(tag);
+              });
+            }
+            _aeUpdateKw(0);
+
+            // Pallino segue il mouse sull'inner
+            let _aeKwPulseTimer = null;
+            aeKwInner.addEventListener('mousemove', ev => {
+              const rect = aeKwInner.getBoundingClientRect();
+              const relY = ev.clientY - rect.top;
+              const clampedY = Math.max(0, Math.min(rect.height - 8, relY - 4));
+              aeKwDot.style.top = clampedY + 'px';
+              aeKwDot.classList.remove('pulsing');
+              clearTimeout(_aeKwPulseTimer);
+              _aeKwPulseTimer = setTimeout(() => {
+                const elUnder = document.elementFromPoint(ev.clientX, ev.clientY);
+                if (elUnder && elUnder.closest('.archive-kw-tag')) {
+                  aeKwDot.classList.remove('pulsing');
+                  void aeKwDot.offsetWidth;
+                  aeKwDot.classList.add('pulsing');
+                }
+              }, 400);
+            });
+            aeKwInner.addEventListener('mouseleave', () => {
+              clearTimeout(_aeKwPulseTimer);
+              aeKwDot.classList.remove('pulsing');
+            });
+
+            // Funzione posiziona il pannello accanto alla foto (fixed)
+            function _aePositionKwPanel() {
+              if (aeKwPanel.style.display === 'none') return;
+              const imgRect = aeImg.getBoundingClientRect();
+              const nW = aeImg.naturalWidth || 1;
+              const nH = aeImg.naturalHeight || 1;
+              const dispW = imgRect.width;
+              const dispH = imgRect.height;
+              const scale = Math.min(dispW / nW, dispH / nH);
+              const rendW = Math.round(nW * scale);
+              const rendH = Math.round(nH * scale);
+              const imgCenterX = imgRect.left + dispW / 2;
+              const imgCenterY = imgRect.top + dispH / 2;
+              const photoRight  = imgCenterX + rendW / 2;
+              const photoTop    = imgCenterY - rendH / 2;
+              const photoBottom = imgCenterY + rendH / 2;
+              // Posiziona: 25px a destra del bordo destro della foto
+              aeKwPanel.style.left   = (photoRight + 25) + 'px';
+              aeKwPanel.style.top    = photoTop + 'px';
+              aeKwPanel.style.height = (photoBottom - photoTop) + 'px';
+            }
+
+            // Aggiorna keyword e posizione al cambio foto
+            const _origAeShowIdx = _aeShowIdx;
+            _aeShowIdx = function(idx) {
+              _origAeShowIdx(idx);
+              _aeUpdateKw(_aeThumbsIdx);
+              requestAnimationFrame(_aePositionKwPanel);
+            };
+
+            // Posiziona al resize, scroll e caricamento immagine
+            window.addEventListener('resize', _aePositionKwPanel);
+            window.addEventListener('scroll', _aePositionKwPanel, true);
+            aeImg.addEventListener('load', () => requestAnimationFrame(_aePositionKwPanel));
+
+            // Appendi al body (fixed positioning) — inizialmente nascosto
+            aeKwPanel.style.display = 'none';
+            document.body.appendChild(aeKwPanel);
+            _aeThumbsView._kwPanel = aeKwPanel;
+            _aeThumbsView._positionKwPanel = _aePositionKwPanel;
+
             _aeThumbsView.style.display = 'none';
             // Appeso al panel (archive-expanded) che ha overflow:hidden
             panel.appendChild(_aeThumbsView);
@@ -7534,6 +7715,15 @@ function buildArchive() {
             // Nasconde l'inner (hero+keywords+bottombar) e mostra la vista thumbs
             inner.style.display = 'none';
             _aeThumbsView.style.display = 'flex';
+            // Mostra il pannello keyword e lo posiziona
+            if (_aeThumbsView._kwPanel) {
+              _aeThumbsView._kwPanel.style.display = 'flex';
+              requestAnimationFrame(() => {
+                requestAnimationFrame(() => {
+                  if (_aeThumbsView._positionKwPanel) _aeThumbsView._positionKwPanel();
+                });
+              });
+            }
             // Mostra la prima foto con animazione
             const aeImg2 = _aeThumbsView.querySelector('.ae-thumbs-hero img');
             if (aeImg2) {
