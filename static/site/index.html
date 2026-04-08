@@ -3708,7 +3708,7 @@
       display: grid;
       grid-template-columns: repeat(11, 1fr);  /* -20%: più colonne = celle più piccole */
       grid-auto-rows: calc((100vw - var(--pad) * 2) / 11);
-      gap: 2px;
+      gap: 6px;
     }
     .gallery-grid-item {
       cursor: none;
@@ -3726,9 +3726,8 @@
       transition: opacity .25s var(--ease-out);
     }
     .gallery-grid-item.is-landscape img {
-      object-fit: contain;
-      object-position: center top;
-      background: #fff;
+      object-fit: cover;
+      object-position: center center;
     }
     .gallery-grid-item img { opacity: 0.80; transition: opacity .2s ease; }
     .gallery-grid-item:hover img { opacity: 1; }
@@ -4539,7 +4538,7 @@
     }
     .gallery-grid {
       grid-template-columns: repeat(3, 1fr) !important;
-      gap: 3px !important;
+      gap: 6px !important;
     }
     .gallery-text-section {
       padding: 16px !important;
