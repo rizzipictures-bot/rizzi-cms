@@ -1288,7 +1288,7 @@
       padding: 0;
       display: flex;
       flex-direction: row;
-      align-items: flex-start;       /* la colonna destra NON si estende oltre l'altezza della hero */
+      align-items: stretch;          /* tutte le colonne figlie si estendono a 500px */
       height: 500px;                 /* altezza fissa del box — non cambia mai */
       gap: 0;
       box-sizing: border-box;
@@ -1335,7 +1335,7 @@
       display: flex;
       flex-direction: row;           /* orizzontale: thumbs-col | sep | kw-col */
       overflow: hidden;
-      height: 500px;
+      height: 100%;                  /* eredita i 500px dal parent */
       box-sizing: border-box;
       align-items: stretch;          /* le colonne figlie si estendono fino a 500px */
     }
@@ -1350,7 +1350,7 @@
       box-sizing: border-box;
       overflow: hidden;              /* clip laterale, lo scroll è sulla griglia interna */
       position: relative;
-      height: 100%;                  /* si estende fino all'altezza del parent (500px) */
+      min-height: 0;                 /* fondamentale: permette al figlio flex di calcolare l'altezza */
     }
     /* Caption rimossa: già dentro la categoria, non serve ripetere il nome */
     .archive-expanded-caption { display: none; }
@@ -1359,11 +1359,11 @@
       display: grid;
       grid-template-columns: 1fr 1fr;
       gap: 5px;                      /* gap verticale e orizzontale tra thumbs */
-      overflow-y: auto;
+      overflow-y: scroll;            /* scroll sempre attivo */
       overflow-x: hidden;
-      flex: 1;
-      min-height: 0;
-      align-content: start;
+      flex: 1 1 0;                   /* occupa tutto lo spazio residuo nella colonna */
+      min-height: 0;                 /* fondamentale per flex+overflow */
+      align-content: start;          /* le righe partono dall'alto senza stretching */
       scrollbar-width: none;         /* Firefox */
     }
     .archive-expanded-thumbs::-webkit-scrollbar { display: none; }
