@@ -1359,6 +1359,7 @@
     .archive-expanded-thumbs {
       display: grid;
       grid-template-columns: 1fr 1fr;
+      grid-auto-rows: 58px;          /* altezza fissa per ogni riga — evita compressione */
       gap: 8px;                      /* gap visibile tra thumbs */
       overflow-y: scroll;            /* scroll sempre attivo */
       overflow-x: hidden;
