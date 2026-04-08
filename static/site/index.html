@@ -1479,7 +1479,7 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      overflow: hidden;
+      overflow: visible;           /* permette al bottone zoom di uscire fuori dal bordo */
       position: relative;
       cursor: none;
       background: inherit;
@@ -9820,10 +9820,10 @@ loadFromCMS();
     } else if (pos.includes('bottom')) {
       offY = cH - rendH;
     }
-    // Posiziona il bottone nell'angolo basso-destra dell'immagine reale
-    const margin = 8;
-    btn.style.right  = (cW - offX - rendW + margin) + 'px';
-    btn.style.bottom = (offY + margin) + 'px';
+    // Posiziona il bottone 15px fuori dall'angolo basso-destra dell'immagine reale
+    const outside = 15;
+    btn.style.right  = (cW - offX - rendW - outside) + 'px';
+    btn.style.bottom = (offY - outside) + 'px';
     btn.style.left   = 'auto';
     btn.style.top    = 'auto';
   }
