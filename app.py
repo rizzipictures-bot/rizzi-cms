@@ -411,7 +411,7 @@ def create_project():
         'prints':         data.get('prints', ''),
         'editions':       data.get('editions', ''),
         'keywords_manual': data.get('keywords_manual', ''),
-        'sections':       data.get('sections', ['archive', 'cities']),  # sezioni in cui appare il progetto
+        'sections':       data.get('sections', ['archive']),  # sezioni in cui appare il progetto (default: solo archive)
         'images':         [],
         'texts':          [],
         'order':          len(db['projects']),
