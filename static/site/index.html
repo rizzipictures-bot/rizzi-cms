@@ -10022,12 +10022,18 @@ loadFromCMS();
     // Angolo basso-destra dell'immagine reale
     const imgRight  = imgCenterX + rendW / 2;  // dal bordo sinistro del container
     const imgBottom = imgCenterY + rendH / 2;  // dal bordo superiore del container
-    // Posiziona il bottone:
-    // - 6px a destra del bordo destro della foto
-    // - la stanghetta verticale inferiore allineata al bordo inferiore della foto
-    //   (bottone alto 24px → top = imgBottom - 24)
-    btn.style.left   = (imgRight + 6) + 'px';
-    btn.style.top    = (imgBottom - 19) + 'px';
+    // Modalità 2 (ae-thumbs-hero): pulsante DENTRO la foto, angolo basso-destra
+    // Modalità 1 (archive-expanded-hero): pulsante fuori a destra (comportamento originale)
+    const isThumbsMode = container.classList.contains('ae-thumbs-hero');
+    if (isThumbsMode) {
+      // Dentro la foto: 10px dal bordo dx e basso
+      btn.style.left   = (imgRight - 10 - 19) + 'px';
+      btn.style.top    = (imgBottom - 10 - 19) + 'px';
+    } else {
+      // Fuori dalla foto: 6px a destra del bordo destro (comportamento originale)
+      btn.style.left = (imgRight + 6) + 'px';
+      btn.style.top  = (imgBottom - 19) + 'px';
+    }
     btn.style.right  = 'auto';
     btn.style.bottom = 'auto';
   }
