@@ -6462,6 +6462,12 @@ function switchView(name) {
     );
   }
 
+  // ── Nascondi pannelli keyword thumbs rimasti appesi al body ──
+  // (ae-thumbs-kw-panel è in position:fixed appeso al body, va nascosto al cambio sezione)
+  document.querySelectorAll('.ae-thumbs-kw-panel').forEach(p => {
+    p.style.display = 'none';
+  });
+
   // Aggiorna le linee decorative Cities quando si entra nella view
   if (name === 'cities-index') {
     requestAnimationFrame(() => _updateCitiesLines());
@@ -7725,12 +7731,12 @@ function buildArchive() {
               // Sincronizza il tema (dark/light) con lo stato attuale del panel
               const _isLight = panel.classList.contains('box-white');
               _aeThumbsView._kwPanel.classList.toggle('dark', !_isLight);
+              // Mostra PRIMA il pannello, poi posiziona (evita il return precoce per display:none)
               _aeThumbsView._kwPanel.style.display = 'flex';
-              requestAnimationFrame(() => {
-                requestAnimationFrame(() => {
-                  if (_aeThumbsView._positionKwPanel) _aeThumbsView._positionKwPanel();
-                });
-              });
+              // Attendi che il browser abbia fatto il layout prima di calcolare la posizione
+              setTimeout(() => {
+                if (_aeThumbsView._positionKwPanel) _aeThumbsView._positionKwPanel();
+              }, 60);
             }
             // Mostra la prima foto con animazione
             const aeImg2 = _aeThumbsView.querySelector('.ae-thumbs-hero img');
