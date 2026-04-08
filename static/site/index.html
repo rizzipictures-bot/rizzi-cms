@@ -1569,13 +1569,13 @@
       height: 100%;  /* si adatta all'altezza della strip (64px) */
       overflow: hidden;
       cursor: none;
-      opacity: 0.35;
+      opacity: 0.55;  /* era 0.35 — ridotto overlay grigio del ~20% */
       transition: opacity .2s;
     }
-    .ae-thumbs-strip-item:hover { opacity: 0.7; }
+    .ae-thumbs-strip-item:hover { opacity: 0.85; }  /* era 0.7 — +15% luminosità */
     .ae-thumbs-strip-item.active { opacity: 1; outline: 1px solid rgba(255,255,255,0.6); }
-    .archive-expanded.box-white .ae-thumbs-strip-item { opacity: 0.6; }
-    .archive-expanded.box-white .ae-thumbs-strip-item:hover { opacity: 0.9; }
+    .archive-expanded.box-white .ae-thumbs-strip-item { opacity: 0.72; }  /* era 0.6 */
+    .archive-expanded.box-white .ae-thumbs-strip-item:hover { opacity: 0.95; }  /* era 0.9 */
     .archive-expanded.box-white .ae-thumbs-strip-item.active { opacity: 1; outline: 1px solid rgba(0,0,0,0.4); }
     .ae-thumbs-strip-item img {
       width: 100%; height: 100%;
