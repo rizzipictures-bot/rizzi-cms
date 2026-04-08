@@ -946,6 +946,29 @@
             <input type="text" id="f-keywords" placeholder="architettura, bianco e nero, Istanbul" oninput="livePreview()">
           </div>
         </div>
+        <!-- Visibilità per sezione -->
+        <div class="field-group full" style="margin-top:8px">
+          <div class="field">
+            <label style="display:flex;align-items:center;gap:8px">
+              Visibilità
+              <span style="font-size:9px;font-weight:400;color:#888;letter-spacing:.3px">(scegli in quali sezioni del sito appare questo progetto)</span>
+            </label>
+            <div id="f-sections" style="display:flex;gap:18px;margin-top:6px;flex-wrap:wrap">
+              <label style="display:flex;align-items:center;gap:5px;font-size:11px;cursor:pointer;font-weight:400">
+                <input type="checkbox" id="f-sec-archive" value="archive" onchange="updateSectionsField()"> Archive
+              </label>
+              <label style="display:flex;align-items:center;gap:5px;font-size:11px;cursor:pointer;font-weight:400">
+                <input type="checkbox" id="f-sec-cities" value="cities" onchange="updateSectionsField()"> Cities
+              </label>
+              <label style="display:flex;align-items:center;gap:5px;font-size:11px;cursor:pointer;font-weight:400">
+                <input type="checkbox" id="f-sec-overview" value="overview" onchange="updateSectionsField()"> Overview
+              </label>
+              <label style="display:flex;align-items:center;gap:5px;font-size:11px;cursor:pointer;font-weight:400">
+                <input type="checkbox" id="f-sec-miscellanea" value="miscellanea" onchange="updateSectionsField()"> Miscellanea
+              </label>
+            </div>
+          </div>
+        </div>
         <div style="display:flex;gap:10px;align-items:center">
           <button class="save-btn" onclick="saveProjectInfo()">Salva</button>
           <button class="btn-text danger" onclick="deleteCurrentProject()" style="font-size:10px;color:#c0392b;border:1px solid #c0392b;padding:4px 10px;border-radius:3px;cursor:pointer">× Elimina progetto</button>
@@ -1410,9 +1433,22 @@ function renderEditor() {
   document.getElementById('f-editions').value    = p.editions || '';
   document.getElementById('f-keywords').value    = p.keywords_manual || '';
 
+  // Carica checkbox visibilità sezioni
+  const secs = p.sections || ['archive', 'cities'];
+  ['archive','cities','overview','miscellanea'].forEach(s => {
+    const cb = document.getElementById('f-sec-' + s);
+    if (cb) cb.checked = secs.includes(s);
+  });
+
   renderImageGrid();
   renderTextBlocks();
   updateIptcStatusBar();
+}
+
+function updateSectionsField() {
+  // Chiamata ogni volta che una checkbox cambia — non fa nulla di speciale,
+  // il valore viene letto al momento del salvataggio.
+  // Potremmo aggiungere un auto-save qui in futuro.
 }
 
 async function saveProjectInfo() {
@@ -1430,6 +1466,10 @@ async function saveProjectInfo() {
     prints:          document.getElementById('f-prints').value,
     editions:        document.getElementById('f-editions').value,
     keywords_manual: document.getElementById('f-keywords').value,
+    sections: ['archive','cities','overview','miscellanea'].filter(s => {
+      const cb = document.getElementById('f-sec-' + s);
+      return cb && cb.checked;
+    }),
   };
   await fetch(`${API}/projects/${currentProject.id}`, {
     method: 'PUT',

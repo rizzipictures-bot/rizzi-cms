@@ -411,6 +411,7 @@ def create_project():
         'prints':         data.get('prints', ''),
         'editions':       data.get('editions', ''),
         'keywords_manual': data.get('keywords_manual', ''),
+        'sections':       data.get('sections', ['archive', 'cities']),  # sezioni in cui appare il progetto
         'images':         [],
         'texts':          [],
         'order':          len(db['projects']),
@@ -433,7 +434,7 @@ def update_project(pid):
     if not p: return jsonify({'error': 'not found'}), 404
     data = request.json
     for k in ['title','year','place','publication','category_id','subtitle','description','order',
-             'technique','medium','prints','editions','keywords_manual']:
+             'technique','medium','prints','editions','keywords_manual','sections']:
         if k in data:
             p[k] = data[k]
     save_db(db)

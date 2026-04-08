@@ -6632,9 +6632,12 @@ function buildCitiesIndex() {
   const TOKYO_PROJECT_STATIC = PROJECTS_STATIC.find(p => p.id === 'tokyo-2020');
 
   // ── VISTA THUMBS (esistente) ──────────────────────────────────
-  const citiesProjects = PROJECTS.filter(p =>
-    (p.category_id || p.section || '').toLowerCase() === 'cities'
-  );
+  // Filtra: mostra solo i progetti che hanno 'cities' nelle sections
+  // Fallback per progetti senza campo sections: controlla category_id
+  const citiesProjects = PROJECTS.filter(p => {
+    if (p.sections) return p.sections.includes('cities');
+    return (p.category_id || p.section || '').toLowerCase() === 'cities';
+  });
   if (citiesProjects.length === 0 && PROJECTS.length > 0) {
     // fallback: usa tutti i progetti
     citiesProjects.push(...PROJECTS);
@@ -6978,7 +6981,12 @@ function buildArchive() {
   // Filtra solo i progetti con category_id 'archive'
   // Se PROJECTS è vuoto (CMS non disponibile), usa PROJECTS_STATIC come fallback
   const _allProjects = PROJECTS.length > 0 ? PROJECTS : PROJECTS_STATIC;
-  const archiveProjects = _allProjects.filter(p => (p.category_id || p.section) === 'archive' || (!p.category_id && !p.section));;
+  // Filtra: mostra solo i progetti che hanno 'archive' nelle sections
+  // Fallback per progetti senza campo sections: li mostra comunque (retrocompatibilità)
+  const archiveProjects = _allProjects.filter(p => {
+    if (p.sections) return p.sections.includes('archive');
+    return (p.category_id || p.section) === 'archive' || (!p.category_id && !p.section);
+  });
 
   let activeExpanded = null; // tiene traccia della riga espansa
 
@@ -9042,6 +9050,7 @@ async function loadFromCMS() {
           prints:          p.prints || '',
           editions:        p.editions || '',
           keywords_manual: p.keywords_manual || '',
+          sections:        p.sections || ['archive', 'cities'],  // sezioni in cui appare
           texts: p.texts || []
         };
         PROJECTS.push(proj);
