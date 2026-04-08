@@ -10061,26 +10061,10 @@ loadFromCMS();
     // Angolo basso-destra dell'immagine reale
     const imgRight  = imgCenterX + rendW / 2;  // dal bordo sinistro del container
     const imgBottom = imgCenterY + rendH / 2;  // dal bordo superiore del container
-    // Modalità 2 (ae-thumbs-hero): pulsante DENTRO la foto, angolo basso-destra
-    // Modalità 1 (archive-expanded-hero): pulsante fuori a destra (comportamento originale)
-    const isThumbsMode = container.classList.contains('ae-thumbs-hero');
-    if (isThumbsMode) {
-      // Con width:auto; height:auto sull'<img>, getBoundingClientRect() restituisce
-      // già le dimensioni reali della foto (non del container).
-      // imgRect.right e imgRect.bottom sono l'angolo basso-destra della foto nel viewport.
-      // Convertiamo in coordinate relative al container (position:absolute).
-      const photoRight_rel  = imgRect.right  - contRect.left;
-      const photoBottom_rel = imgRect.bottom - contRect.top;
-      // Posiziona 10px dentro il bordo dx e basso della foto reale
-      btn.style.left   = (photoRight_rel  - 10 - 19) + 'px';
-      btn.style.top    = (photoBottom_rel - 10 - 19) + 'px';
-    } else {
-      // Fuori dalla foto: 6px a destra del bordo destro (comportamento originale)
-      btn.style.left = (imgRight + 6) + 'px';
-      btn.style.top  = (imgBottom - 19) + 'px';
-    }
-    btn.style.right  = 'auto';
-    btn.style.bottom = 'auto';
+    // Sia in Modalità 1 (.archive-expanded-hero) che in Modalità 2 (.ae-thumbs-img-wrap)
+    // il CSS già gestisce bottom:10px; right:10px — non sovrascrivere con left/top calcolati via JS
+    if (container.classList.contains('ae-thumbs-img-wrap') ||
+        container.classList.contains('archive-expanded-hero')) return;
   }
 
   window._addAeZoomBtn = function(heroEl, getImgSrc) {
