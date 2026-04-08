@@ -1038,8 +1038,8 @@
         <div class="images-toolbar" id="images-toolbar" style="display:none">
           <button class="btn-text" onclick="toggleSelectMode()" id="btn-select-mode">☐ Seleziona</button>
           <button class="btn-text" onclick="selectAllImages()" id="btn-sel-all" style="display:none">Tutte</button>
-          <button class="btn-text" onclick="clearSelection()" id="btn-sel-clear" style="display:none">Deseleziona</button>
-          <button class="btn-text" onclick="deleteSelectedImages()" id="btn-del-sel" style="display:none;color:#c0392b">× Elimina selezionate</button>
+          <button class="btn-text" onclick="clearSelection()" id="btn-sel-clear" style="display:none">Nessuna</button>
+          <button class="btn-text" onclick="deleteSelectedImages()" id="btn-del-sel" style="display:none;color:#c0392b">× Elimina sel.</button>
           <button class="btn-text" onclick="rescanIptcAll()">↻ IPTC</button>
           <button class="btn-text" id="btn-tag-ai-proj" onclick="tagProjectImages()">✶ Tag AI</button>
           <button class="btn-ai-write" onclick="toggleProcPanel()" id="btn-proc">⚙ Elabora</button>
@@ -1627,18 +1627,21 @@ function toggleSelectImg(iid, e) {
   if (e) e.stopPropagation();
   if (_selectedImgIds.has(iid)) _selectedImgIds.delete(iid);
   else _selectedImgIds.add(iid);
+  _livePreviewScrolled = false;
   renderImageGrid();
   updateProcSelInfo();
 }
 
 function selectAllImages() {
   (currentProject?.images || []).forEach(i => _selectedImgIds.add(i.id));
+  _livePreviewScrolled = false;
   renderImageGrid();
   updateProcSelInfo();
 }
 
 function clearSelection() {
   _selectedImgIds.clear();
+  _livePreviewScrolled = false;
   renderImageGrid();
   updateProcSelInfo();
 }
@@ -1669,9 +1672,13 @@ function updateProcSelInfo() {
 function toggleProcPanel() {
   const panel = document.getElementById('img-proc-panel');
   panel.classList.toggle('open');
+  // Reset scroll flag quando si apre il pannello
+  if (panel.classList.contains('open')) _livePreviewScrolled = false;
 }
 
 // ── LIVE PREVIEW CSS ──
+let _livePreviewScrolled = false;
+
 function updateLivePreview() {
   const brightness = parseFloat(document.getElementById('sl-brightness')?.value || 1);
   const contrast   = parseFloat(document.getElementById('sl-contrast')?.value   || 1);
@@ -1680,35 +1687,47 @@ function updateLivePreview() {
   const temp       = parseFloat(document.getElementById('sl-temp')?.value        || 0);
 
   // Costruisce il filtro CSS
-  // La nitidezza non ha un filtro CSS diretto — usiamo contrast leggermente aumentato come approssimazione visiva
   const sharpBoost = sharpness > 1 ? 1 + (sharpness - 1) * 0.15 : 1;
   let filter = `brightness(${brightness}) contrast(${contrast * sharpBoost}) saturate(${saturation})`;
 
   // Temperatura: shift colore tramite hue-rotate approssimativo
-  // Caldo (+) → leggero hue shift verso arancio; Freddo (-) → verso blu
   if (temp !== 0) {
-    const hueShift = temp * 0.3; // gradi hue
+    const hueShift = temp * 0.3;
     const sepiaWarm = temp > 0 ? Math.min(temp / 100, 0.3) : 0;
-    const sepiaShift = temp < 0 ? Math.min(-temp / 100, 0.2) : 0;
     if (temp > 0) filter += ` sepia(${sepiaWarm}) hue-rotate(${-hueShift}deg)`;
     else          filter += ` hue-rotate(${-hueShift}deg)`;
   }
 
   // Applica il filtro alle celle selezionate (o a tutte se nessuna selezionata)
   const cells = document.querySelectorAll('.image-cell');
+  let firstTargetCell = null;
   cells.forEach(cell => {
     const iid = cell.dataset.imgId;
     const isTarget = _selectedImgIds.size === 0 || _selectedImgIds.has(iid);
     const imgEl = cell.querySelector('img');
     if (imgEl) {
       imgEl.style.filter = isTarget ? filter : '';
-      if (isTarget) cell.classList.add('live-preview-active');
-      else cell.classList.remove('live-preview-active');
+      if (isTarget) {
+        cell.classList.add('live-preview-active');
+        if (!firstTargetCell) firstTargetCell = cell;
+      } else {
+        cell.classList.remove('live-preview-active');
+      }
     }
   });
+
+  // Scroll automatico alla prima foto target (solo al primo movimento dello slider)
+  if (firstTargetCell && !_livePreviewScrolled) {
+    _livePreviewScrolled = true;
+    firstTargetCell.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  }
+
+  // Aggiorna anche il popup zoom se aperto
+  if (typeof _applyZoomFilter === 'function') _applyZoomFilter();
 }
 
 function resetLivePreview() {
+  _livePreviewScrolled = false;
   document.querySelectorAll('.image-cell img').forEach(img => {
     img.style.filter = '';
   });
@@ -2195,11 +2214,11 @@ function renderPreview() {
   if (!p) return;
   const body = document.getElementById('preview-body');
   const cover = p.images && p.images[0]
-    ? `<img class="preview-cover" src="http://localhost:5151/uploads/${p.images[0].thumb || p.images[0].file}" alt="">`
+    ? `<img class="preview-cover" src="/uploads/${p.images[0].thumb || p.images[0].file}" alt="">`
     : `<div class="preview-cover" style="background:var(--light)"></div>`;
 
   const thumbs = (p.images || []).slice(1, 9).map(img =>
-    `<img src="http://localhost:5151/uploads/${img.thumb || img.file}" alt="">`
+    `<img src="/uploads/${img.thumb || img.file}" alt="">`
   ).join('');
 
   const texts = (p.texts || []).map(block => {
