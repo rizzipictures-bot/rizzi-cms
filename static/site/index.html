@@ -9815,10 +9815,12 @@ loadFromCMS();
     // Angolo basso-destra dell'immagine reale (con object-fit:contain centrata)
     const imgRight  = imgCenterX + rendW / 2;  // dal bordo sinistro del container
     const imgBottom = imgCenterY + rendH / 2;  // dal bordo superiore del container
-    // Posiziona il bottone sull'angolo basso-destra, metà dentro e metà fuori (12px = metà bottone 24px)
-    const outside = 3;  // pixel fuori dal bordo della foto
-    btn.style.left   = (imgRight  - 12 + outside) + 'px';
-    btn.style.top    = (imgBottom - 12 + outside) + 'px';
+    // Posiziona il bottone:
+    // - 6px a destra del bordo destro della foto
+    // - la stanghetta verticale inferiore allineata al bordo inferiore della foto
+    //   (bottone alto 24px → top = imgBottom - 24)
+    btn.style.left   = (imgRight + 6) + 'px';
+    btn.style.top    = (imgBottom - 24) + 'px';
     btn.style.right  = 'auto';
     btn.style.bottom = 'auto';
   }
