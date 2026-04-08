@@ -1304,7 +1304,7 @@
       width: auto;                   /* larghezza determinata da aspect-ratio */
       aspect-ratio: 4/3;             /* fallback iniziale, sovrascritto da JS */
       max-width: 700px;
-      overflow: hidden;
+      overflow: visible;             /* permette al bottone zoom di uscire fuori dal bordo */
       position: relative;
       cursor: none;
       display: block;
@@ -9996,13 +9996,22 @@ loadFromCMS();
     const nH = imgEl.naturalHeight;
     const dispW = imgRect.width;
     const dispH = imgRect.height;
-    const scale = Math.min(dispW / nW, dispH / nH);
-    const rendW = Math.round(nW * scale);
-    const rendH = Math.round(nH * scale);
+    // Per object-fit:fill l'immagine riempie tutto il container (vista box nera)
+    // Per object-fit:contain si usa il fattore di scala minimo (vista thumbs)
+    const objectFit = window.getComputedStyle(imgEl).objectFit;
+    let rendW, rendH;
+    if (objectFit === 'fill' || objectFit === 'none') {
+      rendW = Math.round(dispW);
+      rendH = Math.round(dispH);
+    } else {
+      const scale = Math.min(dispW / nW, dispH / nH);
+      rendW = Math.round(nW * scale);
+      rendH = Math.round(nH * scale);
+    }
     // Centro dell'immagine nel container
     const imgCenterX = imgRect.left - contRect.left + dispW / 2;
     const imgCenterY = imgRect.top  - contRect.top  + dispH / 2;
-    // Angolo basso-destra dell'immagine reale (con object-fit:contain centrata)
+    // Angolo basso-destra dell'immagine reale
     const imgRight  = imgCenterX + rendW / 2;  // dal bordo sinistro del container
     const imgBottom = imgCenterY + rendH / 2;  // dal bordo superiore del container
     // Posiziona il bottone:
