@@ -6639,9 +6639,12 @@ function buildCitiesIndex() {
   grid.innerHTML = '';
   listView.innerHTML = '';
 
-  // Tutti i progetti dell'archive come lista città
-  // (usa tutti i PROJECTS che hanno un place, ordinati alfabeticamente per title)
-  const allProjects = PROJECTS.slice().sort((a, b) =>
+  // Tutti i progetti da mostrare nella lista Cities
+  // Filtra solo quelli che hanno 'cities' nelle sections (stesso criterio della vista thumbs)
+  const allProjects = PROJECTS.filter(p => {
+    if (p.sections) return p.sections.includes('cities');
+    return (p.category_id || p.section || '').toLowerCase() === 'cities';
+  }).sort((a, b) =>
     (a.title || '').localeCompare(b.title || '', 'it')
   );
 
