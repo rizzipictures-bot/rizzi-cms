@@ -684,6 +684,75 @@
     border: 2px solid var(--purple);
   }
 
+  /* ── PANNELLO CURVE ── */
+  .proc-curves-section {
+    margin-bottom: 16px;
+    padding: 12px 14px;
+    background: var(--light);
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--border);
+  }
+  .proc-curves-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 10px;
+    flex-wrap: wrap;
+  }
+  .proc-curves-title {
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--black);
+    flex-shrink: 0;
+  }
+  .proc-curves-tabs {
+    display: flex;
+    gap: 3px;
+    flex: 1;
+    flex-wrap: wrap;
+  }
+  .proc-curve-tab {
+    font-family: var(--font);
+    font-size: 10px;
+    font-weight: 500;
+    padding: 2px 7px;
+    border-radius: 3px;
+    border: 1px solid var(--border);
+    background: var(--surface);
+    color: var(--gray);
+    cursor: pointer;
+    transition: all .12s;
+  }
+  .proc-curve-tab:hover { background: var(--border2); color: var(--black); }
+  .proc-curve-tab.active { background: var(--black); color: #fff; border-color: var(--black); }
+  .proc-curve-tab[data-ch="r"].active { background: #e74c3c; border-color: #e74c3c; }
+  .proc-curve-tab[data-ch="g"].active { background: #27ae60; border-color: #27ae60; }
+  .proc-curve-tab[data-ch="b"].active { background: #2980b9; border-color: #2980b9; }
+  .proc-curve-tab[data-ch="lab-l"].active { background: #555; border-color: #555; }
+  .proc-curve-tab[data-ch="lab-a"].active { background: #c0392b; border-color: #c0392b; }
+  .proc-curve-tab[data-ch="lab-b"].active { background: #2471a3; border-color: #2471a3; }
+  .proc-curve-reset-btn {
+    font-family: var(--font);
+    font-size: 9px;
+    color: var(--purple);
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 0;
+    flex-shrink: 0;
+  }
+  .proc-curve-reset-btn:hover { text-decoration: underline; }
+  .proc-curve-canvas {
+    display: block;
+    width: 100%;
+    height: auto;
+    border-radius: var(--radius-xs);
+    cursor: crosshair;
+    touch-action: none;
+    background: #1a1a1a;
+    border: 1px solid var(--border);
+  }
+
   /* ── COLOR WHEELS ── */
   .proc-wheels {
     display: flex; gap: 16px; margin-bottom: 12px;
@@ -1366,9 +1435,9 @@
           <!-- Sliders -->
           <div class="proc-sliders">
             <div class="proc-slider-row">
-              <label>Luminosità <span id="lbl-brightness">1.0</span></label>
-              <input type="range" id="sl-brightness" min="0.3" max="2.0" step="0.05" value="1.0"
-                     oninput="document.getElementById('lbl-brightness').textContent=parseFloat(this.value).toFixed(2); updateLivePreview()">
+              <label>Esposizione (EV) <span id="lbl-brightness">0.0</span></label>
+              <input type="range" id="sl-brightness" min="-2.0" max="2.0" step="0.05" value="0.0"
+                     oninput="document.getElementById('lbl-brightness').textContent=(parseFloat(this.value)>=0?'+':'')+parseFloat(this.value).toFixed(2); updateLivePreview()">
             </div>
             <div class="proc-slider-row">
               <label>Contrasto <span id="lbl-contrast">1.0</span></label>
@@ -1390,6 +1459,24 @@
               <input type="range" id="sl-temp" min="-50" max="50" step="1" value="0"
                      oninput="document.getElementById('lbl-temp').textContent=this.value; updateLivePreview()">
             </div>
+          </div>
+
+          <!-- Pannello Curve (RGB + Lab) -->
+          <div class="proc-curves-section">
+            <div class="proc-curves-header">
+              <span class="proc-curves-title">Curve</span>
+              <div class="proc-curves-tabs">
+                <button class="proc-curve-tab active" data-ch="rgb" onclick="selectCurveChannel('rgb')">RGB</button>
+                <button class="proc-curve-tab" data-ch="r" onclick="selectCurveChannel('r')">R</button>
+                <button class="proc-curve-tab" data-ch="g" onclick="selectCurveChannel('g')">G</button>
+                <button class="proc-curve-tab" data-ch="b" onclick="selectCurveChannel('b')">B</button>
+                <button class="proc-curve-tab" data-ch="lab-l" onclick="selectCurveChannel('lab-l')">L*</button>
+                <button class="proc-curve-tab" data-ch="lab-a" onclick="selectCurveChannel('lab-a')">a*</button>
+                <button class="proc-curve-tab" data-ch="lab-b" onclick="selectCurveChannel('lab-b')">b*</button>
+              </div>
+              <button class="proc-curve-reset-btn" onclick="resetCurrentCurve()" title="Reset curva">reset</button>
+            </div>
+            <canvas id="curve-canvas" width="220" height="220" class="proc-curve-canvas"></canvas>
           </div>
 
           <div class="proc-actions">
@@ -2085,7 +2172,12 @@ function resetLivePreview() {
 }
 
 function resetSliders() {
-  ['brightness','contrast','saturation','sharpness'].forEach(k => {
+  // Brightness/Esposizione: valore neutro EV=0
+  const slBr = document.getElementById('sl-brightness');
+  const lbBr = document.getElementById('lbl-brightness');
+  if (slBr) { slBr.value = '0'; if (lbBr) lbBr.textContent = '+0.00'; }
+  // Altri slider: valore neutro 1.0
+  ['contrast','saturation','sharpness'].forEach(k => {
     const sl = document.getElementById('sl-'+k);
     const lb = document.getElementById('lbl-'+k);
     if (sl) { sl.value = '1.0'; if (lb) lb.textContent = '1.0'; }
@@ -2100,13 +2192,16 @@ async function applyAdjust() {
   const btn = document.getElementById('btn-apply-adjust');
   btn.disabled = true; btn.textContent = 'Elaborando...';
   const ids = _selectedImgIds.size > 0 ? [..._selectedImgIds] : [];
+  // Converti EV in fattore brightness per il backend (2^EV)
+  const ev = parseFloat(document.getElementById('sl-brightness').value);
   const body = {
     ids,
-    brightness: parseFloat(document.getElementById('sl-brightness').value),
+    brightness: Math.pow(2, ev),  // EV -> fattore moltiplicativo
     contrast:   parseFloat(document.getElementById('sl-contrast').value),
     saturation: parseFloat(document.getElementById('sl-saturation').value),
     sharpness:  parseFloat(document.getElementById('sl-sharpness').value),
     temp_shift: parseFloat(document.getElementById('sl-temp').value),
+    curves:     window.getAllCurvePoints ? window.getAllCurvePoints() : null,
   };
   try {
     const res  = await fetch(`${API}/projects/${currentProject.id}/images/adjust`, {
@@ -2147,8 +2242,16 @@ async function applyMatchMaster() {
 
 async function applyAutoBalance() {
   if (!currentProject) return;
-  if (!confirm('Auto-balance uniformerà colore e luminosità di tutte le foto selezionate verso la media. Continuare?')) return;
-  const ids = _selectedImgIds.size > 0 ? [..._selectedImgIds] : [];
+  // Richiede selezione esplicita: non agisce mai su tutte le foto senza selezione
+  if (_selectedImgIds.size === 0) {
+    toast('Seleziona prima le foto su cui applicare Auto-balance (usa ☐ Seleziona)');
+    return;
+  }
+  const ids = [..._selectedImgIds];
+  const n = ids.length;
+  if (!confirm(`Auto-balance uniformerà colore e luminosità delle ${n} foto selezionate verso la loro media. Continuare?`)) return;
+  const btn = document.querySelector('[onclick="applyAutoBalance()"]');
+  if (btn) { btn.disabled = true; btn.textContent = 'Auto-balance...'; }
   toast('Auto-balance in corso...');
   try {
     const res  = await fetch(`${API}/projects/${currentProject.id}/images/auto-balance`, {
@@ -2157,10 +2260,14 @@ async function applyAutoBalance() {
     });
     const data = await res.json();
     toast(`Auto-balance completato su ${data.updated?.length || 0} foto ✔`);
-    document.querySelectorAll('.image-cell img').forEach(img => {
-      img.src = img.src.split('?')[0] + '?t=' + Date.now();
+    // Ricarica solo le thumbnail delle foto modificate
+    (data.updated || []).forEach(id => {
+      const cell = document.querySelector(`.image-cell[data-img-id="${id}"]`);
+      const imgEl = cell?.querySelector('img');
+      if (imgEl) imgEl.src = imgEl.src.split('?')[0] + '?t=' + Date.now();
     });
   } catch(e) { toast('Errore auto-balance'); }
+  finally { if (btn) { btn.disabled = false; btn.textContent = '✾ Auto-balance AI'; } }
 }
 
 function renderImageGrid() {
@@ -3109,14 +3216,16 @@ init();
 // HELPER: costruisce il filtro CSS completo (sliders + wheels)
 // ════════════════════════════════════════════════════════════════
 function _buildCssFilter() {
-  const brightness = parseFloat(document.getElementById('sl-brightness')?.value || 1);
+  // Esposizione EV: usa gamma (2^EV) invece di brightness lineare — molto meno aggressivo
+  const ev         = parseFloat(document.getElementById('sl-brightness')?.value || 0);
+  const brightness = Math.pow(2, ev);  // EV 0 = 1.0, EV +1 = 2.0, EV -1 = 0.5
   const contrast   = parseFloat(document.getElementById('sl-contrast')?.value   || 1);
   const saturation = parseFloat(document.getElementById('sl-saturation')?.value || 1);
   const sharpness  = parseFloat(document.getElementById('sl-sharpness')?.value  || 1);
   const temp       = parseFloat(document.getElementById('sl-temp')?.value        || 0);
 
   const sharpBoost = sharpness > 1 ? 1 + (sharpness - 1) * 0.15 : 1;
-  let filter = `brightness(${brightness}) contrast(${contrast * sharpBoost}) saturate(${saturation})`;
+  let filter = `brightness(${brightness.toFixed(3)}) contrast(${(contrast * sharpBoost).toFixed(3)}) saturate(${saturation})`;
 
   if (temp !== 0) {
     const hueShift = temp * 0.3;
@@ -3126,7 +3235,6 @@ function _buildCssFilter() {
   }
 
   // Wheels: approssimazione CSS tramite hue-rotate e saturate addizionali
-  // (il vero color grading per toni richiede canvas/WebGL; qui usiamo un'approssimazione visiva)
   const wheels = window.getWheelValues ? window.getWheelValues() : null;
   if (wheels) {
     const totalHue = (wheels.shadows.hue * wheels.shadows.strength * 0.4 +
@@ -3137,6 +3245,14 @@ function _buildCssFilter() {
       filter += ` hue-rotate(${totalHue.toFixed(1)}deg)`;
       filter += ` saturate(${(1 + totalStr * 0.3).toFixed(2)})`;
     }
+  }
+
+  // Curve RGB: approssimazione CSS tramite brightness/contrast aggiuntivi
+  // Il vero mapping per canale richiede canvas; qui applichiamo la curva RGB globale come
+  // variazione di brightness+contrast derivata dalla deviazione della curva dalla diagonale
+  if (window._getCurveApproxFilter) {
+    const curveFilter = window._getCurveApproxFilter();
+    if (curveFilter) filter += ' ' + curveFilter;
   }
 
   return filter;
@@ -3160,14 +3276,273 @@ function updateLivePreview() {
   if (window._applyZoomFilter) window._applyZoomFilter();
 }
 
-// Reset completo (sliders + wheels)
+// Reset completo (sliders + wheels + curve)
 function resetAllCorrections() {
   resetSliders();
   ['shadows','midtones','highlights'].forEach(n => {
     if (window.resetWheel) window.resetWheel(n);
   });
+  if (window.resetAllCurves) window.resetAllCurves();
   resetLivePreview();
 }
+
+// ════════════════════════════════════════════════════════════════
+// EDITOR CURVE — canvas interattivo con interpolazione cubica
+// Canali: rgb (globale), r, g, b, lab-l, lab-a, lab-b
+// ════════════════════════════════════════════════════════════════
+(function initCurveEditor() {
+  const CHANNELS = ['rgb','r','g','b','lab-l','lab-a','lab-b'];
+  const COLORS   = { rgb:'#aaa', r:'#e74c3c', g:'#27ae60', b:'#2980b9',
+                     'lab-l':'#ccc', 'lab-a':'#c0392b', 'lab-b':'#2471a3' };
+  // Punti di controllo per ogni canale: array di {x,y} normalizzati [0,1]
+  const _pts = {};
+  CHANNELS.forEach(ch => { _pts[ch] = [{x:0,y:0},{x:1,y:1}]; });
+  let _activeCh = 'rgb';
+  let _dragging = null;  // indice del punto trascinato
+  const SNAP = 0.03;     // distanza per agganciare un punto esistente
+  const PT_R = 5;        // raggio punto in px canvas
+
+  function getCanvas() { return document.getElementById('curve-canvas'); }
+
+  // Interpolazione cubica di Catmull-Rom sui punti di controllo
+  function evalCurve(pts, t) {
+    const n = pts.length;
+    if (n < 2) return t;
+    // Trova segmento
+    let i = 0;
+    while (i < n - 2 && pts[i+1].x <= t) i++;
+    const p0 = pts[Math.max(0, i-1)];
+    const p1 = pts[i];
+    const p2 = pts[i+1];
+    const p3 = pts[Math.min(n-1, i+2)];
+    const dx = p2.x - p1.x;
+    if (dx < 1e-6) return p1.y;
+    const u = (t - p1.x) / dx;
+    // Catmull-Rom
+    const t2 = u*u, t3 = t2*u;
+    const m1x = (p2.x - p0.x) * 0.5, m1y = (p2.y - p0.y) * 0.5;
+    const m2x = (p3.x - p1.x) * 0.5, m2y = (p3.y - p1.y) * 0.5;
+    return Math.max(0, Math.min(1,
+      (2*t3 - 3*t2 + 1)*p1.y +
+      (t3 - 2*t2 + u)*m1y +
+      (-2*t3 + 3*t2)*p2.y +
+      (t3 - t2)*m2y
+    ));
+  }
+
+  function drawCurve() {
+    const canvas = getCanvas();
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    const W = canvas.width, H = canvas.height;
+    ctx.clearRect(0, 0, W, H);
+
+    // Sfondo
+    ctx.fillStyle = '#1a1a1a';
+    ctx.fillRect(0, 0, W, H);
+
+    // Griglia
+    ctx.strokeStyle = 'rgba(255,255,255,0.08)';
+    ctx.lineWidth = 1;
+    [0.25, 0.5, 0.75].forEach(v => {
+      ctx.beginPath(); ctx.moveTo(v*W, 0); ctx.lineTo(v*W, H); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(0, v*H); ctx.lineTo(W, v*H); ctx.stroke();
+    });
+
+    // Diagonale neutrale
+    ctx.strokeStyle = 'rgba(255,255,255,0.15)';
+    ctx.lineWidth = 1;
+    ctx.setLineDash([4,4]);
+    ctx.beginPath(); ctx.moveTo(0, H); ctx.lineTo(W, 0); ctx.stroke();
+    ctx.setLineDash([]);
+
+    // Curve non attive (sfondo, sottili)
+    CHANNELS.forEach(ch => {
+      if (ch === _activeCh) return;
+      const pts = _pts[ch];
+      if (pts.length === 2 && pts[0].x===0 && pts[0].y===0 && pts[1].x===1 && pts[1].y===1) return; // neutrale
+      ctx.strokeStyle = COLORS[ch] + '44';
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      for (let px = 0; px <= W; px++) {
+        const t = px / W;
+        const y = 1 - evalCurve(pts, t);
+        if (px === 0) ctx.moveTo(px, y*H); else ctx.lineTo(px, y*H);
+      }
+      ctx.stroke();
+    });
+
+    // Curva attiva
+    const pts = _pts[_activeCh];
+    ctx.strokeStyle = COLORS[_activeCh];
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    for (let px = 0; px <= W; px++) {
+      const t = px / W;
+      const y = 1 - evalCurve(pts, t);
+      if (px === 0) ctx.moveTo(px, y*H); else ctx.lineTo(px, y*H);
+    }
+    ctx.stroke();
+
+    // Punti di controllo
+    pts.forEach((p, i) => {
+      const cx = p.x * W, cy = (1-p.y) * H;
+      ctx.fillStyle = i === _dragging ? '#fff' : COLORS[_activeCh];
+      ctx.strokeStyle = '#fff';
+      ctx.lineWidth = 1.5;
+      ctx.beginPath();
+      ctx.arc(cx, cy, PT_R, 0, Math.PI*2);
+      ctx.fill();
+      ctx.stroke();
+    });
+  }
+
+  function canvasCoords(e) {
+    const canvas = getCanvas();
+    const rect = canvas.getBoundingClientRect();
+    const scaleX = canvas.width / rect.width;
+    const scaleY = canvas.height / rect.height;
+    const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+    const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+    return {
+      x: Math.max(0, Math.min(1, (clientX - rect.left) * scaleX / canvas.width)),
+      y: Math.max(0, Math.min(1, 1 - (clientY - rect.top) * scaleY / canvas.height))
+    };
+  }
+
+  function nearestPoint(pts, x, y) {
+    let best = -1, bestD = SNAP;
+    pts.forEach((p, i) => {
+      const d = Math.hypot(p.x - x, p.y - y);
+      if (d < bestD) { bestD = d; best = i; }
+    });
+    return best;
+  }
+
+  function onPointerDown(e) {
+    e.preventDefault();
+    const {x, y} = canvasCoords(e);
+    const pts = _pts[_activeCh];
+    const idx = nearestPoint(pts, x, y);
+    if (idx >= 0) {
+      _dragging = idx;
+    } else {
+      // Aggiungi nuovo punto
+      pts.push({x, y});
+      pts.sort((a,b) => a.x - b.x);
+      _dragging = pts.findIndex(p => p.x === x && p.y === y);
+    }
+    drawCurve();
+    updateLivePreview();
+  }
+
+  function onPointerMove(e) {
+    if (_dragging === null) return;
+    e.preventDefault();
+    const {x, y} = canvasCoords(e);
+    const pts = _pts[_activeCh];
+    // I punti estremi (0 e ultimo) non si spostano in X
+    if (_dragging === 0) pts[_dragging] = {x:0, y};
+    else if (_dragging === pts.length-1) pts[_dragging] = {x:1, y};
+    else pts[_dragging] = {x, y};
+    pts.sort((a,b) => a.x - b.x);
+    drawCurve();
+    updateLivePreview();
+  }
+
+  function onPointerUp(e) {
+    _dragging = null;
+  }
+
+  function onDblClick(e) {
+    // Doppio click su un punto interno lo rimuove
+    const {x, y} = canvasCoords(e);
+    const pts = _pts[_activeCh];
+    const idx = nearestPoint(pts, x, y);
+    if (idx > 0 && idx < pts.length-1) {
+      pts.splice(idx, 1);
+      drawCurve();
+      updateLivePreview();
+    }
+  }
+
+  function attachEvents() {
+    const canvas = getCanvas();
+    if (!canvas || canvas._curveEventsAttached) return;
+    canvas._curveEventsAttached = true;
+    canvas.addEventListener('mousedown',  onPointerDown);
+    canvas.addEventListener('mousemove',  onPointerMove);
+    canvas.addEventListener('mouseup',    onPointerUp);
+    canvas.addEventListener('mouseleave', onPointerUp);
+    canvas.addEventListener('dblclick',   onDblClick);
+    canvas.addEventListener('touchstart', onPointerDown, {passive:false});
+    canvas.addEventListener('touchmove',  onPointerMove, {passive:false});
+    canvas.addEventListener('touchend',   onPointerUp);
+  }
+
+  // API pubblica
+  window.selectCurveChannel = function(ch) {
+    _activeCh = ch;
+    document.querySelectorAll('.proc-curve-tab').forEach(btn => {
+      btn.classList.toggle('active', btn.dataset.ch === ch);
+    });
+    attachEvents();
+    drawCurve();
+  };
+
+  window.resetCurrentCurve = function() {
+    _pts[_activeCh] = [{x:0,y:0},{x:1,y:1}];
+    drawCurve();
+    updateLivePreview();
+  };
+
+  window.resetAllCurves = function() {
+    CHANNELS.forEach(ch => { _pts[ch] = [{x:0,y:0},{x:1,y:1}]; });
+    drawCurve();
+    updateLivePreview();
+  };
+
+  // Restituisce tutti i punti delle curve per invio al backend
+  window.getAllCurvePoints = function() {
+    const result = {};
+    CHANNELS.forEach(ch => { result[ch] = _pts[ch].map(p => ({x:p.x, y:p.y})); });
+    return result;
+  };
+
+  // Approssimazione CSS della curva RGB globale per live preview
+  // Calcola la deviazione media dalla diagonale e la traduce in brightness/contrast
+  window._getCurveApproxFilter = function() {
+    const pts = _pts['rgb'];
+    if (pts.length === 2 && pts[0].x===0 && pts[0].y===0 && pts[1].x===1 && pts[1].y===1) return '';
+    // Campiona la curva in 5 punti e calcola la deviazione media
+    const samples = [0.1, 0.3, 0.5, 0.7, 0.9];
+    let sumDev = 0;
+    samples.forEach(t => { sumDev += evalCurve(pts, t) - t; });
+    const avgDev = sumDev / samples.length;
+    // Calcola il contrasto approssimativo dalla pendenza al midpoint
+    const slope = (evalCurve(pts, 0.6) - evalCurve(pts, 0.4)) / 0.2;
+    const brightnessAdj = 1 + avgDev * 1.5;
+    const contrastAdj   = Math.max(0.5, Math.min(2.0, slope));
+    if (Math.abs(avgDev) < 0.01 && Math.abs(slope - 1) < 0.05) return '';
+    return `brightness(${brightnessAdj.toFixed(3)}) contrast(${contrastAdj.toFixed(3)})`;
+  };
+
+  // Inizializza canvas al caricamento del pannello
+  window._initCurveCanvas = function() {
+    attachEvents();
+    drawCurve();
+  };
+
+  // Ridisegna quando il pannello viene aperto
+  const origToggle = window.toggleProcPanel;
+  window.toggleProcPanel = function() {
+    if (origToggle) origToggle();
+    setTimeout(() => { attachEvents(); drawCurve(); }, 50);
+  };
+
+  // Inizializzazione ritardata (DOM potrebbe non essere pronto)
+  setTimeout(() => { attachEvents(); drawCurve(); }, 500);
+})();
 
 init();
 </script>
