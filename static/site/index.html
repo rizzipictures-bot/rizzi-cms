@@ -1606,32 +1606,32 @@
     .ae-thumbs-kw-panel .archive-kw-tag-idx {
       color: rgba(0,0,0,0.45);
     }
-    /* In tema scuro (box-white assente) */
-    .archive-expanded:not(.box-white) .ae-thumbs-kw-panel .archive-kw-label {
+    /* In tema scuro: classe .dark aggiunta via JS al pannello stesso */
+    .ae-thumbs-kw-panel.dark .archive-kw-label {
       color: rgba(255,255,255,0.85);
     }
-    .archive-expanded:not(.box-white) .ae-thumbs-kw-panel .archive-kw-tag {
+    .ae-thumbs-kw-panel.dark .archive-kw-tag {
       color: rgba(255,255,255,0.80);
       border-bottom: 1px solid rgba(255,255,255,0.04);
     }
-    .archive-expanded:not(.box-white) .ae-thumbs-kw-panel .archive-kw-tag:hover {
+    .ae-thumbs-kw-panel.dark .archive-kw-tag:hover {
       color: rgba(255,255,255,0.9);
     }
-    .archive-expanded:not(.box-white) .ae-thumbs-kw-panel .archive-kw-tag-idx {
+    .ae-thumbs-kw-panel.dark .archive-kw-tag-idx {
       color: rgba(255,255,255,0.65);
     }
     /* Linea verticale nel pannello thumbs */
     .ae-thumbs-kw-panel .archive-kw-vline {
       background: rgba(0,0,0,0.25);
     }
-    .archive-expanded:not(.box-white) .ae-thumbs-kw-panel .archive-kw-vline {
+    .ae-thumbs-kw-panel.dark .archive-kw-vline {
       background: rgba(255,255,255,0.25);
     }
     /* Pallino nel pannello thumbs */
     .ae-thumbs-kw-panel .archive-kw-dot {
       background: #000;
     }
-    .archive-expanded:not(.box-white) .ae-thumbs-kw-panel .archive-kw-dot {
+    .ae-thumbs-kw-panel.dark .archive-kw-dot {
       background: #fff;
     }
 
@@ -7418,6 +7418,10 @@ function buildArchive() {
             const _tl = toggle.querySelector('.ae-toggle-light');
             if (_td) _td.style.display = _nowWhite ? 'none' : '';
             if (_tl) _tl.style.display = _nowWhite ? '' : 'none';
+            // Aggiorna il tema del pannello keyword thumbs se visibile
+            if (_aeThumbsView && _aeThumbsView._kwPanel) {
+              _aeThumbsView._kwPanel.classList.toggle('dark', !_nowWhite);
+            }
           });
 
           // Caption: nome progetto + contatore foto
@@ -7717,6 +7721,9 @@ function buildArchive() {
             _aeThumbsView.style.display = 'flex';
             // Mostra il pannello keyword e lo posiziona
             if (_aeThumbsView._kwPanel) {
+              // Sincronizza il tema (dark/light) con lo stato attuale del panel
+              const _isLight = panel.classList.contains('box-white');
+              _aeThumbsView._kwPanel.classList.toggle('dark', !_isLight);
               _aeThumbsView._kwPanel.style.display = 'flex';
               requestAnimationFrame(() => {
                 requestAnimationFrame(() => {
