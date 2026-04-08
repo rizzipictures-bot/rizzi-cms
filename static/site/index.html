@@ -1344,9 +1344,9 @@
     .archive-expanded-thumbs-col {
       display: flex;
       flex-direction: column;
-      width: 148px;                  /* 2 colonne da 68px + gap 8px + padding */
+      width: 200px;                  /* allargato: 2 colonne da 88px + gap 10px + padding */
       flex-shrink: 0;
-      padding: 18px 0 18px 28px;
+      padding: 14px 8px 14px 20px;
       box-sizing: border-box;
       overflow: hidden;              /* clip laterale, lo scroll è sulla griglia interna */
       position: relative;
@@ -1358,7 +1358,7 @@
     .archive-expanded-thumbs {
       display: grid;
       grid-template-columns: 1fr 1fr;
-      gap: 5px;                      /* gap verticale e orizzontale tra thumbs */
+      gap: 8px;                      /* gap visibile tra thumbs */
       overflow-y: scroll;            /* scroll sempre attivo */
       overflow-x: hidden;
       flex: 1 1 0;                   /* occupa tutto lo spazio residuo nella colonna */
@@ -1558,7 +1558,7 @@
       flex: 0 0 64px;   /* altezza fissa 64px, non cresce */
       padding: 0 8px 0;
       align-items: stretch;
-      margin-top: 28px;  /* distanza tra foto grande e striscia thumbs (raddoppiata da 14px) */
+      margin-top: 42px;  /* distanza tra foto grande e striscia thumbs */
     }
     .ae-thumbs-strip::-webkit-scrollbar { display: none; }
     .ae-thumbs-strip-item {
