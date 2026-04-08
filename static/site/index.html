@@ -3706,9 +3706,8 @@
 
     .gallery-grid {
       display: grid;
-      grid-template-columns: repeat(11, 1fr);  /* -20%: più colonne = celle più piccole */
-      grid-auto-rows: calc((100vw - var(--pad) * 2) / 11);
-      column-gap: 9px;
+      grid-template-columns: repeat(11, 1fr);
+      column-gap: 11px;
       row-gap: 22px;
     }
     .gallery-grid-item {
@@ -3716,6 +3715,7 @@
       position: relative;
       overflow: hidden;
       background: #fff;
+      aspect-ratio: 4 / 3;
     }
     .gallery-grid-item img {
       width: 100%;
@@ -4539,7 +4539,7 @@
     }
     .gallery-grid {
       grid-template-columns: repeat(3, 1fr) !important;
-      column-gap: 9px !important;
+      column-gap: 11px !important;
       row-gap: 18px !important;
     }
     .gallery-text-section {
