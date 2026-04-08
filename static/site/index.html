@@ -9797,37 +9797,28 @@ loadFromCMS();
     if (!imgEl.naturalWidth || !imgEl.naturalHeight) return;
     const container = imgEl.parentElement;
     if (!container) return;
-    const cW = container.clientWidth;
-    const cH = container.clientHeight;
+    // Usa getBoundingClientRect per ottenere la posizione reale dell'immagine
+    // (considera padding, flex-centering, ecc.)
+    const imgRect = imgEl.getBoundingClientRect();
+    const contRect = container.getBoundingClientRect();
+    // Calcola le dimensioni reali dell'immagine renderizzata (object-fit: contain)
     const nW = imgEl.naturalWidth;
     const nH = imgEl.naturalHeight;
-    const scale = Math.min(cW / nW, cH / nH);
+    const dispW = imgRect.width;
+    const dispH = imgRect.height;
+    const scale = Math.min(dispW / nW, dispH / nH);
     const rendW = Math.round(nW * scale);
     const rendH = Math.round(nH * scale);
-    // Calcola offset in base a object-position
-    const style = window.getComputedStyle(imgEl);
-    const pos = (style.objectPosition || '').toLowerCase();
-    let offX = 0, offY = 0;
-    // X offset
-    if (pos.includes('center') && !pos.startsWith('left') && !pos.startsWith('right')) {
-      offX = Math.round((cW - rendW) / 2);
-    } else if (pos.startsWith('right') || pos.endsWith('right')) {
-      offX = cW - rendW;
-    }
-    // Y offset
-    if (pos.includes('center') && !pos.includes('top') && !pos.includes('bottom')) {
-      offY = Math.round((cH - rendH) / 2);
-    } else if (pos.includes('bottom')) {
-      offY = cH - rendH;
-    }
-    // Posiziona il bottone 15px fuori dall'angolo basso-destra dell'immagine reale
-    // left = bordo destro della foto + 15px (fuori a destra)
-    // top  = bordo inferiore della foto + 15px (fuori in basso)
-    const outside = 15;
-    const imgRight  = offX + rendW;          // distanza dal bordo sinistro del container al bordo destro della foto
-    const imgBottom = offY + rendH;          // distanza dal bordo superiore del container al bordo inferiore della foto
-    btn.style.left   = (imgRight  + outside - 12) + 'px';  // -12 per centrare il bottone 24px sull'angolo
-    btn.style.top    = (imgBottom + outside - 12) + 'px';  // -12 per centrare il bottone 24px sull'angolo
+    // Centro dell'immagine nel container
+    const imgCenterX = imgRect.left - contRect.left + dispW / 2;
+    const imgCenterY = imgRect.top  - contRect.top  + dispH / 2;
+    // Angolo basso-destra dell'immagine reale (con object-fit:contain centrata)
+    const imgRight  = imgCenterX + rendW / 2;  // dal bordo sinistro del container
+    const imgBottom = imgCenterY + rendH / 2;  // dal bordo superiore del container
+    // Posiziona il bottone sull'angolo basso-destra, metà dentro e metà fuori (12px = metà bottone 24px)
+    const outside = 3;  // pixel fuori dal bordo della foto
+    btn.style.left   = (imgRight  - 12 + outside) + 'px';
+    btn.style.top    = (imgBottom - 12 + outside) + 'px';
     btn.style.right  = 'auto';
     btn.style.bottom = 'auto';
   }
