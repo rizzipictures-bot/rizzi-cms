@@ -967,9 +967,14 @@ def update_image_keywords(pid, iid):
     img = next((i for i in p.get('images', []) if i['id'] == iid), None)
     if not img: return jsonify({'error': 'not found'}), 404
     manual_kws = request.json.get('keywords', '')
-    # Le keywords manuali vengono aggiunte in append (non sovrascrivono)
-    img['keywords'] = merge_keywords_str(img.get('keywords', ''), 
-                                          [k.strip() for k in manual_kws.split(',') if k.strip()])
+    replace    = request.json.get('replace', False)
+    if replace:
+        # Sovrascrittura completa (editing manuale)
+        img['keywords'] = manual_kws.strip()
+    else:
+        # Append (non sovrascrive IPTC/AI)
+        img['keywords'] = merge_keywords_str(img.get('keywords', ''),
+                                              [k.strip() for k in manual_kws.split(',') if k.strip()])
     save_db(db)
     return jsonify({'ok': True, 'keywords': img['keywords']})
 

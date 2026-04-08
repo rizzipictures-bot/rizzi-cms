@@ -353,6 +353,55 @@
     outline: 2px solid var(--accent);
     outline-offset: -2px;
   }
+  /* ── PANNELLO KEYWORD PER-FOTO ── */
+  .img-kw-panel {
+    display: none;
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(10,10,10,0.97);
+    padding: 8px 8px;
+    z-index: 20;
+    flex-direction: column;
+    gap: 6px;
+    justify-content: center;
+  }
+  .img-kw-panel.open { display: flex; }
+  .img-kw-panel textarea {
+    width: 100%;
+    background: rgba(255,255,255,0.07);
+    border: 1px solid rgba(255,255,255,0.15);
+    color: #eee;
+    font-family: var(--font);
+    font-size: 8px;
+    padding: 4px 5px;
+    border-radius: 2px;
+    resize: none;
+    flex: 1;
+    min-height: 40px;
+    line-height: 1.5;
+    box-sizing: border-box;
+  }
+  .img-kw-panel textarea:focus { outline: none; border-color: rgba(255,255,255,0.35); }
+  .img-kw-panel-row {
+    display: flex; gap: 4px; align-items: center;
+  }
+  .img-kw-panel-label {
+    font-size: 7px; color: rgba(255,255,255,0.5); flex: 1;
+    letter-spacing: 0.3px;
+  }
+  .img-kw-panel-save {
+    background: rgba(255,255,255,0.12);
+    border: 1px solid rgba(255,255,255,0.25);
+    color: #fff; font-size: 7px; letter-spacing: 0.3px;
+    cursor: pointer; padding: 2px 7px; border-radius: 2px;
+  }
+  .img-kw-panel-save:hover { background: rgba(255,255,255,0.25); }
+  .img-kw-panel-close {
+    background: none; border: none;
+    color: rgba(255,255,255,0.4); font-size: 10px;
+    cursor: pointer; padding: 0 2px; line-height: 1;
+  }
+  .img-kw-panel-close:hover { color: #fff; }
   .image-cell .drag-handle {
     position: absolute; top: 4px; right: 4px;
     width: 16px; height: 16px;
@@ -1771,9 +1820,20 @@ function renderImageGrid() {
         ${img.in_overview ? '★ OV' : '☆ OV'}
       </button>
       ${isMaster ? '<div style="position:absolute;bottom:22px;left:4px;background:#9b6fd4;color:#fff;font-size:7px;padding:2px 5px;border-radius:2px;pointer-events:none">MASTER</div>' : ''}
+      <div class="img-kw-panel" id="kw-panel-${img.id}">
+        <div class="img-kw-panel-row">
+          <span class="img-kw-panel-label">KEYWORDS</span>
+          <button class="img-kw-panel-close" onclick="closeImgKwPanel('${img.id}')" title="Chiudi">×</button>
+        </div>
+        <textarea id="kw-ta-${img.id}" placeholder="keyword1, keyword2, ...">${(img.keywords || '').replace(/</g,'&lt;')}</textarea>
+        <div class="img-kw-panel-row">
+          <span class="img-kw-panel-label" id="kw-status-${img.id}"></span>
+          <button class="img-kw-panel-save" onclick="saveImgKeywords('${img.id}')">SALVA</button>
+        </div>
+      </div>
       <div class="img-overlay">
         <div class="img-actions">
-          <button class="img-action-btn" onclick="showImgKeywords('${img.id}')" title="Vedi keyword">KW</button>
+          <button class="img-action-btn" onclick="showImgKeywords('${img.id}')" title="Modifica keyword">KW</button>
           <button class="img-action-btn" onclick="rescanIptcSingle('${img.id}')" title="Rescan IPTC">↻</button>
           <button class="img-action-btn" onclick="tagSingleImageAi('${img.id}')" title="Tag AI">✾</button>
           <button class="img-action-btn" onclick="showCaptionAi('${img.id}')" title="Genera didascalia AI" style="color:#9b6fd4">✾C</button>
@@ -1895,18 +1955,69 @@ async function deleteSelectedImages() {
   toast(`${n} foto eliminate`);
 }
 
-// Mostra le keyword di una singola foto in un alert leggibile
+// Apre il pannello keyword inline per una singola foto
 function showImgKeywords(iid) {
   const img = (currentProject.images || []).find(i => i.id === iid);
   if (!img) return;
-  const kw = img.keywords || '';
-  const iptc = img.iptc_keywords || '';
-  const ai   = img.ai_keywords   || '';
-  let msg = `KEYWORDS FOTO\n`;
-  msg += `\nTutte (usate dal sito):\n${kw || '(nessuna)'}\n`;
-  if (iptc) msg += `\nIPTC originali:\n${iptc}`;
-  if (ai)   msg += `\nAI generate:\n${ai}`;
-  alert(msg);
+  // Chiudi tutti gli altri pannelli aperti
+  document.querySelectorAll('.img-kw-panel.open').forEach(p => p.classList.remove('open'));
+  const panel = document.getElementById('kw-panel-' + iid);
+  if (!panel) return;
+  // Aggiorna il textarea con le keyword attuali
+  const ta = document.getElementById('kw-ta-' + iid);
+  if (ta) ta.value = img.keywords || '';
+  const status = document.getElementById('kw-status-' + iid);
+  if (status) status.textContent = '';
+  panel.classList.add('open');
+  if (ta) ta.focus();
+}
+
+// Chiude il pannello keyword inline
+function closeImgKwPanel(iid) {
+  const panel = document.getElementById('kw-panel-' + iid);
+  if (panel) panel.classList.remove('open');
+}
+
+// Salva le keyword modificate per una singola foto
+async function saveImgKeywords(iid) {
+  const img = (currentProject.images || []).find(i => i.id === iid);
+  if (!img) return;
+  const ta = document.getElementById('kw-ta-' + iid);
+  const status = document.getElementById('kw-status-' + iid);
+  if (!ta) return;
+  const newKw = ta.value.trim();
+  const pid = currentProject.id;
+  if (status) status.textContent = '...';
+  try {
+    const res = await fetch(`${API}/projects/${pid}/images/${iid}/keywords`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ keywords: newKw, replace: true })
+    });
+    const data = await res.json();
+    if (data.ok) {
+      img.keywords = newKw;
+      if (status) status.textContent = '\u2713 salvato';
+      // Aggiorna il badge nella card
+      const cell = document.querySelector(`.image-cell[data-img-id="${iid}"]`);
+      if (cell) {
+        const badge = cell.querySelector('.img-kw-badge');
+        const count = cell.querySelector('.img-kw-count');
+        const info = getKwBadgeInfo(img);
+        if (badge) { badge.className = 'img-kw-badge ' + info.cls; badge.textContent = info.label; }
+        if (count && info.count > 0) { count.textContent = info.count + ' kw'; count.style.display = ''; }
+        else if (count) { count.style.display = 'none'; }
+      }
+      setTimeout(() => {
+        if (status) status.textContent = '';
+        closeImgKwPanel(iid);
+      }, 1200);
+    } else {
+      if (status) status.textContent = 'errore';
+    }
+  } catch(e) {
+    if (status) status.textContent = 'errore';
+  }
 }
 
 // Rescan IPTC per una singola foto
