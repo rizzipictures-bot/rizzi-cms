@@ -1869,17 +1869,17 @@
     }
     /* Tema bianco */
     .archive-expanded.box-white .archive-kw-label {
-      color: rgba(0,0,0,0.7);
+      color: rgba(0,0,0,0.9);  /* era 0.7 — più visibile su sfondo bianco */
     }
     .archive-expanded.box-white .archive-kw-tag {
-      color: rgba(0,0,0,0.5);
-      border-bottom: none;  /* nessuna linea sotto le keywords in light mode */
+      color: rgba(0,0,0,0.82);  /* era 0.5 — era troppo chiaro su sfondo bianco */
+      border-bottom: 1px solid rgba(0,0,0,0.06);
     }
     .archive-expanded.box-white .archive-kw-tag:hover {
-      color: rgba(0,0,0,0.9);
+      color: rgba(0,0,0,1);
     }
     .archive-expanded.box-white .archive-kw-tag-idx {
-      color: rgba(0,0,0,0.55);  /* più visibile in light mode */
+      color: rgba(0,0,0,0.55);
     }
     /* Separatore verticale: nascosto in light mode (non si vede accanto alle thumbs) */
     .archive-expanded.box-white .archive-expanded-sep {
