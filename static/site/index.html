@@ -6028,19 +6028,30 @@ if (_cipImages) {
     // forza reflow per riavviare l'animazione anche se la classe era già presente
     void _cipPhotoViewerImg.offsetWidth;
     _tmpImg2.onload = () => {
-      const isVertical = _tmpImg2.naturalHeight > _tmpImg2.naturalWidth;
+      const nw2 = _tmpImg2.naturalWidth;
+      const nh2 = _tmpImg2.naturalHeight;
+      const ar2 = nw2 / nh2;
+      const isVertical = nh2 > nw2;
+
+      // Calcola altezza box in base all'AR reale
+      const headerH2 = (_cipPhotoViewer.querySelector('#cip-photo-viewer-header') || {}).offsetHeight || 80;
+      const metaH2   = (_cipPhotoViewer.querySelector('#cip-photo-viewer-meta')   || {}).offsetHeight || 80;
+      const extraH2  = headerH2 + metaH2 + 8;
+      const bW2      = _cipPhotoViewer.offsetWidth || 400;
+      const imgH2    = Math.round(bW2 / ar2);
+      const totalH2  = imgH2 + extraH2;
+      const maxH2    = window.innerHeight - (_cipPhotoViewer.getBoundingClientRect().top || 36);
+      const finalH2  = Math.min(totalH2, maxH2);
+      _cipPhotoViewer.style.bottom = 'auto';
+      _cipPhotoViewer.style.height = finalH2 + 'px';
+
       if (isVertical) {
-        const boxTop    = _cipPhotoViewer.getBoundingClientRect().top;
-        const headerH   = (_cipPhotoViewer.querySelector('#cip-photo-viewer-header')  || {}).offsetHeight || 80;
-        const titleH    = (_cipPhotoViewer.querySelector('#cip-photo-viewer-title')   || {}).offsetHeight || 40;
-        const metaH     = (_cipPhotoViewer.querySelector('#cip-photo-viewer-meta')    || {}).offsetHeight || 120;
-        const available = Math.round(window.innerHeight - boxTop - headerH - titleH - metaH - 8);
-        _cipPhotoViewer.style.setProperty('--img-max-h', available + 'px');
         _cipPhotoViewerImg.classList.add('is-vertical');
         _cipPhotoViewerImg.classList.add('anim-slide');
       } else {
         _cipPhotoViewerImg.classList.add('anim-drop');
       }
+      requestAnimationFrame(() => _updateCitiesLines());
     };
     // Memorizza array e indice corrente per navigazione dx/sx
     const allImgs = Array.from(_cipImages.querySelectorAll('.cip-img'));
@@ -6072,6 +6083,13 @@ function _updateCitiesLines() {
   const _bx1   = document.getElementById('cities-info-panel');
   const _bx2   = document.getElementById('cip-photo-viewer');
   if (!lineH || !lineV) return;
+
+  // In vista thumbs le linee non devono mai apparire
+  if (document.body.classList.contains('cities-thumbs-active')) {
+    lineH.style.display = 'none';
+    lineV.style.display = 'none';
+    return;
+  }
 
   // Calcola la X del bordo sinistro del Box 1
   const bx1Rect = _bx1 ? _bx1.getBoundingClientRect() : null;
@@ -6124,14 +6142,23 @@ function _cipShowIndex(idx) {
 
   const t = new Image();
   t.onload = () => {
-    const isV = t.naturalHeight > t.naturalWidth;
+    const nwT = t.naturalWidth;
+    const nhT = t.naturalHeight;
+    const arT = nwT / nhT;
+    const isV = nhT > nwT;
+
+    // Ricalcola altezza box in base all'AR reale della nuova foto
+    const headerHT = (_cipPhotoViewer.querySelector('#cip-photo-viewer-header') || {}).offsetHeight || 80;
+    const metaHT   = (_cipPhotoViewer.querySelector('#cip-photo-viewer-meta')   || {}).offsetHeight || 80;
+    const extraHT  = headerHT + metaHT + 8;
+    const bWT      = _cipPhotoViewer.offsetWidth || 400;
+    const imgHT    = Math.round(bWT / arT);
+    const totalHT  = imgHT + extraHT;
+    const maxHT    = window.innerHeight - (_cipPhotoViewer.getBoundingClientRect().top || 36);
+    _cipPhotoViewer.style.bottom = 'auto';
+    _cipPhotoViewer.style.height = Math.min(totalHT, maxHT) + 'px';
+
     if (isV) {
-      const boxTop = _cipPhotoViewer.getBoundingClientRect().top;
-      const headerH = (_cipPhotoViewer.querySelector('#cip-photo-viewer-header') || {}).offsetHeight || 80;
-      const titleH  = (_cipPhotoViewer.querySelector('#cip-photo-viewer-title')  || {}).offsetHeight || 40;
-      const metaH   = (_cipPhotoViewer.querySelector('#cip-photo-viewer-meta')   || {}).offsetHeight || 120;
-      const available = Math.round(window.innerHeight - boxTop - headerH - titleH - metaH - 8);
-      _cipPhotoViewer.style.setProperty('--img-max-h', available + 'px');
       _cipPhotoViewerImg.classList.add('is-vertical', 'anim-slide');
     } else {
       _cipPhotoViewerImg.classList.add('anim-drop');
@@ -6876,18 +6903,31 @@ function buildCitiesIndex() {
 
         const _tmpImg = new Image();
         _tmpImg.onload = () => {
-          const isV = _tmpImg.naturalHeight > _tmpImg.naturalWidth;
+          const nw = _tmpImg.naturalWidth;
+          const nh = _tmpImg.naturalHeight;
+          const ar = nw / nh;
+          const isV = nh > nw;
+
+          // Calcola altezza del box in base all'AR reale della foto
+          const headerH = (_cipPhotoViewer.querySelector('#cip-photo-viewer-header') || {}).offsetHeight || 80;
+          const metaH   = (_cipPhotoViewer.querySelector('#cip-photo-viewer-meta')   || {}).offsetHeight || 80;
+          const extraH  = headerH + metaH + 8; // spazio per header + meta
+          const boxW    = _cipPhotoViewer.offsetWidth || boxW;
+          const imgH    = Math.round(boxW / ar); // altezza foto proporzionale alla larghezza del box
+          const totalH  = imgH + extraH;
+          const maxH    = window.innerHeight - (_cipPhotoViewer.getBoundingClientRect().top || 36);
+          const finalH  = Math.min(totalH, maxH);
+
+          // Imposta altezza esplicita invece di bottom:0
+          _cipPhotoViewer.style.bottom = 'auto';
+          _cipPhotoViewer.style.height = finalH + 'px';
+
           if (isV) {
-            const boxTop  = _cipPhotoViewer.getBoundingClientRect().top;
-            const headerH = (_cipPhotoViewer.querySelector('#cip-photo-viewer-header') || {}).offsetHeight || 80;
-            const titleH  = (_cipPhotoViewer.querySelector('#cip-photo-viewer-title')  || {}).offsetHeight || 40;
-            const metaH   = (_cipPhotoViewer.querySelector('#cip-photo-viewer-meta')   || {}).offsetHeight || 120;
-            const available = Math.round(window.innerHeight - boxTop - headerH - titleH - metaH - 8);
-            _cipPhotoViewer.style.setProperty('--img-max-h', available + 'px');
             _cipPhotoViewerImg.classList.add('is-vertical', 'anim-slide');
           } else {
             _cipPhotoViewerImg.classList.add('anim-drop');
           }
+          requestAnimationFrame(() => _updateCitiesLines());
         };
         _tmpImg.src = firstImg.src;
         _cipPhotoViewerImg.src = firstImg.src;
