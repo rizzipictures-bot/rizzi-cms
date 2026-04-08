@@ -558,34 +558,72 @@
   .image-cell.selected .sel-check { opacity: 1; }
   .image-cell.selected .sel-check { background: #9b6fd4; border-color: #9b6fd4; }
 
-  /* Pannello elaborazione immagini */
+  /* Pannello elaborazione immagini — FINESTRA FLOTTANTE */
   .img-proc-panel {
-    background: var(--surface);
+    position: fixed;
+    top: 72px;
+    right: 360px;
+    width: 420px;
+    max-height: calc(100vh - 100px);
+    overflow-y: auto;
+    background: rgba(255,255,255,0.96);
     border: 1px solid var(--border);
     border-radius: var(--radius);
-    padding: 20px;
-    margin-bottom: 16px;
+    padding: 0;
     display: none;
-    box-shadow: var(--shadow-sm);
+    box-shadow: var(--shadow), 0 0 0 1px rgba(0,0,0,0.04);
+    z-index: 500;
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    resize: horizontal;
+    min-width: 320px;
+    max-width: 600px;
+  }
+  [data-theme="dark"] .img-proc-panel {
+    background: rgba(44,44,46,0.97);
   }
   .img-proc-panel.open { display: block; }
+  .img-proc-panel-inner {
+    padding: 16px 20px 20px;
+  }
   .img-proc-panel .proc-title {
     font-size: 12px;
     font-weight: 600;
     color: var(--black);
-    margin-bottom: 16px;
-    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 0;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--border);
+    cursor: grab;
+    user-select: none;
+    background: var(--surface2);
+    border-radius: var(--radius) var(--radius) 0 0;
+  }
+  .img-proc-panel .proc-title:active { cursor: grabbing; }
+  .img-proc-panel .proc-title-left {
+    display: flex; align-items: center; gap: 8px;
+  }
+  .img-proc-panel .proc-drag-hint {
+    font-size: 10px;
+    color: var(--gray2);
+    font-weight: 400;
+  }
+  .img-proc-panel .proc-title-btns {
+    display: flex; gap: 6px; align-items: center;
   }
   .img-proc-panel .proc-title button {
     background: var(--light);
     border: 1px solid var(--border);
     border-radius: var(--radius-xs);
-    font-size: 14px;
+    font-size: 13px;
     color: var(--gray);
     cursor: pointer;
     padding: 2px 8px;
-    line-height: 1.2;
+    line-height: 1.3;
     transition: background .12s;
+    font-family: var(--font);
   }
   .img-proc-panel .proc-title button:hover { background: var(--border2); }
   .proc-sliders { display: grid; grid-template-columns: 1fr 1fr; gap: 14px 24px; margin-bottom: 16px; }
@@ -1288,12 +1326,18 @@
           <span id="iptc-status" class="iptc-status-bar" style="flex:1"></span>
         </div>
 
-        <!-- Pannello elaborazione immagini -->
+        <!-- Pannello elaborazione immagini (finestra flottante) -->
         <div class="img-proc-panel" id="img-proc-panel">
-          <div class="proc-title">
-            <span>⚙ Elaborazione immagini</span>
-            <button onclick="toggleProcPanel()">×</button>
+          <div class="proc-title" id="proc-panel-titlebar">
+            <div class="proc-title-left">
+              <span>⚙ Elaborazione</span>
+              <span class="proc-drag-hint">— trascina per spostare</span>
+            </div>
+            <div class="proc-title-btns">
+              <button onclick="toggleProcPanel()" title="Chiudi">×</button>
+            </div>
           </div>
+          <div class="img-proc-panel-inner">
 
           <!-- Master per color matching -->
           <div class="proc-master-row" id="proc-master-row">
@@ -1356,6 +1400,7 @@
             <button class="proc-apply-btn secondary" onclick="openProcZoom()">⚬ Zoom preview</button>
             <button class="proc-apply-btn secondary" onclick="resetAllCorrections()">Reset tutto</button>
           </div>
+          </div><!-- /img-proc-panel-inner -->
         </div>
 
         <div class="image-grid" id="image-grid"></div>
@@ -1913,9 +1958,70 @@ function updateProcSelInfo() {
 
 function toggleProcPanel() {
   const panel = document.getElementById('img-proc-panel');
+  const wasOpen = panel.classList.contains('open');
   panel.classList.toggle('open');
-  // Reset scroll flag quando si apre il pannello
-  if (panel.classList.contains('open')) _livePreviewScrolled = false;
+  if (!wasOpen) {
+    // Posizionamento iniziale intelligente: vicino al pulsante ⚙ Elabora
+    if (!panel._dragged) {
+      const btnRect = document.getElementById('btn-proc')?.getBoundingClientRect();
+      if (btnRect) {
+        const panelW = 420;
+        let left = btnRect.left;
+        let top  = btnRect.bottom + 8;
+        // Evita che esca a destra
+        if (left + panelW > window.innerWidth - 20) left = window.innerWidth - panelW - 20;
+        if (left < 10) left = 10;
+        panel.style.left = left + 'px';
+        panel.style.top  = top  + 'px';
+        panel.style.right = 'auto';
+      }
+    }
+    _livePreviewScrolled = false;
+    // Inizializza drag se non già fatto
+    if (!panel._dragInit) initProcPanelDrag(panel);
+  }
+}
+
+function initProcPanelDrag(panel) {
+  panel._dragInit = true;
+  const titlebar = document.getElementById('proc-panel-titlebar');
+  if (!titlebar) return;
+  let startX, startY, startLeft, startTop;
+
+  titlebar.addEventListener('mousedown', e => {
+    // Non avviare drag se si clicca un bottone
+    if (e.target.tagName === 'BUTTON') return;
+    e.preventDefault();
+    const rect = panel.getBoundingClientRect();
+    startX    = e.clientX;
+    startY    = e.clientY;
+    startLeft = rect.left;
+    startTop  = rect.top;
+    panel.style.left  = startLeft + 'px';
+    panel.style.top   = startTop  + 'px';
+    panel.style.right = 'auto';
+    titlebar.style.cursor = 'grabbing';
+
+    function onMove(e) {
+      const dx = e.clientX - startX;
+      const dy = e.clientY - startY;
+      let newLeft = startLeft + dx;
+      let newTop  = startTop  + dy;
+      // Clamp dentro la viewport
+      newLeft = Math.max(0, Math.min(newLeft, window.innerWidth  - panel.offsetWidth));
+      newTop  = Math.max(0, Math.min(newTop,  window.innerHeight - 60));
+      panel.style.left = newLeft + 'px';
+      panel.style.top  = newTop  + 'px';
+      panel._dragged = true;
+    }
+    function onUp() {
+      titlebar.style.cursor = 'grab';
+      document.removeEventListener('mousemove', onMove);
+      document.removeEventListener('mouseup',   onUp);
+    }
+    document.addEventListener('mousemove', onMove);
+    document.addEventListener('mouseup',   onUp);
+  });
 }
 
 // ── LIVE PREVIEW CSS ──
