@@ -9821,11 +9821,15 @@ loadFromCMS();
       offY = cH - rendH;
     }
     // Posiziona il bottone 15px fuori dall'angolo basso-destra dell'immagine reale
+    // left = bordo destro della foto + 15px (fuori a destra)
+    // top  = bordo inferiore della foto + 15px (fuori in basso)
     const outside = 15;
-    btn.style.right  = (cW - offX - rendW - outside) + 'px';
-    btn.style.bottom = (offY - outside) + 'px';
-    btn.style.left   = 'auto';
-    btn.style.top    = 'auto';
+    const imgRight  = offX + rendW;          // distanza dal bordo sinistro del container al bordo destro della foto
+    const imgBottom = offY + rendH;          // distanza dal bordo superiore del container al bordo inferiore della foto
+    btn.style.left   = (imgRight  + outside - 12) + 'px';  // -12 per centrare il bottone 24px sull'angolo
+    btn.style.top    = (imgBottom + outside - 12) + 'px';  // -12 per centrare il bottone 24px sull'angolo
+    btn.style.right  = 'auto';
+    btn.style.bottom = 'auto';
   }
 
   window._addAeZoomBtn = function(heroEl, getImgSrc) {
