@@ -1394,7 +1394,7 @@
     .archive-expanded.box-white .archive-expanded-thumb:hover::after {
       background: rgba(0,0,0,0.18);
     }
-    .archive-expanded.box-white .archive-expanded-thumb.active { outline: 1px solid rgba(0,0,0,0.4); }
+    .archive-expanded.box-white .archive-expanded-thumb.active { outline: none; }
     .archive-expanded-thumb img {
       width: 100%; height: 100%;
       object-fit: cover;
@@ -1486,6 +1486,26 @@
       padding-top: 8px;
       padding-bottom: 8px;
     }
+    /* Wrapper che si adatta alle dimensioni reali della foto — il pulsante zoom usa right/bottom CSS */
+    .ae-thumbs-img-wrap {
+      position: relative;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      max-width: 100%;
+      max-height: 100%;
+      line-height: 0;
+    }
+    .ae-thumbs-img-wrap .ae-zoom-btn {
+      position: absolute;
+      bottom: 10px;
+      right: 10px;
+      left: auto !important;
+      top: auto !important;
+    }
+    .ae-thumbs-img-wrap:hover .ae-zoom-btn {
+      opacity: 1;
+    }
     .ae-thumbs-hero img {
       max-width: 100%;
       max-height: 100%;
@@ -1576,7 +1596,7 @@
     .ae-thumbs-strip-item.active { opacity: 1; outline: 1px solid rgba(255,255,255,0.6); }
     .archive-expanded.box-white .ae-thumbs-strip-item { opacity: 0.72; }  /* era 0.6 */
     .archive-expanded.box-white .ae-thumbs-strip-item:hover { opacity: 0.95; }  /* era 0.9 */
-    .archive-expanded.box-white .ae-thumbs-strip-item.active { opacity: 1; outline: 1px solid rgba(0,0,0,0.4); }
+    .archive-expanded.box-white .ae-thumbs-strip-item.active { opacity: 1; outline: none; }
     .ae-thumbs-strip-item img {
       width: 100%; height: 100%;
       object-fit: cover;
@@ -1690,7 +1710,7 @@
     /* (toggle SVG ora gestito via JS con .ae-toggle-dark/.ae-toggle-light) */
     /* (viewall light-mode già gestito sopra) */
     .archive-expanded.box-white .archive-expanded-thumb.active {
-      outline: 1px solid #000;
+      outline: none;
     }
 
     /* View All overlay: tema nero */
@@ -7495,14 +7515,19 @@ function buildArchive() {
             // Foto grande
             const aeHero = document.createElement('div');
             aeHero.className = 'ae-thumbs-hero';
+            // Wrapper inline-block che si adatta alle dimensioni reali della foto
+            // così il pulsante zoom con right:10px;bottom:10px è relativo alla foto
+            const aeImgWrap = document.createElement('div');
+            aeImgWrap.className = 'ae-thumbs-img-wrap';
             const aeImg = document.createElement('img');
             aeImg.src = images[0] ? images[0].url : '';
             aeImg.alt = p.title || '';
-            aeHero.appendChild(aeImg);
+            aeImgWrap.appendChild(aeImg);
             // Icona zoom angolo basso-destra della foto grande (modalità 2)
             if (window._addAeZoomBtn) {
-              window._addAeZoomBtn(aeHero, () => images[_aeThumbsIdx] ? images[_aeThumbsIdx].url : aeImg.src);
+              window._addAeZoomBtn(aeImgWrap, () => images[_aeThumbsIdx] ? images[_aeThumbsIdx].url : aeImg.src);
             }
+            aeHero.appendChild(aeImgWrap);
 
             function _aeShowIdx(idx) {
               _aeThumbsIdx = (idx + images.length) % images.length;
@@ -7676,9 +7701,13 @@ function buildArchive() {
             // Funzione posiziona il pannello accanto alla foto (fixed)
             function _aePositionKwPanel() {
               if (aeKwPanel.style.display === 'none') return;
+              // Se l'immagine non è ancora caricata, aspetta il load
+              if (!aeImg.naturalWidth || !aeImg.naturalHeight) return;
               const imgRect = aeImg.getBoundingClientRect();
-              const nW = aeImg.naturalWidth || 1;
-              const nH = aeImg.naturalHeight || 1;
+              // Se il container non ha ancora dimensioni, esci
+              if (!imgRect.width || !imgRect.height) return;
+              const nW = aeImg.naturalWidth;
+              const nH = aeImg.naturalHeight;
               const dispW = imgRect.width;
               const dispH = imgRect.height;
               const scale = Math.min(dispW / nW, dispH / nH);
@@ -7706,7 +7735,10 @@ function buildArchive() {
             // Posiziona al resize, scroll e caricamento immagine
             window.addEventListener('resize', _aePositionKwPanel);
             window.addEventListener('scroll', _aePositionKwPanel, true);
-            aeImg.addEventListener('load', () => requestAnimationFrame(_aePositionKwPanel));
+            // Al load dell'immagine: riposiziona con doppio rAF per garantire il layout
+            aeImg.addEventListener('load', () => {
+              requestAnimationFrame(() => requestAnimationFrame(_aePositionKwPanel));
+            });
 
             // Appendi al body (fixed positioning) — inizialmente nascosto
             aeKwPanel.style.display = 'none';
@@ -7733,10 +7765,14 @@ function buildArchive() {
               _aeThumbsView._kwPanel.classList.toggle('dark', !_isLight);
               // Mostra PRIMA il pannello, poi posiziona (evita il return precoce per display:none)
               _aeThumbsView._kwPanel.style.display = 'flex';
-              // Attendi che il browser abbia fatto il layout prima di calcolare la posizione
+              // Primo tentativo: dopo 60ms (layout completato)
               setTimeout(() => {
                 if (_aeThumbsView._positionKwPanel) _aeThumbsView._positionKwPanel();
               }, 60);
+              // Fallback: dopo 350ms (immagine caricata)
+              setTimeout(() => {
+                if (_aeThumbsView._positionKwPanel) _aeThumbsView._positionKwPanel();
+              }, 350);
             }
             // Mostra la prima foto con animazione
             const aeImg2 = _aeThumbsView.querySelector('.ae-thumbs-hero img');
