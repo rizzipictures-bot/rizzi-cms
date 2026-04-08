@@ -10032,19 +10032,12 @@ loadFromCMS();
     // Modalità 1 (archive-expanded-hero): pulsante fuori a destra (comportamento originale)
     const isThumbsMode = container.classList.contains('ae-thumbs-hero');
     if (isThumbsMode) {
-      // Il pulsante è position:absolute dentro il container.
-      // Calcola la posizione dell'angolo basso-destra della foto REALE
-      // rispetto al container (origine del position:absolute).
-      // imgRect è in coordinate viewport; contRect è in coordinate viewport.
-      // Centro foto in coordinate viewport:
-      const photoCenterX_vp = imgRect.left + dispW / 2;
-      const photoCenterY_vp = imgRect.top  + dispH / 2;
-      // Angolo basso-destra foto in coordinate viewport:
-      const photoRight_vp  = photoCenterX_vp + rendW / 2;
-      const photoBottom_vp = photoCenterY_vp + rendH / 2;
-      // Converti in coordinate relative al container (per position:absolute):
-      const photoRight_rel  = photoRight_vp  - contRect.left;
-      const photoBottom_rel = photoBottom_vp - contRect.top;
+      // Con width:auto; height:auto sull'<img>, getBoundingClientRect() restituisce
+      // già le dimensioni reali della foto (non del container).
+      // imgRect.right e imgRect.bottom sono l'angolo basso-destra della foto nel viewport.
+      // Convertiamo in coordinate relative al container (position:absolute).
+      const photoRight_rel  = imgRect.right  - contRect.left;
+      const photoBottom_rel = imgRect.bottom - contRect.top;
       // Posiziona 10px dentro il bordo dx e basso della foto reale
       btn.style.left   = (photoRight_rel  - 10 - 19) + 'px';
       btn.style.top    = (photoBottom_rel - 10 - 19) + 'px';
