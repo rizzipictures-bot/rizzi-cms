@@ -1337,6 +1337,7 @@
       overflow: hidden;
       height: 500px;
       box-sizing: border-box;
+      align-items: stretch;          /* le colonne figlie si estendono fino a 500px */
     }
 
     /* Zona thumbs: due colonne verticali scorrevoli */
@@ -1347,8 +1348,9 @@
       flex-shrink: 0;
       padding: 18px 0 18px 28px;
       box-sizing: border-box;
-      overflow: hidden;
+      overflow: hidden;              /* clip laterale, lo scroll è sulla griglia interna */
       position: relative;
+      height: 100%;                  /* si estende fino all'altezza del parent (500px) */
     }
     /* Caption rimossa: già dentro la categoria, non serve ripetere il nome */
     .archive-expanded-caption { display: none; }
@@ -1356,12 +1358,13 @@
     .archive-expanded-thumbs {
       display: grid;
       grid-template-columns: 1fr 1fr;
-      gap: 4px;
+      gap: 5px;                      /* gap verticale e orizzontale tra thumbs */
       overflow-y: auto;
       overflow-x: hidden;
       flex: 1;
       min-height: 0;
       align-content: start;
+      scrollbar-width: none;         /* Firefox */
     }
     .archive-expanded-thumbs::-webkit-scrollbar { display: none; }
     .archive-expanded-thumb {
