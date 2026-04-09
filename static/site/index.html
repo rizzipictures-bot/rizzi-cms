@@ -1464,7 +1464,7 @@
       display: flex;
       flex-direction: column;
       width: 100%;
-      height: 570px;
+      height: 520px;
       box-sizing: border-box;
       overflow: hidden;
       background: #111;    /* default: scuro come il box */
@@ -1474,17 +1474,17 @@
     }
     /* Foto grande centrata — occupa tutto lo spazio residuo nel box 500px */
     .ae-thumbs-hero {
-      flex: 0 0 auto;              /* non si espande — altezza fissa */
-      height: 450px;               /* altezza fissa 450px */
+      flex: 1 1 auto;              /* occupa tutto lo spazio residuo */
+      min-height: 0;
       display: flex;
       align-items: center;
       justify-content: center;
-      overflow: visible;
+      overflow: hidden;
       position: relative;
       cursor: none;
       background: inherit;
-      padding-top: 42px;
-      padding-bottom: 42px;
+      padding-top: 8px;
+      padding-bottom: 8px;
     }
     /* Wrapper che si adatta alle dimensioni reali della foto — il pulsante zoom usa right/bottom CSS */
     .ae-thumbs-img-wrap {
@@ -1507,7 +1507,7 @@
     }
     .ae-thumbs-hero img {
       max-width: 100%;
-      max-height: 366px;   /* 450px - 42px top - 42px bottom */
+      max-height: 100%;   /* si adatta all'altezza del flex hero */
       width: auto;
       height: auto;
       object-fit: contain;
@@ -7565,6 +7565,9 @@ function buildArchive() {
               e.stopPropagation();
               // Torna alla vista normale
               inner.style.display = '';
+              // Ripristina il pulsante zoom del Mode 1
+              const _m1ZoomBtnBack = hero ? hero.querySelector('.ae-zoom-btn') : null;
+              if (_m1ZoomBtnBack) _m1ZoomBtnBack.style.display = '';
               _aeThumbsView.style.display = 'none';
               // Nasconde il pannello keyword
               if (_aeThumbsView._kwPanel) _aeThumbsView._kwPanel.style.display = 'none';
@@ -7759,6 +7762,9 @@ function buildArchive() {
             _buildAeThumbsView();
             // Nasconde l'inner (hero+keywords+bottombar) e mostra la vista thumbs
             inner.style.display = 'none';
+            // Nasconde esplicitamente il pulsante zoom del Mode 1 (evita il + duplicato)
+            const _m1ZoomBtn = hero ? hero.querySelector('.ae-zoom-btn') : null;
+            if (_m1ZoomBtn) _m1ZoomBtn.style.display = 'none';
             _aeThumbsView.style.display = 'flex';
             // In Mode 2 si parte sempre con sfondo bianco
             panel.classList.add('box-white');
