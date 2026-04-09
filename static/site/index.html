@@ -1474,37 +1474,39 @@
     }
     /* Foto grande centrata — occupa tutto lo spazio residuo nel box 500px */
     .ae-thumbs-hero {
-      flex: 0 0 420px;             /* altezza fissa: 520 - 36 info - 64 strip = 420px */
+      flex: 0 0 412px;             /* altezza fissa: 520 - 36 info - 8 margin-strip - 64 strip = 412px */
       display: flex;
       align-items: center;
       justify-content: center;
-      overflow: hidden;
+      overflow: visible;           /* permette al pulsante + di uscire a destra */
       position: relative;
       cursor: none;
       background: inherit;
-      padding-top: 8px;
+      padding-top: 0;
       padding-bottom: 8px;
     }
-    /* Wrapper che si adatta alle dimensioni reali della foto — il pulsante zoom usa right/bottom CSS */
+    /* Wrapper che si adatta alle dimensioni reali della foto — il pulsante zoom è fuori a destra */
     .ae-thumbs-img-wrap {
       position: relative;
       display: inline-block;
       line-height: 0;
-      max-height: 404px;           /* 420px hero - 8px top - 8px bottom */
+      max-height: 404px;           /* 412px hero - 0px top - 8px bottom */
     }
+    /* Pulsante + fuori dalla foto: base della croce a destra del bordo dx, allineato al bordo inferiore */
     .ae-thumbs-img-wrap .ae-zoom-btn {
       position: absolute;
-      bottom: 10px;
-      right: 10px;
-      left: auto !important;
+      bottom: 0;                   /* allineato al bordo inferiore della foto */
+      left: 100%;                  /* inizia subito a destra del bordo destro */
+      margin-left: 8px;            /* 8px di distanza dal bordo destro */
       top: auto !important;
+      right: auto !important;
     }
     .ae-thumbs-img-wrap:hover .ae-zoom-btn {
       opacity: 1;
     }
     .ae-thumbs-hero img {
       max-width: 100%;
-      max-height: 404px;           /* 420px hero - 8px top - 8px bottom */
+      max-height: 404px;           /* 412px hero - 0px top - 8px bottom */
       width: auto;
       height: auto;
       display: block;
@@ -1575,7 +1577,7 @@
       flex: 0 0 64px;   /* altezza fissa 64px, non cresce */
       padding: 0 8px 0;
       align-items: stretch;
-      margin-top: 0;  /* nessun margine extra: il padding-bottom dell'hero già separa */
+      margin-top: 8px;  /* uguale al padding-bottom dell'hero: spazio simmetrico sopra e sotto la foto */
     }
     .ae-thumbs-strip::-webkit-scrollbar { display: none; }
     .ae-thumbs-strip-item {
@@ -7569,8 +7571,9 @@ function buildArchive() {
               if (_aeThumbsView._kwPanel) _aeThumbsView._kwPanel.style.display = 'none';
               // Ripristina sfondo nero (Mode 1 è sempre scuro)
               panel.classList.remove('box-white');
-              const _tdBtn2 = panel.querySelector('.ae-toggle-dark');
-              const _tlBtn2 = panel.querySelector('.ae-toggle-light');
+              // Usa 'toggle' direttamente (non panel.querySelector che troverebbe il clone Mode 2)
+              const _tdBtn2 = toggle.querySelector('.ae-toggle-dark');
+              const _tlBtn2 = toggle.querySelector('.ae-toggle-light');
               if (_tdBtn2) _tdBtn2.style.display = '';
               if (_tlBtn2) _tlBtn2.style.display = 'none';
             });
@@ -7764,9 +7767,10 @@ function buildArchive() {
             _aeThumbsView.style.display = 'flex';
             // In Mode 2 si parte sempre con sfondo bianco
             panel.classList.add('box-white');
-            // Aggiorna l'icona del toggle TV
-            const _tdBtn = panel.querySelector('.ae-toggle-dark');
-            const _tlBtn = panel.querySelector('.ae-toggle-light');
+            // Aggiorna l'icona del toggle TV originale (Mode 1) — usa la variabile 'toggle' diretta
+            // NON usare panel.querySelector che troverebbe anche il clone nella info row Mode 2
+            const _tdBtn = toggle.querySelector('.ae-toggle-dark');
+            const _tlBtn = toggle.querySelector('.ae-toggle-light');
             if (_tdBtn) _tdBtn.style.display = 'none';
             if (_tlBtn) _tlBtn.style.display = '';
             // Mostra il pannello keyword e lo posiziona
