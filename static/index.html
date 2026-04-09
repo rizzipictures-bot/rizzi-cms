@@ -1515,6 +1515,12 @@
               <button class="proc-preset-btn" data-preset="thomas_struth" onclick="applyPhotographerPreset('thomas_struth', this)">Thomas Struth</button>
               <button class="proc-preset-btn" data-preset="christopher_anderson" onclick="applyPhotographerPreset('christopher_anderson', this)">Christopher Anderson</button>
             </div>
+            <!-- Slider intensità preset -->
+            <div class="proc-slider-row" style="margin-top:8px;">
+              <label>Intensità preset <span id="preset-intensity-val">100%</span></label>
+              <input type="range" id="preset-intensity-slider" min="5" max="100" step="5" value="100"
+                     oninput="document.getElementById('preset-intensity-val').textContent=this.value+'%'">
+            </div>
           </div>
 
           <!-- Sliders -->
@@ -3407,13 +3413,47 @@ function updateLivePreview() {
 }
 
 // Reset completo (sliders + wheels + curve)
-function resetAllCorrections() {
+async function resetAllCorrections() {
+  if (!currentProject) return;
+  const ids = _selectedImgIds.size > 0 ? [..._selectedImgIds] : null;
+  const nFoto = ids ? ids.length : (currentProject.images || []).length;
+  const msg = ids
+    ? `Ripristinare ${nFoto} foto selezionate alla versione originale?`
+    : `Ripristinare TUTTE le ${nFoto} foto del progetto alla versione originale?`;
+  if (!confirm(msg)) return;
+
+  // Reset UI
   resetSliders();
   ['shadows','midtones','highlights'].forEach(n => {
     if (window.resetWheel) window.resetWheel(n);
   });
   if (window.resetAllCurves) window.resetAllCurves();
+  // Deseleziona preset fotografo attivo
+  document.querySelectorAll('.proc-preset-btn').forEach(b => b.classList.remove('active'));
+  // Reset slider intensità preset
+  const intSlider = document.getElementById('preset-intensity-slider');
+  if (intSlider) { intSlider.value = 100; document.getElementById('preset-intensity-val').textContent = '100%'; }
   resetLivePreview();
+
+  // Chiama il backend per ripristinare i file originali
+  try {
+    const body = ids ? { ids } : {};
+    const res  = await fetch(`${API}/projects/${currentProject.id}/images/reset`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body)
+    });
+    const data = await res.json();
+    if (data.ok) {
+      // Ricarica le thumbnail aggiornate
+      await loadProject(currentProject.id);
+      showToast(`${data.restored.length} foto ripristinate all'originale`);
+    } else {
+      showToast('Errore nel ripristino', true);
+    }
+  } catch(e) {
+    showToast('Errore di rete', true);
+  }
 }
 
 // ════════════════════════════════════════════════════════════════
@@ -3479,6 +3519,10 @@ async function applyPhotographerPreset(presetName, btnEl) {
     // Nessuna selezione: chiedi conferma per tutte le foto
     if (!confirm(`Applica il preset "${btnEl.textContent}" a TUTTE le foto del progetto?`)) return;
   }
+  // Legge l'intensità dallo slider (5-100 → 0.05-1.0)
+  const intensityPct = parseInt(document.getElementById('preset-intensity-slider')?.value || 100);
+  const intensity    = intensityPct / 100.0;
+
   // Stato visivo: attiva il bottone
   document.querySelectorAll('.proc-preset-btn').forEach(b => b.classList.remove('active'));
   btnEl.classList.add('active');
@@ -3488,10 +3532,11 @@ async function applyPhotographerPreset(presetName, btnEl) {
     const res = await fetch(`${API}/projects/${currentProject.id}/images/adjust`, {
       method: 'POST',
       headers: {'Content-Type': 'application/json'},
-      body: JSON.stringify({ ids, curve_preset: presetName })
+      body: JSON.stringify({ ids, curve_preset: presetName, preset_intensity: intensity })
     });
     const data = await res.json();
-    toast(`Preset ${btnEl.dataset.preset.replace(/_/g,' ')} applicato a ${data.updated?.length || 0} foto ✔`);
+    const pctLabel = intensityPct < 100 ? ` (${intensityPct}%)` : '';
+    toast(`Preset ${btnEl.dataset.preset.replace(/_/g,' ')}${pctLabel} applicato a ${data.updated?.length || 0} foto ✔`);
     // Ricarica le thumbnail
     document.querySelectorAll('.image-cell img').forEach(img => {
       img.src = img.src.split('?')[0] + '?t=' + Date.now();

@@ -1230,14 +1230,20 @@ PHOTOGRAPHER_PRESETS = {
 }
 
 
-def _apply_photographer_curve(arr, preset_name):
+def _apply_photographer_curve(arr, preset_name, intensity=1.0):
     """
     Applica la curva tonale e il split toning del preset fotografo.
     arr: numpy array float32 shape (H, W, 3) con valori 0-255.
+    intensity: float 0.0-1.0 (0=nessun effetto, 1=preset completo).
+              Implementato come blend lineare tra originale e preset al 100%.
     Restituisce arr modificato (float32, 0-255).
     """
     preset = PHOTOGRAPHER_PRESETS.get(preset_name)
     if not preset:
+        return arr
+
+    intensity = float(np.clip(intensity, 0.0, 1.0))
+    if intensity <= 0.01:
         return arr
 
     # Costruisci LUT per R, G, B
@@ -1270,7 +1276,12 @@ def _apply_photographer_curve(arr, preset_name):
         result[:,:,1] = np.clip(result[:,:,1] + hi_mask[:,:,0] * hg, 0, 255)
         result[:,:,2] = np.clip(result[:,:,2] + hi_mask[:,:,0] * hb, 0, 255)
 
-    return result
+    # Blend con l'originale in base all'intensità
+    # intensity=1.0 → preset puro; intensity=0.5 → 50% preset + 50% originale
+    if intensity < 1.0:
+        result = arr * (1.0 - intensity) + result * intensity
+
+    return np.clip(result, 0, 255)
 
 
 def _medium_format_acutance(arr, strength):
@@ -1278,9 +1289,9 @@ def _medium_format_acutance(arr, strength):
     Simula l'acutanza e la morbidezza tipiche del medio/grande formato
     (pellicola 6x7, 10x12, Hasselblad 907X 100MP).
 
-    Tecnica: Frequency Separation a 3 bande.
-    - Bassa frequenza  (sigma ~5px): struttura globale, toni, colori — invariata
-    - Media frequenza  (sigma ~1.4px): bordi, texture, struttura — POTENZIATA
+    Tecnica: Frequency Separation a 3 bande tramite Pillow GaussianBlur.
+    - Bassa frequenza  (radius ~5px): struttura globale, toni, colori — invariata
+    - Media frequenza  (radius ~1.5px): bordi, texture, struttura — POTENZIATA
       (questo è l'acutanza: sensazione di nitidezza senza halo)
     - Alta frequenza   (residuo): micro-dettagli, rumore — RIDOTTA leggermente
       (questo è la morbidezza: la pellicola non ha rumore digitale)
@@ -1288,42 +1299,40 @@ def _medium_format_acutance(arr, strength):
     arr: numpy float32 (H, W, 3) valori 0-255
     strength: float 0.0-1.0 (0=nessun effetto, 1=massimo)
     Restituisce arr modificato (float32, 0-255).
+    Usa solo Pillow (nessuna dipendenza esterna aggiuntiva).
     """
-    from scipy.ndimage import gaussian_filter
+    from PIL import ImageFilter
 
     if strength <= 0.01:
         return arr
 
-    img = arr / 255.0
+    # Converti in immagine PIL per usare GaussianBlur
+    im_orig = Image.fromarray(np.clip(arr, 0, 255).astype(np.uint8))
 
-    # === SEPARAZIONE IN 3 BANDE ===
-    # Sigma calibrati per simulare la MTF delle lenti di grande formato:
-    # - sigma_coarse: struttura globale (illuminazione, colori di fondo)
-    # - sigma_mid: dettagli di media scala (bordi, texture, struttura)
-    # La differenza tra i due sigma determina la "banda" di frequenza potenziata.
-    # Per il medio formato, la banda ottimale è ~1-4px (a 300dpi su stampa fine art).
-    sigma_coarse = 5.0   # struttura globale
-    sigma_mid    = 1.4   # dettagli medi
+    # Bassa frequenza: blur forte (struttura globale)
+    im_low  = im_orig.filter(ImageFilter.GaussianBlur(radius=5.0))
+    # Media frequenza: blur leggero (bordi e texture)
+    im_mid  = im_orig.filter(ImageFilter.GaussianBlur(radius=1.5))
 
-    # Calcola le bande (solo canali spaziali, non il canale colore)
-    low  = gaussian_filter(img, sigma=[sigma_coarse, sigma_coarse, 0])
-    mid  = gaussian_filter(img, sigma=[sigma_mid,    sigma_mid,    0])
+    # Converti in numpy float32
+    orig = np.array(im_orig, dtype=np.float32)
+    low  = np.array(im_low,  dtype=np.float32)
+    mid  = np.array(im_mid,  dtype=np.float32)
 
     band_mid  = mid - low        # frequenze medie: bordi, struttura
-    band_high = img - mid        # frequenze alte: micro-dettagli, rumore
+    band_high = orig - mid       # frequenze alte: micro-dettagli, rumore
 
     # === BOOST SELETTIVO ===
     # Le frequenze medie vengono amplificate (acutanza)
     # Le frequenze alte vengono leggermente ridotte (morbidezza pellicola)
-    # I valori sono calibrati per non produrre halo né overshoot visibile.
-    mid_boost  = 1.0 + strength * 2.2   # da 1.0 (nessun effetto) a 3.2 (massimo)
-    high_scale = 1.0 - strength * 0.35  # da 1.0 a 0.65 (riduce il rumore fine)
+    mid_boost  = 1.0 + strength * 2.2   # da 1.0 a 3.2
+    high_scale = 1.0 - strength * 0.35  # da 1.0 a 0.65
 
     # Ricostruisci l'immagine
     result = low + band_mid * mid_boost + band_high * high_scale
-    result = np.clip(result, 0.0, 1.0)
+    result = np.clip(result, 0.0, 255.0)
 
-    return (result * 255.0).astype(np.float32)
+    return result.astype(np.float32)
 
 
 @app.route('/api/projects/<pid>/images/adjust', methods=['POST'])
@@ -1345,16 +1354,30 @@ def adjust_images(pid):
     shadows_lift      = float(data.get('shadows_lift', 0.0)) # 0 … 40
     highlights_comp   = float(data.get('highlights_comp', 0.0)) # 0 … 40
     curve_preset      = data.get('curve_preset', None)  # nome preset fotografo
+    preset_intensity  = float(data.get('preset_intensity', 1.0))  # 0.0-1.0 intensità preset
     mf_acutance       = float(data.get('mf_acutance', 0.0))  # 0.0-1.0 acutanza medio formato
 
     targets = [i for i in p.get('images', []) if not image_ids or i['id'] in image_ids]
     updated = []
 
+    # Directory per i backup originali
+    orig_dir = UPLOAD / 'originals'
+    orig_dir.mkdir(exist_ok=True)
+
     for img in targets:
         fpath = UPLOAD / img['file']
         if not fpath.exists(): continue
         try:
-            with Image.open(str(fpath)) as im:
+            # Crea backup originale se non esiste ancora
+            # Il backup viene usato come sorgente per TUTTE le correzioni,
+            # garantendo che gli stili non si sommino mai.
+            orig_path = orig_dir / img['file'].replace('/', '_')
+            if not orig_path.exists():
+                import shutil
+                shutil.copy2(str(fpath), str(orig_path))
+
+            # Legge SEMPRE dall'originale (non dalla versione già modificata)
+            with Image.open(str(orig_path)) as im:
                 if im.mode != 'RGB': im = im.convert('RGB')
 
                 if brightness != 1.0:
@@ -1390,9 +1413,9 @@ def adjust_images(pid):
                         lum = arr.mean(axis=2, keepdims=True) / 255.0
                         hi_mask = np.clip((lum - 0.55) * 3.0, 0, 1)
                         arr = np.clip(arr - hi_mask * highlights_comp, 0, 255)
-                    # Curve preset fotografo
+                    # Curve preset fotografo (con intensità variabile)
                     if curve_preset:
-                        arr = _apply_photographer_curve(arr, curve_preset)
+                        arr = _apply_photographer_curve(arr, curve_preset, preset_intensity)
                     # Acutanza medio formato (frequency separation)
                     if mf_acutance > 0.01:
                         arr = _medium_format_acutance(arr, mf_acutance)
@@ -1409,10 +1432,51 @@ def adjust_images(pid):
 
             updated.append(img['id'])
         except Exception as e:
+            import traceback; traceback.print_exc()
             pass
 
     save_db(db)
     return jsonify({'ok': True, 'updated': updated})
+
+
+@app.route('/api/projects/<pid>/images/reset', methods=['POST'])
+def reset_images(pid):
+    """Ripristina le foto alla versione originale (dal backup creato alla prima modifica)."""
+    import shutil
+    db = load_db()
+    p  = next((x for x in db['projects'] if x['id'] == pid), None)
+    if not p: return jsonify({'error': 'not found'}), 404
+
+    data      = request.json or {}
+    image_ids = data.get('ids', [])  # vuota = tutte
+
+    targets  = [i for i in p.get('images', []) if not image_ids or i['id'] in image_ids]
+    orig_dir = UPLOAD / 'originals'
+    restored = []
+
+    for img in targets:
+        fpath     = UPLOAD / img['file']
+        orig_path = orig_dir / img['file'].replace('/', '_')
+        if not orig_path.exists():
+            # Nessun backup: la foto non è mai stata modificata, niente da fare
+            restored.append(img['id'])
+            continue
+        try:
+            # Ripristina il file originale
+            shutil.copy2(str(orig_path), str(fpath))
+            # Rigenera thumbnail dall'originale
+            with Image.open(str(orig_path)) as im:
+                if im.mode != 'RGB': im = im.convert('RGB')
+                tpath = UPLOAD / img.get('thumb', 'thumbs/' + img['file'])
+                tpath.parent.mkdir(exist_ok=True)
+                thumb = im.copy()
+                thumb.thumbnail((400, 400), Image.LANCZOS)
+                thumb.save(str(tpath), 'JPEG', quality=82)
+            restored.append(img['id'])
+        except Exception as e:
+            import traceback; traceback.print_exc()
+
+    return jsonify({'ok': True, 'restored': restored})
 
 
 @app.route('/api/projects/<pid>/images/match-master', methods=['POST'])
