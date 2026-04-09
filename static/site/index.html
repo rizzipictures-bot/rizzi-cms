@@ -7568,6 +7568,12 @@ function buildArchive() {
               _aeThumbsView.style.display = 'none';
               // Nasconde il pannello keyword
               if (_aeThumbsView._kwPanel) _aeThumbsView._kwPanel.style.display = 'none';
+              // Ripristina sfondo nero (Mode 1 è sempre scuro)
+              panel.classList.remove('box-white');
+              const _tdBtn2 = panel.querySelector('.ae-toggle-dark');
+              const _tlBtn2 = panel.querySelector('.ae-toggle-light');
+              if (_tdBtn2) _tdBtn2.style.display = '';
+              if (_tlBtn2) _tlBtn2.style.display = 'none';
             });
             const aeCtr = document.createElement('div');
             aeCtr.className = 'ae-thumbs-counter';
@@ -7754,11 +7760,17 @@ function buildArchive() {
             // Nasconde l'inner (hero+keywords+bottombar) e mostra la vista thumbs
             inner.style.display = 'none';
             _aeThumbsView.style.display = 'flex';
+            // In Mode 2 si parte sempre con sfondo bianco
+            panel.classList.add('box-white');
+            // Aggiorna l'icona del toggle TV
+            const _tdBtn = panel.querySelector('.ae-toggle-dark');
+            const _tlBtn = panel.querySelector('.ae-toggle-light');
+            if (_tdBtn) _tdBtn.style.display = 'none';
+            if (_tlBtn) _tlBtn.style.display = '';
             // Mostra il pannello keyword e lo posiziona
             if (_aeThumbsView._kwPanel) {
-              // Sincronizza il tema (dark/light) con lo stato attuale del panel
-              const _isLight = panel.classList.contains('box-white');
-              _aeThumbsView._kwPanel.classList.toggle('light', _isLight);
+              // Sempre light in Mode 2 (sfondo bianco)
+              _aeThumbsView._kwPanel.classList.add('light');
               // Mostra PRIMA il pannello, poi posiziona (evita il return precoce per display:none)
               _aeThumbsView._kwPanel.style.display = 'flex';
               // Recupera l'immagine dalla vista thumbs
