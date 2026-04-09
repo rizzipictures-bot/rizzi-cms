@@ -2284,7 +2284,7 @@ async function applyAdjust() {
     saturation: parseFloat(document.getElementById('sl-saturation').value),
     sharpness:  parseFloat(document.getElementById('sl-sharpness').value),
     temp_shift:   parseFloat(document.getElementById('sl-temp').value),
-    mf_acutance:  parseFloat(document.getElementById('sl-mf-acutance').value) / 100.0,
+    mf_acutance:  (parseFloat(document.getElementById('sl-mf-acutance')?.value) || 0) / 100.0,
     curves:       window.getAllCurvePoints ? window.getAllCurvePoints() : null,
   };
   try {
@@ -2292,7 +2292,14 @@ async function applyAdjust() {
       method: 'POST', headers: {'Content-Type':'application/json'},
       body: JSON.stringify(body)
     });
+    if (!res.ok) {
+      const errText = await res.text();
+      console.error('Adjust error response:', errText);
+      toast(`Errore server (${res.status}) — controlla i log`);
+      return;
+    }
     const data = await res.json();
+    if (data.errors && data.errors.length > 0) console.warn('Adjust errors:', data.errors);
     toast(`Correzioni applicate a ${data.updated?.length || 0} foto ✔`);
     resetLivePreview();
     // Forza reload thumbnail aggiungendo timestamp
@@ -2300,7 +2307,7 @@ async function applyAdjust() {
       img.src = img.src.split('?')[0] + '?t=' + Date.now();
     });
     resetSliders();
-  } catch(e) { toast('Errore elaborazione'); }
+  } catch(e) { console.error('Adjust fetch error:', e); toast('Errore elaborazione — controlla la connessione'); }
   finally { btn.disabled = false; btn.textContent = 'Applica correzioni'; }
 }
 

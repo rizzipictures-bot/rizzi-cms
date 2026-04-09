@@ -1345,17 +1345,26 @@ def adjust_images(pid):
 
     data       = request.json or {}
     image_ids  = data.get('ids', [])          # lista id foto; vuota = tutte
-    brightness       = float(data.get('brightness', 1.0))   # 0.5 – 2.0
-    contrast          = float(data.get('contrast',   1.0))
-    saturation        = float(data.get('saturation', 1.0))
-    sharpness         = float(data.get('sharpness',  1.0))
-    temp_shift        = float(data.get('temp_shift', 0.0))   # -50 … +50 (caldo/freddo)
-    tint_shift        = float(data.get('tint_shift', 0.0))   # -50 … +50 (verde/magenta)
-    shadows_lift      = float(data.get('shadows_lift', 0.0)) # 0 … 40
-    highlights_comp   = float(data.get('highlights_comp', 0.0)) # 0 … 40
-    curve_preset      = data.get('curve_preset', None)  # nome preset fotografo
-    preset_intensity  = float(data.get('preset_intensity', 1.0))  # 0.0-1.0 intensità preset
-    mf_acutance       = float(data.get('mf_acutance', 0.0))  # 0.0-1.0 acutanza medio formato
+    def _f(key, default):
+        """Legge un float dal JSON gestendo None/null/NaN in modo sicuro."""
+        v = data.get(key, default)
+        try:
+            r = float(v) if v is not None else float(default)
+            return r if r == r else float(default)  # NaN check
+        except (TypeError, ValueError):
+            return float(default)
+
+    brightness       = _f('brightness', 1.0)   # 0.5 – 2.0
+    contrast         = _f('contrast',   1.0)
+    saturation       = _f('saturation', 1.0)
+    sharpness        = _f('sharpness',  1.0)
+    temp_shift       = _f('temp_shift', 0.0)   # -50 … +50 (caldo/freddo)
+    tint_shift       = _f('tint_shift', 0.0)   # -50 … +50 (verde/magenta)
+    shadows_lift     = _f('shadows_lift', 0.0) # 0 … 40
+    highlights_comp  = _f('highlights_comp', 0.0) # 0 … 40
+    curve_preset     = data.get('curve_preset', None)  # nome preset fotografo
+    preset_intensity = _f('preset_intensity', 1.0)  # 0.0-1.0 intensità preset
+    mf_acutance      = _f('mf_acutance', 0.0)  # 0.0-1.0 acutanza medio formato
 
     targets = [i for i in p.get('images', []) if not image_ids or i['id'] in image_ids]
     updated = []
