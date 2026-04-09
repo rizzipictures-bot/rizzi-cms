@@ -7612,14 +7612,22 @@ function buildArchive() {
             aeToggleClone.addEventListener('click', e => {
               e.stopPropagation();
               panel.classList.toggle('box-white');
+              const isDark = !panel.classList.contains('box-white');
               // Aggiorna entrambi i toggle (originale e clone)
               [toggle, aeToggleClone].forEach(t => {
-                const isDark = !panel.classList.contains('box-white');
                 const svgD = t.querySelector('.ae-toggle-dark');
                 const svgL = t.querySelector('.ae-toggle-light');
                 if (svgD) svgD.style.display = isDark ? '' : 'none';
                 if (svgL) svgL.style.display = isDark ? 'none' : '';
               });
+              // Aggiorna il tema del pannello keywords (light = sfondo bianco, dark = sfondo nero)
+              if (_aeThumbsView._kwPanel) {
+                if (isDark) {
+                  _aeThumbsView._kwPanel.classList.remove('light');
+                } else {
+                  _aeThumbsView._kwPanel.classList.add('light');
+                }
+              }
             });
             // Inserisci la TV nella info row a DESTRA: Back [spazio] TV contatore
             aeInfo.appendChild(aeToggleClone);
