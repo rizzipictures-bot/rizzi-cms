@@ -1286,53 +1286,54 @@ def _apply_photographer_curve(arr, preset_name, intensity=1.0):
 
 def _medium_format_acutance(arr, strength):
     """
-    Simula l'acutanza e la morbidezza tipiche del medio/grande formato
-    (pellicola 6x7, 10x12, Hasselblad 907X 100MP).
-
-    Tecnica: Frequency Separation a 3 bande tramite Pillow GaussianBlur.
-    - Bassa frequenza  (radius ~5px): struttura globale, toni, colori — invariata
-    - Media frequenza  (radius ~1.5px): bordi, texture, struttura — POTENZIATA
-      (questo è l'acutanza: sensazione di nitidezza senza halo)
-    - Alta frequenza   (residuo): micro-dettagli, rumore — RIDOTTA leggermente
-      (questo è la morbidezza: la pellicola non ha rumore digitale)
-
-    arr: numpy float32 (H, W, 3) valori 0-255
-    strength: float 0.0-1.0 (0=nessun effetto, 1=massimo)
-    Restituisce arr modificato (float32, 0-255).
-    Usa solo Pillow (nessuna dipendenza esterna aggiuntiva).
+    Simula l'acutanza e la morbidezza tipiche del medio/grande formato.
+    Ottimizzato per basso consumo di memoria (max ~120MB per foto 2500px).
     """
     from PIL import ImageFilter
+    import gc
 
     if strength <= 0.01:
         return arr
 
-    # Converti in immagine PIL per usare GaussianBlur
-    im_orig = Image.fromarray(np.clip(arr, 0, 255).astype(np.uint8))
+    # Converti in uint8 per Pillow (evita una copia float32 extra)
+    im_uint8 = Image.fromarray(np.clip(arr, 0, 255).astype(np.uint8))
 
-    # Bassa frequenza: blur forte (struttura globale)
-    im_low  = im_orig.filter(ImageFilter.GaussianBlur(radius=5.0))
-    # Media frequenza: blur leggero (bordi e texture)
-    im_mid  = im_orig.filter(ImageFilter.GaussianBlur(radius=1.5))
+    # Bassa frequenza: blur forte
+    im_low = im_uint8.filter(ImageFilter.GaussianBlur(radius=5.0))
+    # Media frequenza: blur leggero
+    im_mid = im_uint8.filter(ImageFilter.GaussianBlur(radius=1.5))
 
-    # Converti in numpy float32
-    orig = np.array(im_orig, dtype=np.float32)
-    low  = np.array(im_low,  dtype=np.float32)
-    mid  = np.array(im_mid,  dtype=np.float32)
+    # Libera im_uint8 subito (non serve più)
+    del im_uint8
+    gc.collect()
 
-    band_mid  = mid - low        # frequenze medie: bordi, struttura
-    band_high = orig - mid       # frequenze alte: micro-dettagli, rumore
+    # Converti in float32 — ora abbiamo solo 3 array (orig già in arr)
+    low = np.array(im_low, dtype=np.float32)
+    del im_low
+    mid = np.array(im_mid, dtype=np.float32)
+    del im_mid
+    gc.collect()
 
-    # === BOOST SELETTIVO ===
-    # Le frequenze medie vengono amplificate (acutanza)
-    # Le frequenze alte vengono leggermente ridotte (morbidezza pellicola)
-    mid_boost  = 1.0 + strength * 2.2   # da 1.0 a 3.2
-    high_scale = 1.0 - strength * 0.35  # da 1.0 a 0.65
+    # Calcola in-place per ridurre allocazioni
+    mid_boost  = 1.0 + strength * 2.2
+    high_scale = 1.0 - strength * 0.35
 
-    # Ricostruisci l'immagine
-    result = low + band_mid * mid_boost + band_high * high_scale
-    result = np.clip(result, 0.0, 255.0)
+    # band_mid = mid - low (in-place su mid)
+    mid -= low                    # mid ora contiene band_mid
+    # band_high = arr - (mid+low) = arr - mid_orig; ma mid_orig = low + band_mid
+    # Usiamo: result = low + band_mid*mid_boost + band_high*high_scale
+    #                = low + mid*mid_boost + (arr - low - mid)*high_scale
+    # Calcoliamo in-place su low:
+    # low = low + mid*mid_boost + arr*high_scale - low*high_scale - mid*high_scale
+    # low = low*(1-high_scale) + mid*(mid_boost-high_scale) + arr*high_scale
+    low *= (1.0 - high_scale)                    # low*(1-high_scale)
+    low += mid * (mid_boost - high_scale)        # + band_mid*(mid_boost-high_scale)
+    low += arr * high_scale                      # + arr*high_scale
+    del mid
+    gc.collect()
 
-    return result.astype(np.float32)
+    np.clip(low, 0.0, 255.0, out=low)
+    return low  # già float32
 
 
 @app.route('/api/projects/<pid>/images/adjust', methods=['POST'])
@@ -1434,6 +1435,7 @@ def adjust_images(pid):
                     if mf_acutance > 0.01:
                         arr = _medium_format_acutance(arr, mf_acutance)
                     im = Image.fromarray(arr.astype(np.uint8))
+                    del arr  # libera subito l'array numpy
 
                 im.save(str(fpath), 'JPEG', quality=88, optimize=True)
 
@@ -1443,7 +1445,9 @@ def adjust_images(pid):
                 thumb = im.copy()
                 thumb.thumbnail((400, 400), Image.LANCZOS)
                 thumb.save(str(tpath), 'JPEG', quality=82)
+                del thumb, im  # libera memoria prima della prossima foto
 
+            import gc; gc.collect()  # forza GC dopo ogni foto
             updated.append(img['id'])
         except Exception as e:
             import traceback; traceback.print_exc()
