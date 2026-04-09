@@ -710,21 +710,6 @@
   .proc-sel-info {
     font-size: 11px; color: var(--gray); flex: 1;
   }
-  .proc-master-row {
-    display: flex; align-items: center; gap: 10px;
-    margin-bottom: 14px; padding: 10px 12px;
-    background: var(--light);
-    border-radius: var(--radius-sm);
-    border: 1px solid var(--border);
-  }
-  .proc-master-row span {
-    font-size: 11px; color: var(--gray); flex: 1;
-  }
-  .proc-master-thumb {
-    width: 40px; height: 40px; object-fit: cover;
-    border-radius: var(--radius-xs);
-    border: 2px solid var(--purple);
-  }
 
   /* ── ACUTANZA MEDIO FORMATO ── */
   .proc-mf-acutance {
@@ -1479,12 +1464,6 @@
             </div>
           </div>
           <div class="img-proc-panel-inner">
-
-          <!-- Master per color matching -->
-          <div class="proc-master-row" id="proc-master-row">
-            <span id="proc-master-label">Nessuna foto master selezionata — clicca ★M su una foto per impostarla come riferimento colore</span>
-          </div>
-
           <!-- Color Wheels: Shadows / Midtones / Highlights -->
           <div class="proc-wheels">
             <div class="proc-wheel-group">
@@ -1586,7 +1565,6 @@
           <div class="proc-actions">
             <span class="proc-sel-info" id="proc-sel-info">Applica a tutte le foto</span>
             <button class="proc-apply-btn" onclick="applyAdjust()" id="btn-apply-adjust">Applica correzioni</button>
-            <button class="proc-apply-btn secondary" onclick="applyMatchMaster()" id="btn-match-master">★ Match master</button>
             <button class="proc-apply-btn secondary" onclick="applyAutoBalance()">✾ Auto-balance AI</button>
             <button class="proc-apply-btn secondary" onclick="openProcZoom()">⚬ Zoom preview</button>
             <button class="proc-apply-btn secondary" onclick="resetAllCorrections()">Reset tutto</button>
@@ -2075,7 +2053,6 @@ let _dragSrcId = null;
 // ── VARIABILI SELEZIONE & ELABORAZIONE ──
 let _selectedImgIds  = new Set();
 let _selectMode      = false;
-let _masterImgId     = null;
 let _firstSelectedId = null;  // prima foto selezionata (per popup anteprima)
 
 function toggleSelectMode() {
@@ -2138,21 +2115,6 @@ function clearSelection() {
   _updateElaboraPreviewPopup();
 }
 
-function setMasterImg(iid) {
-  _masterImgId = (_masterImgId === iid) ? null : iid;
-  renderImageGrid();
-  // Aggiorna label master nel pannello
-  const img = (currentProject?.images || []).find(i => i.id === iid);
-  const label = document.getElementById('proc-master-label');
-  const row   = document.getElementById('proc-master-row');
-  if (_masterImgId && img) {
-    const src = `/uploads/${img.thumb || img.file}`;
-    row.innerHTML = `<img class="proc-master-thumb" src="${src}">
-      <span>Foto master impostata — le altre foto verranno uniformate a questa</span>
-      <button class="proc-apply-btn secondary" style="padding:4px 8px" onclick="setMasterImg('${iid}')">Rimuovi</button>`;
-  } else {
-    row.innerHTML = `<span id="proc-master-label">Nessuna foto master — clicca ★M su una foto per impostarla come riferimento colore</span>`;
-  }
 }
 
 function updateProcSelInfo() {
@@ -2345,25 +2307,6 @@ async function applyAdjust() {
   finally { btn.disabled = false; btn.textContent = 'Applica correzioni'; }
 }
 
-async function applyMatchMaster() {
-  if (!currentProject) return;
-  if (!_masterImgId) { toast('Imposta prima una foto master (★M)'); return; }
-  const btn = document.getElementById('btn-match-master');
-  btn.disabled = true; btn.textContent = 'Matching...';
-  const ids = _selectedImgIds.size > 0 ? [..._selectedImgIds] : [];
-  try {
-    const res  = await fetch(`${API}/projects/${currentProject.id}/images/match-master`, {
-      method: 'POST', headers: {'Content-Type':'application/json'},
-      body: JSON.stringify({ master_id: _masterImgId, ids })
-    });
-    const data = await res.json();
-    toast(`Color match applicato a ${data.updated?.length || 0} foto ✔`);
-    document.querySelectorAll('.image-cell img').forEach(img => {
-      img.src = img.src.split('?')[0] + '?t=' + Date.now();
-    });
-  } catch(e) { toast('Errore color match'); }
-  finally { btn.disabled = false; btn.textContent = '★ Match master'; }
-}
 
 async function applyAutoBalance() {
   if (!currentProject) return;
@@ -2401,7 +2344,6 @@ function renderImageGrid() {
   (currentProject.images || []).forEach((img, idx) => {
     const cell = document.createElement('div');
     const inOv = img.in_overview ? 'in-overview' : '';
-    const isMaster = _masterImgId === img.id;
     const isSelected = _selectedImgIds.has(img.id);
     cell.className = `image-cell ${inOv} ${isSelected ? 'selected' : ''}`;
     cell.dataset.imgId = img.id;
@@ -2418,7 +2360,6 @@ function renderImageGrid() {
       <button class="ov-toggle-btn" onclick="toggleOverviewImg('${img.id}')" title="Aggiungi/Rimuovi da Overview">
         ${img.in_overview ? '★ OV' : '☆ OV'}
       </button>
-      ${isMaster ? '<div style="position:absolute;bottom:22px;left:4px;background:#9b6fd4;color:#fff;font-size:7px;padding:2px 5px;border-radius:2px;pointer-events:none">MASTER</div>' : ''}
       <div class="img-kw-panel" id="kw-panel-${img.id}">
         <div class="img-kw-panel-row">
           <span class="img-kw-panel-label">KEYWORDS</span>
@@ -2436,7 +2377,6 @@ function renderImageGrid() {
           <button class="img-action-btn" onclick="rescanIptcSingle('${img.id}')" title="Rescan IPTC">↻</button>
           <button class="img-action-btn" onclick="tagSingleImageAi('${img.id}')" title="Tag AI">✾</button>
           <button class="img-action-btn" onclick="showCaptionAi('${img.id}')" title="Genera didascalia AI" style="color:#9b6fd4">✾C</button>
-          <button class="img-action-btn" onclick="setMasterImg('${img.id}')" title="Imposta come master colore" style="color:#f0c040">★M</button>
           <button class="img-action-btn" onclick="openProcZoomFromCell(this)" title="Zoom live preview" style="color:#7dd3fc">⚬</button>
           <button class="img-action-btn danger" onclick="deleteImage('${img.id}')" title="Elimina">×</button>
         </div>

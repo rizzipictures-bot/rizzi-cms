@@ -1479,73 +1479,11 @@ def reset_images(pid):
     return jsonify({'ok': True, 'restored': restored})
 
 
-@app.route('/api/projects/<pid>/images/match-master', methods=['POST'])
-def match_master(pid):
-    """Applica il colore/luminosità di una foto master alle foto selezionate (histogram matching)."""
-    try:
-        from skimage import exposure, io as skio
-        import numpy as np
-    except ImportError:
-        return jsonify({'error': 'scikit-image non installato'}), 500
-
-    db   = load_db()
-    p    = next((x for x in db['projects'] if x['id'] == pid), None)
-    if not p: return jsonify({'error': 'not found'}), 404
-
-    data      = request.json or {}
-    master_id = data.get('master_id')
-    image_ids = data.get('ids', [])   # foto da uniformare; vuota = tutte tranne master
-
-    master_img = next((i for i in p.get('images', []) if i['id'] == master_id), None)
-    if not master_img: return jsonify({'error': 'master non trovato'}), 404
-
-    master_path = UPLOAD / master_img['file']
-    if not master_path.exists(): return jsonify({'error': 'file master mancante'}), 404
-
-    try:
-        master_arr = np.array(Image.open(str(master_path)).convert('RGB'), dtype=np.uint8)
-    except Exception as e:
-        return jsonify({'error': f'Errore lettura master: {e}'}), 500
-
-    targets = [
-        i for i in p.get('images', [])
-        if i['id'] != master_id and (not image_ids or i['id'] in image_ids)
-    ]
-    updated = []
-
-    for img in targets:
-        fpath = UPLOAD / img['file']
-        if not fpath.exists(): continue
-        try:
-            src_arr = np.array(Image.open(str(fpath)).convert('RGB'), dtype=np.uint8)
-            matched = exposure.match_histograms(src_arr, master_arr, channel_axis=-1)
-            matched = matched.astype(np.uint8)
-            result  = Image.fromarray(matched)
-            result.save(str(fpath), 'JPEG', quality=88, optimize=True)
-
-            # Rigenera thumbnail
-            tpath = UPLOAD / img.get('thumb', 'thumbs/' + img['file'])
-            tpath.parent.mkdir(exist_ok=True)
-            thumb = result.copy()
-            thumb.thumbnail((400, 400), Image.LANCZOS)
-            thumb.save(str(tpath), 'JPEG', quality=82)
-
-            updated.append(img['id'])
-        except Exception as e:
-            pass
-
-    save_db(db)
-    return jsonify({'ok': True, 'updated': updated, 'master': master_id})
-
 
 @app.route('/api/projects/<pid>/images/auto-balance', methods=['POST'])
 def auto_balance(pid):
     """Uniforma automaticamente colore e luminosità di tutte le foto selezionate verso la media."""
-    try:
-        from skimage import exposure
-        import numpy as np
-    except ImportError:
-        return jsonify({'error': 'scikit-image non installato'}), 500
+    import numpy as np
 
     db   = load_db()
     p    = next((x for x in db['projects'] if x['id'] == pid), None)
