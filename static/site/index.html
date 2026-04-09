@@ -7761,22 +7761,26 @@ function buildArchive() {
               _aeThumbsView._kwPanel.classList.toggle('dark', !_isLight);
               // Mostra PRIMA il pannello, poi posiziona (evita il return precoce per display:none)
               _aeThumbsView._kwPanel.style.display = 'flex';
-              // Tentativo immediato: se l'immagine è già in cache, naturalWidth è già disponibile
-              if (_aeThumbsView._positionKwPanel) {
-                requestAnimationFrame(() => requestAnimationFrame(_aeThumbsView._positionKwPanel));
+              // Recupera l'immagine dalla vista thumbs
+              const _aeImgEl = _aeThumbsView.querySelector('.ae-thumbs-hero img');
+              const _doPosition = () => {
+                if (_aeThumbsView._positionKwPanel) _aeThumbsView._positionKwPanel();
+              };
+              // Se l'immagine è già caricata (cache): posiziona subito con rAF
+              if (_aeImgEl && _aeImgEl.naturalWidth && _aeImgEl.naturalHeight) {
+                requestAnimationFrame(() => requestAnimationFrame(_doPosition));
+              } else if (_aeImgEl) {
+                // Immagine non ancora caricata: aspetta il load event
+                const _onLoad = () => {
+                  _aeImgEl.removeEventListener('load', _onLoad);
+                  requestAnimationFrame(() => requestAnimationFrame(_doPosition));
+                };
+                _aeImgEl.addEventListener('load', _onLoad);
               }
-              // Primo tentativo: dopo 60ms (layout completato)
-              setTimeout(() => {
-                if (_aeThumbsView._positionKwPanel) _aeThumbsView._positionKwPanel();
-              }, 60);
-              // Fallback: dopo 350ms (immagine caricata)
-              setTimeout(() => {
-                if (_aeThumbsView._positionKwPanel) _aeThumbsView._positionKwPanel();
-              }, 350);
+              // Fallback: dopo 400ms (sicurezza)
+              setTimeout(_doPosition, 400);
               // Fallback lungo: per immagini molto pesanti o connessioni lente
-              setTimeout(() => {
-                if (_aeThumbsView._positionKwPanel) _aeThumbsView._positionKwPanel();
-              }, 1200);
+              setTimeout(_doPosition, 1500);
             }
             // Mostra la prima foto con animazione
             const aeImg2 = _aeThumbsView.querySelector('.ae-thumbs-hero img');
