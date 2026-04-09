@@ -1507,7 +1507,7 @@
       opacity: 1;
     }
     .ae-thumbs-hero img {
-      max-width: 30%;   /* lascia spazio a destra per le keywords */
+      max-width: 40%;   /* lascia spazio a destra per le keywords */
       max-height: 100%;
       width: auto;
       height: auto;
@@ -1635,15 +1635,7 @@
     .ae-thumbs-kw-panel .archive-kw-dot {
       background: #fff;
     }
-    /* Tema chiaro (box-white): classe .dark NON presente = testo nero */
-    /* Usiamo :not(.dark) per il tema bianco */
-    .ae-thumbs-kw-panel:not(.dark) .archive-kw-label {
-      color: rgba(255,255,255,0.85); /* bianco di default */
-    }
-    /* Quando il pannello ha classe .dark (tema scuro) = bianco già di default */
-    /* Quando NON ha .dark ma il box è box-white = testo nero */
-    /* Il JS applica .dark quando il box è scuro, quindi quando .dark manca = tema bianco */
-    /* Ma il default CSS è già bianco, quindi .dark è ridondante. Usiamo solo .light per il bianco */
+    /* Tema chiaro: classe .light applicata dal JS quando il box è box-white */
     .ae-thumbs-kw-panel.light .archive-kw-label {
       color: rgba(0,0,0,0.7);
     }
