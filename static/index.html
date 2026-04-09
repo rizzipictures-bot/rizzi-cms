@@ -726,6 +726,35 @@
     border: 2px solid var(--purple);
   }
 
+  /* ── ACUTANZA MEDIO FORMATO ── */
+  .proc-mf-acutance {
+    margin-bottom: 14px;
+    padding: 12px 14px;
+    background: var(--light);
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--border);
+  }
+  .proc-mf-header {
+    display: flex;
+    align-items: baseline;
+    gap: 10px;
+    margin-bottom: 10px;
+  }
+  .proc-mf-title {
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--black);
+    white-space: nowrap;
+  }
+  .proc-mf-hint {
+    font-size: 10px;
+    color: var(--gray);
+    font-style: italic;
+  }
+  .proc-mf-acutance .proc-slider-row {
+    margin-bottom: 0;
+  }
+
   /* ── PANNELLO CURVE ── */
   .proc-curves-section {
     margin-bottom: 16px;
@@ -1516,6 +1545,19 @@
             </div>
           </div>
 
+          <!-- Acutanza Medio Formato -->
+          <div class="proc-mf-acutance">
+            <div class="proc-mf-header">
+              <span class="proc-mf-title">Acutanza medio formato</span>
+              <span class="proc-mf-hint">Frequency separation — simula la MTF di pellicola 6×7 / 10×12 / Hasselblad 100MP</span>
+            </div>
+            <div class="proc-slider-row">
+              <label>Intensità <span id="lbl-mf-acutance">0%</span></label>
+              <input type="range" id="sl-mf-acutance" min="0" max="100" step="1" value="0"
+                     oninput="document.getElementById('lbl-mf-acutance').textContent=this.value+'%'; updateLivePreview()">
+            </div>
+          </div>
+
           <!-- Pannello Curve (RGB + Lab) -->
           <div class="proc-curves-section">
             <div class="proc-curves-header">
@@ -2240,6 +2282,12 @@ function resetSliders() {
   const slT = document.getElementById('sl-temp');
   const lbT = document.getElementById('lbl-temp');
   if (slT) { slT.value = '0'; if (lbT) lbT.textContent = '0'; }
+  // Acutanza medio formato: valore neutro 0
+  const slMf = document.getElementById('sl-mf-acutance');
+  const lbMf = document.getElementById('lbl-mf-acutance');
+  if (slMf) { slMf.value = '0'; if (lbMf) lbMf.textContent = '0%'; }
+  // Deseleziona preset fotografo attivo
+  document.querySelectorAll('.proc-preset-btn').forEach(b => b.classList.remove('active'));
 }
 
 async function applyAdjust() {
@@ -2255,8 +2303,9 @@ async function applyAdjust() {
     contrast:   parseFloat(document.getElementById('sl-contrast').value),
     saturation: parseFloat(document.getElementById('sl-saturation').value),
     sharpness:  parseFloat(document.getElementById('sl-sharpness').value),
-    temp_shift: parseFloat(document.getElementById('sl-temp').value),
-    curves:     window.getAllCurvePoints ? window.getAllCurvePoints() : null,
+    temp_shift:   parseFloat(document.getElementById('sl-temp').value),
+    mf_acutance:  parseFloat(document.getElementById('sl-mf-acutance').value) / 100.0,
+    curves:       window.getAllCurvePoints ? window.getAllCurvePoints() : null,
   };
   try {
     const res  = await fetch(`${API}/projects/${currentProject.id}/images/adjust`, {
@@ -3308,6 +3357,14 @@ function _buildCssFilter() {
   if (window._getCurveApproxFilter) {
     const curveFilter = window._getCurveApproxFilter();
     if (curveFilter) filter += ' ' + curveFilter;
+  }
+
+  // Acutanza medio formato: approssimazione visiva con contrast + saturate
+  // (la vera frequency separation avviene lato server; qui mostriamo solo un'indicazione)
+  const mfAcutance = parseFloat(document.getElementById('sl-mf-acutance')?.value || 0) / 100;
+  if (mfAcutance > 0.01) {
+    const contrastBoost = 1 + mfAcutance * 0.12;
+    filter += ` contrast(${contrastBoost.toFixed(3)})`;
   }
 
   return filter;

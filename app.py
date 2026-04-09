@@ -1273,7 +1273,60 @@ def _apply_photographer_curve(arr, preset_name):
     return result
 
 
-@app.route('/api/projects/<pid>/images/adjust', methods=['POST'])['POST'])
+def _medium_format_acutance(arr, strength):
+    """
+    Simula l'acutanza e la morbidezza tipiche del medio/grande formato
+    (pellicola 6x7, 10x12, Hasselblad 907X 100MP).
+
+    Tecnica: Frequency Separation a 3 bande.
+    - Bassa frequenza  (sigma ~5px): struttura globale, toni, colori — invariata
+    - Media frequenza  (sigma ~1.4px): bordi, texture, struttura — POTENZIATA
+      (questo è l'acutanza: sensazione di nitidezza senza halo)
+    - Alta frequenza   (residuo): micro-dettagli, rumore — RIDOTTA leggermente
+      (questo è la morbidezza: la pellicola non ha rumore digitale)
+
+    arr: numpy float32 (H, W, 3) valori 0-255
+    strength: float 0.0-1.0 (0=nessun effetto, 1=massimo)
+    Restituisce arr modificato (float32, 0-255).
+    """
+    from scipy.ndimage import gaussian_filter
+
+    if strength <= 0.01:
+        return arr
+
+    img = arr / 255.0
+
+    # === SEPARAZIONE IN 3 BANDE ===
+    # Sigma calibrati per simulare la MTF delle lenti di grande formato:
+    # - sigma_coarse: struttura globale (illuminazione, colori di fondo)
+    # - sigma_mid: dettagli di media scala (bordi, texture, struttura)
+    # La differenza tra i due sigma determina la "banda" di frequenza potenziata.
+    # Per il medio formato, la banda ottimale è ~1-4px (a 300dpi su stampa fine art).
+    sigma_coarse = 5.0   # struttura globale
+    sigma_mid    = 1.4   # dettagli medi
+
+    # Calcola le bande (solo canali spaziali, non il canale colore)
+    low  = gaussian_filter(img, sigma=[sigma_coarse, sigma_coarse, 0])
+    mid  = gaussian_filter(img, sigma=[sigma_mid,    sigma_mid,    0])
+
+    band_mid  = mid - low        # frequenze medie: bordi, struttura
+    band_high = img - mid        # frequenze alte: micro-dettagli, rumore
+
+    # === BOOST SELETTIVO ===
+    # Le frequenze medie vengono amplificate (acutanza)
+    # Le frequenze alte vengono leggermente ridotte (morbidezza pellicola)
+    # I valori sono calibrati per non produrre halo né overshoot visibile.
+    mid_boost  = 1.0 + strength * 2.2   # da 1.0 (nessun effetto) a 3.2 (massimo)
+    high_scale = 1.0 - strength * 0.35  # da 1.0 a 0.65 (riduce il rumore fine)
+
+    # Ricostruisci l'immagine
+    result = low + band_mid * mid_boost + band_high * high_scale
+    result = np.clip(result, 0.0, 1.0)
+
+    return (result * 255.0).astype(np.float32)
+
+
+@app.route('/api/projects/<pid>/images/adjust', methods=['POST'])
 def adjust_images(pid):
     """Applica correzioni manuali (luminosità, contrasto, saturazione) a una o più foto."""
     from PIL import ImageEnhance
@@ -1292,6 +1345,7 @@ def adjust_images(pid):
     shadows_lift      = float(data.get('shadows_lift', 0.0)) # 0 … 40
     highlights_comp   = float(data.get('highlights_comp', 0.0)) # 0 … 40
     curve_preset      = data.get('curve_preset', None)  # nome preset fotografo
+    mf_acutance       = float(data.get('mf_acutance', 0.0))  # 0.0-1.0 acutanza medio formato
 
     targets = [i for i in p.get('images', []) if not image_ids or i['id'] in image_ids]
     updated = []
@@ -1314,7 +1368,8 @@ def adjust_images(pid):
 
                 # Correzioni avanzate: temperatura, tinta, ombre, luci, curve preset
                 needs_arr = (abs(temp_shift) > 0.5 or abs(tint_shift) > 0.5 or
-                             shadows_lift > 0.5 or highlights_comp > 0.5 or curve_preset)
+                             shadows_lift > 0.5 or highlights_comp > 0.5 or
+                             curve_preset or mf_acutance > 0.01)
                 if needs_arr:
                     arr = np.array(im, dtype=np.float32)
                     # Temperatura: shift R e B
@@ -1338,6 +1393,9 @@ def adjust_images(pid):
                     # Curve preset fotografo
                     if curve_preset:
                         arr = _apply_photographer_curve(arr, curve_preset)
+                    # Acutanza medio formato (frequency separation)
+                    if mf_acutance > 0.01:
+                        arr = _medium_format_acutance(arr, mf_acutance)
                     im = Image.fromarray(arr.astype(np.uint8))
 
                 im.save(str(fpath), 'JPEG', quality=88, optimize=True)
