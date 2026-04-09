@@ -1462,20 +1462,12 @@
     /* Vista Thumbs — contenuta nel box archive-expanded (overflow:hidden, 500px) */
     .ae-thumbs-view {
       display: flex;
-      flex-direction: row;   /* layout a due colonne: (info+foto+strip) | keywords */
+      flex-direction: column;
       width: 100%;
       height: 500px;       /* stessa altezza del box */
       box-sizing: border-box;
       overflow: hidden;
       background: #111;    /* default: scuro come il box */
-    }
-    /* Colonna sinistra: info row + foto + strip thumbnails */
-    .ae-thumbs-main {
-      flex: 1 1 0;
-      min-width: 0;
-      display: flex;
-      flex-direction: column;
-      overflow: hidden;
     }
     .archive-expanded.box-white .ae-thumbs-view {
       background: #fff;    /* tema chiaro */
@@ -1588,7 +1580,7 @@
       flex: 0 0 64px;   /* altezza fissa 64px, non cresce */
       padding: 0 8px 0;
       align-items: stretch;
-      margin-top: 8px;  /* distanza tra foto grande e striscia thumbs */
+      margin-top: 42px;  /* distanza tra foto grande e striscia thumbs */
     }
     .ae-thumbs-strip::-webkit-scrollbar { display: none; }
     .ae-thumbs-strip-item {
@@ -1611,62 +1603,55 @@
       display: block;
     }
 
-    /* ── Colonna keyword nella vista thumbs (inline nel layout flex, non fixed) ── */
+    /* ── Pannello keyword nella vista thumbs (position:fixed accanto alla foto) ── */
     .ae-thumbs-kw-panel {
-      position: relative;    /* inline nel layout, non fixed */
+      position: fixed;
       display: flex;
       flex-direction: column;
       pointer-events: all;
-      z-index: 10;
-      width: 200px;           /* larghezza fissa colonna keywords */
-      flex-shrink: 0;
-      padding: 14px 14px 14px 36px;
-      box-sizing: border-box;
-      overflow: hidden;
-      border-left: 1px solid rgba(255,255,255,0.12);
+      z-index: 80;
+      width: 220px;
     }
-    .archive-expanded.box-white .ae-thumbs-kw-panel {
-      border-left: 1px solid rgba(0,0,0,0.08);
-    }
+    /* Default: sfondo scuro (box Archive è nero di default) — testo bianco */
     .ae-thumbs-kw-panel .archive-kw-label {
-      color: rgba(0,0,0,0.7);
+      color: rgba(255,255,255,0.85);
     }
     .ae-thumbs-kw-panel .archive-kw-tag {
-      color: rgba(0,0,0,0.5);
+      color: rgba(255,255,255,0.80);
       border-bottom: none;
     }
     .ae-thumbs-kw-panel .archive-kw-tag:hover {
-      color: rgba(0,0,0,0.9);
+      color: rgba(255,255,255,0.95);
     }
     .ae-thumbs-kw-panel .archive-kw-tag-idx {
-      color: rgba(0,0,0,0.45);
-    }
-    /* In tema scuro: classe .dark aggiunta via JS al pannello stesso */
-    .ae-thumbs-kw-panel.dark .archive-kw-label {
-      color: rgba(255,255,255,0.85);
-    }
-    .ae-thumbs-kw-panel.dark .archive-kw-tag {
-      color: rgba(255,255,255,0.80);
-    }
-    .ae-thumbs-kw-panel.dark .archive-kw-tag:hover {
-      color: rgba(255,255,255,0.9);
-    }
-    .ae-thumbs-kw-panel.dark .archive-kw-tag-idx {
       color: rgba(255,255,255,0.65);
     }
     /* Linea verticale nel pannello thumbs */
     .ae-thumbs-kw-panel .archive-kw-vline {
-      background: rgba(0,0,0,0.25);
-    }
-    .ae-thumbs-kw-panel.dark .archive-kw-vline {
       background: rgba(255,255,255,0.25);
     }
     /* Pallino nel pannello thumbs */
     .ae-thumbs-kw-panel .archive-kw-dot {
-      background: #000;
-    }
-    .ae-thumbs-kw-panel.dark .archive-kw-dot {
       background: #fff;
+    }
+    /* Tema chiaro: classe .dark=false, ovvero quando NON ha .dark — ma usiamo .light per sfondo bianco */
+    .ae-thumbs-kw-panel.light .archive-kw-label {
+      color: rgba(0,0,0,0.7);
+    }
+    .ae-thumbs-kw-panel.light .archive-kw-tag {
+      color: rgba(0,0,0,0.5);
+    }
+    .ae-thumbs-kw-panel.light .archive-kw-tag:hover {
+      color: rgba(0,0,0,0.9);
+    }
+    .ae-thumbs-kw-panel.light .archive-kw-tag-idx {
+      color: rgba(0,0,0,0.45);
+    }
+    .ae-thumbs-kw-panel.light .archive-kw-vline {
+      background: rgba(0,0,0,0.25);
+    }
+    .ae-thumbs-kw-panel.light .archive-kw-dot {
+      background: #000;
     }
 
     /* Toggle tema Archive: icona monitor SVG — nella bottom-bar */
@@ -6494,7 +6479,10 @@ function switchView(name) {
     );
   }
 
-  // ae-thumbs-kw-panel ora è inline nel layout (non fixed), non serve nasconderlo separatamente
+  // Nascondi pannelli keyword thumbs rimasti appesi al body (position:fixed)
+  document.querySelectorAll('.ae-thumbs-kw-panel').forEach(p => {
+    p.style.display = 'none';
+  });
 
   // Aggiorna le linee decorative Cities quando si entra nella view
   if (name === 'cities-index') {
@@ -7291,7 +7279,9 @@ function buildArchive() {
         if (activeExpanded) {
           if (activeExpanded._textBlock) activeExpanded._textBlock.remove();
           if (activeExpanded._kwPanel) activeExpanded._kwPanel.remove();
-          // Il pannello keyword della vista thumbs ora è inline nel layout, viene rimosso con activeExpanded.remove()
+          // Rimuovi anche il pannello keyword della vista thumbs (appeso al body)
+          const _aeTV = activeExpanded.querySelector('.ae-thumbs-view');
+          if (_aeTV && _aeTV._kwPanel) _aeTV._kwPanel.remove();
           if (activeExpanded._scrollListener) window.removeEventListener('scroll', activeExpanded._scrollListener, true);
           activeExpanded.remove();
           document.body.classList.add('cursor-red');          // ripristina rosso (box chiuso)
@@ -7453,7 +7443,7 @@ function buildArchive() {
             if (_tl) _tl.style.display = _nowWhite ? '' : 'none';
             // Aggiorna il tema del pannello keyword thumbs se visibile
             if (_aeThumbsView && _aeThumbsView._kwPanel) {
-              _aeThumbsView._kwPanel.classList.toggle('dark', !_nowWhite);
+              _aeThumbsView._kwPanel.classList.toggle('light', _nowWhite);
             }
           });
 
@@ -7572,9 +7562,9 @@ function buildArchive() {
             aeBack.textContent = '← Back';
             aeBack.addEventListener('click', e => {
               e.stopPropagation();
-              // Torna alla vista normale (il kwPanel è inline, si nasconde con la thumbs-view)
               inner.style.display = '';
               _aeThumbsView.style.display = 'none';
+              if (_aeThumbsView._kwPanel) _aeThumbsView._kwPanel.style.display = 'none';
             });
             const aeCtr = document.createElement('div');
             aeCtr.className = 'ae-thumbs-counter';
@@ -7596,13 +7586,9 @@ function buildArchive() {
               aeStrip.appendChild(item);
             });
 
-            // Colonna sinistra: info + hero + strip
-            const aeMain = document.createElement('div');
-            aeMain.className = 'ae-thumbs-main';
-            aeMain.appendChild(aeInfo);   /* info row in CIMA: Back + TV + contatore */
-            aeMain.appendChild(aeHero);
-            aeMain.appendChild(aeStrip);
-            _aeThumbsView.appendChild(aeMain);
+            _aeThumbsView.appendChild(aeInfo);   /* info row in CIMA: Back + TV + contatore */
+            _aeThumbsView.appendChild(aeHero);
+            _aeThumbsView.appendChild(aeStrip);
 
             // Clone del toggle TV — va nella info row a sinistra vicino a Back
             const aeToggleClone = toggle.cloneNode(true);
@@ -7706,16 +7692,48 @@ function buildArchive() {
               aeKwDot.classList.remove('pulsing');
             });
 
-            // Aggiorna keyword al cambio foto
+            // Funzione posiziona il pannello accanto alla foto (fixed)
+            function _aePositionKwPanel() {
+              if (!aeImg.naturalWidth || !aeImg.naturalHeight) return;
+              const imgRect = aeImg.getBoundingClientRect();
+              if (!imgRect.width || !imgRect.height) return;
+              const nW = aeImg.naturalWidth;
+              const nH = aeImg.naturalHeight;
+              const dispW = imgRect.width;
+              const dispH = imgRect.height;
+              const scale = Math.min(dispW / nW, dispH / nH);
+              const rendW = Math.round(nW * scale);
+              const rendH = Math.round(nH * scale);
+              const imgCenterX = imgRect.left + dispW / 2;
+              const imgCenterY = imgRect.top + dispH / 2;
+              const photoRight  = imgCenterX + rendW / 2;
+              const photoTop    = imgCenterY - rendH / 2;
+              const photoBottom = imgCenterY + rendH / 2;
+              aeKwPanel.style.left   = (photoRight + 25) + 'px';
+              aeKwPanel.style.top    = photoTop + 'px';
+              aeKwPanel.style.height = (photoBottom - photoTop) + 'px';
+            }
+
+            // Aggiorna keyword e posizione al cambio foto
             const _origAeShowIdx = _aeShowIdx;
             _aeShowIdx = function(idx) {
               _origAeShowIdx(idx);
               _aeUpdateKw(_aeThumbsIdx);
+              requestAnimationFrame(_aePositionKwPanel);
             };
 
-            // Appendi il pannello keywords direttamente alla thumbs-view (inline nel layout)
-            _aeThumbsView.appendChild(aeKwPanel);
+            // Posiziona al resize, scroll e caricamento immagine
+            window.addEventListener('resize', _aePositionKwPanel);
+            window.addEventListener('scroll', _aePositionKwPanel, true);
+            aeImg.addEventListener('load', () => {
+              requestAnimationFrame(() => requestAnimationFrame(_aePositionKwPanel));
+            });
+
+            // Appendi al body (fixed positioning) — inizialmente nascosto
+            aeKwPanel.style.display = 'none';
+            document.body.appendChild(aeKwPanel);
             _aeThumbsView._kwPanel = aeKwPanel;
+            _aeThumbsView._positionKwPanel = _aePositionKwPanel;
 
             _aeThumbsView.style.display = 'none';
             // Appeso al panel (archive-expanded) che ha overflow:hidden
@@ -7726,15 +7744,28 @@ function buildArchive() {
             e.stopPropagation();
             e.preventDefault();
             _buildAeThumbsView();
-            // Nasconde l'inner (hero+keywords+bottombar) e mostra la vista thumbs
             inner.style.display = 'none';
             _aeThumbsView.style.display = 'flex';
-            // Sincronizza il tema (dark/light) con lo stato attuale del panel
             if (_aeThumbsView._kwPanel) {
               const _isLight = panel.classList.contains('box-white');
-              _aeThumbsView._kwPanel.classList.toggle('dark', !_isLight);
+              _aeThumbsView._kwPanel.classList.toggle('light', _isLight);
+              _aeThumbsView._kwPanel.style.display = 'flex';
+              const _aeImgEl = _aeThumbsView.querySelector('.ae-thumbs-hero img');
+              const _doPosition = () => {
+                if (_aeThumbsView._positionKwPanel) _aeThumbsView._positionKwPanel();
+              };
+              if (_aeImgEl && _aeImgEl.naturalWidth && _aeImgEl.naturalHeight) {
+                requestAnimationFrame(() => requestAnimationFrame(_doPosition));
+              } else if (_aeImgEl) {
+                const _onLoad = () => {
+                  _aeImgEl.removeEventListener('load', _onLoad);
+                  requestAnimationFrame(() => requestAnimationFrame(_doPosition));
+                };
+                _aeImgEl.addEventListener('load', _onLoad);
+              }
+              setTimeout(_doPosition, 400);
+              setTimeout(_doPosition, 1500);
             }
-            // Mostra la prima foto con animazione
             const aeImg2 = _aeThumbsView.querySelector('.ae-thumbs-hero img');
             if (aeImg2) {
               aeImg2.classList.remove('revealing');
