@@ -1359,10 +1359,15 @@ def adjust_images(pid):
 
     targets = [i for i in p.get('images', []) if not image_ids or i['id'] in image_ids]
     updated = []
+    errors  = []
 
     # Directory per i backup originali
     orig_dir = UPLOAD / 'originals'
-    orig_dir.mkdir(exist_ok=True)
+    try:
+        orig_dir.mkdir(parents=True, exist_ok=True)
+    except Exception as e:
+        import traceback; traceback.print_exc()
+        return jsonify({'error': f'Cannot create originals dir: {e}', 'ok': False}), 500
 
     for img in targets:
         fpath = UPLOAD / img['file']
@@ -1433,10 +1438,10 @@ def adjust_images(pid):
             updated.append(img['id'])
         except Exception as e:
             import traceback; traceback.print_exc()
-            pass
+            errors.append({'id': img.get('id'), 'error': str(e)})
 
     save_db(db)
-    return jsonify({'ok': True, 'updated': updated})
+    return jsonify({'ok': True, 'updated': updated, 'errors': errors})
 
 
 @app.route('/api/projects/<pid>/images/reset', methods=['POST'])

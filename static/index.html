@@ -3471,8 +3471,18 @@ async function applyPhotographerPreset(presetName, btnEl) {
       headers: {'Content-Type': 'application/json'},
       body: JSON.stringify({ ids, curve_preset: presetName, preset_intensity: intensity })
     });
+    if (!res.ok) {
+      const errText = await res.text();
+      console.error('Preset error response:', errText);
+      toast(`Errore server (${res.status}) — controlla i log`);
+      btnEl.classList.remove('active');
+      return;
+    }
     const data = await res.json();
     const pctLabel = intensityPct < 100 ? ` (${intensityPct}%)` : '';
+    if (data.errors && data.errors.length > 0) {
+      console.warn('Preset errors:', data.errors);
+    }
     toast(`Preset ${btnEl.dataset.preset.replace(/_/g,' ')}${pctLabel} applicato a ${data.updated?.length || 0} foto ✔`);
     // Ricarica le thumbnail
     document.querySelectorAll('.image-cell img').forEach(img => {
@@ -3480,7 +3490,8 @@ async function applyPhotographerPreset(presetName, btnEl) {
     });
     resetLivePreview();
   } catch(e) {
-    toast('Errore applicazione preset');
+    console.error('Preset fetch error:', e);
+    toast('Errore applicazione preset — controlla la connessione');
     btnEl.classList.remove('active');
   } finally {
     const label = btnEl.dataset.preset.split('_').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
