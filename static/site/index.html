@@ -1603,16 +1603,17 @@
       display: block;
     }
 
-    /* ── Pannello keyword nella vista thumbs (position:fixed accanto alla foto) ── */
+    /* ── Pannello keyword nella vista thumbs (posizionato fixed accanto alla foto) ── */
     .ae-thumbs-kw-panel {
       position: fixed;
       display: flex;
       flex-direction: column;
       pointer-events: all;
       z-index: 80;
+      /* larghezza sufficiente per le keyword */
       width: 220px;
     }
-    /* Default: sfondo scuro (box Archive è nero di default) — testo bianco */
+    /* Default: testo bianco (il box Archive è scuro di default) */
     .ae-thumbs-kw-panel .archive-kw-label {
       color: rgba(255,255,255,0.85);
     }
@@ -1634,7 +1635,15 @@
     .ae-thumbs-kw-panel .archive-kw-dot {
       background: #fff;
     }
-    /* Tema chiaro: classe .dark=false, ovvero quando NON ha .dark — ma usiamo .light per sfondo bianco */
+    /* Tema chiaro (box-white): classe .dark NON presente = testo nero */
+    /* Usiamo :not(.dark) per il tema bianco */
+    .ae-thumbs-kw-panel:not(.dark) .archive-kw-label {
+      color: rgba(255,255,255,0.85); /* bianco di default */
+    }
+    /* Quando il pannello ha classe .dark (tema scuro) = bianco già di default */
+    /* Quando NON ha .dark ma il box è box-white = testo nero */
+    /* Il JS applica .dark quando il box è scuro, quindi quando .dark manca = tema bianco */
+    /* Ma il default CSS è già bianco, quindi .dark è ridondante. Usiamo solo .light per il bianco */
     .ae-thumbs-kw-panel.light .archive-kw-label {
       color: rgba(0,0,0,0.7);
     }
@@ -6479,7 +6488,8 @@ function switchView(name) {
     );
   }
 
-  // Nascondi pannelli keyword thumbs rimasti appesi al body (position:fixed)
+  // ── Nascondi pannelli keyword thumbs rimasti appesi al body ──
+  // (ae-thumbs-kw-panel è in position:fixed appeso al body, va nascosto al cambio sezione)
   document.querySelectorAll('.ae-thumbs-kw-panel').forEach(p => {
     p.style.display = 'none';
   });
@@ -7562,8 +7572,10 @@ function buildArchive() {
             aeBack.textContent = '← Back';
             aeBack.addEventListener('click', e => {
               e.stopPropagation();
+              // Torna alla vista normale
               inner.style.display = '';
               _aeThumbsView.style.display = 'none';
+              // Nasconde il pannello keyword
               if (_aeThumbsView._kwPanel) _aeThumbsView._kwPanel.style.display = 'none';
             });
             const aeCtr = document.createElement('div');
@@ -7694,8 +7706,10 @@ function buildArchive() {
 
             // Funzione posiziona il pannello accanto alla foto (fixed)
             function _aePositionKwPanel() {
+              // Se l'immagine non è ancora caricata, aspetta il load
               if (!aeImg.naturalWidth || !aeImg.naturalHeight) return;
               const imgRect = aeImg.getBoundingClientRect();
+              // Se il container non ha ancora dimensioni, esci
               if (!imgRect.width || !imgRect.height) return;
               const nW = aeImg.naturalWidth;
               const nH = aeImg.naturalHeight;
@@ -7709,6 +7723,7 @@ function buildArchive() {
               const photoRight  = imgCenterX + rendW / 2;
               const photoTop    = imgCenterY - rendH / 2;
               const photoBottom = imgCenterY + rendH / 2;
+              // Posiziona: 25px a destra del bordo destro della foto
               aeKwPanel.style.left   = (photoRight + 25) + 'px';
               aeKwPanel.style.top    = photoTop + 'px';
               aeKwPanel.style.height = (photoBottom - photoTop) + 'px';
@@ -7725,6 +7740,7 @@ function buildArchive() {
             // Posiziona al resize, scroll e caricamento immagine
             window.addEventListener('resize', _aePositionKwPanel);
             window.addEventListener('scroll', _aePositionKwPanel, true);
+            // Al load dell'immagine: riposiziona con doppio rAF per garantire il layout
             aeImg.addEventListener('load', () => {
               requestAnimationFrame(() => requestAnimationFrame(_aePositionKwPanel));
             });
@@ -7744,28 +7760,38 @@ function buildArchive() {
             e.stopPropagation();
             e.preventDefault();
             _buildAeThumbsView();
+            // Nasconde l'inner (hero+keywords+bottombar) e mostra la vista thumbs
             inner.style.display = 'none';
             _aeThumbsView.style.display = 'flex';
+            // Mostra il pannello keyword e lo posiziona
             if (_aeThumbsView._kwPanel) {
+              // Sincronizza il tema (dark/light) con lo stato attuale del panel
               const _isLight = panel.classList.contains('box-white');
               _aeThumbsView._kwPanel.classList.toggle('light', _isLight);
+              // Mostra PRIMA il pannello, poi posiziona (evita il return precoce per display:none)
               _aeThumbsView._kwPanel.style.display = 'flex';
+              // Recupera l'immagine dalla vista thumbs
               const _aeImgEl = _aeThumbsView.querySelector('.ae-thumbs-hero img');
               const _doPosition = () => {
                 if (_aeThumbsView._positionKwPanel) _aeThumbsView._positionKwPanel();
               };
+              // Se l'immagine è già caricata (cache): posiziona subito con rAF
               if (_aeImgEl && _aeImgEl.naturalWidth && _aeImgEl.naturalHeight) {
                 requestAnimationFrame(() => requestAnimationFrame(_doPosition));
               } else if (_aeImgEl) {
+                // Immagine non ancora caricata: aspetta il load event
                 const _onLoad = () => {
                   _aeImgEl.removeEventListener('load', _onLoad);
                   requestAnimationFrame(() => requestAnimationFrame(_doPosition));
                 };
                 _aeImgEl.addEventListener('load', _onLoad);
               }
+              // Fallback: dopo 400ms (sicurezza)
               setTimeout(_doPosition, 400);
+              // Fallback lungo: per immagini molto pesanti o connessioni lente
               setTimeout(_doPosition, 1500);
             }
+            // Mostra la prima foto con animazione
             const aeImg2 = _aeThumbsView.querySelector('.ae-thumbs-hero img');
             if (aeImg2) {
               aeImg2.classList.remove('revealing');
