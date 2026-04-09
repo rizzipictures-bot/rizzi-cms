@@ -1474,8 +1474,7 @@
     }
     /* Foto grande centrata — occupa tutto lo spazio residuo nel box 500px */
     .ae-thumbs-hero {
-      flex: 1 1 auto;              /* occupa tutto lo spazio residuo */
-      min-height: 0;
+      flex: 0 0 420px;             /* altezza fissa: 520 - 36 info - 64 strip = 420px */
       display: flex;
       align-items: center;
       justify-content: center;
@@ -1489,11 +1488,9 @@
     /* Wrapper che si adatta alle dimensioni reali della foto — il pulsante zoom usa right/bottom CSS */
     .ae-thumbs-img-wrap {
       position: relative;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      max-height: 100%;
+      display: inline-block;
       line-height: 0;
+      max-height: 404px;           /* 420px hero - 8px top - 8px bottom */
     }
     .ae-thumbs-img-wrap .ae-zoom-btn {
       position: absolute;
@@ -1507,10 +1504,9 @@
     }
     .ae-thumbs-hero img {
       max-width: 100%;
-      max-height: 100%;   /* si adatta all'altezza del flex hero */
+      max-height: 404px;           /* 420px hero - 8px top - 8px bottom */
       width: auto;
       height: auto;
-      object-fit: contain;
       display: block;
       /* Animazione tenda dall'alto */
       clip-path: inset(0 0 100% 0);
