@@ -1286,8 +1286,17 @@ def _apply_photographer_curve(arr, preset_name, intensity=1.0):
 
 def _medium_format_acutance(arr, strength):
     """
-    Simula l'acutanza e la morbidezza tipiche del medio/grande formato.
-    Ottimizzato per basso consumo di memoria (max ~120MB per foto 2500px).
+    Algoritmo ispirato a DeepPRIME (DXO PhotoLab):
+    - Unsharp mask adattiva a raggio molto piccolo (0.6px): acuisce i bordi
+      senza creare aloni né effetto HDR
+    - Denoising selettivo nelle zone piatte (bassa varianza locale): ammorbidisce
+      il rumore digitale preservando i dettagli reali
+    - Nessuna frequency separation aggressiva: il risultato sembra "più pulito
+      e tridimensionale" senza sembrare elaborato
+
+    arr: numpy float32 (H, W, 3) valori 0-255
+    strength: float 0.0-1.0
+    Ottimizzato per basso consumo di memoria.
     """
     from PIL import ImageFilter
     import gc
@@ -1295,45 +1304,48 @@ def _medium_format_acutance(arr, strength):
     if strength <= 0.01:
         return arr
 
-    # Converti in uint8 per Pillow (evita una copia float32 extra)
-    im_uint8 = Image.fromarray(np.clip(arr, 0, 255).astype(np.uint8))
+    im = Image.fromarray(np.clip(arr, 0, 255).astype(np.uint8))
 
-    # Bassa frequenza: blur forte
-    im_low = im_uint8.filter(ImageFilter.GaussianBlur(radius=5.0))
-    # Media frequenza: blur leggero
-    im_mid = im_uint8.filter(ImageFilter.GaussianBlur(radius=1.5))
+    # ── 1. UNSHARP MASK ADATTIVA (raggio piccolo = no aloni) ──────────────────
+    # Raggio 0.6px: acuisce solo i bordi reali, non crea effetto HDR
+    # Amount scalato con strength ma tenuto basso (max 60%) per naturalezza
+    amount = strength * 0.55   # 0.0 → 0.55 (mai oltre 55%)
+    radius = 0.6               # fisso: raggio piccolo = acutanza fine, no aloni
+    threshold = 3              # ignora differenze < 3 livelli (rumore)
+    im_sharp = im.filter(ImageFilter.UnsharpMask(radius=radius, percent=int(amount*100), threshold=threshold))
 
-    # Libera im_uint8 subito (non serve più)
-    del im_uint8
+    # ── 2. DENOISING SELETTIVO NELLE ZONE PIATTE ─────────────────────────────
+    # Calcola la varianza locale su un blur leggero per trovare zone piatte
+    # Nelle zone piatte (cielo, pelle, muri) applica un blur molto leggero
+    # per ammorbidire il rumore digitale (come fa DeepPRIME)
+    im_blur = im.filter(ImageFilter.GaussianBlur(radius=0.4))
+    del im
     gc.collect()
 
-    # Converti in float32 — ora abbiamo solo 3 array (orig già in arr)
-    low = np.array(im_low, dtype=np.float32)
-    del im_low
-    mid = np.array(im_mid, dtype=np.float32)
-    del im_mid
+    sharp = np.array(im_sharp, dtype=np.float32); del im_sharp
+    blur  = np.array(im_blur,  dtype=np.float32); del im_blur
     gc.collect()
 
-    # Calcola in-place per ridurre allocazioni
-    mid_boost  = 1.0 + strength * 2.2
-    high_scale = 1.0 - strength * 0.35
+    # Mappa di "dettaglio": dove c'è differenza tra originale e blur = zona di dettaglio
+    # Usiamo arr (originale float32) come riferimento
+    detail = np.abs(arr - blur).mean(axis=2, keepdims=True)  # (H,W,1)
+    # Normalizza: 0 = zona piatta, 1 = zona di dettaglio
+    detail_norm = np.clip(detail / 20.0, 0.0, 1.0)  # soglia 20 livelli
 
-    # band_mid = mid - low (in-place su mid)
-    mid -= low                    # mid ora contiene band_mid
-    # band_high = arr - (mid+low) = arr - mid_orig; ma mid_orig = low + band_mid
-    # Usiamo: result = low + band_mid*mid_boost + band_high*high_scale
-    #                = low + mid*mid_boost + (arr - low - mid)*high_scale
-    # Calcoliamo in-place su low:
-    # low = low + mid*mid_boost + arr*high_scale - low*high_scale - mid*high_scale
-    # low = low*(1-high_scale) + mid*(mid_boost-high_scale) + arr*high_scale
-    low *= (1.0 - high_scale)                    # low*(1-high_scale)
-    low += mid * (mid_boost - high_scale)        # + band_mid*(mid_boost-high_scale)
-    low += arr * high_scale                      # + arr*high_scale
-    del mid
+    # Mix adattivo:
+    # - Zone di dettaglio (detail_norm ≈ 1): usa la versione acuita
+    # - Zone piatte (detail_norm ≈ 0): usa la versione blurrata (denoised)
+    # La forza del denoising è proporzionale a strength
+    denoise_strength = strength * 0.4  # max 40% blend verso blur nelle zone piatte
+    blended = (sharp * detail_norm
+               + sharp * (1.0 - detail_norm) * (1.0 - denoise_strength)
+               + blur  * (1.0 - detail_norm) * denoise_strength)
+
+    del sharp, blur, detail, detail_norm
     gc.collect()
 
-    np.clip(low, 0.0, 255.0, out=low)
-    return low  # già float32
+    np.clip(blended, 0.0, 255.0, out=blended)
+    return blended.astype(np.float32)
 
 
 @app.route('/api/projects/<pid>/images/adjust', methods=['POST'])
