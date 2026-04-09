@@ -1135,9 +1135,145 @@ def sysinfo():
         'cwd': os.getcwd(),
     })
 
-# ── IMAGE PROCESSING ────────────────────────────────────────────────────────
+# ─# ── IMAGE PROCESSING ────────────────────────────────────────────
 
-@app.route('/api/projects/<pid>/images/adjust', methods=['POST'])
+def _make_lut_from_points(points):
+    """
+    Costruisce una LUT 256 valori da punti di controllo [(x0,y0),(x1,y1),...]
+    usando interpolazione lineare a tratti. x e y sono in [0,255].
+    """
+    lut = np.zeros(256, dtype=np.float32)
+    pts = sorted(points, key=lambda p: p[0])
+    for i in range(256):
+        # Trova il segmento che contiene i
+        for j in range(len(pts) - 1):
+            x0, y0 = pts[j]
+            x1, y1 = pts[j+1]
+            if x0 <= i <= x1:
+                if x1 == x0:
+                    lut[i] = y0
+                else:
+                    t = (i - x0) / (x1 - x0)
+                    lut[i] = y0 + t * (y1 - y0)
+                break
+        else:
+            if i <= pts[0][0]:
+                lut[i] = pts[0][1]
+            else:
+                lut[i] = pts[-1][1]
+    return np.clip(lut, 0, 255)
+
+
+# Preset fotografo: dizionario con curve R, G, B (punti di controllo)
+# e shift canali per split toning ombre/luci
+PHOTOGRAPHER_PRESETS = {
+    # ── GUIDO GUIDI ──────────────────────────────────────────────────────────
+    # Toni freddi e desaturati, dominante turchese/verde, contrasto morbido,
+    # ombre aperte, luci compresse. Pellicola italiana anni 70-80.
+    'guido_guidi': {
+        'curve_r': [(0,8),(64,62),(128,120),(192,178),(255,230)],   # rossi leggermente abbassati
+        'curve_g': [(0,6),(64,65),(128,126),(192,186),(255,240)],   # verdi quasi neutri
+        'curve_b': [(0,12),(64,70),(128,135),(192,196),(255,248)],  # blu alzati (freddo)
+        'split_shadow_rgb': (0, 4, 8),   # ombre leggermente blu-turchese
+        'split_hi_rgb':     (3, 2, 0),   # luci leggermente calde
+    },
+    # ── ALEC SOTH ────────────────────────────────────────────────────────────
+    # Toni naturali e attenuati, aspetto filmico, contrasto ridotto,
+    # ombre aperte (faded), palette malinconica con verdi spenti e blu.
+    'alec_soth': {
+        'curve_r': [(0,15),(64,72),(128,128),(192,182),(255,238)],  # ombre alzate (faded)
+        'curve_g': [(0,12),(64,70),(128,128),(192,183),(255,240)],  # neutro con ombre aperte
+        'curve_b': [(0,18),(64,74),(128,130),(192,184),(255,238)],  # blu leggermente alzati
+        'split_shadow_rgb': (2, 3, 6),   # ombre leggermente fredde
+        'split_hi_rgb':     (4, 3, 0),   # luci leggermente calde
+    },
+    # ── ANDREAS GURSKY ───────────────────────────────────────────────────────
+    # Colori saturi e vividi, contrasto alto, toni caldi dorati nelle luci,
+    # ombre fredde profonde. Aspetto quasi iperreale e pittorico.
+    'andreas_gursky': {
+        'curve_r': [(0,0),(64,58),(128,132),(192,200),(255,255)],   # S-curve marcata, caldi
+        'curve_g': [(0,0),(64,55),(128,128),(192,196),(255,252)],   # S-curve
+        'curve_b': [(0,0),(64,50),(128,122),(192,188),(255,248)],   # blu leggermente abbassati
+        'split_shadow_rgb': (0, 0, 12),  # ombre fredde blu
+        'split_hi_rgb':     (8, 5, 0),   # luci dorate
+    },
+    # ── PHILIP-LORCA DICORCIA ────────────────────────────────────────────────
+    # Cinematografico, flash su soggetti, sfondi freddi scuri, soggetti caldi.
+    # Contrasto elevato, ombre profonde, luci brillanti e direzionali.
+    'philip_lorca_dicorcia': {
+        'curve_r': [(0,0),(48,30),(128,135),(200,210),(255,255)],   # contrasto alto, caldi
+        'curve_g': [(0,0),(48,28),(128,128),(200,200),(255,252)],   # S-curve
+        'curve_b': [(0,5),(48,35),(128,122),(200,190),(255,245)],   # blu ombre alzati
+        'split_shadow_rgb': (0, 2, 14),  # ombre blu profonde
+        'split_hi_rgb':     (10, 6, 0),  # luci calde arancio
+    },
+    # ── THOMAS STRUTH ────────────────────────────────────────────────────────
+    # Fedeltà cromatica quasi scientifica, neutralità, curva quasi lineare,
+    # colori naturali senza manipolazioni evidenti. Scuola di Düsseldorf.
+    'thomas_struth': {
+        'curve_r': [(0,2),(64,63),(128,127),(192,191),(255,253)],   # quasi lineare
+        'curve_g': [(0,2),(64,63),(128,127),(192,191),(255,253)],   # quasi lineare
+        'curve_b': [(0,2),(64,63),(128,127),(192,191),(255,253)],   # quasi lineare
+        'split_shadow_rgb': (0, 0, 0),   # nessun viraggio
+        'split_hi_rgb':     (0, 0, 0),   # nessun viraggio
+    },
+    # ── CHRISTOPHER ANDERSON ─────────────────────────────────────────────────
+    # Caldo e cinematografico, toni dorati/aranciati, neri schiacciati ma
+    # leggermente sollevati (matte), verdi verso oliva/senape, pelle calda.
+    'christopher_anderson': {
+        'curve_r': [(0,8),(64,72),(128,138),(192,205),(255,255)],   # rossi alzati, caldi
+        'curve_g': [(0,6),(64,65),(128,128),(192,192),(255,248)],   # verdi verso oliva
+        'curve_b': [(0,4),(64,52),(128,112),(192,172),(255,225)],   # blu abbassati
+        'split_shadow_rgb': (6, 4, 0),   # ombre calde
+        'split_hi_rgb':     (10, 7, 0),  # luci dorate
+    },
+}
+
+
+def _apply_photographer_curve(arr, preset_name):
+    """
+    Applica la curva tonale e il split toning del preset fotografo.
+    arr: numpy array float32 shape (H, W, 3) con valori 0-255.
+    Restituisce arr modificato (float32, 0-255).
+    """
+    preset = PHOTOGRAPHER_PRESETS.get(preset_name)
+    if not preset:
+        return arr
+
+    # Costruisci LUT per R, G, B
+    lut_r = _make_lut_from_points(preset['curve_r'])
+    lut_g = _make_lut_from_points(preset['curve_g'])
+    lut_b = _make_lut_from_points(preset['curve_b'])
+
+    # Applica LUT per canale
+    idx = np.clip(arr.astype(np.int32), 0, 255)
+    result = arr.copy()
+    result[:,:,0] = lut_r[idx[:,:,0]]
+    result[:,:,1] = lut_g[idx[:,:,1]]
+    result[:,:,2] = lut_b[idx[:,:,2]]
+
+    # Split toning ombre
+    sr, sg, sb = preset.get('split_shadow_rgb', (0,0,0))
+    if sr or sg or sb:
+        lum = result.mean(axis=2, keepdims=True) / 255.0
+        shadow_mask = np.clip(1.0 - lum * 3.5, 0, 1)
+        result[:,:,0] = np.clip(result[:,:,0] + shadow_mask[:,:,0] * sr, 0, 255)
+        result[:,:,1] = np.clip(result[:,:,1] + shadow_mask[:,:,0] * sg, 0, 255)
+        result[:,:,2] = np.clip(result[:,:,2] + shadow_mask[:,:,0] * sb, 0, 255)
+
+    # Split toning luci
+    hr, hg, hb = preset.get('split_hi_rgb', (0,0,0))
+    if hr or hg or hb:
+        lum = result.mean(axis=2, keepdims=True) / 255.0
+        hi_mask = np.clip((lum - 0.6) * 3.5, 0, 1)
+        result[:,:,0] = np.clip(result[:,:,0] + hi_mask[:,:,0] * hr, 0, 255)
+        result[:,:,1] = np.clip(result[:,:,1] + hi_mask[:,:,0] * hg, 0, 255)
+        result[:,:,2] = np.clip(result[:,:,2] + hi_mask[:,:,0] * hb, 0, 255)
+
+    return result
+
+
+@app.route('/api/projects/<pid>/images/adjust', methods=['POST'])['POST'])
 def adjust_images(pid):
     """Applica correzioni manuali (luminosità, contrasto, saturazione) a una o più foto."""
     from PIL import ImageEnhance
@@ -1147,11 +1283,15 @@ def adjust_images(pid):
 
     data       = request.json or {}
     image_ids  = data.get('ids', [])          # lista id foto; vuota = tutte
-    brightness = float(data.get('brightness', 1.0))   # 0.5 – 2.0
-    contrast   = float(data.get('contrast',   1.0))
-    saturation = float(data.get('saturation', 1.0))
-    sharpness  = float(data.get('sharpness',  1.0))
-    temp_shift = float(data.get('temp_shift', 0.0))   # -50 … +50 (caldo/freddo)
+    brightness       = float(data.get('brightness', 1.0))   # 0.5 – 2.0
+    contrast          = float(data.get('contrast',   1.0))
+    saturation        = float(data.get('saturation', 1.0))
+    sharpness         = float(data.get('sharpness',  1.0))
+    temp_shift        = float(data.get('temp_shift', 0.0))   # -50 … +50 (caldo/freddo)
+    tint_shift        = float(data.get('tint_shift', 0.0))   # -50 … +50 (verde/magenta)
+    shadows_lift      = float(data.get('shadows_lift', 0.0)) # 0 … 40
+    highlights_comp   = float(data.get('highlights_comp', 0.0)) # 0 … 40
+    curve_preset      = data.get('curve_preset', None)  # nome preset fotografo
 
     targets = [i for i in p.get('images', []) if not image_ids or i['id'] in image_ids]
     updated = []
@@ -1172,13 +1312,32 @@ def adjust_images(pid):
                 if sharpness != 1.0:
                     im = ImageEnhance.Sharpness(im).enhance(sharpness)
 
-                # Temperatura colore: shift canali R e B
-                if abs(temp_shift) > 0.5:
-                    import numpy as np
+                # Correzioni avanzate: temperatura, tinta, ombre, luci, curve preset
+                needs_arr = (abs(temp_shift) > 0.5 or abs(tint_shift) > 0.5 or
+                             shadows_lift > 0.5 or highlights_comp > 0.5 or curve_preset)
+                if needs_arr:
                     arr = np.array(im, dtype=np.float32)
-                    shift = temp_shift * 0.8
-                    arr[:,:,0] = np.clip(arr[:,:,0] + shift, 0, 255)   # R
-                    arr[:,:,2] = np.clip(arr[:,:,2] - shift, 0, 255)   # B
+                    # Temperatura: shift R e B
+                    if abs(temp_shift) > 0.5:
+                        shift = temp_shift * 0.8
+                        arr[:,:,0] = np.clip(arr[:,:,0] + shift, 0, 255)   # R
+                        arr[:,:,2] = np.clip(arr[:,:,2] - shift, 0, 255)   # B
+                    # Tinta: shift G (negativo=verde, positivo=magenta)
+                    if abs(tint_shift) > 0.5:
+                        arr[:,:,1] = np.clip(arr[:,:,1] + tint_shift * 0.6, 0, 255)
+                    # Shadows lift: alza le ombre senza toccare le luci
+                    if shadows_lift > 0.5:
+                        lum = arr.mean(axis=2, keepdims=True) / 255.0
+                        shadow_mask = np.clip(1.0 - lum * 3.0, 0, 1)
+                        arr = np.clip(arr + shadow_mask * shadows_lift, 0, 255)
+                    # Highlights compress: abbassa le luci senza toccare le ombre
+                    if highlights_comp > 0.5:
+                        lum = arr.mean(axis=2, keepdims=True) / 255.0
+                        hi_mask = np.clip((lum - 0.55) * 3.0, 0, 1)
+                        arr = np.clip(arr - hi_mask * highlights_comp, 0, 255)
+                    # Curve preset fotografo
+                    if curve_preset:
+                        arr = _apply_photographer_curve(arr, curve_preset)
                     im = Image.fromarray(arr.astype(np.uint8))
 
                 im.save(str(fpath), 'JPEG', quality=88, optimize=True)

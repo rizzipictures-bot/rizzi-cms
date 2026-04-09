@@ -639,6 +639,48 @@
     width: 100%; accent-color: var(--purple); cursor: pointer;
     height: 4px;
   }
+  /* Preset fotografo */
+  .proc-presets {
+    margin-bottom: 14px;
+    padding-bottom: 14px;
+    border-bottom: 1px solid var(--border);
+  }
+  .proc-presets-label {
+    font-size: 10px;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+    color: var(--gray);
+    margin-bottom: 8px;
+  }
+  .proc-presets-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+  .proc-preset-btn {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    letter-spacing: .03em;
+    padding: 5px 10px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    background: var(--surface);
+    color: var(--black);
+    cursor: pointer;
+    transition: background .15s, border-color .15s, color .15s;
+    white-space: nowrap;
+    box-shadow: var(--shadow-sm);
+  }
+  .proc-preset-btn:hover {
+    background: var(--black);
+    color: var(--surface);
+    border-color: var(--black);
+  }
+  .proc-preset-btn.active {
+    background: var(--black);
+    color: var(--surface);
+    border-color: var(--black);
+  }
   .proc-actions {
     display: flex; gap: 8px; flex-wrap: wrap; align-items: center;
     padding-top: 14px; border-top: 1px solid var(--border);
@@ -1429,6 +1471,19 @@
               <div class="proc-wheel-label">Highlights</div>
               <canvas id="wheel-highlights" class="proc-wheel-canvas" width="90" height="90"></canvas>
               <button class="proc-wheel-reset" onclick="resetWheel('highlights')">reset</button>
+            </div>
+          </div>
+
+          <!-- Preset Fotografo -->
+          <div class="proc-presets">
+            <div class="proc-presets-label">Preset colore</div>
+            <div class="proc-presets-grid">
+              <button class="proc-preset-btn" data-preset="guido_guidi" onclick="applyPhotographerPreset('guido_guidi', this)">Guido Guidi</button>
+              <button class="proc-preset-btn" data-preset="alec_soth" onclick="applyPhotographerPreset('alec_soth', this)">Alec Soth</button>
+              <button class="proc-preset-btn" data-preset="andreas_gursky" onclick="applyPhotographerPreset('andreas_gursky', this)">Andreas Gursky</button>
+              <button class="proc-preset-btn" data-preset="philip_lorca_dicorcia" onclick="applyPhotographerPreset('philip_lorca_dicorcia', this)">Philip-Lorca diCorcia</button>
+              <button class="proc-preset-btn" data-preset="thomas_struth" onclick="applyPhotographerPreset('thomas_struth', this)">Thomas Struth</button>
+              <button class="proc-preset-btn" data-preset="christopher_anderson" onclick="applyPhotographerPreset('christopher_anderson', this)">Christopher Anderson</button>
             </div>
           </div>
 
@@ -3284,6 +3339,53 @@ function resetAllCorrections() {
   });
   if (window.resetAllCurves) window.resetAllCurves();
   resetLivePreview();
+}
+
+// ════════════════════════════════════════════════════════════════
+// PRESET FOTOGRAFO
+// ════════════════════════════════════════════════════════════════
+async function applyPhotographerPreset(presetName, btnEl) {
+  if (!currentProject) return;
+  const ids = _selectedImgIds.size > 0 ? [..._selectedImgIds] : [];
+  if (ids.length === 0) {
+    // Nessuna selezione: chiedi conferma per tutte le foto
+    if (!confirm(`Applica il preset "${btnEl.textContent}" a TUTTE le foto del progetto?`)) return;
+  }
+  // Stato visivo: attiva il bottone
+  document.querySelectorAll('.proc-preset-btn').forEach(b => b.classList.remove('active'));
+  btnEl.classList.add('active');
+  btnEl.textContent = 'Elaborando...';
+  btnEl.disabled = true;
+  try {
+    const res = await fetch(`${API}/projects/${currentProject.id}/images/adjust`, {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({ ids, curve_preset: presetName })
+    });
+    const data = await res.json();
+    toast(`Preset ${btnEl.dataset.preset.replace(/_/g,' ')} applicato a ${data.updated?.length || 0} foto ✔`);
+    // Ricarica le thumbnail
+    document.querySelectorAll('.image-cell img').forEach(img => {
+      img.src = img.src.split('?')[0] + '?t=' + Date.now();
+    });
+    resetLivePreview();
+  } catch(e) {
+    toast('Errore applicazione preset');
+    btnEl.classList.remove('active');
+  } finally {
+    const label = btnEl.dataset.preset.split('_').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
+    // Ripristina il nome originale del bottone
+    const PRESET_LABELS = {
+      'guido_guidi': 'Guido Guidi',
+      'alec_soth': 'Alec Soth',
+      'andreas_gursky': 'Andreas Gursky',
+      'philip_lorca_dicorcia': 'Philip-Lorca diCorcia',
+      'thomas_struth': 'Thomas Struth',
+      'christopher_anderson': 'Christopher Anderson',
+    };
+    btnEl.textContent = PRESET_LABELS[btnEl.dataset.preset] || label;
+    btnEl.disabled = false;
+  }
 }
 
 // ════════════════════════════════════════════════════════════════
