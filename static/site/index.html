@@ -1467,6 +1467,7 @@
       height: 520px;
       box-sizing: border-box;
       overflow: hidden;
+      position: relative;  /* contesto per ae-thumbs-bottombar assoluta */
       background: #111;    /* default: scuro come il box */
     }
     .archive-expanded.box-white .ae-thumbs-view {
@@ -1518,18 +1519,12 @@
       clip-path: inset(0 0 0% 0);
       transition: clip-path .65s cubic-bezier(.77, 0, .175, 1);
     }
-    /* Info row: Back a sx + TV vicino + contatore a dx */
+    /* Info row: Back a sx + contatore a dx */
     .ae-thumbs-info {
       display: flex;
       align-items: center;
       justify-content: space-between;
       padding: 6px 12px;
-      flex-shrink: 0;
-    }
-    /* TV nella info row: a destra, vicino al contatore */
-    .ae-thumbs-tv {
-      margin-left: auto;  /* spinge TV a destra */
-      margin-right: 8px;
       flex-shrink: 0;
     }
     .ae-thumbs-back {
@@ -7597,7 +7592,7 @@ function buildArchive() {
               aeStrip.appendChild(item);
             });
 
-            _aeThumbsView.appendChild(aeInfo);   /* info row in CIMA: Back + TV + contatore */
+            _aeThumbsView.appendChild(aeInfo);   /* info row in CIMA: Back + contatore */
             _aeThumbsView.appendChild(aeHero);
             _aeThumbsView.appendChild(aeStrip);
 
@@ -7629,9 +7624,14 @@ function buildArchive() {
                 }
               }
             });
-            // Inserisci la TV nella info row a DESTRA: Back [spazio] TV contatore
-            aeInfo.appendChild(aeToggleClone);
-            aeInfo.appendChild(aeCtr);  // rimuovi e riappendi per mettere contatore dopo TV
+            // Info row: solo Back a sinistra e contatore a destra
+            aeInfo.appendChild(aeCtr);
+
+            // Bottombar in basso a destra (come nel Mode 1): solo TV
+            const aeBottombar = document.createElement('div');
+            aeBottombar.className = 'ae-thumbs-bottombar';
+            aeBottombar.appendChild(aeToggleClone);
+            _aeThumbsView.appendChild(aeBottombar); /* TV in basso a destra */
 
             // ── PANNELLO KEYWORD: linea verticale + pallino + keyword ──
             // Creato una sola volta, posizionato in fixed accanto alla foto
