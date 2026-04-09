@@ -7697,7 +7697,6 @@ function buildArchive() {
 
             // Funzione posiziona il pannello accanto alla foto (fixed)
             function _aePositionKwPanel() {
-              if (aeKwPanel.style.display === 'none') return;
               // Se l'immagine non è ancora caricata, aspetta il load
               if (!aeImg.naturalWidth || !aeImg.naturalHeight) return;
               const imgRect = aeImg.getBoundingClientRect();
@@ -7762,6 +7761,10 @@ function buildArchive() {
               _aeThumbsView._kwPanel.classList.toggle('dark', !_isLight);
               // Mostra PRIMA il pannello, poi posiziona (evita il return precoce per display:none)
               _aeThumbsView._kwPanel.style.display = 'flex';
+              // Tentativo immediato: se l'immagine è già in cache, naturalWidth è già disponibile
+              if (_aeThumbsView._positionKwPanel) {
+                requestAnimationFrame(() => requestAnimationFrame(_aeThumbsView._positionKwPanel));
+              }
               // Primo tentativo: dopo 60ms (layout completato)
               setTimeout(() => {
                 if (_aeThumbsView._positionKwPanel) _aeThumbsView._positionKwPanel();
@@ -7770,6 +7773,10 @@ function buildArchive() {
               setTimeout(() => {
                 if (_aeThumbsView._positionKwPanel) _aeThumbsView._positionKwPanel();
               }, 350);
+              // Fallback lungo: per immagini molto pesanti o connessioni lente
+              setTimeout(() => {
+                if (_aeThumbsView._positionKwPanel) _aeThumbsView._positionKwPanel();
+              }, 1200);
             }
             // Mostra la prima foto con animazione
             const aeImg2 = _aeThumbsView.querySelector('.ae-thumbs-hero img');
