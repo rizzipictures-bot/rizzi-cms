@@ -1474,7 +1474,7 @@
     }
     /* Foto grande centrata — occupa tutto lo spazio residuo nel box 500px */
     .ae-thumbs-hero {
-      flex: 0 0 412px;             /* altezza fissa: 520 - 36 info - 8 margin-strip - 64 strip = 412px */
+      flex: 0 0 405px;             /* altezza fissa: 520 - 36 info - 15 margin-strip - 64 strip = 405px */
       display: flex;
       align-items: center;
       justify-content: center;
@@ -1577,7 +1577,7 @@
       flex: 0 0 64px;   /* altezza fissa 64px, non cresce */
       padding: 0 8px 0;
       align-items: stretch;
-      margin-top: 8px;  /* uguale al padding-bottom dell'hero: spazio simmetrico sopra e sotto la foto */
+      margin-top: 15px;  /* spazio sotto la foto verso le thumbs */
     }
     .ae-thumbs-strip::-webkit-scrollbar { display: none; }
     .ae-thumbs-strip-item {
@@ -7604,6 +7604,11 @@ function buildArchive() {
             // Clone del toggle TV — va nella info row a sinistra vicino a Back
             const aeToggleClone = toggle.cloneNode(true);
             aeToggleClone.className = 'archive-expanded-toggle ae-thumbs-tv';
+            // Mode 2 parte sempre con sfondo bianco: inizializza il clone con icona light visibile
+            const _cloneSvgD = aeToggleClone.querySelector('.ae-toggle-dark');
+            const _cloneSvgL = aeToggleClone.querySelector('.ae-toggle-light');
+            if (_cloneSvgD) _cloneSvgD.style.display = 'none';
+            if (_cloneSvgL) _cloneSvgL.style.display = '';
             aeToggleClone.addEventListener('click', e => {
               e.stopPropagation();
               panel.classList.toggle('box-white');
