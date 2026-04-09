@@ -858,7 +858,8 @@
   }
   #proc-zoom-popup.open { display: flex; }
   #proc-zoom-popup-img {
-    max-width: 80vw; max-height: 78vh;
+    max-width: 92vw; max-height: 88vh;
+    min-width: min(600px, 90vw);
     display: block; object-fit: contain;
     box-shadow: 0 8px 40px rgba(0,0,0,0.5);
   }
@@ -2066,9 +2067,10 @@ function updateIptcStatusBar() {
 let _dragSrcId = null;
 
 // ── VARIABILI SELEZIONE & ELABORAZIONE ──
-let _selectedImgIds = new Set();
-let _selectMode     = false;
-let _masterImgId    = null;
+let _selectedImgIds  = new Set();
+let _selectMode      = false;
+let _masterImgId     = null;
+let _firstSelectedId = null;  // prima foto selezionata (per popup anteprima)
 
 function toggleSelectMode() {
   _selectMode = !_selectMode;
@@ -2096,11 +2098,22 @@ function toggleSelectMode() {
 
 function toggleSelectImg(iid, e) {
   if (e) e.stopPropagation();
-  if (_selectedImgIds.has(iid)) _selectedImgIds.delete(iid);
-  else _selectedImgIds.add(iid);
+  if (_selectedImgIds.has(iid)) {
+    _selectedImgIds.delete(iid);
+    // Se deselezioniamo la prima, aggiorna con la prossima disponibile
+    if (_firstSelectedId === iid) {
+      _firstSelectedId = _selectedImgIds.size > 0 ? [..._selectedImgIds][0] : null;
+    }
+  } else {
+    // La prima foto selezionata diventa la foto di anteprima
+    if (_selectedImgIds.size === 0) _firstSelectedId = iid;
+    _selectedImgIds.add(iid);
+  }
   _livePreviewScrolled = false;
   renderImageGrid();
   updateProcSelInfo();
+  // Apri/aggiorna il popup anteprima ingrandita se il pannello Elabora è aperto
+  _updateElaboraPreviewPopup();
 }
 
 function selectAllImages() {
@@ -2112,9 +2125,11 @@ function selectAllImages() {
 
 function clearSelection() {
   _selectedImgIds.clear();
+  _firstSelectedId = null;
   _livePreviewScrolled = false;
   renderImageGrid();
   updateProcSelInfo();
+  _updateElaboraPreviewPopup();
 }
 
 function setMasterImg(iid) {
@@ -3297,6 +3312,9 @@ init();
   window.closeProcZoom = function() {
     document.getElementById('proc-zoom-popup').classList.remove('open');
     document.removeEventListener('keydown', _zoomKeyClose);
+    document.removeEventListener('keydown', _elaboraPreviewKeyClose);
+    // Se chiuso manualmente, non riaprire automaticamente finché non si riseleziona
+    // (non resettiamo _firstSelectedId così il filtro continua ad aggiornarsi)
   };
 
   function _zoomKeyClose(e) {
@@ -3396,6 +3414,59 @@ function resetAllCorrections() {
   });
   if (window.resetAllCurves) window.resetAllCurves();
   resetLivePreview();
+}
+
+// ════════════════════════════════════════════════════════════════
+// POPUP ANTEPRIMA INGRANDITA (aperto automaticamente alla selezione)
+// ════════════════════════════════════════════════════════════════
+function _updateElaboraPreviewPopup() {
+  // Apre il popup solo se il pannello Elabora è aperto
+  const panel = document.getElementById('img-proc-panel');
+  if (!panel || !panel.classList.contains('open')) return;
+
+  const popup = document.getElementById('proc-zoom-popup');
+  const img   = document.getElementById('proc-zoom-popup-img');
+  if (!popup || !img) return;
+
+  if (_firstSelectedId) {
+    // Trova la foto nel progetto
+    const imgData = currentProject?.images?.find(i => i.id === _firstSelectedId);
+    if (!imgData) return;
+    // Usa il file originale (non la thumb) per la massima qualità
+    const src = `/uploads/${imgData.file}`;
+    if (img.src !== location.origin + src) {
+      img.src = src;
+    }
+    // Aggiorna label
+    const label = document.getElementById('proc-zoom-popup-label');
+    if (label) {
+      const n = _selectedImgIds.size;
+      label.textContent = n > 1
+        ? `Anteprima prima foto selezionata — ${n} foto selezionate in totale`
+        : 'Anteprima foto selezionata — live preview in tempo reale';
+    }
+    // Applica il filtro corrente
+    if (window._applyZoomFilter) window._applyZoomFilter();
+    // Apri il popup se non già aperto
+    if (!popup.classList.contains('open')) {
+      popup.classList.add('open');
+      document.addEventListener('keydown', _elaboraPreviewKeyClose);
+    }
+  } else {
+    // Nessuna selezione: chiudi il popup
+    if (popup.classList.contains('open')) {
+      popup.classList.remove('open');
+      document.removeEventListener('keydown', _elaboraPreviewKeyClose);
+    }
+  }
+}
+
+function _elaboraPreviewKeyClose(e) {
+  if (e.key === 'Escape') {
+    const popup = document.getElementById('proc-zoom-popup');
+    if (popup) popup.classList.remove('open');
+    document.removeEventListener('keydown', _elaboraPreviewKeyClose);
+  }
 }
 
 // ════════════════════════════════════════════════════════════════
@@ -3710,7 +3781,7 @@ init();
 <div id="proc-zoom-popup">
   <button id="proc-zoom-popup-close" onclick="closeProcZoom()">&#x2715;</button>
   <img id="proc-zoom-popup-img" src="" alt="">
-  <div id="proc-zoom-popup-label">Live preview &mdash; le correzioni sono applicate in tempo reale</div>
+  <div id="proc-zoom-popup-label">Anteprima foto selezionata &mdash; live preview in tempo reale &mdash; ESC o clic per chiudere</div>
 </div>
 
 </body>
