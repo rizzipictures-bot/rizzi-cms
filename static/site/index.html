@@ -2185,25 +2185,36 @@
       display: none;
       align-items: center;
       justify-content: center;
-      background: rgba(0,0,0,0.82);
+      overflow: hidden;
     }
     #ae-zoom-popup.open {
       display: flex;
     }
+    /* Sfondo: stessa foto a tutto schermo, sfocata e scurita */
+    #ae-zoom-popup-bg {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      object-position: center;
+      filter: blur(18px) brightness(0.45);
+      transform: scale(1.05);
+      z-index: 0;
+    }
     #ae-zoom-popup-inner {
       position: relative;
-      width: 100vw;
-      height: 100vh;
+      z-index: 1;
       display: flex;
       align-items: center;
       justify-content: center;
     }
     #ae-zoom-popup-img {
       display: block;
-      width: 100vw;
-      height: 100vh;
-      object-fit: cover;
-      object-position: center;
+      height: 500px;
+      width: auto;
+      max-width: 100vw;
+      object-fit: contain;
     }
     #ae-zoom-popup-close {
       position: fixed;
@@ -5117,12 +5128,13 @@
 
 <!-- Popup zoom immagine Archive -->
 <div id="ae-zoom-popup">
+  <img id="ae-zoom-popup-bg" src="" alt="">
   <div id="ae-zoom-popup-inner">
-    <button id="ae-zoom-popup-close" aria-label="Chiudi">
-      <svg viewBox="0 0 12 12"><line x1="1" y1="1" x2="11" y2="11"/><line x1="11" y1="1" x2="1" y2="11"/></svg>
-    </button>
     <img id="ae-zoom-popup-img" src="" alt="">
   </div>
+  <button id="ae-zoom-popup-close" aria-label="Chiudi">
+    <svg viewBox="0 0 12 12"><line x1="1" y1="1" x2="11" y2="11"/><line x1="11" y1="1" x2="1" y2="11"/></svg>
+  </button>
 </div>
 
 <script>
@@ -10041,8 +10053,11 @@ loadFromCMS();
   }
 
   // Apre il popup con l'immagine indicata
+  const _zoomPopupBg  = document.getElementById('ae-zoom-popup-bg');
+
   function _openZoom(imgSrc) {
     _zoomPopupImg.src = imgSrc;
+    _zoomPopupBg.src  = imgSrc;
     // In Chromium, html/body con overflow:hidden clippa anche position:fixed
     // Spostiamo il popup come figlio diretto di <html> per evitare il clipping
     document.documentElement.appendChild(_zoomPopup);
