@@ -2239,9 +2239,14 @@
       left: 5vw;
       right: auto;
     }
+    #ae-zoom-popup-inner.pos-center {
+      left: 50%;
+      right: auto;
+      transform: translateX(-50%);
+    }
     #ae-zoom-popup-img {
       display: block;
-      height: 500px;
+      height: 550px;
       width: auto;
       max-width: 100vw;
       object-fit: contain;
@@ -10063,16 +10068,17 @@ loadFromCMS();
   // Apre il popup con l'immagine indicata
   const _zoomPopupBg  = document.getElementById('ae-zoom-popup-bg');
 
-  let _zoomSide = 'right'; // alterna tra 'right' e 'left'
+  const _zoomPositions = ['right', 'left', 'center'];
+  let _zoomPosIdx = 0;
 
   function _openZoom(imgSrc) {
     _zoomPopupImg.src = imgSrc;
     _zoomPopupBg.src  = imgSrc;
-    // Alterna posizione: alto-destra / alto-sinistra
+    // Alterna posizione: destra → sinistra → centro
     const inner = document.getElementById('ae-zoom-popup-inner');
-    inner.classList.remove('pos-right', 'pos-left');
-    inner.classList.add(_zoomSide === 'right' ? 'pos-right' : 'pos-left');
-    _zoomSide = _zoomSide === 'right' ? 'left' : 'right';
+    inner.classList.remove('pos-right', 'pos-left', 'pos-center');
+    inner.classList.add('pos-' + _zoomPositions[_zoomPosIdx]);
+    _zoomPosIdx = (_zoomPosIdx + 1) % 3;
     // In Chromium, html/body con overflow:hidden clippa anche position:fixed
     // Spostiamo il popup come figlio diretto di <html> per evitare il clipping
     document.documentElement.appendChild(_zoomPopup);
