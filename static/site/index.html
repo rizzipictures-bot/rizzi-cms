@@ -2192,43 +2192,41 @@
     }
     #ae-zoom-popup-inner {
       position: relative;
-      max-width: 90vw;
-      max-height: 90vh;
+      width: 100vw;
+      height: 100vh;
       display: flex;
       align-items: center;
       justify-content: center;
     }
     #ae-zoom-popup-img {
       display: block;
-      max-width: 90vw;
-      max-height: 90vh;
+      max-width: 100vw;
+      max-height: 100vh;
       width: auto;
       height: auto;
       object-fit: contain;
-      box-shadow: 0 8px 40px rgba(0,0,0,0.35);
     }
     #ae-zoom-popup-close {
-      position: absolute;
-      top: -12px;
-      right: -12px;
-      width: 20px;
-      height: 20px;
-      background: #7b2fff;
+      position: fixed;
+      top: 16px;
+      right: 16px;
+      width: 28px;
+      height: 28px;
+      background: rgba(0,0,0,0.55);
       border-radius: 50%;
       display: flex;
       align-items: center;
       justify-content: center;
       cursor: pointer;
-      z-index: 10;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.30);
+      z-index: 3100;
       transition: background .15s;
     }
     #ae-zoom-popup-close:hover {
-      background: #6010ee;
+      background: rgba(0,0,0,0.80);
     }
     #ae-zoom-popup-close svg {
-      width: 8px;
-      height: 8px;
+      width: 12px;
+      height: 12px;
       display: block;
       stroke: #fff;
       fill: none;
