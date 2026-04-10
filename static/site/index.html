@@ -1554,8 +1554,8 @@
     /* Bottom bar nella vista thumbs — TV + Back in basso a dx */
     .ae-thumbs-bottombar {
       position: absolute;
-      bottom: 10px;
-      right: 10px;
+      bottom: 0;           /* allineato al margine basso della foto */
+      right: -30px;        /* fuori dal bordo destro, come il pulsante zoom */
       display: flex;
       align-items: center;
       gap: 8px;
@@ -7677,11 +7677,11 @@ function buildArchive() {
             // Info row: solo Back a sinistra e contatore a destra
             aeInfo.appendChild(aeCtr);
 
-            // Bottombar in basso a destra (come nel Mode 1): solo TV
+            // Bottombar in basso a destra: allineata al margine basso della foto
             const aeBottombar = document.createElement('div');
             aeBottombar.className = 'ae-thumbs-bottombar';
             aeBottombar.appendChild(aeToggleClone);
-            _aeThumbsView.appendChild(aeBottombar); /* TV in basso a destra */
+            aeImgWrap.appendChild(aeBottombar); /* TV ancorato al bordo inferiore della foto */
 
             // ── PANNELLO KEYWORD: linea verticale + pallino + keyword ──
             // Creato una sola volta, posizionato in fixed accanto alla foto
