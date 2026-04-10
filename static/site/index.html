@@ -2179,6 +2179,28 @@
     /* ══════════════════════════════════════════════════════════════
        ARCHIVE — POPUP LIGHTBOX INGRANDIMENTO
     ══════════════════════════════════════════════════════════════ */
+    /* Popup bianco — modalità thumbs */
+    #ae-zoom-white-popup {
+      position: fixed;
+      inset: 0;
+      z-index: 3000;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      background: #fff;
+      cursor: pointer;
+    }
+    #ae-zoom-white-popup.open { display: flex; }
+    #ae-zoom-white-img {
+      height: 700px;
+      width: auto;
+      max-width: 100vw;
+      max-height: 100vh;
+      object-fit: contain;
+      cursor: default;
+      display: block;
+    }
+
     #ae-zoom-popup {
       position: fixed;
       inset: 0;
@@ -5142,6 +5164,11 @@
   <div class="ss-label">Screensaver — premi un tasto o clicca per uscire</div>
 </div>
 
+<!-- Popup zoom bianco (modalità thumbs) -->
+<div id="ae-zoom-white-popup">
+  <img id="ae-zoom-white-img" src="" alt="">
+</div>
+
 <!-- Popup zoom immagine Archive -->
 <div id="ae-zoom-popup">
   <img id="ae-zoom-popup-bg" src="" alt="">
@@ -7536,9 +7563,9 @@ function buildArchive() {
             aeImg.src = images[0] ? images[0].url : '';
             aeImg.alt = p.title || '';
             aeImgWrap.appendChild(aeImg);
-            // Icona zoom angolo basso-destra della foto grande (modalità 2)
+            // Icona zoom angolo basso-destra della foto grande (modalità 2 — popup bianco)
             if (window._addAeZoomBtn) {
-              window._addAeZoomBtn(aeImgWrap, () => images[_aeThumbsIdx] ? images[_aeThumbsIdx].url : aeImg.src);
+              window._addAeZoomBtn(aeImgWrap, () => images[_aeThumbsIdx] ? images[_aeThumbsIdx].url : aeImg.src, 'white');
             }
             aeHero.appendChild(aeImgWrap);
 
@@ -10142,11 +10169,41 @@ loadFromCMS();
         container.classList.contains('archive-expanded-hero')) return;
   }
 
-  window._addAeZoomBtn = function(heroEl, getImgSrc) {
+  // Popup bianco per modalità thumbs
+  const _whitePopup = document.getElementById('ae-zoom-white-popup');
+  const _whiteImg   = document.getElementById('ae-zoom-white-img');
+  if (_whitePopup) {
+    _whitePopup.addEventListener('click', e => {
+      if (e.target !== _whiteImg) {
+        _whitePopup.classList.remove('open');
+        document.documentElement.appendChild(_whitePopup); // riporta al posto
+        _whiteImg.src = '';
+      }
+    });
+    document.addEventListener('keydown', e => {
+      if (e.key === 'Escape' && _whitePopup.classList.contains('open')) {
+        _whitePopup.classList.remove('open');
+        _whiteImg.src = '';
+      }
+    });
+  }
+
+  function _openWhiteZoom(imgSrc) {
+    if (!_whitePopup || !_whiteImg) return;
+    _whiteImg.src = imgSrc;
+    document.documentElement.appendChild(_whitePopup);
+    _whitePopup.classList.add('open');
+  }
+
+  window._addAeZoomBtn = function(heroEl, getImgSrc, mode) {
     const btn = _makeZoomIcon();
     btn.addEventListener('click', e => {
       e.stopPropagation();
-      _openZoom(getImgSrc());
+      if (mode === 'white') {
+        _openWhiteZoom(getImgSrc());
+      } else {
+        _openZoom(getImgSrc());
+      }
     });
     heroEl.appendChild(btn);
     // Posiziona il bottone dopo il caricamento dell'immagine
