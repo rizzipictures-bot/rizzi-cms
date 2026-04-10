@@ -2190,7 +2190,7 @@
     #ae-zoom-popup.open {
       display: flex;
     }
-    /* Sfondo: stessa foto a tutto schermo, sfocata e scurita */
+    /* Sfondo: stessa foto a tutto schermo */
     #ae-zoom-popup-bg {
       position: absolute;
       inset: 0;
@@ -2202,9 +2202,30 @@
       transform: scale(1.05);
       z-index: 0;
     }
+    /* Overlay grigio 5% sopra lo sfondo */
+    #ae-zoom-popup::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: rgba(128,128,128,0.05);
+      z-index: 1;
+      pointer-events: none;
+    }
+    /* Grana (noise) sopra lo sfondo */
+    #ae-zoom-popup::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='200' height='200' filter='url(%23n)' opacity='1'/%3E%3C/svg%3E");
+      background-size: 200px 200px;
+      opacity: 0.18;
+      z-index: 1;
+      pointer-events: none;
+      mix-blend-mode: overlay;
+    }
     #ae-zoom-popup-inner {
       position: relative;
-      z-index: 1;
+      z-index: 2;
       display: flex;
       align-items: center;
       justify-content: center;
