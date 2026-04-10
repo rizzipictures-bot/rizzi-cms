@@ -1493,6 +1493,7 @@
               <button class="proc-preset-btn" data-preset="philip_lorca_dicorcia" onclick="applyPhotographerPreset('philip_lorca_dicorcia', this)">Philip-Lorca diCorcia</button>
               <button class="proc-preset-btn" data-preset="thomas_struth" onclick="applyPhotographerPreset('thomas_struth', this)">Thomas Struth</button>
               <button class="proc-preset-btn" data-preset="christopher_anderson" onclick="applyPhotographerPreset('christopher_anderson', this)">Christopher Anderson</button>
+              <button class="proc-preset-btn" data-preset="gregory_halpern" onclick="applyPhotographerPreset('gregory_halpern', this)">Gregory Halpern</button>
             </div>
             <!-- Slider intensità preset -->
             <div class="proc-slider-row" style="margin-top:8px;">
@@ -3510,6 +3511,7 @@ async function applyPhotographerPreset(presetName, btnEl) {
       'philip_lorca_dicorcia': 'Philip-Lorca diCorcia',
       'thomas_struth': 'Thomas Struth',
       'christopher_anderson': 'Christopher Anderson',
+      'gregory_halpern': 'Gregory Halpern',
     };
     btnEl.textContent = PRESET_LABELS[btnEl.dataset.preset] || label;
     btnEl.disabled = false;

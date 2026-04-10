@@ -1227,6 +1227,18 @@ PHOTOGRAPHER_PRESETS = {
         'split_shadow_rgb': (6, 4, 0),   # ombre calde
         'split_hi_rgb':     (10, 7, 0),  # luci dorate
     },
+    # ── GREGORY HALPERN ──────────────────────────────────────────────────────
+    # Palette calda con dominante arancio-gialla nei mezzitoni e nelle luci,
+    # ombre quasi neutre con leggerissima tendenza fredda, neri sollevati
+    # (lifted blacks), luci compresse. Tipico di ZZYZX e Confederate Moons.
+    # Analisi su 39 foto: WB ratio 1.056, R-B mezzitoni +10.9, P10=54.
+    'gregory_halpern': {
+        'curve_r': [(0,5),(64,68),(128,134),(192,200),(255,255)],   # rossi alzati, caldi nei mezzitoni/luci
+        'curve_g': [(0,4),(64,65),(128,129),(192,194),(255,254)],   # verdi quasi neutri
+        'curve_b': [(0,8),(64,67),(128,123),(192,186),(255,245)],   # blu alzati nelle ombre, abbassati nelle luci
+        'split_shadow_rgb': (1, 2, 5),   # ombre leggermente fredde/neutre
+        'split_hi_rgb':     (8, 5, 0),   # luci calde arancio-gialle
+    },
 }
 
 
