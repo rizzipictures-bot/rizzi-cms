@@ -1242,58 +1242,62 @@ PHOTOGRAPHER_PRESETS = {
 }
 
 
-def _apply_photographer_curve(arr, preset_name, intensity=1.0):
+def _apply_photographer_curve(im_pil, preset_name, intensity=1.0):
     """
     Applica la curva tonale e il split toning del preset fotografo.
-    arr: numpy array float32 shape (H, W, 3) con valori 0-255.
+    im_pil: PIL Image RGB (uint8). Lavora SOLO con Pillow, zero numpy intermedi.
     intensity: float 0.0-1.0 (0=nessun effetto, 1=preset completo).
-              Implementato come blend lineare tra originale e preset al 100%.
-    Restituisce arr modificato (float32, 0-255).
+    Restituisce PIL Image RGB.
     """
+    from PIL import ImageChops, ImageFilter
     preset = PHOTOGRAPHER_PRESETS.get(preset_name)
     if not preset:
-        return arr
+        return im_pil
 
-    intensity = float(np.clip(intensity, 0.0, 1.0))
+    intensity = max(0.0, min(1.0, float(intensity)))
     if intensity <= 0.01:
-        return arr
+        return im_pil
 
-    # Costruisci LUT per R, G, B
+    # Costruisci LUT Pillow: lista di 768 interi (256 R + 256 G + 256 B)
     lut_r = _make_lut_from_points(preset['curve_r'])
     lut_g = _make_lut_from_points(preset['curve_g'])
     lut_b = _make_lut_from_points(preset['curve_b'])
+    # Pillow point() accetta una lista flat [R0..R255, G0..G255, B0..B255]
+    lut_flat = [int(round(v)) for v in lut_r] + \
+               [int(round(v)) for v in lut_g] + \
+               [int(round(v)) for v in lut_b]
+    result = im_pil.point(lut_flat)
 
-    # Applica LUT per canale
-    idx = np.clip(arr.astype(np.int32), 0, 255)
-    result = arr.copy()
-    result[:,:,0] = lut_r[idx[:,:,0]]
-    result[:,:,1] = lut_g[idx[:,:,1]]
-    result[:,:,2] = lut_b[idx[:,:,2]]
-
-    # Split toning ombre
+    # Split toning ombre: aggiungi colore nelle zone scure
     sr, sg, sb = preset.get('split_shadow_rgb', (0,0,0))
     if sr or sg or sb:
-        lum = result.mean(axis=2, keepdims=True) / 255.0
-        shadow_mask = np.clip(1.0 - lum * 3.5, 0, 1)
-        result[:,:,0] = np.clip(result[:,:,0] + shadow_mask[:,:,0] * sr, 0, 255)
-        result[:,:,1] = np.clip(result[:,:,1] + shadow_mask[:,:,0] * sg, 0, 255)
-        result[:,:,2] = np.clip(result[:,:,2] + shadow_mask[:,:,0] * sb, 0, 255)
+        # Maschera ombre: zone scure = alto (255), zone chiare = basso (0)
+        gray = result.convert('L')
+        shadow_lut = [int(max(0, min(255, 255 - i * 3.5))) for i in range(256)]
+        shadow_mask = gray.point(shadow_lut).convert('RGB')
+        # Layer di colore piatto moltiplicato per la maschera
+        # ImageChops.multiply: pixel = (a * b) / 255 → valori già normalizzati
+        shift_img = Image.new('RGB', result.size, (sr, sg, sb))
+        weighted = ImageChops.multiply(shift_img, shadow_mask)
+        result = ImageChops.add(result, weighted)
 
-    # Split toning luci
+    # Split toning luci: aggiungi colore nelle zone chiare
     hr, hg, hb = preset.get('split_hi_rgb', (0,0,0))
     if hr or hg or hb:
-        lum = result.mean(axis=2, keepdims=True) / 255.0
-        hi_mask = np.clip((lum - 0.6) * 3.5, 0, 1)
-        result[:,:,0] = np.clip(result[:,:,0] + hi_mask[:,:,0] * hr, 0, 255)
-        result[:,:,1] = np.clip(result[:,:,1] + hi_mask[:,:,0] * hg, 0, 255)
-        result[:,:,2] = np.clip(result[:,:,2] + hi_mask[:,:,0] * hb, 0, 255)
+        gray = result.convert('L')
+        # hi_mask = clip((lum - 0.6) * 3.5 * 255, 0, 255)
+        hi_lut = [int(max(0, min(255, (i/255.0 - 0.6) * 3.5 * 255))) for i in range(256)]
+        hi_mask = gray.point(hi_lut)
+        shift_img = Image.new('RGB', result.size, (hr, hg, hb))
+        hi_mask_rgb = hi_mask.convert('RGB')
+        weighted = ImageChops.multiply(shift_img, hi_mask_rgb)
+        result = ImageChops.add(result, weighted)
 
     # Blend con l'originale in base all'intensità
-    # intensity=1.0 → preset puro; intensity=0.5 → 50% preset + 50% originale
     if intensity < 1.0:
-        result = arr * (1.0 - intensity) + result * intensity
+        result = Image.blend(im_pil, result, intensity)
 
-    return np.clip(result, 0, 255)
+    return result
 
 
 def _medium_format_acutance(arr, strength):
@@ -1408,10 +1412,14 @@ def adjust_images(pid):
                 if sharpness != 1.0:
                     im = ImageEnhance.Sharpness(im).enhance(sharpness)
 
-                # Correzioni avanzate: temperatura, tinta, ombre, luci, curve preset
+                # Curve preset fotografo: lavora SOLO su PIL, zero numpy
+                if curve_preset:
+                    im = _apply_photographer_curve(im, curve_preset, preset_intensity)
+
+                # Correzioni avanzate con numpy: temperatura, tinta, ombre, luci
                 needs_arr = (abs(temp_shift) > 0.5 or abs(tint_shift) > 0.5 or
                              shadows_lift > 0.5 or highlights_comp > 0.5 or
-                             curve_preset or mf_acutance > 0.01)
+                             mf_acutance > 0.01)
                 if needs_arr:
                     arr = np.array(im, dtype=np.float32)
                     # Temperatura: shift R e B
@@ -1432,10 +1440,7 @@ def adjust_images(pid):
                         lum = arr.mean(axis=2, keepdims=True) / 255.0
                         hi_mask = np.clip((lum - 0.55) * 3.0, 0, 1)
                         arr = np.clip(arr - hi_mask * highlights_comp, 0, 255)
-                    # Curve preset fotografo (con intensità variabile)
-                    if curve_preset:
-                        arr = _apply_photographer_curve(arr, curve_preset, preset_intensity)
-                    # Acutanza medio formato (frequency separation)
+                    # Acutanza adattiva (Pillow-only, zero numpy intermedi)
                     if mf_acutance > 0.01:
                         arr = _medium_format_acutance(arr, mf_acutance)
                     im = Image.fromarray(arr.astype(np.uint8))
