@@ -361,6 +361,50 @@
   .upload-zone p { font-size: 13px; margin-bottom: 6px; font-weight: 500; }
   .upload-zone small { font-size: 11px; color: var(--gray2); }
 
+  /* ── UPLOAD PROGRESS ── */
+  #upload-progress-wrap {
+    display: none;
+    margin-bottom: 16px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 12px 14px;
+  }
+  #upload-progress-wrap.active { display: block; }
+  .upload-progress-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    margin-bottom: 8px;
+    font-size: 11px;
+    font-weight: 500;
+    color: var(--text);
+  }
+  .upload-progress-pct {
+    font-size: 11px;
+    color: var(--blue);
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+  }
+  .upload-progress-track {
+    height: 4px;
+    background: var(--border);
+    border-radius: 2px;
+    overflow: hidden;
+  }
+  .upload-progress-bar {
+    height: 100%;
+    width: 0%;
+    background: var(--blue);
+    border-radius: 2px;
+    transition: width .15s ease;
+  }
+  .upload-progress-files {
+    margin-top: 6px;
+    font-size: 10px;
+    color: var(--gray2);
+  }
+
   /* ── IMAGE GRID ── */
   .image-grid {
     display: grid;
@@ -1440,6 +1484,17 @@
         </div>
         <input type="file" id="file-input" multiple accept=".jpg,.jpeg,.png,.webp,.tiff,.tif"
                style="display:none" onchange="uploadFiles(this.files)">
+        <!-- Progress bar upload -->
+        <div id="upload-progress-wrap">
+          <div class="upload-progress-header">
+            <span id="upload-progress-label">Caricamento in corso...</span>
+            <span class="upload-progress-pct" id="upload-progress-pct">0%</span>
+          </div>
+          <div class="upload-progress-track">
+            <div class="upload-progress-bar" id="upload-progress-bar"></div>
+          </div>
+          <div class="upload-progress-files" id="upload-progress-files"></div>
+        </div>
         <!-- Toolbar IPTC / AI / Elaborazione -->
         <div class="images-toolbar" id="images-toolbar" style="display:none">
           <button class="btn-text" onclick="toggleSelectMode()" id="btn-select-mode">☐ Seleziona</button>
@@ -2463,16 +2518,73 @@ async function toggleOverviewImg(iid) {
 
 async function uploadFiles(files) {
   if (!currentProject || !files.length) return;
+
+  // Elementi UI progress
+  const wrap  = document.getElementById('upload-progress-wrap');
+  const bar   = document.getElementById('upload-progress-bar');
+  const pct   = document.getElementById('upload-progress-pct');
+  const label = document.getElementById('upload-progress-label');
+  const info  = document.getElementById('upload-progress-files');
+
+  // Mostra la progress bar
+  wrap.classList.add('active');
+  bar.style.width = '0%';
+  pct.textContent = '0%';
+  label.textContent = `Caricamento ${files.length} foto...`;
+  info.textContent = '';
+
   const fd = new FormData();
   for (const f of files) fd.append('files', f);
-  const res = await fetch(`${API}/projects/${currentProject.id}/images`, {
-    method: 'POST', body: fd
+
+  return new Promise((resolve) => {
+    const xhr = new XMLHttpRequest();
+    xhr.open('POST', `${API}/projects/${currentProject.id}/images`);
+
+    // Aggiorna la barra durante l'upload
+    xhr.upload.addEventListener('progress', e => {
+      if (e.lengthComputable) {
+        const p = Math.round(e.loaded / e.total * 100);
+        bar.style.width = p + '%';
+        pct.textContent = p + '%';
+        const mb = (e.loaded / 1048576).toFixed(1);
+        const tot = (e.total / 1048576).toFixed(1);
+        info.textContent = `${mb} MB / ${tot} MB`;
+      }
+    });
+
+    xhr.addEventListener('load', () => {
+      bar.style.width = '100%';
+      pct.textContent = '100%';
+      try {
+        const imgs = JSON.parse(xhr.responseText);
+        currentProject.images = [...(currentProject.images || []), ...imgs];
+        label.textContent = `${imgs.length} foto caricate ✓`;
+        info.textContent = '';
+        renderImageGrid();
+        renderPreview();
+        toast(`${imgs.length} foto caricate`);
+      } catch(e) {
+        label.textContent = 'Errore durante il caricamento';
+        toast('Errore upload');
+      }
+      // Nascondi dopo 2 secondi
+      setTimeout(() => {
+        wrap.classList.remove('active');
+        bar.style.width = '0%';
+      }, 2000);
+      resolve();
+    });
+
+    xhr.addEventListener('error', () => {
+      label.textContent = 'Errore di rete';
+      pct.textContent = '';
+      setTimeout(() => wrap.classList.remove('active'), 3000);
+      toast('Errore upload');
+      resolve();
+    });
+
+    xhr.send(fd);
   });
-  const imgs = await res.json();
-  currentProject.images = [...(currentProject.images || []), ...imgs];
-  renderImageGrid();
-  renderPreview();
-  toast(`${imgs.length} foto caricate`);
 }
 
 async function deleteImage(iid) {
