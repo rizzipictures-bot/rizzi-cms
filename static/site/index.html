@@ -1295,7 +1295,7 @@
       gap: 0;
       box-sizing: border-box;
       position: relative;
-      overflow: hidden;
+      overflow: visible;             /* permette alla hero panoramica di estendersi oltre */
     }
 
     /* Foto hero grande a sinistra — aspect-ratio impostato via JS su naturalWidth/naturalHeight */
@@ -1304,7 +1304,7 @@
       height: 500px;                 /* altezza fissa */
       width: auto;                   /* larghezza determinata da aspect-ratio */
       aspect-ratio: 4/3;             /* fallback iniziale, sovrascritto da JS */
-      max-width: 700px;
+      max-width: none;               /* nessun limite: le panoramiche si allargano liberamente */
       overflow: visible;             /* permette al bottone zoom di uscire fuori dal bordo */
       position: relative;
       cursor: none;
