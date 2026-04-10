@@ -2245,32 +2245,13 @@
       max-width: 100vw;
       object-fit: contain;
     }
-    #ae-zoom-popup-close {
-      position: fixed;
-      top: 16px;
-      right: 16px;
-      width: 28px;
-      height: 28px;
-      background: rgba(0,0,0,0.55);
-      border-radius: 50%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      cursor: pointer;
-      z-index: 3100;
-      transition: background .15s;
+    /* Il popup intero è cliccabile per chiudere */
+    #ae-zoom-popup {
+      cursor: pointer !important;
     }
-    #ae-zoom-popup-close:hover {
-      background: rgba(0,0,0,0.80);
-    }
-    #ae-zoom-popup-close svg {
-      width: 12px;
-      height: 12px;
-      display: block;
-      stroke: #fff;
-      fill: none;
-      stroke-width: 2;
-      stroke-linecap: round;
+    /* La foto in primo piano non chiude al click */
+    #ae-zoom-popup-img {
+      cursor: default !important;
     }
 
     /* ══════════════════════════════════════════════════════════════
@@ -5162,9 +5143,6 @@
   <div id="ae-zoom-popup-inner">
     <img id="ae-zoom-popup-img" src="" alt="">
   </div>
-  <button id="ae-zoom-popup-close" aria-label="Chiudi">
-    <svg viewBox="0 0 12 12"><line x1="1" y1="1" x2="11" y2="11"/><line x1="11" y1="1" x2="1" y2="11"/></svg>
-  </button>
 </div>
 
 <script>
@@ -10071,7 +10049,6 @@ loadFromCMS();
 (function() {
   const _zoomPopup    = document.getElementById('ae-zoom-popup');
   const _zoomPopupImg = document.getElementById('ae-zoom-popup-img');
-  const _zoomClose    = document.getElementById('ae-zoom-popup-close');
 
   // SVG icona lente di ingrandimento
   function _makeZoomIcon() {
@@ -10109,10 +10086,10 @@ loadFromCMS();
     _zoomPopupImg.src = '';
   }
 
-  // Chiudi cliccando la X
-  _zoomClose.addEventListener('click', e => { e.stopPropagation(); _closeZoom(); });
-  // Chiudi cliccando lo sfondo
-  _zoomPopup.addEventListener('click', e => { if (e.target === _zoomPopup) _closeZoom(); });
+  // Chiudi cliccando ovunque sul popup (esclusa la foto in primo piano)
+  _zoomPopup.addEventListener('click', e => {
+    if (e.target !== _zoomPopupImg) _closeZoom();
+  });
   // Chiudi con Escape
   document.addEventListener('keydown', e => { if (e.key === 'Escape' && _zoomPopup.classList.contains('open')) _closeZoom(); });
 
