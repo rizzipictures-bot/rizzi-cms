@@ -6185,6 +6185,8 @@ if (_cipImages) {
     const allImgs = Array.from(_cipImages.querySelectorAll('.cip-img'));
     _cipCurrentUrls  = allImgs.map(i => i.src);
     _cipCurrentIndex = allImgs.indexOf(img);
+    // Esponi la lista al modulo zoom per navigazione con frecce
+    window._cipCurrentImages = _cipCurrentUrls;
 
     _tmpImg2.src = img.src;
     _cipPhotoViewerImg.src = img.src;
@@ -7428,7 +7430,12 @@ function buildArchive() {
           inner.appendChild(hero);
           // Icona zoom angolo basso-destra della foto grande (modalità 1)
           if (window._addAeZoomBtn) {
-            window._addAeZoomBtn(hero, () => images[_heroIndex] ? images[_heroIndex].url : heroImg.src);
+            window._addAeZoomBtn(
+              hero,
+              () => images[_heroIndex] ? images[_heroIndex].url : heroImg.src,
+              undefined,
+              () => ({ list: images.map(im => im.url), index: _heroIndex })
+            );
           }
 
           // ── DESTRA: layout a 3 zone (thumbs-col | sep | kw-col) ──
@@ -7565,7 +7572,12 @@ function buildArchive() {
             aeImgWrap.appendChild(aeImg);
             // Icona zoom angolo basso-destra della foto grande (modalità 2 — popup bianco)
             if (window._addAeZoomBtn) {
-              window._addAeZoomBtn(aeImgWrap, () => images[_aeThumbsIdx] ? images[_aeThumbsIdx].url : aeImg.src, 'white');
+              window._addAeZoomBtn(
+                aeImgWrap,
+                () => images[_aeThumbsIdx] ? images[_aeThumbsIdx].url : aeImg.src,
+                'white',
+                () => ({ list: images.map(im => im.url), index: _aeThumbsIdx })
+              );
             }
             aeHero.appendChild(aeImgWrap);
 
@@ -10098,7 +10110,13 @@ loadFromCMS();
   const _zoomPositions = ['right', 'left', 'center'];
   let _zoomPosIdx = 0;
 
-  function _openZoom(imgSrc) {
+  // Stato navigazione frecce: lista immagini e indice corrente
+  let _zoomImages = [];  // array di URL
+  let _zoomIdx    = 0;
+
+  function _openZoom(imgSrc, imgList, imgIndex) {
+    _zoomImages = (imgList && imgList.length) ? imgList : [imgSrc];
+    _zoomIdx    = (imgIndex !== undefined) ? imgIndex : 0;
     _zoomPopupImg.src = imgSrc;
     _zoomPopupBg.src  = imgSrc;
     // Alterna posizione: destra → sinistra → centro
@@ -10110,6 +10128,15 @@ loadFromCMS();
     // Spostiamo il popup come figlio diretto di <html> per evitare il clipping
     document.documentElement.appendChild(_zoomPopup);
     _zoomPopup.classList.add('open');
+  }
+
+  // Naviga alla foto successiva/precedente nel popup scuro
+  function _zoomNav(delta) {
+    if (!_zoomImages.length) return;
+    _zoomIdx = ((_zoomIdx + delta) + _zoomImages.length) % _zoomImages.length;
+    const src = _zoomImages[_zoomIdx];
+    _zoomPopupImg.src = src;
+    _zoomPopupBg.src  = src;
   }
 
   // Chiude il popup
@@ -10124,8 +10151,13 @@ loadFromCMS();
   _zoomPopup.addEventListener('click', e => {
     if (e.target !== _zoomPopupImg) _closeZoom();
   });
-  // Chiudi con Escape
-  document.addEventListener('keydown', e => { if (e.key === 'Escape' && _zoomPopup.classList.contains('open')) _closeZoom(); });
+  // Chiudi con Escape; naviga con ArrowLeft/ArrowRight
+  document.addEventListener('keydown', e => {
+    if (!_zoomPopup.classList.contains('open')) return;
+    if (e.key === 'Escape')     { _closeZoom(); }
+    else if (e.key === 'ArrowRight') { e.preventDefault(); _zoomNav(+1); }
+    else if (e.key === 'ArrowLeft')  { e.preventDefault(); _zoomNav(-1); }
+  });
 
   // Funzione pubblica: aggiunge l'icona zoom a un elemento hero (modalità 1 o 2)
   // heroEl: il div .archive-expanded-hero o .ae-thumbs-hero
@@ -10172,37 +10204,55 @@ loadFromCMS();
   // Popup bianco per modalità thumbs
   const _whitePopup = document.getElementById('ae-zoom-white-popup');
   const _whiteImg   = document.getElementById('ae-zoom-white-img');
+
+  // Stato navigazione frecce popup bianco
+  let _wImages = [];
+  let _wIdx    = 0;
+
   if (_whitePopup) {
     _whitePopup.addEventListener('click', e => {
       if (e.target !== _whiteImg) {
         _whitePopup.classList.remove('open');
-        document.documentElement.appendChild(_whitePopup); // riporta al posto
+        document.documentElement.appendChild(_whitePopup);
         _whiteImg.src = '';
       }
     });
     document.addEventListener('keydown', e => {
-      if (e.key === 'Escape' && _whitePopup.classList.contains('open')) {
+      if (!_whitePopup.classList.contains('open')) return;
+      if (e.key === 'Escape') {
         _whitePopup.classList.remove('open');
         _whiteImg.src = '';
+      } else if (e.key === 'ArrowRight') {
+        e.preventDefault();
+        if (_wImages.length > 1) { _wIdx = (_wIdx + 1) % _wImages.length; _whiteImg.src = _wImages[_wIdx]; }
+      } else if (e.key === 'ArrowLeft') {
+        e.preventDefault();
+        if (_wImages.length > 1) { _wIdx = ((_wIdx - 1) + _wImages.length) % _wImages.length; _whiteImg.src = _wImages[_wIdx]; }
       }
     });
   }
 
-  function _openWhiteZoom(imgSrc) {
+  function _openWhiteZoom(imgSrc, imgList, imgIndex) {
     if (!_whitePopup || !_whiteImg) return;
+    _wImages = (imgList && imgList.length) ? imgList : [imgSrc];
+    _wIdx    = (imgIndex !== undefined) ? imgIndex : 0;
     _whiteImg.src = imgSrc;
     document.documentElement.appendChild(_whitePopup);
     _whitePopup.classList.add('open');
   }
 
-  window._addAeZoomBtn = function(heroEl, getImgSrc, mode) {
+  // getImgList: funzione opzionale che restituisce {list: [...urls], index: N}
+  window._addAeZoomBtn = function(heroEl, getImgSrc, mode, getImgList) {
     const btn = _makeZoomIcon();
     btn.addEventListener('click', e => {
       e.stopPropagation();
+      const src = getImgSrc();
       if (mode === 'white') {
-        _openWhiteZoom(getImgSrc());
+        const nav = getImgList ? getImgList() : null;
+        _openWhiteZoom(src, nav ? nav.list : null, nav ? nav.index : undefined);
       } else {
-        _openZoom(getImgSrc());
+        const nav = getImgList ? getImgList() : null;
+        _openZoom(src, nav ? nav.list : null, nav ? nav.index : undefined);
       }
     });
     heroEl.appendChild(btn);
@@ -10224,7 +10274,8 @@ loadFromCMS();
   };
 
   // Esposta per riuso in altri moduli (es. Cities)
-  window._openAeZoom = _openZoom;
+  window._openAeZoom       = _openZoom;
+  window._openWhiteZoomPub = _openWhiteZoom;
 })();
 
 // ════════════════════════════════════════════════════════════════
@@ -10262,24 +10313,36 @@ loadFromCMS();
   _cipSrcObs.observe(_cipImg, { attributes: true, attributeFilter: ['src'] });
   window.addEventListener('resize', _positionCipZoom);
 
+  // Recupera la lista di immagini del progetto Cities corrente
+  function _getCipImgList() {
+    // Le foto del viewer Cities sono nel dataset cipImages (array di URL)
+    // oppure recuperabili dai thumbs nel pannello info
+    const imgs = window._cipCurrentImages;
+    if (imgs && imgs.length) {
+      const idx = imgs.indexOf(_cipImg.src);
+      return { list: imgs, index: idx >= 0 ? idx : 0 };
+    }
+    return { list: [_cipImg.src], index: 0 };
+  }
+
   // Click sul bottone zoom: popup bianco in light-mode, scuro con grana in dark-mode
   _cipZoomBtn.addEventListener('click', function(e) {
     e.stopPropagation();
     const src = _cipImg.src;
     if (!src || src === window.location.href) return;
     const isLight = _cipViewer.classList.contains('light-mode');
+    const nav = _getCipImgList();
     if (isLight) {
-      // Popup bianco (stesso della modalità thumbs Archive)
-      const wp = document.getElementById('ae-zoom-white-popup');
-      const wi = document.getElementById('ae-zoom-white-img');
-      if (wp && wi) {
-        wi.src = src;
-        document.documentElement.appendChild(wp);
-        wp.classList.add('open');
+      if (typeof window._openWhiteZoomPub === 'function') {
+        window._openWhiteZoomPub(src, nav.list, nav.index);
+      } else {
+        const wp = document.getElementById('ae-zoom-white-popup');
+        const wi = document.getElementById('ae-zoom-white-img');
+        if (wp && wi) { wi.src = src; document.documentElement.appendChild(wp); wp.classList.add('open'); }
       }
     } else {
       if (typeof window._openAeZoom === 'function') {
-        window._openAeZoom(src);
+        window._openAeZoom(src, nav.list, nav.index);
       }
     }
   });
