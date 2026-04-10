@@ -2211,17 +2211,16 @@
       z-index: 1;
       pointer-events: none;
     }
-    /* Grana (noise) sopra lo sfondo */
-    #ae-zoom-popup::after {
-      content: '';
+    /* Grana pellicola 6400 ISO — canvas animato */
+    #ae-zoom-grain {
       position: absolute;
       inset: 0;
-      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='200' height='200' filter='url(%23n)' opacity='1'/%3E%3C/svg%3E");
-      background-size: 200px 200px;
-      opacity: 1.0;
+      width: 100%;
+      height: 100%;
       z-index: 1;
       pointer-events: none;
-      mix-blend-mode: overlay;
+      mix-blend-mode: screen;
+      opacity: 0.28;
     }
     #ae-zoom-popup-inner {
       position: absolute;
@@ -5159,6 +5158,7 @@
 <!-- Popup zoom immagine Archive -->
 <div id="ae-zoom-popup">
   <img id="ae-zoom-popup-bg" src="" alt="">
+  <canvas id="ae-zoom-grain"></canvas>
   <div id="ae-zoom-popup-inner">
     <img id="ae-zoom-popup-img" src="" alt="">
   </div>
@@ -10230,6 +10230,79 @@ loadFromCMS();
       window._openAeZoom(src);
     }
   });
+})();
+
+// ════════════════════════════════════════════════════════════════
+// GRAIN CANVAS — pellicola 6400 ISO animata sul background zoom
+// ════════════════════════════════════════════════════════════════
+(function() {
+  const canvas = document.getElementById('ae-zoom-grain');
+  if (!canvas) return;
+  const ctx = canvas.getContext('2d');
+  let _raf = null;
+  let _running = false;
+
+  function _resize() {
+    canvas.width  = window.innerWidth;
+    canvas.height = window.innerHeight;
+  }
+
+  function _drawGrain() {
+    if (!_running) return;
+    const w = canvas.width;
+    const h = canvas.height;
+    // Usa un buffer ridotto (metà risoluzione) per performance e granuli più grandi
+    const bw = Math.ceil(w / 2);
+    const bh = Math.ceil(h / 2);
+    const imageData = ctx.createImageData(bw, bh);
+    const data = imageData.data;
+    const len = data.length;
+    // Noise denso: ogni pixel ha un valore random con distribuzione pesata verso gli estremi
+    // per simulare alogenuri d'argento a 6400 ISO (granuli grossi, contrasto alto)
+    for (let i = 0; i < len; i += 4) {
+      // Distribuzione bimodale: 60% scuro, 40% chiaro — simula cristalli di argento
+      const r = Math.random();
+      let v;
+      if (r < 0.55) {
+        // Granulo scuro (argento esposto)
+        v = Math.random() * 60;          // 0–60
+      } else if (r < 0.80) {
+        // Granulo medio
+        v = 60 + Math.random() * 80;     // 60–140
+      } else {
+        // Granulo chiaro (alogenuro non esposto)
+        v = 160 + Math.random() * 95;    // 160–255
+      }
+      data[i]     = v;
+      data[i + 1] = v;
+      data[i + 2] = v;
+      data[i + 3] = 255;
+    }
+    // Disegna il buffer a metà risoluzione scalato a piena dimensione (granuli 2×2px)
+    const offscreen = document.createElement('canvas');
+    offscreen.width  = bw;
+    offscreen.height = bh;
+    offscreen.getContext('2d').putImageData(imageData, 0, 0);
+    ctx.clearRect(0, 0, w, h);
+    ctx.imageSmoothingEnabled = false;
+    ctx.drawImage(offscreen, 0, 0, w, h);
+    _raf = requestAnimationFrame(_drawGrain);
+  }
+
+  // Avvia/ferma il grain in sync con l'apertura del popup
+  const _popup = document.getElementById('ae-zoom-popup');
+  const _grainObs = new MutationObserver(() => {
+    if (_popup.classList.contains('open')) {
+      _running = true;
+      _resize();
+      _drawGrain();
+    } else {
+      _running = false;
+      if (_raf) { cancelAnimationFrame(_raf); _raf = null; }
+    }
+  });
+  _grainObs.observe(_popup, { attributes: true, attributeFilter: ['class'] });
+  window.addEventListener('resize', () => { if (_running) _resize(); });
 })();
 </script>
 </body>
