@@ -10225,6 +10225,9 @@ loadFromCMS();
   const ctx = canvas.getContext('2d');
   let _raf = null;
   let _running = false;
+  let _lastFrame = 0;
+  const _FPS = 30;          // frame al secondo — abbassa per rallentare la grana
+  const _INTERVAL = 1000 / _FPS;
 
   function _resize() {
     canvas.width  = window.innerWidth;
@@ -10270,7 +10273,14 @@ loadFromCMS();
     ctx.clearRect(0, 0, w, h);
     ctx.imageSmoothingEnabled = false;
     ctx.drawImage(offscreen, 0, 0, w, h);
-    _raf = requestAnimationFrame(_drawGrain);
+    _raf = requestAnimationFrame(function(ts) {
+      if (ts - _lastFrame < _INTERVAL) {
+        _raf = requestAnimationFrame(arguments.callee);
+        return;
+      }
+      _lastFrame = ts;
+      _drawGrain();
+    });
   }
 
   // Avvia/ferma il grain in sync con l'apertura del popup
