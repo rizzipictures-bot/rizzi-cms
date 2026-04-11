@@ -1231,12 +1231,14 @@
       width: 8px;
       height: 8px;
     }
-    /* Nella vista thumbs (box-white) i FAB usano position:fixed con coordinate assolute
+    /* Nella vista thumbs (box-white) i FAB usano position:fixed con coordinate viewport
        calcolate via JS dalla posizione reale del bottone Back */
     .archive-expanded.box-white .ae-fab-bar {
       position: fixed;
-      top: var(--ae-fab-top-fixed, 20px);
+      top: var(--ae-fab-top-fixed, -9999px);
       right: var(--ae-fab-right-fixed, 14px);
+      visibility: visible !important;
+      opacity: 1 !important;
     }
     /* Hover anticipato: padding trasparente intorno ai FAB per attivare l'hover prima del contatto */
     .archive-expanded.box-white .ae-fab-btn {
@@ -6899,7 +6901,7 @@ function buildOverviewGrid() {
       cursorLabel.style.mixBlendMode = 'normal';
       resetCursor();
     });
-    item.addEventListener('click', () => showOverview(img, photoCounter - 1, cells.filter(c => c.type === 'img').map(c => c.img)));
+    item.addEventListener('click', () => showOverview(img, photoCounter - 1, cells.filter(c => c.type === 'img').map(c => c.img), item));
 
     grid.appendChild(item);
   });
@@ -6954,23 +6956,114 @@ function _ovUpdateProjectLink(img) {
   };
 }
 
-function showOverview(img, idx, imageList) {
+// Riferimento alla thumbnail sorgente per l'animazione FLIP di chiusura
+let _ovSourceThumb = null;
+
+function showOverview(img, idx, imageList, sourceThumb) {
   const ov  = document.getElementById('overview-overlay');
   const oImg = document.getElementById('overview-overlay-img');
   ovImages = imageList || [];
   ovIndex  = idx;
-  oImg.src = img.url;
-  ov.classList.add('open');
-  overlayOpen = true;
-  document.body.classList.add('overlay-open');  /* disabilita pointer-events sulla view sottostante */
-  // Rimuovi cursor-red nell'overlay (non ha senso il pallino rosso qui)
-  document.body.classList.remove('cursor-red');
-  // Posiziona la barra sotto la foto dopo che l'immagine è caricata
-  oImg.onload = _ovPositionNavBar;
-  // Fallback: prova subito (se già in cache)
-  setTimeout(_ovPositionNavBar, 80);
-  ovUpdateCursor(img);
-  _ovUpdateProjectLink(img);
+  _ovSourceThumb = sourceThumb || null;
+
+  // ── ANIMAZIONE FLIP STILE MIECHOWSKI ──────────────────────────────────────
+  // Se abbiamo la thumbnail sorgente, creiamo un clone che si espande da quella posizione
+  if (sourceThumb) {
+    const thumbRect = sourceThumb.getBoundingClientRect();
+    const thumbImg  = sourceThumb.querySelector('img');
+
+    // Fade out tutte le altre thumbnail (stagger leggero)
+    const allItems = document.querySelectorAll('#thumbs-grid .thumb-item:not(.thumb-blank)');
+    allItems.forEach((el, i) => {
+      if (el !== sourceThumb) {
+        el.style.transition = 'opacity 0.35s ' + (i * 0.006) + 's';
+        el.style.opacity = '0';
+      }
+    });
+
+    // Crea il clone FLIP
+    const clone = document.createElement('img');
+    clone.src = img.url;
+    clone.id  = 'ov-flip-clone';
+    clone.style.cssText = [
+      'position:fixed',
+      'z-index:299',
+      'object-fit:cover',
+      'pointer-events:none',
+      'will-change:transform,width,height,top,left',
+      // Posizione iniziale = thumbnail
+      'left:'   + thumbRect.left   + 'px',
+      'top:'    + thumbRect.top    + 'px',
+      'width:'  + thumbRect.width  + 'px',
+      'height:' + thumbRect.height + 'px',
+      'transition:none',
+      'border-radius:0',
+    ].join(';');
+    document.body.appendChild(clone);
+
+    // Calcola posizione finale (uguale all'overlay-img a layout completato)
+    // Usiamo le stesse dimensioni max dell'overlay-img: max-width:62vw, max-height:77vh
+    const vw = window.innerWidth;
+    const vh = window.innerHeight;
+    const navH = parseInt(getComputedStyle(document.documentElement).getPropertyValue('--nav-h') || '44', 10);
+    const maxW = vw * 0.62;
+    const maxH = (vh - navH) * 0.77;
+    // Aspect ratio dell'immagine: usiamo quello della thumbnail se disponibile
+    let ar = thumbImg && thumbImg.naturalWidth && thumbImg.naturalHeight
+      ? thumbImg.naturalWidth / thumbImg.naturalHeight
+      : thumbRect.width / thumbRect.height;
+    // Calcola dimensioni finali mantenendo l'aspect ratio
+    let finalW = maxW;
+    let finalH = finalW / ar;
+    if (finalH > maxH) { finalH = maxH; finalW = finalH * ar; }
+    const finalLeft = (vw - finalW) / 2;
+    const finalTop  = navH + ((vh - navH) - finalH) / 2;
+
+    // Forza un reflow prima di applicare la transizione
+    void clone.offsetWidth;
+
+    // Fade-in del background bianco durante l'espansione
+    const ovBg = document.getElementById('overview-overlay-bg');
+    if (ovBg) {
+      ovBg.style.transition = 'opacity 0.5s 0.2s';
+      ovBg.style.opacity = '1';
+    }
+
+    // Applica la transizione FLIP
+    clone.style.transition = 'left 0.75s cubic-bezier(.77,0,.175,1), top 0.75s cubic-bezier(.77,0,.175,1), width 0.75s cubic-bezier(.77,0,.175,1), height 0.75s cubic-bezier(.77,0,.175,1)';
+    clone.style.left   = finalLeft + 'px';
+    clone.style.top    = finalTop  + 'px';
+    clone.style.width  = finalW    + 'px';
+    clone.style.height = finalH    + 'px';
+
+    // Dopo l'animazione: mostra l'overlay reale e rimuovi il clone
+    setTimeout(() => {
+      oImg.src = img.url;
+      ov.classList.add('open');
+      overlayOpen = true;
+      document.body.classList.add('overlay-open');
+      document.body.classList.remove('cursor-red');
+      oImg.onload = _ovPositionNavBar;
+      setTimeout(_ovPositionNavBar, 80);
+      ovUpdateCursor(img);
+      _ovUpdateProjectLink(img);
+      // Rimuovi il clone
+      const cl = document.getElementById('ov-flip-clone');
+      if (cl) cl.remove();
+    }, 720);
+
+  } else {
+    // Apertura normale senza FLIP (fallback)
+    oImg.src = img.url;
+    ov.classList.add('open');
+    overlayOpen = true;
+    document.body.classList.add('overlay-open');
+    document.body.classList.remove('cursor-red');
+    oImg.onload = _ovPositionNavBar;
+    setTimeout(_ovPositionNavBar, 80);
+    ovUpdateCursor(img);
+    _ovUpdateProjectLink(img);
+  }
 }
 
 function ovNavigate(dir) {
@@ -6988,16 +7081,89 @@ function ovNavigate(dir) {
 }
 
 function closeOverview() {
-  const ov = document.getElementById('overview-overlay');
-  ov.classList.remove('open');
-  overlayOpen = false;
-  document.body.classList.remove('overlay-open');
-  cursorDot.style.visibility = ''; // ripristina la freccia
-  cursorDot.style.width  = '';     // ripristina dimensione cursore
+  const ov   = document.getElementById('overview-overlay');
+  const oImg = document.getElementById('overview-overlay-img');
+
+  // ── ANIMAZIONE FLIP INVERSA STILE MIECHOWSKI ────────────────────────
+  if (_ovSourceThumb) {
+    const thumbRect = _ovSourceThumb.getBoundingClientRect();
+    const oImgRect  = oImg.getBoundingClientRect();
+
+    // Crea un clone che parte dalla posizione attuale della foto grande
+    const clone = document.createElement('img');
+    clone.src = oImg.src;
+    clone.id  = 'ov-flip-clone-close';
+    clone.style.cssText = [
+      'position:fixed',
+      'z-index:299',
+      'object-fit:cover',
+      'pointer-events:none',
+      'will-change:transform,width,height,top,left',
+      'left:'   + oImgRect.left   + 'px',
+      'top:'    + oImgRect.top    + 'px',
+      'width:'  + oImgRect.width  + 'px',
+      'height:' + oImgRect.height + 'px',
+      'transition:none',
+    ].join(';');
+    document.body.appendChild(clone);
+
+    // Fade-out del background bianco
+    const ovBg2 = document.getElementById('overview-overlay-bg');
+    if (ovBg2) {
+      ovBg2.style.transition = 'opacity 0.4s';
+      ovBg2.style.opacity = '0';
+    }
+
+    // Nasconde subito l'overlay reale
+    ov.classList.remove('open');
+    overlayOpen = false;
+    document.body.classList.remove('overlay-open');
+
+    // Forza reflow
+    void clone.offsetWidth;
+
+    // Anima il clone verso la thumbnail
+    clone.style.transition = 'left 0.65s cubic-bezier(.77,0,.175,1), top 0.65s cubic-bezier(.77,0,.175,1), width 0.65s cubic-bezier(.77,0,.175,1), height 0.65s cubic-bezier(.77,0,.175,1), opacity 0.2s 0.45s';
+    clone.style.left    = thumbRect.left   + 'px';
+    clone.style.top     = thumbRect.top    + 'px';
+    clone.style.width   = thumbRect.width  + 'px';
+    clone.style.height  = thumbRect.height + 'px';
+    clone.style.opacity = '0';
+
+    // Ripristina le thumbnail con fade-in
+    const allItems = document.querySelectorAll('#thumbs-grid .thumb-item:not(.thumb-blank)');
+    allItems.forEach((el, i) => {
+      el.style.transition = 'opacity 0.4s ' + (i * 0.005) + 's';
+      el.style.opacity = '1';
+    });
+
+    // Rimuovi il clone e ripristina lo stato
+    setTimeout(() => {
+      const cl = document.getElementById('ov-flip-clone-close');
+      if (cl) cl.remove();
+      // Pulisci le transizioni inline sulle thumbnail
+      allItems.forEach(el => {
+        el.style.transition = '';
+      });
+      // Ripristina la transizione CSS del background
+      const ovBg3 = document.getElementById('overview-overlay-bg');
+      if (ovBg3) { ovBg3.style.transition = ''; ovBg3.style.opacity = ''; }
+    }, 700);
+
+    _ovSourceThumb = null;
+  } else {
+    // Chiusura normale senza FLIP
+    ov.classList.remove('open');
+    overlayOpen = false;
+    document.body.classList.remove('overlay-open');
+  }
+
+  cursorDot.style.visibility = '';
+  cursorDot.style.width  = '';
   cursorDot.style.height = '';
   cursorDot.style.background = '';
   document.body.classList.remove('ov-near-nav');
-  cursorLabel.style.mixBlendMode = 'normal';  // ripristina blend mode normale
+  cursorLabel.style.mixBlendMode = 'normal';
   resetCursor();
 }
 
@@ -8172,6 +8338,25 @@ function buildArchive() {
               // Fallback lungo: per immagini molto pesanti o connessioni lente
               setTimeout(_doPosition, 1500);
             }
+            // Allinea i FAB al bottone Back (prima apertura)
+            const _alignFabToBack1 = () => {
+              const _aeBackBtn1 = _aeThumbsView.querySelector('.ae-thumbs-back');
+              const fabBar1 = panel.querySelector('.ae-fab-bar');
+              if (_aeBackBtn1 && fabBar1) {
+                const _backRect1 = _aeBackBtn1.getBoundingClientRect();
+                const _backMidY1 = _backRect1.top + _backRect1.height / 2;
+                if (_backMidY1 > 5 && _backMidY1 < window.innerHeight) {
+                  panel.style.setProperty('--ae-fab-top-fixed', Math.round(_backMidY1 - 10) + 'px');
+                  panel.style.setProperty('--ae-fab-right-fixed', '14px');
+                } else {
+                  const _pRect1 = panel.getBoundingClientRect();
+                  panel.style.setProperty('--ae-fab-top-fixed', Math.max(20, _pRect1.top + 20) + 'px');
+                  panel.style.setProperty('--ae-fab-right-fixed', '14px');
+                  setTimeout(_alignFabToBack1, 200);
+                }
+              }
+            };
+            setTimeout(_alignFabToBack1, 60);
             // Mostra la prima foto con animazione
             const aeImg2 = _aeThumbsView.querySelector('.ae-thumbs-hero img');
             if (aeImg2) {
@@ -8389,22 +8574,30 @@ function buildArchive() {
           // Allinea i FAB alla scritta INDEX nella colonna keywords:
           // INDEX ha padding-top 18px nel box normale; nella vista thumbs usiamo lo stesso valore
           // più l'altezza della info-bar (Back + contatore)
-          requestAnimationFrame(() => {
-            const _aeBackBtn = _aeThumbsView.querySelector('.ae-thumbs-back');
-            const fabBar = panel.querySelector('.ae-fab-bar');
-            if (_aeBackBtn && fabBar) {
-              // Usa coordinate viewport assolute (position:fixed) — indipendente dal parent
-              const _backRect = _aeBackBtn.getBoundingClientRect();
-              // Mezzeria verticale del bottone Back
-              const _backMidY = _backRect.top + _backRect.height / 2;
-              // Altezza FAB totale con padding: 8px + 6px*2 = 20px, metà = 10px
-              const _fabTopFixed = Math.round(_backMidY - 10);
-              // Right: distanza dal bordo destro della viewport
-              const _fabRightFixed = 14;
-              panel.style.setProperty('--ae-fab-top-fixed', _fabTopFixed + 'px');
-              panel.style.setProperty('--ae-fab-right-fixed', _fabRightFixed + 'px');
+          // Allinea i FAB al bottone Back: usa setTimeout per garantire il layout
+          const _alignFabToBack = () => {
+            const _aeBackBtn2 = _aeThumbsView.querySelector('.ae-thumbs-back');
+            const fabBar2 = panel.querySelector('.ae-fab-bar');
+            if (_aeBackBtn2 && fabBar2) {
+              const _backRect2 = _aeBackBtn2.getBoundingClientRect();
+              const _backMidY2 = _backRect2.top + _backRect2.height / 2;
+              // Fallback se il valore non è valido (elemento non ancora nel viewport)
+              if (_backMidY2 > 5 && _backMidY2 < window.innerHeight) {
+                const _fabTopFixed2 = Math.round(_backMidY2 - 10);
+                panel.style.setProperty('--ae-fab-top-fixed', _fabTopFixed2 + 'px');
+                panel.style.setProperty('--ae-fab-right-fixed', '14px');
+              } else {
+                // Fallback: usa scroll position del panel per calcolare il top
+                const _panelRect2 = panel.getBoundingClientRect();
+                const _fallbackTop = Math.max(20, _panelRect2.top + 20);
+                panel.style.setProperty('--ae-fab-top-fixed', _fallbackTop + 'px');
+                panel.style.setProperty('--ae-fab-right-fixed', '14px');
+                // Riprova dopo 200ms
+                setTimeout(_alignFabToBack, 200);
+              }
             }
-          });
+          };
+          setTimeout(_alignFabToBack, 60);
           const _tdBtn = toggle.querySelector('.ae-toggle-dark');
           const _tlBtn = toggle.querySelector('.ae-toggle-light');
           if (_tdBtn) _tdBtn.style.display = 'none';
