@@ -223,6 +223,118 @@ def ai_tag_image(fpath, img_data, db_ref, pid):
     except Exception as e:
         pass  # tagging fallisce silenziosamente, non blocca nulla
 
+
+def _auto_update_seo(db):
+    """
+    Genera automaticamente i meta tag SEO per il sito pubblico
+    basandosi su TUTTI i progetti nel db.
+    Viene eseguita in background dopo ogni salvataggio progetto.
+    Aggiorna il blocco <!-- SEO:START --> ... <!-- SEO:END --> nel file index.html del sito.
+    """
+    try:
+        import openai, re
+        site_html = BASE / 'static' / 'site' / 'index.html'
+        if not site_html.exists():
+            return
+
+        projects = db.get('projects', [])
+        if not projects:
+            return
+
+        # Raccoglie dati da tutti i progetti per costruire un contesto ricco
+        titles   = [p.get('title', '') for p in projects if p.get('title')]
+        places   = list({p.get('place', '') for p in projects if p.get('place')})
+        pubs     = list({p.get('publication', '') for p in projects if p.get('publication')})
+        years    = sorted({str(p.get('year', '')) for p in projects if p.get('year')})
+        # Keywords manuali e AI da tutte le foto di tutti i progetti
+        all_kw = []
+        for p in projects:
+            manual = p.get('keywords_manual', '')
+            if manual:
+                all_kw.extend([k.strip() for k in manual.split(',') if k.strip()])
+            for img in p.get('images', []):
+                kw = img.get('keywords', '')
+                if kw:
+                    all_kw.extend([k.strip() for k in kw.split(',') if k.strip()])
+        # Deduplicazione case-insensitive, top 30 per frequenza
+        from collections import Counter
+        kw_counts = Counter(k.lower() for k in all_kw if k)
+        top_kw = [k for k, _ in kw_counts.most_common(30)]
+
+        context = (
+            f"Photographer: Alessandro Rizzi.\n"
+            f"Projects: {', '.join(titles[:15])}.\n"
+            f"Places: {', '.join(places[:10])}.\n"
+            f"Publications: {', '.join(pubs[:8])}.\n"
+            f"Years active: {', '.join(years[-5:]) if years else 'unknown'}.\n"
+            f"Top keywords from photo metadata: {', '.join(top_kw[:20])}."
+        )
+
+        client = openai.OpenAI()
+        resp = client.chat.completions.create(
+            model='gpt-4.1-mini',
+            max_tokens=300,
+            messages=[{
+                'role': 'user',
+                'content': (
+                    f"Generate SEO meta tags for a photography portfolio website.\n"
+                    f"Context:\n{context}\n\n"
+                    f"Respond ONLY with a JSON object with these exact keys:\n"
+                    f"- title: page title (max 60 chars, Italian, include photographer name)\n"
+                    f"- description: meta description (max 155 chars, Italian, evocative)\n"
+                    f"- keywords: comma-separated keywords (Italian+English mix, max 20 keywords)\n"
+                    f"No explanations, no markdown, pure JSON."
+                )
+            }]
+        )
+        raw = resp.choices[0].message.content.strip()
+        # Rimuove eventuale markdown code block
+        raw = re.sub(r'^```(?:json)?\s*', '', raw)
+        raw = re.sub(r'\s*```$', '', raw)
+        seo = json.loads(raw)
+
+        title       = seo.get('title', 'Alessandro Rizzi — Fotografo')[:60]
+        description = seo.get('description', '')[:155]
+        keywords    = seo.get('keywords', '')
+
+        new_seo_block = (
+            f'  <!-- SEO:START -->\n'
+            f'  <meta name="description" content="{description}" />\n'
+            f'  <meta name="keywords" content="{keywords}" />\n'
+            f'  <meta property="og:title" content="{title}" />\n'
+            f'  <meta property="og:description" content="{description}" />\n'
+            f'  <meta property="og:type" content="website" />\n'
+            f'  <meta name="twitter:card" content="summary_large_image" />\n'
+            f'  <meta name="twitter:title" content="{title}" />\n'
+            f'  <meta name="twitter:description" content="{description}" />\n'
+            f'  <!-- SEO:END -->'
+        )
+
+        with open(str(site_html), 'r', encoding='utf-8') as f:
+            html = f.read()
+
+        # Sostituisce il titolo
+        html = re.sub(
+            r'<title>[^<]*</title>',
+            f'<title>{title}</title>',
+            html
+        )
+
+        # Sostituisce il blocco SEO
+        html = re.sub(
+            r'  <!-- SEO:START -->.*?<!-- SEO:END -->',
+            new_seo_block,
+            html,
+            flags=re.DOTALL
+        )
+
+        with open(str(site_html), 'w', encoding='utf-8') as f:
+            f.write(html)
+
+    except Exception:
+        pass  # fallisce silenziosamente, non blocca nulla
+
+
 STATIC = BASE / 'static'
 DATA.mkdir(exist_ok=True)
 UPLOAD.mkdir(exist_ok=True)
@@ -438,6 +550,8 @@ def update_project(pid):
         if k in data:
             p[k] = data[k]
     save_db(db)
+    # ── SEO AUTO: aggiorna i meta tag del sito pubblico in background ──
+    threading.Thread(target=_auto_update_seo, args=(db,), daemon=True).start()
     return jsonify(p)
 
 @app.route('/api/projects/<pid>', methods=['DELETE'])
