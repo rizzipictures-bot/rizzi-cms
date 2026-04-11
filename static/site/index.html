@@ -8072,10 +8072,32 @@ function buildArchive() {
           document.body.classList.remove('archive-box-white');
         });
 
-        // Animazione Ink Drop: trigger dopo un frame
-        requestAnimationFrame(() => {
-          requestAnimationFrame(() => panel.classList.add('ink-open'));
-        });
+        // Se il flag _openInThumbsMode è impostato (navigazione da Overview),
+        // passa direttamente alla vista thumbs senza mostrare il box nero
+        if (row._openInThumbsMode) {
+          row._openInThumbsMode = false;
+          // Costruisci subito la vista thumbs e nascondi inner prima del primo paint
+          _buildAeThumbsView();
+          inner.style.display = 'none';
+          const _m1ZoomBtn = hero ? hero.querySelector('.ae-zoom-btn') : null;
+          if (_m1ZoomBtn) _m1ZoomBtn.style.display = 'none';
+          _aeThumbsView.style.display = 'flex';
+          panel.classList.add('box-white');
+          panel.classList.add('ink-open');
+          const _tdBtn = toggle.querySelector('.ae-toggle-dark');
+          const _tlBtn = toggle.querySelector('.ae-toggle-light');
+          if (_tdBtn) _tdBtn.style.display = 'none';
+          if (_tlBtn) _tlBtn.style.display = '';
+          if (_aeThumbsView._kwPanel) {
+            _aeThumbsView._kwPanel.classList.add('light');
+            _aeThumbsView._kwPanel.style.display = 'flex';
+          }
+        } else {
+          // Animazione Ink Drop: trigger dopo un frame
+          requestAnimationFrame(() => {
+            requestAnimationFrame(() => panel.classList.add('ink-open'));
+          });
+        }
 
         // Scroll alla riga: usa il container view-archive per non uscire dal viewport
         setTimeout(() => {
@@ -8216,7 +8238,7 @@ function buildArchive() {
        (proj.category_id || proj.section || '').toLowerCase() === 'cities'));
 
     if (inArchive || (!inCities)) {
-      // Naviga ad Archive e apri la riga in thumbs mode con box bianco
+      // Naviga ad Archive e apri la riga direttamente in thumbs mode (senza flash del box nero)
       switchView('archive');
       requestAnimationFrame(() => {
         setTimeout(() => {
@@ -8224,20 +8246,15 @@ function buildArchive() {
           const rows = document.querySelectorAll('.archive-row:not(.header)');
           let targetRow = null;
           rows.forEach(row => {
-            // La seconda colonna contiene il titolo del progetto
             const titleCell = row.querySelectorAll('div')[1];
             if (titleCell && titleCell.textContent.trim() === (p.title || '').trim()) {
               targetRow = row;
             }
           });
           if (targetRow) {
-            // Simula il click sulla riga per aprire il box espanso
+            // Imposta il flag: il click handler aprirà direttamente in thumbs mode
+            targetRow._openInThumbsMode = true;
             targetRow.click();
-            // Poi simula il click su Thumbs dopo che il box si è aperto
-            setTimeout(() => {
-              const thumbsBtn = document.querySelector('.archive-expanded-viewall');
-              if (thumbsBtn) thumbsBtn.click();
-            }, 350);
           }
         }, 200);
       });
