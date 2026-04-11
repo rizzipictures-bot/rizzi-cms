@@ -1231,6 +1231,16 @@
       width: 19px;
       height: 19px;
     }
+    /* Nella vista thumbs (box-white) i FAB si allineano al bordo superiore della foto:
+       la info-bar (Back + contatore) è alta ~36px, quindi top: 36px */
+    .archive-expanded.box-white .ae-fab-bar {
+      top: 36px;
+    }
+    /* Hover anticipato: padding trasparente intorno ai FAB per attivare l'hover prima del contatto */
+    .archive-expanded.box-white .ae-fab-btn {
+      padding: 6px;
+      box-sizing: content-box;
+    }
     /* + bianca in cerchio nero (invertito rispetto al box scuro) */
     .archive-expanded.box-white .ae-fab-zoom {
       background: #000;
@@ -1662,12 +1672,13 @@
       user-select: none;
     }
     .archive-expanded.box-white .ae-thumbs-counter { color: rgba(0,0,0,0.65); }
-    /* Bottom bar nella vista thumbs — TV in basso a dx, allineato con i FAB */
+    /* Bottom bar nella vista thumbs — TV allineato in alto a dx con i FAB */
     .ae-thumbs-bottombar {
       position: absolute;
-      bottom: 10px;        /* stesso margine verticale dei FAB */
-      right: 10px;         /* allineato a destra con i FAB */
-      left: auto;          /* annulla il vecchio left:-30px */
+      top: 36px;           /* allineato al bordo superiore della foto, come i FAB */
+      right: 52px;         /* a sinistra dei FAB (29px cerchio + 8px gap + 15px offset) */
+      bottom: auto;
+      left: auto;
       display: flex;
       align-items: center;
       gap: 8px;
