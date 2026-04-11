@@ -268,29 +268,47 @@ def _make_title_card(title, subtitle, n_frames=45):
     
     return [img] * n_frames
 
+def _open_ffmpeg_pipe(output_path, fps=FPS):
+    """Apre un processo ffmpeg che legge frame raw RGB da stdin."""
+    cmd = [
+        'ffmpeg', '-y',
+        '-f', 'rawvideo',
+        '-vcodec', 'rawvideo',
+        '-s', f'{W}x{H}',
+        '-pix_fmt', 'rgb24',
+        '-r', str(fps),
+        '-i', 'pipe:0',
+        '-c:v', 'libx264',
+        '-preset', 'fast',
+        '-crf', '23',
+        '-pix_fmt', 'yuv420p',
+        '-movflags', '+faststart',
+        output_path
+    ]
+    return subprocess.Popen(cmd, stdin=subprocess.PIPE, stderr=subprocess.DEVNULL)
+
+
+def _write_frame(proc, img):
+    """Scrive un frame PIL nel pipe ffmpeg."""
+    proc.stdin.write(img.tobytes())
+
+
+def _close_ffmpeg_pipe(proc):
+    """Chiude il pipe e attende la fine di ffmpeg."""
+    proc.stdin.close()
+    proc.wait()
+    if proc.returncode != 0:
+        raise RuntimeError('ffmpeg pipe error')
+
+
 def _frames_to_video(frames, output_path, fps=FPS):
-    """Converte frame PIL in video MP4."""
-    import subprocess, tempfile
-    
-    with tempfile.TemporaryDirectory() as tmpdir:
-        for i, frame in enumerate(frames):
-            frame.save(f'{tmpdir}/frame_{i:05d}.png')
-        
-        cmd = [
-            'ffmpeg', '-y',
-            '-framerate', str(fps),
-            '-i', f'{tmpdir}/frame_%05d.png',
-            '-c:v', 'libx264',
-            '-preset', 'fast',
-            '-crf', '22',
-            '-pix_fmt', 'yuv420p',
-            '-movflags', '+faststart',
-            output_path
-        ]
-        result = subprocess.run(cmd, capture_output=True, text=True)
-        if result.returncode != 0:
-            raise RuntimeError(f'ffmpeg error: {result.stderr}')
-    
+    """Converte frame PIL in video MP4 (legacy, usato solo se necessario)."""
+    proc = _open_ffmpeg_pipe(output_path, fps)
+    try:
+        for frame in frames:
+            _write_frame(proc, frame)
+    finally:
+        _close_ffmpeg_pipe(proc)
     return output_path
 
 def generate_tutorial(project, images_dir, output_path, corpus_path=None, quote_id=None, custom_narration=None, elevenlabs_api_key=None):
@@ -351,52 +369,53 @@ def generate_tutorial(project, images_dir, output_path, corpus_path=None, quote_
     if not photos_pil:
         raise ValueError('Nessuna immagine disponibile per il progetto')
     
-    all_frames = []
-    
-    # 1. Title card (1.5 sec)
-    tutorial_subtitle = f'Archivio — {title}'
-    all_frames += _make_title_card(tutorial_subtitle, quote.get('tema', ''), n_frames=45)
-    
-    # 2. Prima foto (sfondo per la citazione) — 1 sec
-    all_frames += _make_photo_with_text_frame(
-        photos_pil[0],
-        [place, year],
-        n_frames=30
-    )
-    
-    # 3. Citazione filosofica su sfondo foto (3 sec)
-    bg_photo = photos_pil[1] if len(photos_pil) > 1 else photos_pil[0]
-    all_frames += _make_quote_frame(
-        quote['citazione_it'],
-        quote['autore'],
-        quote.get('opera', ''),
-        bg_photo=bg_photo,
-        n_frames=90
-    )
-    
-    # 4. Sequenza di foto del progetto (2-3 sec totali)
-    for i, photo in enumerate(photos_pil[2:6]):
-        all_frames += [_fit_image(photo, W, H, contain=False)] * 20
-    
-    # 5. Citazione in bianco su nero (2 sec)
-    all_frames += _make_quote_frame(
-        quote['citazione_it'],
-        quote['autore'],
-        quote.get('opera', ''),
-        bg_photo=None,  # sfondo nero
-        n_frames=60
-    )
-    
-    # 6. Title card finale (1.5 sec)
-    all_frames += _make_title_card(
-        title,
-        f'{subtitle} — {place}, {year}' if subtitle else f'{place}, {year}',
-        n_frames=45
-    )
-    
-    # Genera il video (senza audio)
+    # ── Generazione video STREAMING (senza accumulare frame in memoria) ──────────
     video_no_audio = output_path.replace('.mp4', '_noaudio.mp4')
-    _frames_to_video(all_frames, video_no_audio, fps=FPS)
+    proc = _open_ffmpeg_pipe(video_no_audio, fps=FPS)
+    total_frames = 0
+
+    def _write_section(frames_list):
+        nonlocal total_frames
+        for f in frames_list:
+            _write_frame(proc, f)
+            total_frames += 1
+
+    try:
+        # 1. Title card (1.5 sec)
+        tutorial_subtitle = f'Archivio — {title}'
+        _write_section(_make_title_card(tutorial_subtitle, quote.get('tema', ''), n_frames=45))
+
+        # 2. Prima foto (sfondo per la citazione) — 1 sec
+        _write_section(_make_photo_with_text_frame(photos_pil[0], [place, year], n_frames=30))
+
+        # 3. Citazione filosofica su sfondo foto (3 sec)
+        bg_photo = photos_pil[1] if len(photos_pil) > 1 else photos_pil[0]
+        _write_section(_make_quote_frame(
+            quote['citazione_it'], quote['autore'], quote.get('opera', ''),
+            bg_photo=bg_photo, n_frames=90
+        ))
+
+        # 4. Sequenza di foto del progetto (2-3 sec totali)
+        for photo in photos_pil[2:6]:
+            fitted = _fit_image(photo, W, H, contain=False)
+            for _ in range(20):
+                _write_frame(proc, fitted)
+                total_frames += 1
+
+        # 5. Citazione in bianco su nero (2 sec)
+        _write_section(_make_quote_frame(
+            quote['citazione_it'], quote['autore'], quote.get('opera', ''),
+            bg_photo=None, n_frames=60
+        ))
+
+        # 6. Title card finale (1.5 sec)
+        _write_section(_make_title_card(
+            title,
+            f'{subtitle} — {place}, {year}' if subtitle else f'{place}, {year}',
+            n_frames=45
+        ))
+    finally:
+        _close_ffmpeg_pipe(proc)
     
     # Genera narrazione con voce clonata (ElevenLabs)
     has_voice = False
@@ -448,7 +467,7 @@ def generate_tutorial(project, images_dir, output_path, corpus_path=None, quote_
     
     return {
         'output_path': output_path,
-        'duration_sec': len(all_frames) / FPS,
+        'duration_sec': total_frames / FPS,
         'has_voice': has_voice,
         'quote_used': {
             'id': quote.get('id', ''),
@@ -457,7 +476,7 @@ def generate_tutorial(project, images_dir, output_path, corpus_path=None, quote_
             'tema': quote.get('tema', '')
         },
         'photos_used': len(photos_pil),
-        'total_frames': len(all_frames)
+        'total_frames': total_frames
     }
 
 
