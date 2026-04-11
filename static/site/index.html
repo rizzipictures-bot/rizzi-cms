@@ -1231,10 +1231,12 @@
       width: 8px;
       height: 8px;
     }
-    /* Nella vista thumbs (box-white) i FAB si allineano al bordo superiore della foto.
-       L'altezza esatta viene calcolata via JS; il CSS usa una variabile custom --ae-fab-top */
+    /* Nella vista thumbs (box-white) i FAB usano position:fixed con coordinate assolute
+       calcolate via JS dalla posizione reale del bottone Back */
     .archive-expanded.box-white .ae-fab-bar {
-      top: var(--ae-fab-top, 36px);
+      position: fixed;
+      top: var(--ae-fab-top-fixed, 20px);
+      right: var(--ae-fab-right-fixed, 14px);
     }
     /* Hover anticipato: padding trasparente intorno ai FAB per attivare l'hover prima del contatto */
     .archive-expanded.box-white .ae-fab-btn {
@@ -8388,20 +8390,19 @@ function buildArchive() {
           // INDEX ha padding-top 18px nel box normale; nella vista thumbs usiamo lo stesso valore
           // più l'altezza della info-bar (Back + contatore)
           requestAnimationFrame(() => {
-            const _aeInfoEl = _aeThumbsView.querySelector('.ae-thumbs-info');
-            // Allinea i FAB alla mezzeria del bottone ← Back
             const _aeBackBtn = _aeThumbsView.querySelector('.ae-thumbs-back');
-            if (_aeBackBtn && _aeInfoEl) {
-              const _panelRect  = panel.getBoundingClientRect();
-              const _backRect   = _aeBackBtn.getBoundingClientRect();
-              // top dei FAB = distanza dal top del panel alla mezzeria del bottone Back
-              const _backMidY   = _backRect.top + _backRect.height / 2 - _panelRect.top;
-              // Sottrai metà altezza FAB (8px + padding 6px = 20px totale, metà = 10px)
-              const _fabTop = Math.round(_backMidY - 10);
-              panel.style.setProperty('--ae-fab-top', _fabTop + 'px');
-            } else if (_aeInfoEl) {
-              // Fallback: usa l'altezza della info-bar
-              panel.style.setProperty('--ae-fab-top', _aeInfoEl.getBoundingClientRect().height + 'px');
+            const fabBar = panel.querySelector('.ae-fab-bar');
+            if (_aeBackBtn && fabBar) {
+              // Usa coordinate viewport assolute (position:fixed) — indipendente dal parent
+              const _backRect = _aeBackBtn.getBoundingClientRect();
+              // Mezzeria verticale del bottone Back
+              const _backMidY = _backRect.top + _backRect.height / 2;
+              // Altezza FAB totale con padding: 8px + 6px*2 = 20px, metà = 10px
+              const _fabTopFixed = Math.round(_backMidY - 10);
+              // Right: distanza dal bordo destro della viewport
+              const _fabRightFixed = 14;
+              panel.style.setProperty('--ae-fab-top-fixed', _fabTopFixed + 'px');
+              panel.style.setProperty('--ae-fab-right-fixed', _fabRightFixed + 'px');
             }
           });
           const _tdBtn = toggle.querySelector('.ae-toggle-dark');
