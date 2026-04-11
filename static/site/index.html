@@ -1226,10 +1226,10 @@
     }
     .ae-fab-close svg { stroke: #fff; }
 
-    /* ── Vista bianca (box-white / thumbs): FAB -25% poi -15% poi -30% poi -20% e + nero/bianco ── */
+    /* ── Vista bianca (box-white / thumbs): FAB -25% poi -15% poi -30% poi -20% poi -10% e + nero/bianco ── */
     .archive-expanded.box-white .ae-fab-btn {
-      width: 10px;
-      height: 10px;
+      width: 9px;
+      height: 9px;
     }
     /* Nella vista thumbs (box-white) i FAB si allineano al bordo superiore della foto.
        L'altezza esatta viene calcolata via JS; il CSS usa una variabile custom --ae-fab-top */
@@ -8319,18 +8319,15 @@ function buildArchive() {
           // più l'altezza della info-bar (Back + contatore)
           requestAnimationFrame(() => {
             const _aeInfoEl = _aeThumbsView.querySelector('.ae-thumbs-info');
-            // Il kwPanel è in document.body (fixed), cerca la label INDEX lì
-            const _kwLabelEl = (_aeThumbsView._kwPanel)
-              ? _aeThumbsView._kwPanel.querySelector('.archive-kw-label')
-              : null;
-            if (_kwLabelEl && _aeInfoEl) {
-              // Calcola la posizione relativa della label INDEX rispetto al panel
+            // Allinea i FAB alla mezzeria del bottone ← Back
+            const _aeBackBtn = _aeThumbsView.querySelector('.ae-thumbs-back');
+            if (_aeBackBtn && _aeInfoEl) {
               const _panelRect  = panel.getBoundingClientRect();
-              const _labelRect  = _kwLabelEl.getBoundingClientRect();
-              // top dei FAB = distanza dal top del panel alla mezzeria della label INDEX
-              const _labelMidY  = _labelRect.top + _labelRect.height / 2 - _panelRect.top;
-              // Sottrai metà altezza FAB (10px + padding 6px = 22px totale, metà = 11px)
-              const _fabTop = Math.round(_labelMidY - 11);
+              const _backRect   = _aeBackBtn.getBoundingClientRect();
+              // top dei FAB = distanza dal top del panel alla mezzeria del bottone Back
+              const _backMidY   = _backRect.top + _backRect.height / 2 - _panelRect.top;
+              // Sottrai metà altezza FAB (9px + padding 6px = 21px totale, metà = 10.5px)
+              const _fabTop = Math.round(_backMidY - 10.5);
               panel.style.setProperty('--ae-fab-top', _fabTop + 'px');
             } else if (_aeInfoEl) {
               // Fallback: usa l'altezza della info-bar
