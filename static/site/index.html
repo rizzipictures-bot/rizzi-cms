@@ -1226,10 +1226,10 @@
     }
     .ae-fab-close svg { stroke: #fff; }
 
-    /* ── Vista bianca (box-white / thumbs): FAB -25% poi -15% poi -30% poi -20% poi -10% e + nero/bianco ── */
+    /* ── Vista bianca (box-white / thumbs): FAB -25% poi -15% poi -30% poi -20% poi -10% poi -10% e + nero/bianco ── */
     .archive-expanded.box-white .ae-fab-btn {
-      width: 9px;
-      height: 9px;
+      width: 8px;
+      height: 8px;
     }
     /* Nella vista thumbs (box-white) i FAB si allineano al bordo superiore della foto.
        L'altezza esatta viene calcolata via JS; il CSS usa una variabile custom --ae-fab-top */
@@ -2323,6 +2323,38 @@
       cursor: pointer;
     }
     #ae-zoom-white-popup.open { display: flex; }
+    /* Pallino viola X chiusura — angolo alto destra del lightbox bianco */
+    #ae-zoom-white-close {
+      position: fixed;
+      top: 18px;
+      right: 18px;
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      background: #4C00FC;
+      border: none;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 3001;
+      padding: 0;
+      box-shadow: 0 2px 8px rgba(76,0,252,0.45);
+      transition: transform 0.7s cubic-bezier(0.77,0,0.175,1), opacity .2s;
+      opacity: 0;
+      pointer-events: none;
+    }
+    #ae-zoom-white-popup.open #ae-zoom-white-close {
+      opacity: 1;
+      pointer-events: auto;
+    }
+    #ae-zoom-white-close:hover {
+      transform: rotate(180deg);
+    }
+    #ae-zoom-white-close svg {
+      width: 16px;
+      height: 16px;
+    }
     #ae-zoom-white-img {
       height: 700px;
       width: auto;
@@ -5301,6 +5333,12 @@
 <!-- Popup zoom bianco (modalità thumbs) -->
 <div id="ae-zoom-white-popup">
   <img id="ae-zoom-white-img" src="" alt="">
+  <button id="ae-zoom-white-close" aria-label="Chiudi">
+    <svg viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <line x1="4" y1="4" x2="12" y2="12" stroke="white" stroke-width="1.4" stroke-linecap="round"/>
+      <line x1="12" y1="4" x2="4" y2="12" stroke="white" stroke-width="1.4" stroke-linecap="round"/>
+    </svg>
+  </button>
 </div>
 
 <!-- Popup zoom immagine Archive -->
@@ -8321,8 +8359,8 @@ function buildArchive() {
               const _backRect   = _aeBackBtn.getBoundingClientRect();
               // top dei FAB = distanza dal top del panel alla mezzeria del bottone Back
               const _backMidY   = _backRect.top + _backRect.height / 2 - _panelRect.top;
-              // Sottrai metà altezza FAB (9px + padding 6px = 21px totale, metà = 10.5px)
-              const _fabTop = Math.round(_backMidY - 10.5);
+              // Sottrai metà altezza FAB (8px + padding 6px = 20px totale, metà = 10px)
+              const _fabTop = Math.round(_backMidY - 10);
               panel.style.setProperty('--ae-fab-top', _fabTop + 'px');
             } else if (_aeInfoEl) {
               // Fallback: usa l'altezza della info-bar
@@ -10587,9 +10625,19 @@ loadFromCMS();
   let _wImages = [];
   let _wIdx    = 0;
 
+  const _whiteCloseBtn = document.getElementById('ae-zoom-white-close');
+  if (_whiteCloseBtn) {
+    _whiteCloseBtn.addEventListener('click', e => {
+      e.stopPropagation();
+      _whitePopup.classList.remove('open');
+      document.documentElement.appendChild(_whitePopup);
+      _whiteImg.src = '';
+    });
+  }
+
   if (_whitePopup) {
     _whitePopup.addEventListener('click', e => {
-      if (e.target !== _whiteImg) {
+      if (e.target !== _whiteImg && e.target !== _whiteCloseBtn && !_whiteCloseBtn.contains(e.target)) {
         _whitePopup.classList.remove('open');
         document.documentElement.appendChild(_whitePopup);
         _whiteImg.src = '';
