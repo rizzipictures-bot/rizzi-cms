@@ -1725,7 +1725,7 @@ def fix_aspect_ratios():
 # ── SOCIAL / REEL / TUTORIAL ──────────────────────────────────────────────────
 @app.route('/api/projects/<pid>/generate-reel', methods=['POST'])
 def generate_reel_endpoint(pid):
-    """Genera un Reel video Instagram/TikTok dal progetto."""
+    """Avvia la generazione asincrona del Reel. Risponde subito con job_id."""
     import sys
     sys.path.insert(0, str(BASE))
     from reel_generator import generate_reel
@@ -1742,11 +1742,23 @@ def generate_reel_endpoint(pid):
     output_dir.mkdir(exist_ok=True)
     output_path = str(output_dir / f'reel_{pid}_{style}.mp4')
 
-    try:
-        generate_reel(project, str(UPLOAD), output_path, style=style)
-        return jsonify({'ok': True, 'path': f'/api/projects/{pid}/reel/{style}'})
-    except Exception as e:
-        return jsonify({'error': str(e)}), 500
+    job_id = str(uuid.uuid4())[:8]
+    with _JOBS_LOCK:
+        _JOBS[job_id] = {'status': 'running', 'pid': pid, 'style': style, 'result': None, 'error': None}
+
+    def _run():
+        try:
+            generate_reel(project, str(UPLOAD), output_path, style=style)
+            with _JOBS_LOCK:
+                _JOBS[job_id]['status'] = 'done'
+                _JOBS[job_id]['result'] = {'path': f'/api/projects/{pid}/reel/{style}'}
+        except Exception as e:
+            with _JOBS_LOCK:
+                _JOBS[job_id]['status'] = 'error'
+                _JOBS[job_id]['error'] = str(e)
+
+    threading.Thread(target=_run, daemon=True).start()
+    return jsonify({'ok': True, 'job_id': job_id, 'status': 'running'})
 
 
 @app.route('/api/projects/<pid>/reel/<style>', methods=['GET'])

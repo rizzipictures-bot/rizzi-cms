@@ -18,7 +18,8 @@ from PIL import Image, ImageDraw, ImageFont, ImageFilter, ImageEnhance
 import numpy as np
 
 # ── Costanti video ─────────────────────────────────────────────────────────────
-W, H = 1080, 1920          # Formato verticale 9:16
+# Risoluzione ridotta per Render free plan (512MB RAM): 540x960 = 9:16
+W, H = 540, 960
 FPS  = 30
 FONT_REGULAR = '/usr/share/fonts/truetype/liberation/LiberationSans-Regular.ttf'
 FONT_BOLD    = '/usr/share/fonts/truetype/liberation/LiberationSans-Bold.ttf'
@@ -159,28 +160,25 @@ def _make_final_frame(title, website='rizzipictures.com', n_frames=60):
     return [img] * n_frames
 
 def _frames_to_video(frames, output_path, fps=FPS):
-    """Converte una lista di frame PIL in un video MP4 usando ffmpeg."""
-    with tempfile.TemporaryDirectory() as tmpdir:
-        # Salva i frame come PNG
-        for i, frame in enumerate(frames):
-            frame.save(f'{tmpdir}/frame_{i:05d}.png')
-        
-        # Crea il video con ffmpeg
-        cmd = [
-            'ffmpeg', '-y',
-            '-framerate', str(fps),
-            '-i', f'{tmpdir}/frame_%05d.png',
-            '-c:v', 'libx264',
-            '-preset', 'fast',
-            '-crf', '23',
-            '-pix_fmt', 'yuv420p',
-            '-movflags', '+faststart',
-            output_path
-        ]
-        result = subprocess.run(cmd, capture_output=True, text=True)
-        if result.returncode != 0:
-            raise RuntimeError(f'ffmpeg error: {result.stderr}')
-    
+    """Converte una lista di frame PIL in un video MP4 via ffmpeg pipe (low memory)."""
+    cmd = [
+        'ffmpeg', '-y',
+        '-f', 'rawvideo', '-vcodec', 'rawvideo',
+        '-s', f'{W}x{H}', '-pix_fmt', 'rgb24', '-r', str(fps),
+        '-i', 'pipe:0',
+        '-c:v', 'libx264', '-preset', 'fast', '-crf', '23',
+        '-pix_fmt', 'yuv420p', '-movflags', '+faststart',
+        output_path
+    ]
+    proc = subprocess.Popen(cmd, stdin=subprocess.PIPE, stderr=subprocess.DEVNULL)
+    try:
+        for frame in frames:
+            proc.stdin.write(frame.tobytes())
+    finally:
+        proc.stdin.close()
+        proc.wait()
+    if proc.returncode != 0:
+        raise RuntimeError('ffmpeg pipe error (reel)')
     return output_path
 
 def generate_reel(project, images_dir, output_path, style='digital'):

@@ -4062,19 +4062,38 @@ async function generateReel(style) {
   statusEl.textContent = 'Elaborazione video... (può richiedere 1-2 minuti)';
   dlEl.style.display = 'none';
   try {
+    // Avvia il job asincrono
     const res = await fetch(`${API}/projects/${currentProject.id}/generate-reel`, {
       method: 'POST',
       headers: {'Content-Type': 'application/json'},
       body: JSON.stringify({ style })
     });
-    const data = await res.json();
-    if (!data.ok) throw new Error(data.error || 'Errore');
-    const link = document.getElementById('reel-download-link');
-    link.href = `${API}/projects/${currentProject.id}/reel/${style}`;
-    link.download = `reel_${currentProject.title}_${style}.mp4`;
-    dlEl.style.display = 'block';
-    statusEl.textContent = 'Reel pronto! Clicca per scaricare.';
-    toast('Reel generato ✓');
+    const startData = await res.json();
+    if (!startData.ok) throw new Error(startData.error || 'Errore avvio');
+
+    const jobId = startData.job_id;
+    statusEl.textContent = 'Video in elaborazione... (1-2 minuti)';
+
+    // Polling ogni 5 secondi
+    let elapsed = 0;
+    while (true) {
+      await new Promise(r => setTimeout(r, 5000));
+      elapsed += 5;
+      statusEl.textContent = `Elaborazione in corso... ${elapsed}s`;
+      const pollRes = await fetch(`${API}/jobs/${jobId}`);
+      const pollData = await pollRes.json();
+      if (pollData.status === 'done') {
+        const link = document.getElementById('reel-download-link');
+        link.href = `${API}/projects/${currentProject.id}/reel/${style}`;
+        link.download = `reel_${currentProject.title}_${style}.mp4`;
+        dlEl.style.display = 'block';
+        statusEl.textContent = 'Reel pronto! Clicca per scaricare.';
+        toast('Reel generato ✓');
+        break;
+      } else if (pollData.status === 'error') {
+        throw new Error(pollData.error || 'Errore generazione');
+      }
+    }
   } catch(e) {
     statusEl.textContent = 'Errore: ' + e.message;
     toast('Errore: ' + e.message);
