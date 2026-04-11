@@ -358,7 +358,7 @@ def generate_tutorial(project, images_dir, output_path, corpus_path=None, quote_
     
     # Carica le immagini — pre-resize immediato per evitare di processare file da 20-50MB
     photos_pil = []
-    for img_data in images[:8]:
+    for img_data in images[:12]:  # fino a 12 foto per ~25 secondi
         fpath = Path(images_dir) / img_data.get('file', '')
         if fpath.exists():
             try:
@@ -389,11 +389,12 @@ def generate_tutorial(project, images_dir, output_path, corpus_path=None, quote_
             total_frames += 1
 
     try:
-        # 1. Title card (1.5 sec @ 24fps = 36 frame)
+        # ── Struttura tutorial ~25 secondi ────────────────────────────────────────
+        # 1. Title card (1.5 sec = 36 frame)
         tutorial_subtitle = f'Archivio — {title}'
         _write_section(_make_title_card(tutorial_subtitle, quote.get('tema', ''), n_frames=36))
 
-        # 2. Prima foto con testo (1 sec = 24 frame) — usa foto pre-fitted
+        # 2. Prima foto con luogo/anno sovrapposto (2 sec = 48 frame)
         img_with_text = fitted_photos[0].copy()
         img_with_text = _darken(img_with_text, factor=0.6)
         draw_tmp = ImageDraw.Draw(img_with_text)
@@ -405,30 +406,55 @@ def generate_tutorial(project, images_dir, output_path, corpus_path=None, quote_
                 lw = bbox[2] - bbox[0]
                 draw_tmp.text(((W - lw) // 2, y_start), line, font=font_text, fill=(240, 240, 240))
                 y_start += 45
-        for _ in range(24):
+        for _ in range(48):
             _write_frame(proc, img_with_text)
             total_frames += 1
 
-        # 3. Citazione filosofica su sfondo foto (2.5 sec = 60 frame)
+        # 3. Citazione filosofica su sfondo foto (3 sec = 72 frame)
         bg_photo_pre = fitted_photos[1] if len(fitted_photos) > 1 else fitted_photos[0]
         _write_section(_make_quote_frame(
             quote['citazione_it'], quote['autore'], quote.get('opera', ''),
-            bg_photo=bg_photo_pre, n_frames=60
+            bg_photo=bg_photo_pre, n_frames=72
         ))
 
-        # 4. Sequenza di foto del progetto (0.75 sec ciascuna = 18 frame)
-        for fitted in fitted_photos[2:6]:
-            for _ in range(18):
-                _write_frame(proc, fitted)
-                total_frames += 1
+        # 4. Sequenza foto con ritmo easing (lento → veloce → lento)
+        #    Usa le foto dalla 2 in poi (la 0 è già mostrata, la 1 è lo sfondo citazione)
+        seq_photos = fitted_photos[2:]
+        n_seq = len(seq_photos)
+        if n_seq > 0:
+            import math
+            def _seq_dur(i, total):
+                if total <= 1: return 36
+                t = i / (total - 1)
+                ease = abs(math.cos(math.pi * t))
+                return max(6, int(6 + (36 - 6) * ease))  # da 6 a 36 frame
+            seq_durations = [_seq_dur(i, n_seq) for i in range(n_seq)]
+            for fitted, d in zip(seq_photos, seq_durations):
+                for _ in range(d):
+                    _write_frame(proc, fitted)
+                    total_frames += 1
 
-        # 5. Citazione in bianco su nero (1.5 sec = 36 frame)
+        # 5. Citazione in bianco su nero (2 sec = 48 frame)
         _write_section(_make_quote_frame(
             quote['citazione_it'], quote['autore'], quote.get('opera', ''),
-            bg_photo=None, n_frames=36
+            bg_photo=None, n_frames=48
         ))
 
-        # 6. Title card finale (1.5 sec = 36 frame)
+        # 6. Ultima foto con overlay (1.5 sec = 36 frame) — se disponibile
+        if len(fitted_photos) > 1:
+            last_img = fitted_photos[-1].copy()
+            last_img = _darken(last_img, factor=0.65)
+            draw_last = ImageDraw.Draw(last_img)
+            font_last = _load_font(FONT_LIGHT, 28)
+            site_text = 'rizzipictures.com'
+            bbox_s = draw_last.textbbox((0, 0), site_text, font=font_last)
+            sw = bbox_s[2] - bbox_s[0]
+            draw_last.text(((W - sw) // 2, H - 80), site_text, font=font_last, fill=(180, 180, 180))
+            for _ in range(36):
+                _write_frame(proc, last_img)
+                total_frames += 1
+
+        # 7. Title card finale (1.5 sec = 36 frame)
         _write_section(_make_title_card(
             title,
             f'{subtitle} — {place}, {year}' if subtitle else f'{place}, {year}',
