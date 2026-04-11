@@ -79,7 +79,8 @@ def _merge_audio_video(video_path, audio_path, output_path):
     return result.returncode == 0
 
 # ── Costanti video ─────────────────────────────────────────────────────────────
-W, H = 1080, 1920
+# Risoluzione ridotta per Render free plan (512MB RAM): 540x960 = 9:16
+W, H = 540, 960
 FPS  = 30
 FONT_REGULAR = '/usr/share/fonts/truetype/liberation/LiberationSans-Regular.ttf'
 FONT_BOLD    = '/usr/share/fonts/truetype/liberation/LiberationSans-Bold.ttf'
