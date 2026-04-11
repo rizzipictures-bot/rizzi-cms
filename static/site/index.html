@@ -8319,8 +8319,10 @@ function buildArchive() {
           // più l'altezza della info-bar (Back + contatore)
           requestAnimationFrame(() => {
             const _aeInfoEl = _aeThumbsView.querySelector('.ae-thumbs-info');
-            // Cerca la label INDEX nel pannello keywords del box
-            const _kwLabelEl = panel.querySelector('.archive-kw-label');
+            // Il kwPanel è in document.body (fixed), cerca la label INDEX lì
+            const _kwLabelEl = (_aeThumbsView._kwPanel)
+              ? _aeThumbsView._kwPanel.querySelector('.archive-kw-label')
+              : null;
             if (_kwLabelEl && _aeInfoEl) {
               // Calcola la posizione relativa della label INDEX rispetto al panel
               const _panelRect  = panel.getBoundingClientRect();
