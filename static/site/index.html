@@ -7036,8 +7036,11 @@ function showOverview(img, idx, imageList, sourceThumb) {
     clone.style.width  = finalW    + 'px';
     clone.style.height = finalH    + 'px';
 
-    // Dopo l'animazione: mostra l'overlay reale e rimuovi il clone
+    // Dopo l'animazione FLIP: mostra l'overlay reale senza la vecchia clip-path transition
     setTimeout(() => {
+      // Disabilita la clip-path transition: l'overlay appare istantaneamente
+      oImg.style.transition = 'none';
+      oImg.style.clipPath = 'inset(0 0 0% 0)';
       oImg.src = img.url;
       ov.classList.add('open');
       overlayOpen = true;
@@ -7050,6 +7053,11 @@ function showOverview(img, idx, imageList, sourceThumb) {
       // Rimuovi il clone
       const cl = document.getElementById('ov-flip-clone');
       if (cl) cl.remove();
+      // Ripristina la transition CSS dopo un frame (per le navigazioni successive)
+      requestAnimationFrame(() => {
+        oImg.style.transition = '';
+        oImg.style.clipPath = '';
+      });
     }, 720);
 
   } else {
