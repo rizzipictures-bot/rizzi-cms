@@ -1716,16 +1716,39 @@
 
         <!-- SEZIONE: REEL VIDEO -->
         <div style="margin-top:24px;padding-top:20px;border-top:1px solid var(--border)">
-          <div style="font-size:12px;font-weight:600;margin-bottom:10px">&#9654; Reel Video (Instagram / TikTok)</div>
-          <div style="font-size:11px;color:var(--gray);margin-bottom:12px">Genera un video verticale 9:16 con le foto del progetto, pronto per Instagram Reels e TikTok.</div>
+          <div style="font-size:12px;font-weight:600;margin-bottom:10px">&#9654; Reel Video (Instagram / TikTok / YouTube)</div>
+          <div style="font-size:11px;color:var(--gray);margin-bottom:12px">Genera un video con le foto del progetto, pronto per Instagram Reels, TikTok o YouTube.</div>
+
+          <!-- Controlli durata e orientamento -->
+          <div style="display:flex;gap:16px;flex-wrap:wrap;margin-bottom:12px;align-items:flex-end">
+            <div>
+              <label style="font-size:11px;color:var(--gray);display:block;margin-bottom:4px">Durata (secondi)</label>
+              <select id="reel-duration" style="padding:5px 8px;font-size:12px;border:1px solid var(--border);border-radius:4px;background:var(--bg);color:var(--text)">
+                <option value="15">15s &mdash; TikTok breve</option>
+                <option value="25" selected>25s &mdash; Reels standard</option>
+                <option value="30">30s &mdash; Reels lungo</option>
+                <option value="60">60s &mdash; YouTube Shorts</option>
+              </select>
+            </div>
+            <div>
+              <label style="font-size:11px;color:var(--gray);display:block;margin-bottom:4px">Formato</label>
+              <select id="reel-orientation" style="padding:5px 8px;font-size:12px;border:1px solid var(--border);border-radius:4px;background:var(--bg);color:var(--text)">
+                <option value="vertical" selected>9:16 Verticale (Reels / TikTok)</option>
+                <option value="horizontal">16:9 Orizzontale (YouTube)</option>
+              </select>
+            </div>
+          </div>
+
           <div style="display:flex;gap:8px;flex-wrap:wrap">
             <button class="btn-ai-write" onclick="generateReel('digital')" id="btn-reel-digital">&#9654; Reel Digital</button>
             <button class="btn-ai-write" onclick="generateReel('analog')" id="btn-reel-analog">&#9654; Reel Analog</button>
           </div>
           <div id="reel-status" style="margin-top:10px;font-size:11px;color:var(--gray)"></div>
-          <div id="reel-download" style="display:none;margin-top:10px">
+          <div id="reel-download" style="display:none;margin-top:10px;display:flex;gap:8px;align-items:center;flex-wrap:wrap">
             <a id="reel-download-link" class="btn-text" style="display:inline-block;font-size:11px">&#8659; Scarica Reel MP4</a>
+            <button id="btn-publish-reel" class="btn-ai-write" onclick="publishInstagram('reel')" style="font-size:11px;padding:5px 10px;background:#e1306c;border-color:#e1306c;color:#fff">&#128247; Pubblica su Instagram</button>
           </div>
+          <div id="reel-publish-status" style="margin-top:8px;font-size:11px;color:var(--gray)"></div>
         </div>
 
         <!-- SEZIONE: TUTORIAL VIDEO-SAGGIO -->
@@ -1752,9 +1775,11 @@ Es: &quot;Havana, 2004. Ottantasette fotografie scattate in una settimana. Ne ho
           </div>
           <button class="btn-ai-write" onclick="generateTutorial()" id="btn-tutorial">&#9670; Genera Tutorial</button>
           <div id="tutorial-status" style="margin-top:10px;font-size:11px;color:var(--gray)"></div>
-          <div id="tutorial-download" style="display:none;margin-top:10px">
+          <div id="tutorial-download" style="display:none;margin-top:10px;display:flex;gap:8px;align-items:center;flex-wrap:wrap">
             <a id="tutorial-download-link" class="btn-text" style="display:inline-block;font-size:11px">&#8659; Scarica Tutorial MP4</a>
+            <button id="btn-publish-tutorial" class="btn-ai-write" onclick="publishInstagram('tutorial')" style="font-size:11px;padding:5px 10px;background:#e1306c;border-color:#e1306c;color:#fff">&#128247; Pubblica su Instagram</button>
           </div>
+          <div id="tutorial-publish-status" style="margin-top:8px;font-size:11px;color:var(--gray)"></div>
         </div>
       </div>
     </div>
@@ -4088,17 +4113,24 @@ async function generateReel(style) {
     }
   }
 
+  const duration = document.getElementById('reel-duration')?.value || '25';
+  const orientation = document.getElementById('reel-orientation')?.value || 'vertical';
+  // Salva orientamento corrente per il publish
+  window._lastReelStyle = style;
+  window._lastReelOrientation = orientation;
+
   try {
     // Avvia il job asincrono (con retry per cold start)
     statusEl.textContent = 'Connessione al server...';
     const startData = await fetchWithRetry(
       `${API}/projects/${currentProject.id}/generate-reel`,
-      { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ style }) }
+      { method: 'POST', headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({ style, duration_sec: parseInt(duration), orientation }) }
     );
     if (!startData.ok) throw new Error(startData.error || 'Errore avvio');
 
     const jobId = startData.job_id;
-    statusEl.textContent = 'Video in elaborazione... (1-2 minuti)';
+    statusEl.textContent = `Video in elaborazione... (${duration}s, ${orientation === 'horizontal' ? '16:9' : '9:16'})`;
 
     // Polling ogni 5 secondi (con retry per eventuali 502 durante la generazione)
     let elapsed = 0;
@@ -4112,10 +4144,11 @@ async function generateReel(style) {
         statusEl.textContent = `Elaborazione in corso... ${elapsed}s`;
         if (pollData.status === 'done') {
           const link = document.getElementById('reel-download-link');
-          link.href = `${API}/projects/${currentProject.id}/reel/${style}`;
-          link.download = `reel_${currentProject.title}_${style}.mp4`;
-          dlEl.style.display = 'block';
-          statusEl.textContent = 'Reel pronto! Clicca per scaricare.';
+          link.href = `${API}/projects/${currentProject.id}/reel/${style}/${orientation}`;
+          link.download = `reel_${currentProject.title}_${style}_${orientation}.mp4`;
+          dlEl.style.display = 'flex';
+          statusEl.textContent = `Reel pronto! (${duration}s, ${orientation === 'horizontal' ? '16:9 YouTube' : '9:16 Reels'})`;
+          document.getElementById('reel-publish-status').textContent = '';
           toast('Reel generato ✓');
           break;
         } else if (pollData.status === 'error') {
@@ -4133,6 +4166,43 @@ async function generateReel(style) {
   } finally {
     btn.disabled = false;
     btn.textContent = style === 'digital' ? '▶ Reel Digital' : '▶ Reel Analog';
+  }
+}
+
+async function publishInstagram(mediaType) {
+  if (!currentProject) return;
+  const statusEl = document.getElementById(mediaType === 'reel' ? 'reel-publish-status' : 'tutorial-publish-status');
+  const btnEl = document.getElementById(mediaType === 'reel' ? 'btn-publish-reel' : 'btn-publish-tutorial');
+
+  // Chiedi conferma prima di pubblicare
+  const confirmed = confirm(`Pubblicare questo ${mediaType === 'reel' ? 'Reel' : 'Tutorial'} su @alessandro_rizzi_studio?\n\nVerrà creato un draft su Instagram. Dovrai confermarlo nel pannello Manus.`);
+  if (!confirmed) return;
+
+  btnEl.disabled = true;
+  statusEl.textContent = 'Upload in corso...';
+
+  try {
+    const style = window._lastReelStyle || 'digital';
+    const orientation = window._lastReelOrientation || 'vertical';
+    const r = await fetch(`${API}/projects/${currentProject.id}/publish-instagram`, {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({ media_type: mediaType, style, orientation })
+    });
+    const data = await r.json();
+    if (data.ok) {
+      statusEl.innerHTML = '✅ Reel inviato a Instagram! <strong>Controlla il pannello Manus per confermare la pubblicazione.</strong>';
+      statusEl.style.color = 'var(--accent)';
+      toast('Inviato a Instagram ✓');
+    } else {
+      throw new Error(data.error || 'Errore pubblicazione');
+    }
+  } catch(e) {
+    statusEl.textContent = 'Errore: ' + e.message;
+    statusEl.style.color = 'red';
+    toast('Errore: ' + e.message);
+  } finally {
+    btnEl.disabled = false;
   }
 }
 

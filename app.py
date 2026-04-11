@@ -1735,23 +1735,27 @@ def generate_reel_endpoint(pid):
     if not project:
         return jsonify({'error': 'Progetto non trovato'}), 404
 
-    body  = request.get_json(silent=True) or {}
-    style = body.get('style', 'digital')  # 'digital' o 'analog'
+    body        = request.get_json(silent=True) or {}
+    style       = body.get('style', 'digital')        # 'digital' o 'analog'
+    duration    = int(body.get('duration_sec', 25))   # durata in secondi
+    orientation = body.get('orientation', 'vertical') # 'vertical' o 'horizontal'
 
     output_dir = DATA / 'reels'
     output_dir.mkdir(exist_ok=True)
-    output_path = str(output_dir / f'reel_{pid}_{style}.mp4')
+    output_path = str(output_dir / f'reel_{pid}_{style}_{orientation}.mp4')
 
     job_id = str(uuid.uuid4())[:8]
     with _JOBS_LOCK:
-        _JOBS[job_id] = {'status': 'running', 'pid': pid, 'style': style, 'result': None, 'error': None}
+        _JOBS[job_id] = {'status': 'running', 'pid': pid, 'style': style,
+                         'orientation': orientation, 'result': None, 'error': None}
 
     def _run():
         try:
-            generate_reel(project, str(UPLOAD), output_path, style=style)
+            generate_reel(project, str(UPLOAD), output_path,
+                          style=style, duration_sec=duration, orientation=orientation)
             with _JOBS_LOCK:
                 _JOBS[job_id]['status'] = 'done'
-                _JOBS[job_id]['result'] = {'path': f'/api/projects/{pid}/reel/{style}'}
+                _JOBS[job_id]['result'] = {'path': f'/api/projects/{pid}/reel/{style}/{orientation}'}
         except Exception as e:
             with _JOBS_LOCK:
                 _JOBS[job_id]['status'] = 'error'
@@ -1762,14 +1766,104 @@ def generate_reel_endpoint(pid):
 
 
 @app.route('/api/projects/<pid>/reel/<style>', methods=['GET'])
-def download_reel(pid, style):
+@app.route('/api/projects/<pid>/reel/<style>/<orientation>', methods=['GET'])
+def download_reel(pid, style, orientation='vertical'):
     """Scarica il Reel video generato."""
-    reel_path = DATA / 'reels' / f'reel_{pid}_{style}.mp4'
+    # Prova prima con orientation nel nome, poi fallback al vecchio formato
+    reel_path = DATA / 'reels' / f'reel_{pid}_{style}_{orientation}.mp4'
+    if not reel_path.exists():
+        reel_path = DATA / 'reels' / f'reel_{pid}_{style}.mp4'
     if not reel_path.exists():
         return jsonify({'error': 'Reel non ancora generato'}), 404
     return send_file(str(reel_path), mimetype='video/mp4',
                      as_attachment=True,
-                     download_name=f'reel_{style}.mp4')
+                     download_name=f'reel_{style}_{orientation}.mp4')
+
+
+@app.route('/api/projects/<pid>/publish-instagram', methods=['POST'])
+def publish_instagram_endpoint(pid):
+    """Pubblica il reel o tutorial su Instagram tramite MCP."""
+    import subprocess, tempfile, shutil
+
+    db = load_db()
+    project = next((p for p in db['projects'] if p['id'] == pid), None)
+    if not project:
+        return jsonify({'error': 'Progetto non trovato'}), 404
+
+    body        = request.get_json(silent=True) or {}
+    media_type  = body.get('media_type', 'reel')   # 'reel' o 'tutorial'
+    style       = body.get('style', 'digital')
+    orientation = body.get('orientation', 'vertical')
+    caption     = body.get('caption', '')
+
+    # Trova il file video
+    if media_type == 'tutorial':
+        video_path = DATA / 'tutorials' / f'tutorial_{pid}.mp4'
+    else:
+        video_path = DATA / 'reels' / f'reel_{pid}_{style}_{orientation}.mp4'
+        if not video_path.exists():
+            video_path = DATA / 'reels' / f'reel_{pid}_{style}.mp4'
+
+    if not video_path.exists():
+        return jsonify({'error': f'Video non trovato. Genera prima il {media_type}.'}), 404
+
+    try:
+        # Carica il video su URL pubblico tramite manus-upload-file
+        result = subprocess.run(
+            ['manus-upload-file', str(video_path)],
+            capture_output=True, text=True, timeout=120
+        )
+        if result.returncode != 0:
+            return jsonify({'error': f'Upload fallito: {result.stderr}'}), 500
+
+        # Estrai URL dalla risposta
+        public_url = result.stdout.strip().split('\n')[-1].strip()
+        if not public_url.startswith('http'):
+            return jsonify({'error': f'URL non valido: {public_url}'}), 500
+
+        # Genera caption automatica se non fornita
+        if not caption:
+            title   = project.get('title', '')
+            place   = project.get('place', '')
+            year    = str(project.get('year', ''))
+            caption = f'{title}'
+            if place or year:
+                caption += f'\n{" — ".join(filter(None, [place, year]))}'
+            # Aggiungi hashtag se disponibili
+            social = project.get('_social', {})
+            hashtags = social.get('hashtags', [])
+            if hashtags:
+                caption += '\n\n' + ' '.join(hashtags[:20])
+            caption += '\n\n📷 rizzipictures.com'
+
+        # Chiama MCP Instagram per creare il reel
+        import json as _json
+        mcp_input = _json.dumps({
+            'type': 'reels',
+            'media': [{'type': 'video', 'media_url': public_url}],
+            'caption': caption,
+            'share_to_feed': True
+        })
+        mcp_result = subprocess.run(
+            ['manus-mcp-cli', 'tool', 'call', 'create_instagram',
+             '--server', 'instagram', '--input', mcp_input],
+            capture_output=True, text=True, timeout=60
+        )
+
+        if mcp_result.returncode != 0:
+            return jsonify({'error': f'Instagram MCP error: {mcp_result.stderr}'}), 500
+
+        return jsonify({
+            'ok': True,
+            'message': 'Reel creato su Instagram. Controlla il pannello Manus per confermare la pubblicazione.',
+            'public_url': public_url,
+            'caption_used': caption
+        })
+
+    except subprocess.TimeoutExpired:
+        return jsonify({'error': 'Timeout durante upload/pubblicazione'}), 500
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
 
 
 @app.route('/api/projects/<pid>/generate-social', methods=['POST'])

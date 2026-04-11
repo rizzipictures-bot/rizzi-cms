@@ -64,115 +64,131 @@ def _darken(img, factor=0.5):
     return ImageEnhance.Brightness(img).enhance(factor)
 
 
-def _make_title_frame(title, subtitle, year_place, style='digital'):
+def _make_title_frame(title, subtitle, year_place, style='digital', fw=W, fh=H):
     """
-    Frame titolo: foto sfocata/granosa come sfondo + testo centrato sopra.
-    Stile Balsamini: titolo grande, sottotitolo piccolo, linee sottili.
+    Frame titolo: sfondo nero + testo centrato.
+    Supporta sia verticale (9:16) che orizzontale (16:9).
     """
     bg_color   = BLACK if style == 'digital' else (12, 10, 8)
     text_color = WHITE if style == 'digital' else (240, 235, 220)
     gray_color = (120, 120, 120) if style == 'digital' else (160, 150, 130)
 
-    img  = Image.new('RGB', (W, H), bg_color)
+    img  = Image.new('RGB', (fw, fh), bg_color)
     draw = ImageDraw.Draw(img)
 
-    font_title = _load_font(FONT_BOLD, 80)
-    font_sub   = _load_font(FONT_LIGHT, 32)
-    font_small = _load_font(FONT_LIGHT, 24)
+    # Scala font in base alla larghezza
+    fs_title = max(40, int(fw * 0.148))
+    fs_sub   = max(18, int(fw * 0.059))
+    fs_small = max(14, int(fw * 0.044))
+    font_title = _load_font(FONT_BOLD, fs_title)
+    font_sub   = _load_font(FONT_LIGHT, fs_sub)
+    font_small = _load_font(FONT_LIGHT, fs_small)
+
+    cx, cy = fw // 2, fh // 2
+    margin = int(fw * 0.11)
 
     # Linea orizzontale sopra
-    line_y = H // 2 - 130
-    draw.rectangle([60, line_y, W - 60, line_y + 1], fill=text_color)
+    line_y = cy - int(fh * 0.135)
+    draw.rectangle([margin, line_y, fw - margin, line_y + 1], fill=text_color)
 
     # Titolo
     bbox = draw.textbbox((0, 0), title, font=font_title)
     tw = bbox[2] - bbox[0]
-    draw.text(((W - tw) // 2, H // 2 - 115), title, font=font_title, fill=text_color)
+    draw.text(((fw - tw) // 2, cy - int(fh * 0.12)), title, font=font_title, fill=text_color)
 
     # Sottotitolo
     if subtitle:
         bbox2 = draw.textbbox((0, 0), subtitle, font=font_sub)
         sw = bbox2[2] - bbox2[0]
-        draw.text(((W - sw) // 2, H // 2 - 15), subtitle, font=font_sub, fill=gray_color)
+        draw.text(((fw - sw) // 2, cy - int(fh * 0.015)), subtitle, font=font_sub, fill=gray_color)
 
     # Anno / Luogo
     if year_place:
         bbox3 = draw.textbbox((0, 0), year_place, font=font_small)
         yw = bbox3[2] - bbox3[0]
-        draw.text(((W - yw) // 2, H // 2 + 35), year_place, font=font_small, fill=gray_color)
+        draw.text(((fw - yw) // 2, cy + int(fh * 0.036)), year_place, font=font_small, fill=gray_color)
 
     # Linea orizzontale sotto
-    line_y2 = H // 2 + 80
-    draw.rectangle([60, line_y2, W - 60, line_y2 + 1], fill=text_color)
+    line_y2 = cy + int(fh * 0.083)
+    draw.rectangle([margin, line_y2, fw - margin, line_y2 + 1], fill=text_color)
 
     return img
 
 
-def _make_final_frame(title, website='rizzipictures.com', style='digital'):
+def _make_final_frame(title, website='rizzipictures.com', style='digital', fw=W, fh=H):
     """Frame finale minimalista."""
     bg_color   = BLACK if style == 'digital' else (12, 10, 8)
     text_color = WHITE if style == 'digital' else (240, 235, 220)
     gray_color = (120, 120, 120) if style == 'digital' else (160, 150, 130)
 
-    img  = Image.new('RGB', (W, H), bg_color)
+    img  = Image.new('RGB', (fw, fh), bg_color)
     draw = ImageDraw.Draw(img)
 
-    font_title = _load_font(FONT_BOLD, 60)
-    font_site  = _load_font(FONT_LIGHT, 28)
+    fs_title = max(36, int(fw * 0.111))
+    fs_site  = max(16, int(fw * 0.052))
+    font_title = _load_font(FONT_BOLD, fs_title)
+    font_site  = _load_font(FONT_LIGHT, fs_site)
+
+    cx, cy = fw // 2, fh // 2
 
     bbox = draw.textbbox((0, 0), title, font=font_title)
     tw = bbox[2] - bbox[0]
-    draw.text(((W - tw) // 2, H // 2 - 50), title, font=font_title, fill=text_color)
+    draw.text(((fw - tw) // 2, cy - int(fh * 0.052)), title, font=font_title, fill=text_color)
 
     bbox2 = draw.textbbox((0, 0), website, font=font_site)
     sw = bbox2[2] - bbox2[0]
-    draw.text(((W - sw) // 2, H // 2 + 30), website, font=font_site, fill=gray_color)
+    draw.text(((fw - sw) // 2, cy + int(fh * 0.031)), website, font=font_site, fill=gray_color)
 
     return img
 
 
-def _make_photo_with_overlay(fitted, title, year_place, style='digital'):
+def _make_photo_with_overlay(fitted, title, year_place, style='digital', fw=W, fh=H):
     """
     Foto grande (cover) con titolo e anno sovrapposti in basso.
     Stile sito: come la visualizzazione con sfondo granoso che si apre con il +.
     """
     img = fitted.copy()
+    if img.size != (fw, fh):
+        img = _fit_cover(img, target_w=fw, target_h=fh)
 
     # Gradiente scuro in basso per leggibilità testo
-    overlay = Image.new('RGBA', (W, H), (0, 0, 0, 0))
+    grad_h = int(fh * 0.29)
+    overlay = Image.new('RGBA', (fw, fh), (0, 0, 0, 0))
     draw_ov = ImageDraw.Draw(overlay)
-    for y in range(H - 280, H):
-        alpha = int(200 * (y - (H - 280)) / 280)
-        draw_ov.rectangle([0, y, W, y + 1], fill=(0, 0, 0, alpha))
+    for y in range(fh - grad_h, fh):
+        alpha = int(200 * (y - (fh - grad_h)) / grad_h)
+        draw_ov.rectangle([0, y, fw, y + 1], fill=(0, 0, 0, alpha))
     img = Image.alpha_composite(img.convert('RGBA'), overlay).convert('RGB')
 
     if style == 'analog':
         img = _add_grain(img, intensity=0.025)
 
     draw = ImageDraw.Draw(img)
-    font_title = _load_font(FONT_BOLD, 38)
-    font_small = _load_font(FONT_LIGHT, 24)
+    fs_title = max(24, int(fw * 0.070))
+    fs_small = max(14, int(fw * 0.044))
+    font_title = _load_font(FONT_BOLD, fs_title)
+    font_small = _load_font(FONT_LIGHT, fs_small)
 
     text_color = WHITE if style == 'digital' else (240, 235, 220)
 
     # Titolo in basso
     bbox = draw.textbbox((0, 0), title, font=font_title)
     tw = bbox[2] - bbox[0]
-    draw.text(((W - tw) // 2, H - 130), title, font=font_title, fill=text_color)
+    draw.text(((fw - tw) // 2, fh - int(fh * 0.135)), title, font=font_title, fill=text_color)
 
     if year_place:
         bbox2 = draw.textbbox((0, 0), year_place, font=font_small)
         yw = bbox2[2] - bbox2[0]
-        draw.text(((W - yw) // 2, H - 85), year_place, font=font_small, fill=(180, 180, 180))
+        draw.text(((fw - yw) // 2, fh - int(fh * 0.088)), year_place, font=font_small, fill=(180, 180, 180))
 
     return img
 
 
-def _open_ffmpeg_pipe(output_path):
+def _open_ffmpeg_pipe(output_path, frame_w=W, frame_h=H):
     cmd = [
         'ffmpeg', '-y',
         '-f', 'rawvideo', '-vcodec', 'rawvideo',
-        '-s', f'{W}x{H}', '-pix_fmt', 'rgb24', '-r', str(FPS),
+        '-s', f'{frame_w}x{frame_h}', '-pix_fmt', 'rgb24', '-r', str(FPS),
         '-i', 'pipe:0',
         '-c:v', 'libx264', '-preset', 'fast', '-crf', '22',
         '-pix_fmt', 'yuv420p', '-movflags', '+faststart',
@@ -262,18 +278,18 @@ def generate_reel(project, images_dir, output_path, style='digital'):
         durations[-2] = 36
 
     # ── Apri pipe ffmpeg e scrivi i frame ──────────────────────────────────────
-    proc = _open_ffmpeg_pipe(output_path)
+    proc = _open_ffmpeg_pipe(output_path, frame_w=vw, frame_h=vh)
     total_frames = 0
 
     try:
         # 1. INTRO: titolo (1.5 sec = 36 frame)
-        title_frame = _make_title_frame(title, subtitle, year_place, style=style)
+        title_frame = _make_title_frame(title, subtitle, year_place, style=style, fw=vw, fh=vh)
         _write_frames(proc, title_frame, 36)
         total_frames += 36
 
         # 2. PRIMA FOTO con overlay testo (stile sito: foto grande + titolo/luogo)
         #    Dura come l'easing della prima foto ma almeno 36 frame
-        first_with_overlay = _make_photo_with_overlay(fitted[0], title, year_place, style=style)
+        first_with_overlay = _make_photo_with_overlay(fitted[0], title, year_place, style=style, fw=vw, fh=vh)
         d0 = max(durations[0], 36)
         _write_frames(proc, first_with_overlay, d0)
         total_frames += d0
@@ -283,21 +299,18 @@ def generate_reel(project, images_dir, output_path, style='digital'):
         for i in range(1, n):
             f = fitted[i]
             d = durations[i]
-
-            # Taglio netto — nessuna dissolvenza (stile Barbero/Balsamini)
             _write_frames(proc, f, d)
             total_frames += d
 
         # 4. OUTRO: ultima foto ancora visibile + titolo finale
         #    (solo se abbiamo più di 1 foto)
         if n > 1:
-            # Ultima foto con overlay (come la prima)
-            last_with_overlay = _make_photo_with_overlay(fitted[-1], title, year_place, style=style)
+            last_with_overlay = _make_photo_with_overlay(fitted[-1], title, year_place, style=style, fw=vw, fh=vh)
             _write_frames(proc, last_with_overlay, 36)
             total_frames += 36
 
         # 5. FRAME FINALE: titolo + sito (1.5 sec = 36 frame)
-        final_frame = _make_final_frame(title, style=style)
+        final_frame = _make_final_frame(title, style=style, fw=vw, fh=vh)
         _write_frames(proc, final_frame, 36)
         total_frames += 36
 
