@@ -1226,15 +1226,15 @@
     }
     .ae-fab-close svg { stroke: #fff; }
 
-    /* ── Vista bianca (box-white / thumbs): FAB -25% e poi -15% e + nero/bianco ── */
+    /* ── Vista bianca (box-white / thumbs): FAB -25% poi -15% poi -30% e + nero/bianco ── */
     .archive-expanded.box-white .ae-fab-btn {
-      width: 19px;
-      height: 19px;
+      width: 13px;
+      height: 13px;
     }
-    /* Nella vista thumbs (box-white) i FAB si allineano al bordo superiore della foto:
-       la info-bar (Back + contatore) è alta ~36px, quindi top: 36px */
+    /* Nella vista thumbs (box-white) i FAB si allineano al bordo superiore della foto.
+       L'altezza esatta viene calcolata via JS; il CSS usa una variabile custom --ae-fab-top */
     .archive-expanded.box-white .ae-fab-bar {
-      top: 36px;
+      top: var(--ae-fab-top, 36px);
     }
     /* Hover anticipato: padding trasparente intorno ai FAB per attivare l'hover prima del contatto */
     .archive-expanded.box-white .ae-fab-btn {
@@ -7889,11 +7889,8 @@ function buildArchive() {
             // Info row: solo Back a sinistra e contatore a destra
             aeInfo.appendChild(aeCtr);
 
-            // Bottombar in basso a destra: allineata al margine basso della foto
-            const aeBottombar = document.createElement('div');
-            aeBottombar.className = 'ae-thumbs-bottombar';
-            aeBottombar.appendChild(aeToggleClone);
-            aeImgWrap.appendChild(aeBottombar); /* TV ancorato al bordo inferiore della foto */
+            // Bottombar TV rimossa dalla vista thumbs su richiesta utente (2026-04-11)
+            // Il toggle dark/light rimane accessibile solo dal box normale (non thumbs)
 
             // ── PANNELLO KEYWORD: linea verticale + pallino + keyword ──
             // Creato una sola volta, posizionato in fixed accanto alla foto
@@ -8295,6 +8292,16 @@ function buildArchive() {
           _aeThumbsView.style.display = 'flex';
           panel.classList.add('box-white');
           panel.classList.add('ink-open');
+          // Allinea i FAB al bordo superiore della foto: misura l'altezza reale della info-bar
+          requestAnimationFrame(() => {
+            const _aeInfoEl = _aeThumbsView.querySelector('.ae-thumbs-info');
+            if (_aeInfoEl) {
+              const _aeInfoH = _aeInfoEl.getBoundingClientRect().height;
+              // Il bordo superiore del FAB (cerchio 13px + padding 6px = 25px totale) deve coincidere
+              // con il top della foto: top = infoH (il padding 6px è già incluso nel box-sizing)
+              panel.style.setProperty('--ae-fab-top', _aeInfoH + 'px');
+            }
+          });
           const _tdBtn = toggle.querySelector('.ae-toggle-dark');
           const _tlBtn = toggle.querySelector('.ae-toggle-light');
           if (_tdBtn) _tdBtn.style.display = 'none';
