@@ -201,6 +201,53 @@
       "uso_tutorial": "Il video del progetto — le immagini nel tempo"
     }
   ],
+  "voci_rizzi": [
+    {
+      "id": "rizzi_1",
+      "autore": "Alessandro Rizzi",
+      "opera": "Note personali",
+      "anno": "2024",
+      "citazione_it": "I fotografi vivono due volte.",
+      "tema": "doppia vita del fotografo",
+      "uso_tutorial": "Apertura — frase breve, schermo nero, voce secca. Il punto di partenza di tutto."
+    },
+    {
+      "id": "rizzi_3",
+      "autore": "Alessandro Rizzi",
+      "opera": "Note personali",
+      "anno": "2024",
+      "citazione_it": "Beijing, la prima volta nel 2003 e poi di nuovo così tante volte insieme ad ogni volta che mi torna tra le mani una stampa, un negativo e il suo provino. Per la prima volta sentivo l'energia dei mondi che cambiano, un'idea di futuro nelle notti dei cantieri infiniti, nelle strade finite in pochi giorni, negli occhi nuovi di chi vede tutto cambiare, il nuovo che non contempla il vecchio, lo perde ma dove tutto freme.",
+      "tema": "il ritorno attraverso l'archivio — Beijing",
+      "uso_tutorial": "Sequenza progetto China — le foto di Beijing scorrono mentre la voce racconta il 2003"
+    },
+    {
+      "id": "rizzi_4",
+      "autore": "Alessandro Rizzi",
+      "opera": "Note personali",
+      "anno": "2024",
+      "citazione_it": "Tutto è archivio, atto sublime, immediato e subito nostalgico quello del fotografare.",
+      "tema": "fotografare come atto d'archivio",
+      "uso_tutorial": "Transizione tra la griglia Overview e la vista Archive — il gesto del fotografare come archiviazione istantanea"
+    },
+    {
+      "id": "rizzi_5",
+      "autore": "Alessandro Rizzi",
+      "opera": "Note personali",
+      "anno": "2024",
+      "citazione_it": "Qualche pensiero porta alcuni a vedere tutto venti, trenta, quaranta anni avanti ma non per annientare il presente ma anzi per viverlo doppio, aggiungendo a ciò che si fa uno slancio pieno di fiducia e insieme una malinconia dolce, delicata che guarda il tempo che tutto decide.",
+      "tema": "visione lunga e malinconia dolce",
+      "uso_tutorial": "Chiusura del tutorial — la voce rallenta, le foto diventano più lente, il tempo si dilata"
+    },
+    {
+      "id": "rizzi_6",
+      "autore": "Alessandro Rizzi",
+      "opera": "Note personali",
+      "anno": "2024",
+      "citazione_it": "I fotografi vivono due volte, mentre fanno e mentre si immaginano che ne sarà di tutto quello che hanno visto dei mondi vecchi e nuovi, di quei frammenti di reale per cui hanno messo tutto se stessi.",
+      "tema": "doppia vita del fotografo — versione estesa",
+      "uso_tutorial": "Versione lunga della frase di apertura — usare come chiusura del reel o come narrazione centrale del tutorial sull'archivio"
+    }
+  ],
   "note_editoriali": {
     "uso": "Questo corpus è la base per i tutorial video-saggio. Ogni citazione ha un campo 'uso_tutorial' che suggerisce il momento visivo del sito in cui inserirla.",
     "formato_video": "60-90 secondi. Citazione a schermo (testo bianco su nero o nero su bianco) + voce narrante + immagini del sito in movimento.",
