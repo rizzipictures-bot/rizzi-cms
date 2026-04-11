@@ -1793,8 +1793,9 @@ def generate_tutorial_endpoint(pid):
     if not project:
         return jsonify({'error': 'Progetto non trovato'}), 404
 
-    body     = request.get_json(silent=True) or {}
-    quote_id = body.get('quote_id', None)
+    body             = request.get_json(silent=True) or {}
+    quote_id         = body.get('quote_id', None)
+    custom_narration = body.get('custom_narration', None)  # testo libero per la voce
 
     output_dir = DATA / 'tutorials'
     output_dir.mkdir(exist_ok=True)
@@ -1812,6 +1813,7 @@ def generate_tutorial_endpoint(pid):
             project, str(UPLOAD), output_path,
             corpus_path=str(corpus_path) if corpus_path.exists() else None,
             quote_id=quote_id,
+            custom_narration=custom_narration,
             elevenlabs_api_key=elevenlabs_key if elevenlabs_key else None
         )
         return jsonify({'ok': True, 'result': result,

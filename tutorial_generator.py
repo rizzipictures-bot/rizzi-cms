@@ -293,7 +293,7 @@ def _frames_to_video(frames, output_path, fps=FPS):
     
     return output_path
 
-def generate_tutorial(project, images_dir, output_path, corpus_path=None, quote_id=None, elevenlabs_api_key=None):
+def generate_tutorial(project, images_dir, output_path, corpus_path=None, quote_id=None, custom_narration=None, elevenlabs_api_key=None):
     """
     Genera un video-saggio filosofico per un progetto fotografico.
     
@@ -303,6 +303,7 @@ def generate_tutorial(project, images_dir, output_path, corpus_path=None, quote_
         output_path: Path di output del video MP4
         corpus_path: Path al JSON del corpus filosofico (opzionale)
         quote_id: ID specifico della citazione da usare (opzionale, altrimenti random)
+        custom_narration: Testo libero per la narrazione vocale (opzionale, sovrascrive la citazione)
         elevenlabs_api_key: API key ElevenLabs (opzionale, usa env var se non fornita)
     
     Returns:
@@ -399,11 +400,16 @@ def generate_tutorial(project, images_dir, output_path, corpus_path=None, quote_
     
     # Genera narrazione con voce clonata (ElevenLabs)
     has_voice = False
-    narration_text = (
-        f"{title}. {place}, {year}.\n\n"
-        f"{quote['citazione_it']}\n\n"
-        f"— {quote['autore']}"
-    )
+    if custom_narration and custom_narration.strip():
+        # Usa il testo personalizzato dell'utente
+        narration_text = custom_narration.strip()
+    else:
+        # Usa la citazione filosofica selezionata
+        narration_text = (
+            f"{title}. {place}, {year}.\n\n"
+            f"{quote['citazione_it']}\n\n"
+            f"— {quote['autore']}"
+        )
     
     with tempfile.NamedTemporaryFile(suffix='.mp3', delete=False) as tmp_audio:
         tmp_audio_path = tmp_audio.name

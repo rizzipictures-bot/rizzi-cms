@@ -1738,6 +1738,18 @@
               <option value="">— Casuale —</option>
             </select>
           </div>
+          <div style="margin-bottom:12px">
+            <label style="display:flex;align-items:center;gap:8px">
+              <span>Testo narrazione personalizzata</span>
+              <span style="font-size:10px;color:var(--gray);font-weight:400">(opzionale — sostituisce la citazione)</span>
+            </label>
+            <textarea id="tutorial-custom-text"
+              placeholder="Scrivi qui il testo che vuoi far leggere alla tua voce nel video...
+Es: &quot;Havana, 2004. Ottantasette fotografie scattate in una settimana. Ne ho tenute dodici. Le altre esistono ancora, da qualche parte, in un file che non apro mai.&quot;"
+              style="width:100%;margin-top:6px;min-height:100px;padding:8px;font-size:12px;font-family:inherit;border:1px solid var(--border);border-radius:4px;background:var(--bg);color:var(--text);resize:vertical;line-height:1.5"
+            ></textarea>
+            <div style="font-size:10px;color:var(--gray);margin-top:4px">Se lasci vuoto, usa la citazione selezionata sopra. Puoi scrivere in italiano o inglese.</div>
+          </div>
           <button class="btn-ai-write" onclick="generateTutorial()" id="btn-tutorial">&#9670; Genera Tutorial</button>
           <div id="tutorial-status" style="margin-top:10px;font-size:11px;color:var(--gray)"></div>
           <div id="tutorial-download" style="display:none;margin-top:10px">
@@ -4085,6 +4097,8 @@ async function generateTutorial() {
   try {
     const body = {};
     if (quoteId) body.quote_id = quoteId;
+    const customText = document.getElementById('tutorial-custom-text').value.trim();
+    if (customText) body.custom_narration = customText;
     const res = await fetch(`${API}/projects/${currentProject.id}/generate-tutorial`, {
       method: 'POST',
       headers: {'Content-Type': 'application/json'},
