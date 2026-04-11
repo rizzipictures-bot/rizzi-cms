@@ -9,10 +9,74 @@ Il video non è un tutorial tecnico ma un video-saggio:
 "Perché archiviare è un atto di pensiero."
 """
 
-import os, json, random, textwrap
+import os, json, random, textwrap, subprocess, tempfile
 from pathlib import Path
 from PIL import Image, ImageDraw, ImageFont, ImageFilter, ImageEnhance
 import numpy as np
+
+# ── ElevenLabs Voice Clone ─────────────────────────────────────────────────────
+ELEVENLABS_API_KEY = os.environ.get('ELEVENLABS_API_KEY', '')
+ELEVENLABS_VOICE_ID = os.environ.get('ELEVENLABS_VOICE_ID', 'BNBjRw6icTfq1GkqWkrH')  # Alessandro Rizzi
+
+def _generate_voice_narration(text, output_mp3_path, api_key=None, voice_id=None):
+    """
+    Genera audio narrato con la voce clonata di Alessandro Rizzi tramite ElevenLabs.
+    Restituisce True se riuscito, False altrimenti.
+    """
+    import urllib.request, urllib.error
+    
+    key = api_key or ELEVENLABS_API_KEY
+    vid = voice_id or ELEVENLABS_VOICE_ID
+    
+    if not key or not vid:
+        return False
+    
+    url = f'https://api.elevenlabs.io/v1/text-to-speech/{vid}'
+    payload = json.dumps({
+        'text': text,
+        'model_id': 'eleven_multilingual_v2',
+        'voice_settings': {
+            'stability': 0.5,
+            'similarity_boost': 0.85,
+            'style': 0.2,
+            'use_speaker_boost': True
+        }
+    }).encode('utf-8')
+    
+    req = urllib.request.Request(url, data=payload, method='POST')
+    req.add_header('xi-api-key', key)
+    req.add_header('Content-Type', 'application/json')
+    req.add_header('Accept', 'audio/mpeg')
+    
+    try:
+        with urllib.request.urlopen(req, timeout=30) as resp:
+            audio_data = resp.read()
+        with open(output_mp3_path, 'wb') as f:
+            f.write(audio_data)
+        return True
+    except Exception as e:
+        print(f'ElevenLabs error: {e}')
+        return False
+
+
+def _merge_audio_video(video_path, audio_path, output_path):
+    """
+    Unisce audio e video con ffmpeg. Se l'audio è più corto del video, lo ripete.
+    Se più lungo, lo taglia.
+    """
+    cmd = [
+        'ffmpeg', '-y',
+        '-i', video_path,
+        '-i', audio_path,
+        '-c:v', 'copy',
+        '-c:a', 'aac',
+        '-b:a', '192k',
+        '-shortest',  # taglia all'elemento più corto
+        '-movflags', '+faststart',
+        output_path
+    ]
+    result = subprocess.run(cmd, capture_output=True, text=True)
+    return result.returncode == 0
 
 # ── Costanti video ─────────────────────────────────────────────────────────────
 W, H = 1080, 1920
@@ -229,7 +293,7 @@ def _frames_to_video(frames, output_path, fps=FPS):
     
     return output_path
 
-def generate_tutorial(project, images_dir, output_path, corpus_path=None, quote_id=None):
+def generate_tutorial(project, images_dir, output_path, corpus_path=None, quote_id=None, elevenlabs_api_key=None):
     """
     Genera un video-saggio filosofico per un progetto fotografico.
     
@@ -239,6 +303,7 @@ def generate_tutorial(project, images_dir, output_path, corpus_path=None, quote_
         output_path: Path di output del video MP4
         corpus_path: Path al JSON del corpus filosofico (opzionale)
         quote_id: ID specifico della citazione da usare (opzionale, altrimenti random)
+        elevenlabs_api_key: API key ElevenLabs (opzionale, usa env var se non fornita)
     
     Returns:
         dict con output_path e metadati del tutorial generato
@@ -328,12 +393,57 @@ def generate_tutorial(project, images_dir, output_path, corpus_path=None, quote_
         n_frames=45
     )
     
-    # Genera il video
-    _frames_to_video(all_frames, output_path, fps=FPS)
+    # Genera il video (senza audio)
+    video_no_audio = output_path.replace('.mp4', '_noaudio.mp4')
+    _frames_to_video(all_frames, video_no_audio, fps=FPS)
+    
+    # Genera narrazione con voce clonata (ElevenLabs)
+    has_voice = False
+    narration_text = (
+        f"{title}. {place}, {year}.\n\n"
+        f"{quote['citazione_it']}\n\n"
+        f"— {quote['autore']}"
+    )
+    
+    with tempfile.NamedTemporaryFile(suffix='.mp3', delete=False) as tmp_audio:
+        tmp_audio_path = tmp_audio.name
+    
+    try:
+        has_voice = _generate_voice_narration(
+            narration_text,
+            tmp_audio_path,
+            api_key=elevenlabs_api_key
+        )
+    except Exception as e:
+        print(f'Voce non generata: {e}')
+        has_voice = False
+    
+    if has_voice and Path(tmp_audio_path).exists() and Path(tmp_audio_path).stat().st_size > 1000:
+        # Unisce audio e video
+        merged_ok = _merge_audio_video(video_no_audio, tmp_audio_path, output_path)
+        if not merged_ok:
+            # Fallback: usa il video senza audio
+            import shutil
+            shutil.copy(video_no_audio, output_path)
+        # Pulizia
+        try:
+            os.unlink(tmp_audio_path)
+            os.unlink(video_no_audio)
+        except:
+            pass
+    else:
+        # Nessun audio — rinomina il video senza audio come output finale
+        import shutil
+        shutil.copy(video_no_audio, output_path)
+        try:
+            os.unlink(video_no_audio)
+        except:
+            pass
     
     return {
         'output_path': output_path,
         'duration_sec': len(all_frames) / FPS,
+        'has_voice': has_voice,
         'quote_used': {
             'id': quote.get('id', ''),
             'autore': quote['autore'],

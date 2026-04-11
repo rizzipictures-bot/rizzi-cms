@@ -1804,11 +1804,15 @@ def generate_tutorial_endpoint(pid):
     if not corpus_path.exists():
         corpus_path = UPLOAD / '_data' / 'corpus_filosofico_archivio.json'
 
+    # Chiave ElevenLabs — da env var su Render
+    elevenlabs_key = os.environ.get('ELEVENLABS_API_KEY', '')
+
     try:
         result = generate_tutorial(
             project, str(UPLOAD), output_path,
             corpus_path=str(corpus_path) if corpus_path.exists() else None,
-            quote_id=quote_id
+            quote_id=quote_id,
+            elevenlabs_api_key=elevenlabs_key if elevenlabs_key else None
         )
         return jsonify({'ok': True, 'result': result,
                         'path': f'/api/projects/{pid}/tutorial'})
