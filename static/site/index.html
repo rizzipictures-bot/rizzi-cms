@@ -7616,10 +7616,12 @@ function buildArchive() {
 
           // Costruisce la vista thumbs-style (creata una sola volta, poi mostrata/nascosta)
           let _aeThumbsView = null;
-          let _aeThumbsIdx  = 0;
+          let _aeThumbsIdx  = 0;  // sarà aggiornato a _heroIndex al momento della costruzione
 
           function _buildAeThumbsView() {
             if (_aeThumbsView) return;
+            // Sincronizza l'indice thumbs con la foto corrente del box nero
+            _aeThumbsIdx = _heroIndex;
             _aeThumbsView = document.createElement('div');
             _aeThumbsView.className = 'ae-thumbs-view';
 
@@ -7631,7 +7633,7 @@ function buildArchive() {
             const aeImgWrap = document.createElement('div');
             aeImgWrap.className = 'ae-thumbs-img-wrap';
             const aeImg = document.createElement('img');
-            aeImg.src = images[0] ? images[0].url : '';
+            aeImg.src = images[_aeThumbsIdx] ? images[_aeThumbsIdx].url : (images[0] ? images[0].url : '');
             aeImg.alt = p.title || '';
             aeImgWrap.appendChild(aeImg);
             // Icona zoom angolo basso-destra della foto grande (modalità 2 — popup bianco)
