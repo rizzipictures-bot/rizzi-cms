@@ -8095,6 +8095,13 @@ function buildArchive() {
               if (_aeThumbsView._kwPanel) _aeThumbsView._kwPanel.style.display = 'none';
               // Ripristina sfondo nero (Mode 1 è sempre scuro)
               panel.classList.remove('box-white');
+              // Riporta la fabBar dentro il panel (era stata spostata a body per evitare overflow:hidden)
+              const _fabBarBack = document.body.querySelector('.ae-fab-bar');
+              if (_fabBarBack && _fabBarBack.parentNode === document.body) {
+                _fabBarBack.style.top = '';
+                _fabBarBack.style.right = '';
+                panel.appendChild(_fabBarBack);
+              }
               // Usa 'toggle' direttamente (non panel.querySelector che troverebbe il clone Mode 2)
               const _tdBtn2 = toggle.querySelector('.ae-toggle-dark');
               const _tlBtn2 = toggle.querySelector('.ae-toggle-light');
@@ -8345,11 +8352,16 @@ function buildArchive() {
               // Fallback lungo: per immagini molto pesanti o connessioni lente
               setTimeout(_doPosition, 1500);
             }
-            // Allinea i FAB al bottone Back (prima apertura)
-            // FIX: imposta top/right direttamente sulla fabBar (position:fixed non eredita CSS vars dal parent)
+            // Sposta la fabBar fuori dal panel (che ha overflow:hidden) e la appende a body
+            // così position:fixed funziona correttamente senza essere clippata
+            const fabBarEl = panel.querySelector('.ae-fab-bar');
+            if (fabBarEl && fabBarEl.parentNode !== document.body) {
+              document.body.appendChild(fabBarEl);
+            }
+            // Allinea i FAB al bottone Back
             const _alignFabToBack1 = () => {
               const _aeBackBtn1 = _aeThumbsView.querySelector('.ae-thumbs-back');
-              const fabBar1 = panel.querySelector('.ae-fab-bar');
+              const fabBar1 = document.body.querySelector('.ae-fab-bar') || panel.querySelector('.ae-fab-bar');
               if (_aeBackBtn1 && fabBar1) {
                 const _backRect1 = _aeBackBtn1.getBoundingClientRect();
                 const _backMidY1 = _backRect1.top + _backRect1.height / 2;
@@ -8357,9 +8369,6 @@ function buildArchive() {
                   fabBar1.style.top   = Math.round(_backMidY1 - 10) + 'px';
                   fabBar1.style.right = '14px';
                 } else {
-                  const _pRect1 = panel.getBoundingClientRect();
-                  fabBar1.style.top   = Math.max(20, _pRect1.top + 20) + 'px';
-                  fabBar1.style.right = '14px';
                   setTimeout(_alignFabToBack1, 200);
                 }
               }
@@ -8579,14 +8588,15 @@ function buildArchive() {
           _aeThumbsView.style.display = 'flex';
           panel.classList.add('box-white');
           panel.classList.add('ink-open');
-          // Allinea i FAB alla scritta INDEX nella colonna keywords:
-          // INDEX ha padding-top 18px nel box normale; nella vista thumbs usiamo lo stesso valore
-          // più l'altezza della info-bar (Back + contatore)
-          // Allinea i FAB al bottone Back: usa setTimeout per garantire il layout
-          // FIX: imposta top/right direttamente sulla fabBar (position:fixed non eredita CSS vars dal parent)
+          // Sposta la fabBar fuori dal panel (overflow:hidden la clippava) e la appende a body
+          const fabBarEl2 = panel.querySelector('.ae-fab-bar');
+          if (fabBarEl2 && fabBarEl2.parentNode !== document.body) {
+            document.body.appendChild(fabBarEl2);
+          }
+          // Allinea i FAB al bottone Back
           const _alignFabToBack = () => {
             const _aeBackBtn2 = _aeThumbsView.querySelector('.ae-thumbs-back');
-            const fabBar2 = panel.querySelector('.ae-fab-bar');
+            const fabBar2 = document.body.querySelector('.ae-fab-bar') || panel.querySelector('.ae-fab-bar');
             if (_aeBackBtn2 && fabBar2) {
               const _backRect2 = _aeBackBtn2.getBoundingClientRect();
               const _backMidY2 = _backRect2.top + _backRect2.height / 2;
@@ -8594,9 +8604,6 @@ function buildArchive() {
                 fabBar2.style.top   = Math.round(_backMidY2 - 10) + 'px';
                 fabBar2.style.right = '14px';
               } else {
-                const _panelRect2 = panel.getBoundingClientRect();
-                fabBar2.style.top   = Math.max(20, _panelRect2.top + 20) + 'px';
-                fabBar2.style.right = '14px';
                 setTimeout(_alignFabToBack, 200);
               }
             }
