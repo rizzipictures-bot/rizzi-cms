@@ -1226,10 +1226,10 @@
     }
     .ae-fab-close svg { stroke: #fff; }
 
-    /* ── Vista bianca (box-white / thumbs): FAB -25% poi -15% poi -30% e + nero/bianco ── */
+    /* ── Vista bianca (box-white / thumbs): FAB -25% poi -15% poi -30% poi -20% e + nero/bianco ── */
     .archive-expanded.box-white .ae-fab-btn {
-      width: 13px;
-      height: 13px;
+      width: 10px;
+      height: 10px;
     }
     /* Nella vista thumbs (box-white) i FAB si allineano al bordo superiore della foto.
        L'altezza esatta viene calcolata via JS; il CSS usa una variabile custom --ae-fab-top */
@@ -8309,14 +8309,25 @@ function buildArchive() {
           _aeThumbsView.style.display = 'flex';
           panel.classList.add('box-white');
           panel.classList.add('ink-open');
-          // Allinea i FAB al bordo superiore della foto: misura l'altezza reale della info-bar
+          // Allinea i FAB alla scritta INDEX nella colonna keywords:
+          // INDEX ha padding-top 18px nel box normale; nella vista thumbs usiamo lo stesso valore
+          // più l'altezza della info-bar (Back + contatore)
           requestAnimationFrame(() => {
             const _aeInfoEl = _aeThumbsView.querySelector('.ae-thumbs-info');
-            if (_aeInfoEl) {
-              const _aeInfoH = _aeInfoEl.getBoundingClientRect().height;
-              // Il bordo superiore del FAB (cerchio 13px + padding 6px = 25px totale) deve coincidere
-              // con il top della foto: top = infoH (il padding 6px è già incluso nel box-sizing)
-              panel.style.setProperty('--ae-fab-top', _aeInfoH + 'px');
+            // Cerca la label INDEX nel pannello keywords del box
+            const _kwLabelEl = panel.querySelector('.archive-kw-label');
+            if (_kwLabelEl && _aeInfoEl) {
+              // Calcola la posizione relativa della label INDEX rispetto al panel
+              const _panelRect  = panel.getBoundingClientRect();
+              const _labelRect  = _kwLabelEl.getBoundingClientRect();
+              // top dei FAB = distanza dal top del panel alla mezzeria della label INDEX
+              const _labelMidY  = _labelRect.top + _labelRect.height / 2 - _panelRect.top;
+              // Sottrai metà altezza FAB (10px + padding 6px = 22px totale, metà = 11px)
+              const _fabTop = Math.round(_labelMidY - 11);
+              panel.style.setProperty('--ae-fab-top', _fabTop + 'px');
+            } else if (_aeInfoEl) {
+              // Fallback: usa l'altezza della info-bar
+              panel.style.setProperty('--ae-fab-top', _aeInfoEl.getBoundingClientRect().height + 'px');
             }
           });
           const _tdBtn = toggle.querySelector('.ae-toggle-dark');
