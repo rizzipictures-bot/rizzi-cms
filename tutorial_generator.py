@@ -356,23 +356,30 @@ def generate_tutorial(project, images_dir, output_path, corpus_path=None, quote_
             'tema': 'archivio come laboratorio di memoria'
         }
     
-    # Carica le immagini
+    # Carica le immagini — pre-resize immediato per evitare di processare file da 20-50MB
     photos_pil = []
     for img_data in images[:8]:
         fpath = Path(images_dir) / img_data.get('file', '')
         if fpath.exists():
             try:
                 with Image.open(str(fpath)) as im:
-                    photos_pil.append(im.copy().convert('RGB'))
+                    im_rgb = im.convert('RGB')
+                    # Pre-resize: thumbnail mantiene aspect ratio, max 2x risoluzione target
+                    im_rgb.thumbnail((W * 2, H * 2), Image.LANCZOS)
+                    photos_pil.append(im_rgb.copy())
             except:
                 pass
-    
+
     if not photos_pil:
         raise ValueError('Nessuna immagine disponibile per il progetto')
-    
+
+    # Pre-calcola i frame fitted una sola volta per ogni foto (cover mode)
+    fitted_photos = [_fit_image(p, W, H, contain=False) for p in photos_pil]
+
     # ── Generazione video STREAMING (senza accumulare frame in memoria) ──────────
+    FPS_OUT = 24  # 24fps: 20% meno frame da encodare rispetto a 30fps
     video_no_audio = output_path.replace('.mp4', '_noaudio.mp4')
-    proc = _open_ffmpeg_pipe(video_no_audio, fps=FPS)
+    proc = _open_ffmpeg_pipe(video_no_audio, fps=FPS_OUT)
     total_frames = 0
 
     def _write_section(frames_list):
@@ -382,38 +389,50 @@ def generate_tutorial(project, images_dir, output_path, corpus_path=None, quote_
             total_frames += 1
 
     try:
-        # 1. Title card (1.5 sec)
+        # 1. Title card (1.5 sec @ 24fps = 36 frame)
         tutorial_subtitle = f'Archivio — {title}'
-        _write_section(_make_title_card(tutorial_subtitle, quote.get('tema', ''), n_frames=45))
+        _write_section(_make_title_card(tutorial_subtitle, quote.get('tema', ''), n_frames=36))
 
-        # 2. Prima foto (sfondo per la citazione) — 1 sec
-        _write_section(_make_photo_with_text_frame(photos_pil[0], [place, year], n_frames=30))
+        # 2. Prima foto con testo (1 sec = 24 frame) — usa foto pre-fitted
+        img_with_text = fitted_photos[0].copy()
+        img_with_text = _darken(img_with_text, factor=0.6)
+        draw_tmp = ImageDraw.Draw(img_with_text)
+        font_text = _load_font(FONT_LIGHT, 32)
+        y_start = H - 250
+        for line in [place, year]:
+            if line:
+                bbox = draw_tmp.textbbox((0, 0), line, font=font_text)
+                lw = bbox[2] - bbox[0]
+                draw_tmp.text(((W - lw) // 2, y_start), line, font=font_text, fill=(240, 240, 240))
+                y_start += 45
+        for _ in range(24):
+            _write_frame(proc, img_with_text)
+            total_frames += 1
 
-        # 3. Citazione filosofica su sfondo foto (3 sec)
-        bg_photo = photos_pil[1] if len(photos_pil) > 1 else photos_pil[0]
+        # 3. Citazione filosofica su sfondo foto (2.5 sec = 60 frame)
+        bg_photo_pre = fitted_photos[1] if len(fitted_photos) > 1 else fitted_photos[0]
         _write_section(_make_quote_frame(
             quote['citazione_it'], quote['autore'], quote.get('opera', ''),
-            bg_photo=bg_photo, n_frames=90
+            bg_photo=bg_photo_pre, n_frames=60
         ))
 
-        # 4. Sequenza di foto del progetto (2-3 sec totali)
-        for photo in photos_pil[2:6]:
-            fitted = _fit_image(photo, W, H, contain=False)
-            for _ in range(20):
+        # 4. Sequenza di foto del progetto (0.75 sec ciascuna = 18 frame)
+        for fitted in fitted_photos[2:6]:
+            for _ in range(18):
                 _write_frame(proc, fitted)
                 total_frames += 1
 
-        # 5. Citazione in bianco su nero (2 sec)
+        # 5. Citazione in bianco su nero (1.5 sec = 36 frame)
         _write_section(_make_quote_frame(
             quote['citazione_it'], quote['autore'], quote.get('opera', ''),
-            bg_photo=None, n_frames=60
+            bg_photo=None, n_frames=36
         ))
 
-        # 6. Title card finale (1.5 sec)
+        # 6. Title card finale (1.5 sec = 36 frame)
         _write_section(_make_title_card(
             title,
             f'{subtitle} — {place}, {year}' if subtitle else f'{place}, {year}',
-            n_frames=45
+            n_frames=36
         ))
     finally:
         _close_ffmpeg_pipe(proc)
