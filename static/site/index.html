@@ -1162,7 +1162,7 @@
       background: #4C00FC;
       color: #fff !important;
       border-radius: 999px;
-      padding: 1px 9px;
+      padding: 2px 11px;
       font-size: 11px;
       font-family: var(--font-mono);
       letter-spacing: -0.02em;
@@ -1226,10 +1226,10 @@
     }
     .ae-fab-close svg { stroke: #fff; }
 
-    /* ── Vista bianca (box-white / thumbs): FAB -25% e + nero/bianco ── */
+    /* ── Vista bianca (box-white / thumbs): FAB -25% e poi -15% e + nero/bianco ── */
     .archive-expanded.box-white .ae-fab-btn {
-      width: 22px;
-      height: 22px;
+      width: 19px;
+      height: 19px;
     }
     /* + bianca in cerchio nero (invertito rispetto al box scuro) */
     .archive-expanded.box-white .ae-fab-zoom {
@@ -7949,14 +7949,20 @@ function buildArchive() {
               aeKwDot.style.top = clampedY + 'px';
               aeKwDot.classList.remove('pulsing');
               clearTimeout(_aeKwPulseTimer);
+              // Dopo 180ms: pulsazione anticipata se il cursore è vicino a una keyword (±14px)
               _aeKwPulseTimer = setTimeout(() => {
-                const elUnder = document.elementFromPoint(ev.clientX, ev.clientY);
-                if (elUnder && elUnder.closest('.archive-kw-tag')) {
-                  aeKwDot.classList.remove('pulsing');
-                  void aeKwDot.offsetWidth;
-                  aeKwDot.classList.add('pulsing');
+                const tags = aeKwInner.querySelectorAll('.archive-kw-tag');
+                for (const tag of tags) {
+                  const tr = tag.getBoundingClientRect();
+                  const tagMidY = tr.top + tr.height / 2;
+                  if (Math.abs(ev.clientY - tagMidY) < 14) {
+                    aeKwDot.classList.remove('pulsing');
+                    void aeKwDot.offsetWidth;
+                    aeKwDot.classList.add('pulsing');
+                    break;
+                  }
                 }
-              }, 400);
+              }, 180);
             });
             aeKwInner.addEventListener('mouseleave', () => {
               clearTimeout(_aeKwPulseTimer);
@@ -8134,15 +8140,20 @@ function buildArchive() {
               // Rimuovi pulsazione mentre ci si muove
               kwDot.classList.remove('pulsing');
               clearTimeout(_kwPulseTimer);
-              // Dopo 400ms di immobilità: controlla se il cursore è sopra una keyword
+              // Dopo 180ms di immobilità: controlla se il cursore è vicino a una keyword (±14px)
               _kwPulseTimer = setTimeout(() => {
-                const elUnder = document.elementFromPoint(ev.clientX, ev.clientY);
-                if (elUnder && elUnder.closest('.archive-kw-tag')) {
-                  kwDot.classList.remove('pulsing');
-                  void kwDot.offsetWidth;  // force reflow per riavviare l'animazione
-                  kwDot.classList.add('pulsing');
+                const tags = kwCol.querySelectorAll('.archive-kw-tag');
+                for (const tag of tags) {
+                  const tr = tag.getBoundingClientRect();
+                  const tagMidY = tr.top + tr.height / 2;
+                  if (Math.abs(ev.clientY - tagMidY) < 14) {
+                    kwDot.classList.remove('pulsing');
+                    void kwDot.offsetWidth;
+                    kwDot.classList.add('pulsing');
+                    break;
+                  }
                 }
-              }, 400);
+              }, 180);
             });
             kwCol.addEventListener('mouseleave', () => {
               clearTimeout(_kwPulseTimer);
