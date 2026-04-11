@@ -6747,7 +6747,7 @@ function _ovUpdateProjectLink(img) {
   lnk.style.display = '';
   lnk.onclick = function() {
     closeOverview();
-    window._navigateToProject(p);
+    window._navigateToProject(p, img.photoIdx !== undefined ? img.photoIdx : 0);
   };
 }
 
@@ -8078,6 +8078,15 @@ function buildArchive() {
         // passa direttamente alla vista thumbs senza mostrare il box nero
         if (row._openInThumbsMode) {
           row._openInThumbsMode = false;
+          // Se è stato passato un indice foto specifico (da Overview), impostalo su _heroIndex
+          // così _buildAeThumbsView() sincronizzerà _aeThumbsIdx = _heroIndex correttamente
+          if (row._openPhotoIdx !== undefined) {
+            const _targetIdx = row._openPhotoIdx;
+            row._openPhotoIdx = undefined;
+            _heroIndex = Math.max(0, Math.min(_targetIdx, images.length - 1));
+            heroImg.src = images[_heroIndex] ? images[_heroIndex].url : heroImg.src;
+            _updateHeroAr(images[_heroIndex] ? images[_heroIndex].ar : undefined);
+          }
           // Costruisci subito la vista thumbs e nascondi inner prima del primo paint
           _buildAeThumbsView();
           inner.style.display = 'none';
@@ -8228,7 +8237,7 @@ function buildArchive() {
   // isDark: true = sfondo nero, false/undefined = sfondo bianco
   // Espone la funzione per navigare a un progetto da Overview
   // Preferisce Archive (thumbs, box bianco), altrimenti Cities
-  window._navigateToProject = function(p) {
+  window._navigateToProject = function(p, photoIdx) {
     if (!p) return;
     // Determina se il progetto è in Archive
     const inArchive = PROJECTS.some(proj => proj.id === p.id &&
@@ -8256,6 +8265,8 @@ function buildArchive() {
           if (targetRow) {
             // Imposta il flag: il click handler aprirà direttamente in thumbs mode
             targetRow._openInThumbsMode = true;
+            // Passa l'indice della foto da mostrare (dalla Overview)
+            targetRow._openPhotoIdx = (photoIdx !== undefined && photoIdx !== null) ? photoIdx : 0;
             targetRow.click();
           }
         }, 200);
@@ -9593,11 +9604,14 @@ async function loadFromCMS() {
         if (!p.images || p.images.length === 0) return;
         const ovImgs = p.images.filter(img => img.in_overview);
         if (ovImgs.length > 0) {
-          ovImgs.forEach(img => ALL_IMAGES.push({ url: img.url, ar: img.ar, project: p }));
+          ovImgs.forEach(img => {
+            const photoIdx = p.images.indexOf(img);
+            ALL_IMAGES.push({ url: img.url, ar: img.ar, project: p, photoIdx: photoIdx >= 0 ? photoIdx : 0 });
+          });
         } else {
           // Fallback: prima foto del progetto
           const first = p.images[0];
-          ALL_IMAGES.push({ url: first.url, ar: first.ar, project: p });
+          ALL_IMAGES.push({ url: first.url, ar: first.ar, project: p, photoIdx: 0 });
         }
       });
 
