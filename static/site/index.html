@@ -6557,7 +6557,47 @@ function buildOverviewGrid() {
   grid.innerHTML = '';
 
   const COLS = 9;
-  const imgs = [...ALL_IMAGES];
+
+  // ── Mescolamento creativo: alterna progetti e anni diversi ──────────────
+  // Raggruppa le immagini per progetto
+  const byProject = {};
+  ALL_IMAGES.forEach(img => {
+    const key = img.project.title;
+    if (!byProject[key]) byProject[key] = { year: img.project.year || 0, imgs: [] };
+    byProject[key].imgs.push(img);
+  });
+
+  // Shuffle interno di ogni gruppo (Fisher-Yates)
+  function shuffleArr(arr) {
+    for (let i = arr.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [arr[i], arr[j]] = [arr[j], arr[i]];
+    }
+    return arr;
+  }
+
+  // Converti in array di bucket, ognuno già mescolato internamente
+  let buckets = Object.values(byProject).map(b => ({ year: b.year, imgs: shuffleArr(b.imgs) }));
+  // Mescola anche l'ordine dei bucket
+  shuffleArr(buckets);
+
+  // Interleave: prendi una foto alla volta da ogni bucket, evitando
+  // due anni identici consecutivi quando possibile
+  const imgs = [];
+  let lastYear = null;
+  while (buckets.some(b => b.imgs.length > 0)) {
+    // Filtra bucket non vuoti
+    let available = buckets.filter(b => b.imgs.length > 0);
+    // Preferisci bucket con anno diverso dall'ultimo
+    let preferred = available.filter(b => b.year !== lastYear);
+    if (preferred.length === 0) preferred = available; // fallback
+    // Scegli casualmente tra i preferred
+    const chosen = preferred[Math.floor(Math.random() * preferred.length)];
+    const img = chosen.imgs.shift();
+    imgs.push(img);
+    lastYear = chosen.year;
+  }
+  // ─────────────────────────────────────────────────────────────────────────
 
   // Costruiamo la sequenza di celle: foto + blank sparsi
   // Regola: max 1 blank per riga, max 3 blank ogni 36 foto (proporzionale)
