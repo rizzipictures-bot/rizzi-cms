@@ -1603,7 +1603,7 @@
       justify-content: center;
       overflow: visible;           /* permette al pulsante + di uscire a destra */
       position: relative;
-      cursor: none;
+      cursor: zoom-in;
       background: inherit;
       padding-top: 0;
       padding-bottom: 8px;
@@ -7792,15 +7792,8 @@ function buildArchive() {
             aeImg.src = images[_aeThumbsIdx] ? images[_aeThumbsIdx].url : (images[0] ? images[0].url : '');
             aeImg.alt = p.title || '';
             aeImgWrap.appendChild(aeImg);
-            // Icona zoom angolo basso-destra della foto grande (modalità 2 — popup bianco)
-            if (window._addAeZoomBtn) {
-              window._addAeZoomBtn(
-                aeImgWrap,
-                () => images[_aeThumbsIdx] ? images[_aeThumbsIdx].url : aeImg.src,
-                'white',
-                () => ({ list: images.map(im => im.url), index: _aeThumbsIdx })
-              );
-            }
+            // Icona zoom nascosta: il click è trasferito alla foto hero
+            // (non mostriamo più la + piccola nella vista thumbs)
             aeHero.appendChild(aeImgWrap);
 
             function _aeShowIdx(idx) {
@@ -7824,12 +7817,14 @@ function buildArchive() {
               }
             }
 
-            // Click foto grande: metà dx → avanti, metà sx → indietro
+            // Click foto grande: apre il lightbox bianco (stesso comportamento della + piccola)
             aeHero.addEventListener('click', e => {
               e.stopPropagation();
-              const rect = aeHero.getBoundingClientRect();
-              if (e.clientX >= rect.left + rect.width / 2) _aeShowIdx(_aeThumbsIdx + 1);
-              else _aeShowIdx(_aeThumbsIdx - 1);
+              const src = images[_aeThumbsIdx] ? images[_aeThumbsIdx].url : aeImg.src;
+              const nav = { list: images.map(im => im.url), index: _aeThumbsIdx };
+              if (window._openWhiteZoomPub) {
+                window._openWhiteZoomPub(src, nav.list, nav.index);
+              }
             });
 
             // Info row: bottone Back a sx + contatore a dx
