@@ -8363,6 +8363,10 @@ function buildArchive() {
             const fabBarEl = panel.querySelector('.ae-fab-bar');
             if (fabBarEl && fabBarEl.parentNode !== document.body) {
               document.body.appendChild(fabBarEl);
+              // Forza visibilità: quando è su body perde i selettori CSS del panel
+              fabBarEl.style.opacity = '1';
+              fabBarEl.style.transform = 'scale(1)';
+              fabBarEl.style.transition = 'none';
             }
             // Allinea i FAB al bottone Back
             const _alignFabToBack1 = () => {
@@ -8598,6 +8602,10 @@ function buildArchive() {
           const fabBarEl2 = panel.querySelector('.ae-fab-bar');
           if (fabBarEl2 && fabBarEl2.parentNode !== document.body) {
             document.body.appendChild(fabBarEl2);
+            // Forza visibilità: quando è su body perde i selettori CSS del panel
+            fabBarEl2.style.opacity = '1';
+            fabBarEl2.style.transform = 'scale(1)';
+            fabBarEl2.style.transition = 'none';
           }
           // Allinea i FAB al bottone Back
           const _alignFabToBack = () => {
