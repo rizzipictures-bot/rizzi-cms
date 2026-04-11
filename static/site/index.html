@@ -855,8 +855,14 @@
       letter-spacing: 0.08em;
     }
     #ov-nav-bar #ov-nav-index:hover,
-    #ov-nav-bar #ov-nav-thumbs:hover {
+    #ov-nav-bar #ov-nav-thumbs:hover,
+    #ov-nav-bar #ov-nav-project:hover {
       color: #999;
+    }
+    #ov-nav-project {
+      font-weight: 300;
+      font-size: 13px;
+      letter-spacing: 0.08em;
     }
     .ov-nav-sep {
       opacity: 0.35;
@@ -5122,6 +5128,8 @@
     <span id="ov-nav-index" onclick="closeOverview(); switchView('index');">Index</span>
     <span class="ov-nav-sep">&mdash;</span>
     <span id="ov-nav-thumbs" onclick="closeOverview(); switchView('home');">Thumbs</span>
+    <span class="ov-nav-sep ov-nav-sep-project" id="ov-nav-sep-project" style="display:none">&mdash;</span>
+    <span id="ov-nav-project" style="display:none;cursor:pointer"></span>
   </div>
 </div>
 
@@ -6729,6 +6737,20 @@ function _ovPositionNavBar() {
   }
 }
 
+function _ovUpdateProjectLink(img) {
+  const p = img && img.project;
+  const sep = document.getElementById('ov-nav-sep-project');
+  const lnk = document.getElementById('ov-nav-project');
+  if (!p || !lnk || !sep) return;
+  lnk.textContent = p.title || '';
+  sep.style.display = '';
+  lnk.style.display = '';
+  lnk.onclick = function() {
+    closeOverview();
+    window._navigateToProject(p);
+  };
+}
+
 function showOverview(img, idx, imageList) {
   const ov  = document.getElementById('overview-overlay');
   const oImg = document.getElementById('overview-overlay-img');
@@ -6745,6 +6767,7 @@ function showOverview(img, idx, imageList) {
   // Fallback: prova subito (se già in cache)
   setTimeout(_ovPositionNavBar, 80);
   ovUpdateCursor(img);
+  _ovUpdateProjectLink(img);
 }
 
 function ovNavigate(dir) {
@@ -6758,6 +6781,7 @@ function ovNavigate(dir) {
     oImg.style.opacity = '1';
   }, 120);
   ovUpdateCursor(img);
+  _ovUpdateProjectLink(img);
 }
 
 function closeOverview() {
@@ -8178,6 +8202,51 @@ function buildArchive() {
 
   // Apre l'overlay View All per una keyword
   // isDark: true = sfondo nero, false/undefined = sfondo bianco
+  // Espone la funzione per navigare a un progetto da Overview
+  // Preferisce Archive (thumbs, box bianco), altrimenti Cities
+  window._navigateToProject = function(p) {
+    if (!p) return;
+    // Determina se il progetto è in Archive
+    const inArchive = PROJECTS.some(proj => proj.id === p.id &&
+      (!proj.sections || proj.sections.includes('archive') || proj.sections.includes('Archive') ||
+       (proj.category_id || proj.section || '').toLowerCase() === 'archive'));
+    // Determina se è in Cities
+    const inCities = PROJECTS.some(proj => proj.id === p.id &&
+      (proj.sections ? proj.sections.includes('cities') :
+       (proj.category_id || proj.section || '').toLowerCase() === 'cities'));
+
+    if (inArchive || (!inCities)) {
+      // Naviga ad Archive e apri la riga in thumbs mode con box bianco
+      switchView('archive');
+      requestAnimationFrame(() => {
+        setTimeout(() => {
+          // Trova la riga corrispondente al progetto
+          const rows = document.querySelectorAll('.archive-row:not(.header)');
+          let targetRow = null;
+          rows.forEach(row => {
+            // La seconda colonna contiene il titolo del progetto
+            const titleCell = row.querySelectorAll('div')[1];
+            if (titleCell && titleCell.textContent.trim() === (p.title || '').trim()) {
+              targetRow = row;
+            }
+          });
+          if (targetRow) {
+            // Simula il click sulla riga per aprire il box espanso
+            targetRow.click();
+            // Poi simula il click su Thumbs dopo che il box si è aperto
+            setTimeout(() => {
+              const thumbsBtn = document.querySelector('.archive-expanded-viewall');
+              if (thumbsBtn) thumbsBtn.click();
+            }, 350);
+          }
+        }, 200);
+      });
+    } else if (inCities) {
+      // Naviga a Cities
+      switchView('cities-index');
+    }
+  };
+
   window.openKeywordResults = function(kw, isDark) {
     const q = kw.toLowerCase().trim();
     if (!q) return;
@@ -8186,6 +8255,8 @@ function buildArchive() {
     const dark = (isDark === undefined) ? true : !!isDark;
     window.openViewAllOverlay(images, kw, dark);
   };
+
+  // Fine window.openKeywordResults
 
   // Aggiorna il link View all in base alla query
   function updateSearchViewAll(q) {
