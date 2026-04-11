@@ -1827,6 +1827,115 @@ def download_tutorial(pid):
                      download_name='tutorial.mp4')
 
 
+@app.route('/api/run-seo-now', methods=['POST'])
+def run_seo_now():
+    """Esegue immediatamente la generazione SEO su tutti i progetti esistenti.
+    Utile per aggiornare i meta tag senza aspettare il prossimo salvataggio."""
+    db = load_db()
+    if not db.get('projects'):
+        return jsonify({'error': 'Nessun progetto nel database'}), 400
+    # Esegue in foreground per restituire il risultato
+    try:
+        import openai, re as _re
+        site_html = BASE / 'static' / 'site' / 'index.html'
+        if not site_html.exists():
+            return jsonify({'error': 'File index.html non trovato'}), 404
+
+        projects = db.get('projects', [])
+        titles   = [p.get('title', '') for p in projects if p.get('title')]
+        places   = list({p.get('place', '') for p in projects if p.get('place')})
+        pubs     = list({p.get('publication', '') for p in projects
+                         if p.get('publication') and p.get('publication') != 'Personal'})
+        years    = sorted({str(p.get('year', '')) for p in projects if p.get('year')})
+        total_photos = sum(len(p.get('images', [])) for p in projects)
+
+        all_kw = []
+        for p in projects:
+            manual = p.get('keywords_manual', '')
+            if manual:
+                all_kw.extend([k.strip() for k in manual.split(',') if k.strip()])
+            for img in p.get('images', []):
+                kw = img.get('keywords', '')
+                if kw:
+                    all_kw.extend([k.strip() for k in kw.split(',') if k.strip()])
+        from collections import Counter
+        kw_counts = Counter(k.lower() for k in all_kw if k)
+        top_kw = [k for k, _ in kw_counts.most_common(20)]
+
+        context = (
+            f"Photographer: Alessandro Rizzi, Italian documentary and street photographer.\n"
+            f"Archive spans: {years[0] if years else '?'}\u2013{years[-1] if years else '?'} "
+            f"({len(projects)} projects, {total_photos} photographs).\n"
+            f"Projects: {', '.join(titles[:15])}.\n"
+            f"Places photographed: {', '.join(places[:12])}.\n"
+            f"Published in: {', '.join(pubs) if pubs else 'personal archive and editorial work'}.\n"
+            f"Style: documentary, street photography, analog film, medium format, reportage.\n"
+            f"Themes: urban life, travel, memory, identity, everyday life, cities.\n"
+            + (f"Top photo keywords: {', '.join(top_kw)}." if top_kw else "")
+        )
+
+        client = openai.OpenAI()
+        resp = client.chat.completions.create(
+            model='gpt-4.1-mini',
+            max_tokens=400,
+            messages=[{
+                'role': 'user',
+                'content': (
+                    f"Generate SEO meta tags for a photography portfolio website.\n"
+                    f"Context:\n{context}\n\n"
+                    f"Respond ONLY with a JSON object with these exact keys:\n"
+                    f"- title: page title (max 60 chars, Italian, include photographer name, evocative)\n"
+                    f"- description: meta description (max 155 chars, Italian, evocative, mentions key places and style)\n"
+                    f"- keywords: comma-separated keywords (Italian+English mix, max 25 keywords, include places, style, themes)\n"
+                    f"No explanations, no markdown, pure JSON."
+                )
+            }]
+        )
+        raw = resp.choices[0].message.content.strip()
+        raw = _re.sub(r'^```(?:json)?\s*', '', raw)
+        raw = _re.sub(r'\s*```$', '', raw)
+        seo = json.loads(raw)
+
+        title       = seo.get('title', 'Alessandro Rizzi \u2014 Fotografo')[:60]
+        description = seo.get('description', '')[:155]
+        keywords    = seo.get('keywords', '')
+
+        new_seo_block = (
+            f'  <!-- SEO:START -->\n'
+            f'  <meta name="description" content="{description}" />\n'
+            f'  <meta name="keywords" content="{keywords}" />\n'
+            f'  <meta property="og:title" content="{title}" />\n'
+            f'  <meta property="og:description" content="{description}" />\n'
+            f'  <meta property="og:type" content="website" />\n'
+            f'  <meta name="twitter:card" content="summary_large_image" />\n'
+            f'  <meta name="twitter:title" content="{title}" />\n'
+            f'  <meta name="twitter:description" content="{description}" />\n'
+            f'  <!-- SEO:END -->'
+        )
+
+        with open(str(site_html), 'r', encoding='utf-8') as f:
+            html = f.read()
+        html = _re.sub(r'<title>[^<]*</title>', f'<title>{title}</title>', html)
+        html = _re.sub(
+            r'  <!-- SEO:START -->.*?<!-- SEO:END -->',
+            new_seo_block, html, flags=_re.DOTALL
+        )
+        with open(str(site_html), 'w', encoding='utf-8') as f:
+            f.write(html)
+
+        return jsonify({
+            'ok': True,
+            'title': title,
+            'description': description,
+            'keywords': keywords,
+            'projects_analyzed': len(projects),
+            'photos_analyzed': total_photos
+        })
+    except Exception as e:
+        import traceback
+        return jsonify({'error': str(e), 'trace': traceback.format_exc()}), 500
+
+
 @app.route('/api/corpus', methods=['GET'])
 def get_corpus():
     """Restituisce il corpus filosofico sull'archivio."""

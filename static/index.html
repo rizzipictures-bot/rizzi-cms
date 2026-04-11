@@ -1699,6 +1699,21 @@
           </div>
         </div>
 
+        <!-- SEZIONE: SEO GLOBALE -->
+        <div style="margin-top:24px;padding-top:20px;border-top:1px solid var(--border)">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+            <span style="font-size:12px;font-weight:600">&#9670; SEO Automatico — Sito Pubblico</span>
+            <button class="btn-ai-write" onclick="runSeoNow()" id="btn-seo-now">&#9670; Aggiorna SEO ora</button>
+          </div>
+          <div style="font-size:11px;color:var(--gray);margin-bottom:10px">Genera e inietta i meta tag SEO nel sito pubblico usando tutti i progetti presenti nell&apos;archivio. Avviene automaticamente ad ogni salvataggio, ma puoi forzarlo qui.</div>
+          <div id="seo-now-result" style="display:none;margin-top:10px;padding:12px;background:var(--bg2);border-radius:4px;font-size:11px;line-height:1.8">
+            <div><strong>Title:</strong> <span id="seo-now-title"></span></div>
+            <div><strong>Description:</strong> <span id="seo-now-desc"></span></div>
+            <div style="margin-top:4px"><strong>Keywords:</strong> <span id="seo-now-kw" style="color:var(--gray)"></span></div>
+            <div style="margin-top:6px;color:var(--accent)"><span id="seo-now-stats"></span></div>
+          </div>
+        </div>
+
         <!-- SEZIONE: REEL VIDEO -->
         <div style="margin-top:24px;padding-top:20px;border-top:1px solid var(--border)">
           <div style="font-size:12px;font-weight:600;margin-bottom:10px">&#9654; Reel Video (Instagram / TikTok)</div>
@@ -3955,6 +3970,29 @@ async function applyPhotographerPreset(presetName, btnEl) {
 init();
 
 // ── SOCIAL / REEL / TUTORIAL ──────────────────────────────────────────────────
+async function runSeoNow() {
+  const btn = document.getElementById('btn-seo-now');
+  btn.disabled = true;
+  btn.textContent = '⧗ Generazione SEO...';
+  try {
+    const res = await fetch(`${API}/run-seo-now`, { method: 'POST' });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || 'Errore sconosciuto');
+    document.getElementById('seo-now-title').textContent = data.title;
+    document.getElementById('seo-now-desc').textContent = data.description;
+    document.getElementById('seo-now-kw').textContent = data.keywords;
+    document.getElementById('seo-now-stats').textContent =
+      `✓ Aggiornato — ${data.projects_analyzed} progetti, ${data.photos_analyzed} foto analizzate`;
+    document.getElementById('seo-now-result').style.display = 'block';
+    showToast('✓ Meta SEO aggiornati nel sito pubblico');
+  } catch(e) {
+    showToast('Errore SEO: ' + e.message, true);
+  } finally {
+    btn.disabled = false;
+    btn.textContent = '陰 Aggiorna SEO ora';
+  }
+}
+
 async function generateSocial() {
   if (!currentProject) return;
   const btn = document.getElementById('btn-gen-social');
