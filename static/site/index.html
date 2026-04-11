@@ -8089,6 +8089,23 @@ function buildArchive() {
           }
           // Costruisci subito la vista thumbs e nascondi inner prima del primo paint
           _buildAeThumbsView();
+          // Se _aeThumbsView era già stato costruito in precedenza (da una sessione precedente),
+          // _buildAeThumbsView() fa return senza aggiungerlo al panel. Assicuriamo che sia nel panel.
+          if (_aeThumbsView && _aeThumbsView.parentNode !== panel) {
+            panel.appendChild(_aeThumbsView);
+          }
+          // Aggiorna l'indice thumbs con la foto corrente
+          if (_aeThumbsView) {
+            _aeThumbsIdx = _heroIndex;
+            const _aeImgEl = _aeThumbsView.querySelector('.ae-thumbs-img-wrap img, .ae-thumbs-hero img');
+            if (_aeImgEl && images[_aeThumbsIdx]) _aeImgEl.src = images[_aeThumbsIdx].url;
+            // Aggiorna la strip thumbs: rimuovi active e imposta sulla foto corrente
+            const _aeItems = _aeThumbsView.querySelectorAll('.ae-thumbs-strip-item');
+            _aeItems.forEach((el, i) => el.classList.toggle('active', i === _aeThumbsIdx));
+            // Aggiorna il contatore
+            const _aeCtr = _aeThumbsView.querySelector('.ae-thumbs-counter');
+            if (_aeCtr) _aeCtr.textContent = `${_aeThumbsIdx + 1} / ${images.length}`;
+          }
           inner.style.display = 'none';
           const _m1ZoomBtn = hero ? hero.querySelector('.ae-zoom-btn') : null;
           if (_m1ZoomBtn) _m1ZoomBtn.style.display = 'none';
