@@ -7379,25 +7379,10 @@ function buildArchive() {
       // ── POPUP MEDIA TYPE ──
       let activePopup = null;
       row.querySelectorAll('.media-ball').forEach(ball => {
-        // Nasconde la preview thumbnail quando si passa sopra il pallino
-        ball.addEventListener('mouseenter', e => {
-          e.stopPropagation();
-          document.getElementById('archive-cursor-preview').classList.remove('visible');
-        });
-        ball.addEventListener('mouseleave', e => {
-          // Ripristina la preview solo se il cursore è ancora sulla riga
-          // e non è vicino ad altri pallini (il mousemove gestirà il re-hide se necessario)
-          const firstImg = (p.images || [])[0];
-          if (firstImg && row.matches(':hover')) {
-            const previewImg = document.getElementById('archive-cursor-preview-img');
-            previewImg.src = firstImg.thumb || firstImg.url;
-            document.getElementById('archive-cursor-preview').classList.add('visible');
-          }
-        });
-        ball.addEventListener('click', e => {
-          e.stopPropagation();
-          const type = ball.dataset.type;
+        // Variabile per il timer di chiusura hover
+        let _ballHoverTimer = null;
 
+        const _openBallPopup = (ball, type) => {
           // Chiudi popup esistente (stesso o diverso)
           if (activePopup) {
             activePopup.classList.remove('open');
@@ -7472,19 +7457,51 @@ function buildArchive() {
           activePopup = popup;
           requestAnimationFrame(() => popup.classList.add('open'));
 
-          // Chiudi cliccando fuori (bubble phase, non capture — non intercetta altri click)
-          const closeOutside = ev => {
-            // Non chiudere se si clicca dentro il popup o sulla ball stessa
-            if (popup.contains(ev.target) || ev.target === ball) return;
-            // Non chiudere se si clicca su elementi interattivi del box espanso
-            if (ev.target.closest('.archive-expanded-viewall, .archive-expanded-toggle, .archive-expanded-thumb')) return;
-            popup.classList.remove('open');
-            ball.classList.remove('active');
-            setTimeout(() => popup.remove(), 220);
-            if (activePopup === popup) activePopup = null;
-            document.removeEventListener('click', closeOutside, false);
+          // Chiudi quando il cursore lascia sia il popup che la ball
+          const _closePopupOnLeave = () => {
+            clearTimeout(_ballHoverTimer);
+            _ballHoverTimer = setTimeout(() => {
+              popup.classList.remove('open');
+              ball.classList.remove('active');
+              setTimeout(() => { if (popup.parentNode) popup.remove(); }, 220);
+              if (activePopup === popup) activePopup = null;
+              popup.removeEventListener('mouseleave', _closePopupOnLeave);
+            }, 120);
           };
-          setTimeout(() => document.addEventListener('click', closeOutside, false), 10);
+          const _cancelClose = () => clearTimeout(_ballHoverTimer);
+          popup.addEventListener('mouseenter', _cancelClose);
+          popup.addEventListener('mouseleave', _closePopupOnLeave);
+        }; // fine _openBallPopup
+
+        ball.addEventListener('mouseenter', e => {
+          e.stopPropagation();
+          clearTimeout(_ballHoverTimer);
+          document.getElementById('archive-cursor-preview').classList.remove('visible');
+          const type = ball.dataset.type;
+          _openBallPopup(ball, type);
+        });
+
+        ball.addEventListener('mouseleave', e => {
+          // Ripristina la preview solo se il cursore è ancora sulla riga
+          const firstImg = (p.images || [])[0];
+          if (firstImg && row.matches(':hover')) {
+            const previewImg = document.getElementById('archive-cursor-preview-img');
+            previewImg.src = firstImg.thumb || firstImg.url;
+            document.getElementById('archive-cursor-preview').classList.add('visible');
+          }
+          // Chiudi il popup con piccolo delay (permette di entrare nel popup)
+          if (activePopup && activePopup._sourceBall === ball) {
+            clearTimeout(_ballHoverTimer);
+            _ballHoverTimer = setTimeout(() => {
+              if (activePopup && activePopup._sourceBall === ball) {
+                activePopup.classList.remove('open');
+                ball.classList.remove('active');
+                const _p = activePopup;
+                setTimeout(() => { if (_p.parentNode) _p.remove(); }, 220);
+                activePopup = null;
+              }
+            }, 120);
+          }
         });
       });
 
