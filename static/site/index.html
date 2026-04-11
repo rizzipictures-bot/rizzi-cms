@@ -1231,12 +1231,11 @@
       width: 8px;
       height: 8px;
     }
-    /* Nella vista thumbs (box-white) i FAB usano position:fixed con coordinate viewport
-       calcolate via JS dalla posizione reale del bottone Back */
+    /* Nella vista thumbs (box-white) i FAB usano position:fixed con top/right impostati via JS inline */
     .archive-expanded.box-white .ae-fab-bar {
       position: fixed;
-      top: var(--ae-fab-top-fixed, -9999px);
-      right: var(--ae-fab-right-fixed, 14px);
+      top: -9999px;   /* default fuori schermo; JS imposta style.top direttamente */
+      right: 14px;
       visibility: visible !important;
       opacity: 1 !important;
     }
@@ -8347,6 +8346,7 @@ function buildArchive() {
               setTimeout(_doPosition, 1500);
             }
             // Allinea i FAB al bottone Back (prima apertura)
+            // FIX: imposta top/right direttamente sulla fabBar (position:fixed non eredita CSS vars dal parent)
             const _alignFabToBack1 = () => {
               const _aeBackBtn1 = _aeThumbsView.querySelector('.ae-thumbs-back');
               const fabBar1 = panel.querySelector('.ae-fab-bar');
@@ -8354,12 +8354,12 @@ function buildArchive() {
                 const _backRect1 = _aeBackBtn1.getBoundingClientRect();
                 const _backMidY1 = _backRect1.top + _backRect1.height / 2;
                 if (_backMidY1 > 5 && _backMidY1 < window.innerHeight) {
-                  panel.style.setProperty('--ae-fab-top-fixed', Math.round(_backMidY1 - 10) + 'px');
-                  panel.style.setProperty('--ae-fab-right-fixed', '14px');
+                  fabBar1.style.top   = Math.round(_backMidY1 - 10) + 'px';
+                  fabBar1.style.right = '14px';
                 } else {
                   const _pRect1 = panel.getBoundingClientRect();
-                  panel.style.setProperty('--ae-fab-top-fixed', Math.max(20, _pRect1.top + 20) + 'px');
-                  panel.style.setProperty('--ae-fab-right-fixed', '14px');
+                  fabBar1.style.top   = Math.max(20, _pRect1.top + 20) + 'px';
+                  fabBar1.style.right = '14px';
                   setTimeout(_alignFabToBack1, 200);
                 }
               }
@@ -8583,24 +8583,20 @@ function buildArchive() {
           // INDEX ha padding-top 18px nel box normale; nella vista thumbs usiamo lo stesso valore
           // più l'altezza della info-bar (Back + contatore)
           // Allinea i FAB al bottone Back: usa setTimeout per garantire il layout
+          // FIX: imposta top/right direttamente sulla fabBar (position:fixed non eredita CSS vars dal parent)
           const _alignFabToBack = () => {
             const _aeBackBtn2 = _aeThumbsView.querySelector('.ae-thumbs-back');
             const fabBar2 = panel.querySelector('.ae-fab-bar');
             if (_aeBackBtn2 && fabBar2) {
               const _backRect2 = _aeBackBtn2.getBoundingClientRect();
               const _backMidY2 = _backRect2.top + _backRect2.height / 2;
-              // Fallback se il valore non è valido (elemento non ancora nel viewport)
               if (_backMidY2 > 5 && _backMidY2 < window.innerHeight) {
-                const _fabTopFixed2 = Math.round(_backMidY2 - 10);
-                panel.style.setProperty('--ae-fab-top-fixed', _fabTopFixed2 + 'px');
-                panel.style.setProperty('--ae-fab-right-fixed', '14px');
+                fabBar2.style.top   = Math.round(_backMidY2 - 10) + 'px';
+                fabBar2.style.right = '14px';
               } else {
-                // Fallback: usa scroll position del panel per calcolare il top
                 const _panelRect2 = panel.getBoundingClientRect();
-                const _fallbackTop = Math.max(20, _panelRect2.top + 20);
-                panel.style.setProperty('--ae-fab-top-fixed', _fallbackTop + 'px');
-                panel.style.setProperty('--ae-fab-right-fixed', '14px');
-                // Riprova dopo 200ms
+                fabBar2.style.top   = Math.max(20, _panelRect2.top + 20) + 'px';
+                fabBar2.style.right = '14px';
                 setTimeout(_alignFabToBack, 200);
               }
             }
