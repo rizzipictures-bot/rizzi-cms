@@ -115,7 +115,7 @@ def _make_title_frame(title, subtitle, year_place, style='digital', fw=W, fh=H):
     return img
 
 
-def _make_final_frame(title, website='rizzipictures.com', style='digital', fw=W, fh=H):
+def _make_final_frame(title, website='@alessandro_rizzi_studio', style='digital', fw=W, fh=H):
     """Frame finale minimalista."""
     bg_color   = BLACK if style == 'digital' else (12, 10, 8)
     text_color = WHITE if style == 'digital' else (240, 235, 220)

@@ -1834,7 +1834,7 @@ def publish_instagram_endpoint(pid):
             hashtags = social.get('hashtags', [])
             if hashtags:
                 caption += '\n\n' + ' '.join(hashtags[:20])
-            caption += '\n\n📷 rizzipictures.com'
+            caption += '\n\n📷 @alessandro_rizzi_studio'
 
         # Chiama MCP Instagram per creare il reel
         import json as _json

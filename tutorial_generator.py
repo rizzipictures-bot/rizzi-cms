@@ -262,7 +262,7 @@ def _make_title_card(title, subtitle, n_frames=45):
             y += 42
     
     # Brand
-    brand = 'rizzipictures.com'
+    brand = '@alessandro_rizzi_studio'
     bbox3 = draw.textbbox((0, 0), brand, font=font_brand)
     bw = bbox3[2] - bbox3[0]
     draw.text(((W - bw) // 2, H - 120), brand, font=font_brand, fill=(100, 100, 100))
@@ -446,7 +446,7 @@ def generate_tutorial(project, images_dir, output_path, corpus_path=None, quote_
             last_img = _darken(last_img, factor=0.65)
             draw_last = ImageDraw.Draw(last_img)
             font_last = _load_font(FONT_LIGHT, 28)
-            site_text = 'rizzipictures.com'
+            site_text = '@alessandro_rizzi_studio'
             bbox_s = draw_last.textbbox((0, 0), site_text, font=font_last)
             sw = bbox_s[2] - bbox_s[0]
             draw_last.text(((W - sw) // 2, H - 80), site_text, font=font_last, fill=(180, 180, 180))
