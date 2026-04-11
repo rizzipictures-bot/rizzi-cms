@@ -8,11 +8,16 @@ Avvio: python3 app.py  →  http://localhost:5151
   http://localhost:5151/api/  → API REST
 """
 
-import os, json, uuid, shutil, base64, threading
+import os, json, uuid, shutil, base64, threading, time
 from pathlib import Path
 from flask import Flask, request, jsonify, send_from_directory, send_file
 from PIL import Image
 import numpy as np
+
+# ── JOB STORE per generazione asincrona (tutorial, reel) ──────────────────────
+# { job_id: { 'status': 'pending'|'running'|'done'|'error', 'result': ..., 'error': ... } }
+_JOBS = {}
+_JOBS_LOCK = threading.Lock()
 
 BASE   = Path(__file__).parent
 
@@ -1783,7 +1788,7 @@ def generate_social_endpoint(pid):
 
 @app.route('/api/projects/<pid>/generate-tutorial', methods=['POST'])
 def generate_tutorial_endpoint(pid):
-    """Genera un video-saggio filosofico per il progetto."""
+    """Avvia la generazione asincrona del video-saggio. Risponde subito con job_id."""
     import sys
     sys.path.insert(0, str(BASE))
     from tutorial_generator import generate_tutorial
@@ -1808,18 +1813,49 @@ def generate_tutorial_endpoint(pid):
     # Chiave ElevenLabs — da env var su Render
     elevenlabs_key = os.environ.get('ELEVENLABS_API_KEY', '')
 
-    try:
-        result = generate_tutorial(
-            project, str(UPLOAD), output_path,
-            corpus_path=str(corpus_path) if corpus_path.exists() else None,
-            quote_id=quote_id,
-            custom_narration=custom_narration,
-            elevenlabs_api_key=elevenlabs_key if elevenlabs_key else None
-        )
-        return jsonify({'ok': True, 'result': result,
-                        'path': f'/api/projects/{pid}/tutorial'})
-    except Exception as e:
-        return jsonify({'error': str(e)}), 500
+    # Crea un job ID e avvia la generazione in background
+    job_id = str(uuid.uuid4())[:8]
+    with _JOBS_LOCK:
+        _JOBS[job_id] = {'status': 'running', 'pid': pid, 'result': None, 'error': None}
+
+    def _run():
+        try:
+            result = generate_tutorial(
+                project, str(UPLOAD), output_path,
+                corpus_path=str(corpus_path) if corpus_path.exists() else None,
+                quote_id=quote_id,
+                custom_narration=custom_narration,
+                elevenlabs_api_key=elevenlabs_key if elevenlabs_key else None
+            )
+            with _JOBS_LOCK:
+                _JOBS[job_id]['status'] = 'done'
+                _JOBS[job_id]['result'] = result
+        except Exception as e:
+            with _JOBS_LOCK:
+                _JOBS[job_id]['status'] = 'error'
+                _JOBS[job_id]['error'] = str(e)
+
+    threading.Thread(target=_run, daemon=True).start()
+    return jsonify({'ok': True, 'job_id': job_id, 'status': 'running'})
+
+
+@app.route('/api/jobs/<job_id>', methods=['GET'])
+def get_job_status(job_id):
+    """Polling: restituisce lo stato di un job di generazione asincrona."""
+    with _JOBS_LOCK:
+        job = _JOBS.get(job_id)
+    if not job:
+        return jsonify({'error': 'Job non trovato'}), 404
+    pid = job.get('pid', '')
+    resp = {'job_id': job_id, 'status': job['status']}
+    if job['status'] == 'done':
+        resp['result'] = job['result']
+        resp['path'] = f'/api/projects/{pid}/tutorial'
+        resp['ok'] = True
+    elif job['status'] == 'error':
+        resp['error'] = job['error']
+        resp['ok'] = False
+    return jsonify(resp)
 
 
 @app.route('/api/projects/<pid>/tutorial', methods=['GET'])

@@ -4099,20 +4099,42 @@ async function generateTutorial() {
     if (quoteId) body.quote_id = quoteId;
     const customText = document.getElementById('tutorial-custom-text').value.trim();
     if (customText) body.custom_narration = customText;
+
+    // Avvia il job asincrono
     const res = await fetch(`${API}/projects/${currentProject.id}/generate-tutorial`, {
       method: 'POST',
       headers: {'Content-Type': 'application/json'},
       body: JSON.stringify(body)
     });
-    const data = await res.json();
-    if (!data.ok) throw new Error(data.error || 'Errore');
-    const r = data.result;
-    const link = document.getElementById('tutorial-download-link');
-    link.href = `${API}/projects/${currentProject.id}/tutorial`;
-    link.download = `tutorial_${currentProject.title}.mp4`;
-    dlEl.style.display = 'block';
-    statusEl.textContent = `Tutorial pronto! ${r.duration_sec.toFixed(1)}s — Citazione: ${r.quote_used.autore}`;
-    toast('Tutorial generato ✓');
+    const startData = await res.json();
+    if (!startData.ok) throw new Error(startData.error || 'Errore avvio');
+
+    const jobId = startData.job_id;
+    statusEl.textContent = 'Video in elaborazione... (1-3 minuti)';
+
+    // Polling ogni 5 secondi fino a completamento
+    let elapsed = 0;
+    while (true) {
+      await new Promise(r => setTimeout(r, 5000));
+      elapsed += 5;
+      statusEl.textContent = `Elaborazione in corso... ${elapsed}s`;
+      const pollRes = await fetch(`${API}/jobs/${jobId}`);
+      const pollData = await pollRes.json();
+      if (pollData.status === 'done') {
+        const r = pollData.result;
+        const link = document.getElementById('tutorial-download-link');
+        link.href = `${API}/projects/${currentProject.id}/tutorial`;
+        link.download = `tutorial_${currentProject.title}.mp4`;
+        dlEl.style.display = 'block';
+        const voiceInfo = r.has_voice ? ' ✓ Voce' : ' (senza voce)';
+        statusEl.textContent = `Tutorial pronto! ${r.duration_sec.toFixed(1)}s${voiceInfo}`;
+        toast('Tutorial generato ✓');
+        break;
+      } else if (pollData.status === 'error') {
+        throw new Error(pollData.error || 'Errore generazione');
+      }
+      // altrimenti continua il polling
+    }
   } catch(e) {
     statusEl.textContent = 'Errore: ' + e.message;
     toast('Errore: ' + e.message);
