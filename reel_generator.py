@@ -202,51 +202,67 @@ def generate_reel(project, images_dir, output_path, style='digital'):
     
     year_place = ' — '.join(filter(None, [year, place]))
     
-    # Carica le immagini
+    # Carica le immagini — max 8, pre-ridimensionate subito a 540x960
+    # Questo evita di processare foto da 20-50MB per ogni frame
     photos_pil = []
-    for img_data in images[:12]:  # max 12 foto per il reel
+    for img_data in images[:8]:  # max 8 foto
         fpath = Path(images_dir) / img_data.get('file', '')
         if fpath.exists():
             try:
                 with Image.open(str(fpath)) as im:
-                    photos_pil.append(im.copy().convert('RGB'))
+                    # Pre-resize immediato: da 20MP a 0.5MP (40x meno dati)
+                    im_rgb = im.convert('RGB')
+                    # Thumbnail mantiene aspect ratio e non supera W x H
+                    im_rgb.thumbnail((W * 2, H * 2), Image.LANCZOS)
+                    photos_pil.append(im_rgb.copy())
             except:
                 pass
-    
+
     if not photos_pil:
         raise ValueError('Nessuna immagine disponibile per il progetto')
-    
+
     # Stile analogico: toni caldi + grana
     bg_color    = BLACK if style == 'digital' else (20, 18, 15)
     text_color  = WHITE if style == 'digital' else (240, 235, 220)
-    
+
+    # Pre-calcola i frame fitted una sola volta per ogni foto
+    fitted_photos = [_fit_image(p, W, H, bg_color=BLACK, contain=True) for p in photos_pil]
+    if style == 'analog':
+        fitted_photos = [_add_grain(p, intensity=0.035) for p in fitted_photos]
+
     all_frames = []
-    
-    # 1. Frame titolo (2 sec)
-    all_frames += _make_title_frame(title, subtitle, year_place, 
-                                     bg=bg_color, text_color=text_color, n_frames=60)
-    
-    # 2. Griglia overview (3 sec)
-    all_frames += _make_grid_frames(photos_pil, n_frames=90)
-    
-    # 3. Foto singole grandi (0.5-1 sec ciascuna)
-    for i, photo in enumerate(photos_pil[:8]):
-        duration = 30 if len(photos_pil) > 6 else 45
-        all_frames += _make_photo_frames(photo, duration_frames=duration, 
-                                          with_grain=(style == 'analog'),
-                                          fade_in=(i == 0))
-    
-    # 4. Se stile analogico: alcune foto con grana intensa
-    if style == 'analog' and len(photos_pil) >= 3:
-        for photo in photos_pil[:3]:
-            all_frames += _make_photo_frames(photo, duration_frames=20, 
-                                              with_grain=True, fade_in=False)
-    
-    # 5. Frame finale (2 sec)
-    all_frames += _make_final_frame(title, n_frames=60)
-    
-    # Genera il video
-    return _frames_to_video(all_frames, output_path, fps=FPS)
+
+    # 1. Frame titolo (1.5 sec @ 24fps = 36 frame)
+    all_frames += _make_title_frame(title, subtitle, year_place,
+                                     bg=bg_color, text_color=text_color, n_frames=36)
+
+    # 2. Griglia overview (2 sec = 48 frame)
+    all_frames += _make_grid_frames(photos_pil, n_frames=48)
+
+    # 3. Foto singole grandi (0.75 sec ciascuna = 18 frame)
+    for i, fitted in enumerate(fitted_photos):
+        if i == 0:
+            # Fade-in solo sulla prima foto
+            fade_frames = 8
+            for j in range(fade_frames):
+                alpha = j / fade_frames
+                dark = Image.new('RGB', (W, H), BLACK)
+                all_frames.append(Image.blend(dark, fitted, alpha))
+            all_frames += [fitted] * (18 - fade_frames)
+        else:
+            all_frames += [fitted] * 18
+
+    # 4. Se stile analogico: 2 foto extra con grana intensa
+    if style == 'analog' and len(fitted_photos) >= 2:
+        for fitted in fitted_photos[:2]:
+            grained = _add_grain(fitted, intensity=0.06)
+            all_frames += [grained] * 12
+
+    # 5. Frame finale (1.5 sec = 36 frame)
+    all_frames += _make_final_frame(title, n_frames=36)
+
+    # Genera il video a 24fps (meno frame da scrivere rispetto a 30fps)
+    return _frames_to_video(all_frames, output_path, fps=24)
 
 
 if __name__ == '__main__':
