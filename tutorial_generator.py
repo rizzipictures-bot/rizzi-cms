@@ -1,0 +1,359 @@
+#!/usr/bin/env python3
+"""
+Tutorial Generator — Genera video-saggi filosofici sull'archivio fotografico.
+
+Formato: 60-90 secondi verticali (9:16) per TikTok/Instagram Reels/YouTube Shorts.
+Struttura: citazione filosofica + immagini del progetto in movimento + voce narrante (testo).
+
+Il video non è un tutorial tecnico ma un video-saggio:
+"Perché archiviare è un atto di pensiero."
+"""
+
+import os, json, random, textwrap
+from pathlib import Path
+from PIL import Image, ImageDraw, ImageFont, ImageFilter, ImageEnhance
+import numpy as np
+
+# ── Costanti video ─────────────────────────────────────────────────────────────
+W, H = 1080, 1920
+FPS  = 30
+FONT_REGULAR = '/usr/share/fonts/truetype/liberation/LiberationSans-Regular.ttf'
+FONT_BOLD    = '/usr/share/fonts/truetype/liberation/LiberationSans-Bold.ttf'
+FONT_LIGHT   = '/usr/share/fonts/truetype/liberation/LiberationSansNarrow-Regular.ttf'
+FONT_ITALIC  = '/usr/share/fonts/truetype/liberation/LiberationSans-Italic.ttf'
+
+def _load_font(path, size):
+    try:
+        return ImageFont.truetype(path, size)
+    except:
+        return ImageFont.load_default()
+
+def _fit_image(img, target_w, target_h, bg_color=(0,0,0), contain=False):
+    """Ridimensiona coprendo tutto il frame (cover mode)."""
+    img = img.convert('RGB')
+    iw, ih = img.size
+    scale = max(target_w / iw, target_h / ih) if not contain else min(target_w / iw, target_h / ih)
+    new_w = int(iw * scale)
+    new_h = int(ih * scale)
+    img = img.resize((new_w, new_h), Image.LANCZOS)
+    # Crop al centro
+    x = (new_w - target_w) // 2
+    y = (new_h - target_h) // 2
+    img = img.crop((x, y, x + target_w, y + target_h))
+    return img
+
+def _darken(img, factor=0.45):
+    """Scurisce un'immagine per rendere il testo leggibile sopra."""
+    enhancer = ImageEnhance.Brightness(img)
+    return enhancer.enhance(factor)
+
+def _add_grain(img, intensity=0.03):
+    arr = np.array(img, dtype=np.float32)
+    noise = np.random.normal(0, intensity * 255, arr.shape)
+    arr = np.clip(arr + noise, 0, 255).astype(np.uint8)
+    return Image.fromarray(arr)
+
+def _wrap_text(text, font, max_width, draw):
+    """Wrappa il testo per adattarsi alla larghezza massima."""
+    words = text.split()
+    lines = []
+    current_line = []
+    
+    for word in words:
+        test_line = ' '.join(current_line + [word])
+        bbox = draw.textbbox((0, 0), test_line, font=font)
+        if bbox[2] - bbox[0] <= max_width:
+            current_line.append(word)
+        else:
+            if current_line:
+                lines.append(' '.join(current_line))
+            current_line = [word]
+    
+    if current_line:
+        lines.append(' '.join(current_line))
+    
+    return lines
+
+def _make_quote_frame(quote_text, author, opera, bg_photo=None, n_frames=90):
+    """
+    Genera frame con citazione filosofica.
+    Se bg_photo è fornita, la usa come sfondo scurito.
+    Altrimenti usa sfondo nero.
+    """
+    frames = []
+    
+    font_quote  = _load_font(FONT_ITALIC, 38)
+    font_author = _load_font(FONT_BOLD, 28)
+    font_opera  = _load_font(FONT_LIGHT, 22)
+    
+    # Sfondo
+    if bg_photo:
+        bg = _fit_image(bg_photo, W, H, contain=False)
+        bg = _darken(bg, factor=0.35)
+        bg = _add_grain(bg, intensity=0.02)
+    else:
+        bg = Image.new('RGB', (W, H), (8, 8, 8))
+    
+    # Overlay semitrasparente per leggibilità
+    overlay = Image.new('RGBA', (W, H), (0, 0, 0, 120))
+    bg_rgba = bg.convert('RGBA')
+    bg_rgba = Image.alpha_composite(bg_rgba, overlay)
+    img = bg_rgba.convert('RGB')
+    
+    draw = ImageDraw.Draw(img)
+    
+    # Virgolette decorative
+    font_big_quote = _load_font(FONT_BOLD, 120)
+    draw.text((60, H//2 - 320), '"', font=font_big_quote, fill=(255, 255, 255, 80))
+    
+    # Testo citazione (wrappato)
+    max_text_w = W - 140
+    lines = _wrap_text(quote_text, font_quote, max_text_w, draw)
+    
+    # Calcola altezza totale del testo
+    line_h = 52
+    total_h = len(lines) * line_h
+    start_y = H//2 - total_h//2 - 40
+    
+    for i, line in enumerate(lines):
+        bbox = draw.textbbox((0, 0), line, font=font_quote)
+        lw = bbox[2] - bbox[0]
+        x = (W - lw) // 2
+        y = start_y + i * line_h
+        # Ombra
+        draw.text((x+2, y+2), line, font=font_quote, fill=(0, 0, 0, 180))
+        draw.text((x, y), line, font=font_quote, fill=(255, 255, 255))
+    
+    # Linea separatrice
+    sep_y = start_y + total_h + 30
+    draw.rectangle([W//2 - 60, sep_y, W//2 + 60, sep_y + 1], fill=(200, 200, 200, 180))
+    
+    # Autore
+    bbox_a = draw.textbbox((0, 0), author, font=font_author)
+    aw = bbox_a[2] - bbox_a[0]
+    draw.text(((W - aw) // 2, sep_y + 15), author, font=font_author, fill=(220, 220, 220))
+    
+    # Opera
+    if opera:
+        bbox_o = draw.textbbox((0, 0), opera, font=font_opera)
+        ow = bbox_o[2] - bbox_o[0]
+        draw.text(((W - ow) // 2, sep_y + 50), opera, font=font_opera, fill=(160, 160, 160))
+    
+    return [img] * n_frames
+
+def _make_photo_with_text_frame(photo, text_lines, n_frames=60):
+    """Foto grande con testo sovrapposto in basso."""
+    frames = []
+    
+    font_text = _load_font(FONT_LIGHT, 32)
+    
+    bg = _fit_image(photo, W, H, contain=False)
+    bg = _darken(bg, factor=0.6)
+    
+    img = bg.copy()
+    draw = ImageDraw.Draw(img)
+    
+    # Gradiente scuro in basso
+    for y in range(H - 300, H):
+        alpha = (y - (H - 300)) / 300
+        overlay_color = (0, 0, 0)
+        draw.rectangle([0, y, W, y+1], fill=tuple(int(c * alpha) for c in overlay_color))
+    
+    # Testo in basso
+    y_start = H - 250
+    for line in text_lines:
+        bbox = draw.textbbox((0, 0), line, font=font_text)
+        lw = bbox[2] - bbox[0]
+        draw.text(((W - lw) // 2, y_start), line, font=font_text, fill=(240, 240, 240))
+        y_start += 45
+    
+    return [img] * n_frames
+
+def _make_title_card(title, subtitle, n_frames=45):
+    """Card titolo del tutorial."""
+    font_title = _load_font(FONT_BOLD, 52)
+    font_sub   = _load_font(FONT_LIGHT, 30)
+    font_brand = _load_font(FONT_REGULAR, 24)
+    
+    img = Image.new('RGB', (W, H), (5, 5, 5))
+    draw = ImageDraw.Draw(img)
+    
+    # Linea decorativa
+    draw.rectangle([80, H//2 - 80, W - 80, H//2 - 78], fill=(255, 255, 255))
+    
+    # Titolo
+    bbox = draw.textbbox((0, 0), title, font=font_title)
+    tw = bbox[2] - bbox[0]
+    draw.text(((W - tw) // 2, H//2 - 60), title, font=font_title, fill=(255, 255, 255))
+    
+    # Sottotitolo
+    if subtitle:
+        lines = _wrap_text(subtitle, font_sub, W - 160, draw)
+        y = H//2 + 20
+        for line in lines:
+            bbox2 = draw.textbbox((0, 0), line, font=font_sub)
+            lw = bbox2[2] - bbox2[0]
+            draw.text(((W - lw) // 2, y), line, font=font_sub, fill=(160, 160, 160))
+            y += 42
+    
+    # Brand
+    brand = 'rizzipictures.com'
+    bbox3 = draw.textbbox((0, 0), brand, font=font_brand)
+    bw = bbox3[2] - bbox3[0]
+    draw.text(((W - bw) // 2, H - 120), brand, font=font_brand, fill=(100, 100, 100))
+    
+    return [img] * n_frames
+
+def _frames_to_video(frames, output_path, fps=FPS):
+    """Converte frame PIL in video MP4."""
+    import subprocess, tempfile
+    
+    with tempfile.TemporaryDirectory() as tmpdir:
+        for i, frame in enumerate(frames):
+            frame.save(f'{tmpdir}/frame_{i:05d}.png')
+        
+        cmd = [
+            'ffmpeg', '-y',
+            '-framerate', str(fps),
+            '-i', f'{tmpdir}/frame_%05d.png',
+            '-c:v', 'libx264',
+            '-preset', 'fast',
+            '-crf', '22',
+            '-pix_fmt', 'yuv420p',
+            '-movflags', '+faststart',
+            output_path
+        ]
+        result = subprocess.run(cmd, capture_output=True, text=True)
+        if result.returncode != 0:
+            raise RuntimeError(f'ffmpeg error: {result.stderr}')
+    
+    return output_path
+
+def generate_tutorial(project, images_dir, output_path, corpus_path=None, quote_id=None):
+    """
+    Genera un video-saggio filosofico per un progetto fotografico.
+    
+    Args:
+        project: dict con title, subtitle, year, place, images
+        images_dir: Path alla directory delle immagini
+        output_path: Path di output del video MP4
+        corpus_path: Path al JSON del corpus filosofico (opzionale)
+        quote_id: ID specifico della citazione da usare (opzionale, altrimenti random)
+    
+    Returns:
+        dict con output_path e metadati del tutorial generato
+    """
+    title    = project.get('title', 'Untitled')
+    subtitle = project.get('subtitle', '')
+    year     = str(project.get('year', ''))
+    place    = project.get('place', '')
+    images   = project.get('images', [])
+    
+    # Carica il corpus filosofico
+    quotes = []
+    if corpus_path and Path(corpus_path).exists():
+        with open(corpus_path) as f:
+            corpus = json.load(f)
+            quotes = corpus.get('corpus', [])
+    
+    # Seleziona una citazione
+    if quotes:
+        if quote_id:
+            quote = next((q for q in quotes if q['id'] == quote_id), random.choice(quotes))
+        else:
+            quote = random.choice(quotes)
+    else:
+        # Fallback
+        quote = {
+            'citazione_it': 'L\'archivio non è mai un deposito passivo ma una pratica attiva di costruzione del presente attraverso il passato.',
+            'autore': 'Gabriella Giannachi',
+            'opera': 'Archiviare tutto',
+            'tema': 'archivio come laboratorio di memoria'
+        }
+    
+    # Carica le immagini
+    photos_pil = []
+    for img_data in images[:8]:
+        fpath = Path(images_dir) / img_data.get('file', '')
+        if fpath.exists():
+            try:
+                with Image.open(str(fpath)) as im:
+                    photos_pil.append(im.copy().convert('RGB'))
+            except:
+                pass
+    
+    if not photos_pil:
+        raise ValueError('Nessuna immagine disponibile per il progetto')
+    
+    all_frames = []
+    
+    # 1. Title card (1.5 sec)
+    tutorial_subtitle = f'Archivio — {title}'
+    all_frames += _make_title_card(tutorial_subtitle, quote.get('tema', ''), n_frames=45)
+    
+    # 2. Prima foto (sfondo per la citazione) — 1 sec
+    all_frames += _make_photo_with_text_frame(
+        photos_pil[0],
+        [place, year],
+        n_frames=30
+    )
+    
+    # 3. Citazione filosofica su sfondo foto (3 sec)
+    bg_photo = photos_pil[1] if len(photos_pil) > 1 else photos_pil[0]
+    all_frames += _make_quote_frame(
+        quote['citazione_it'],
+        quote['autore'],
+        quote.get('opera', ''),
+        bg_photo=bg_photo,
+        n_frames=90
+    )
+    
+    # 4. Sequenza di foto del progetto (2-3 sec totali)
+    for i, photo in enumerate(photos_pil[2:6]):
+        all_frames += [_fit_image(photo, W, H, contain=False)] * 20
+    
+    # 5. Citazione in bianco su nero (2 sec)
+    all_frames += _make_quote_frame(
+        quote['citazione_it'],
+        quote['autore'],
+        quote.get('opera', ''),
+        bg_photo=None,  # sfondo nero
+        n_frames=60
+    )
+    
+    # 6. Title card finale (1.5 sec)
+    all_frames += _make_title_card(
+        title,
+        f'{subtitle} — {place}, {year}' if subtitle else f'{place}, {year}',
+        n_frames=45
+    )
+    
+    # Genera il video
+    _frames_to_video(all_frames, output_path, fps=FPS)
+    
+    return {
+        'output_path': output_path,
+        'duration_sec': len(all_frames) / FPS,
+        'quote_used': {
+            'id': quote.get('id', ''),
+            'autore': quote['autore'],
+            'opera': quote.get('opera', ''),
+            'tema': quote.get('tema', '')
+        },
+        'photos_used': len(photos_pil),
+        'total_frames': len(all_frames)
+    }
+
+
+if __name__ == '__main__':
+    import sys
+    if len(sys.argv) < 3:
+        print('Usage: python3 tutorial_generator.py <project_json> <output.mp4> [corpus.json]')
+        sys.exit(1)
+    
+    with open(sys.argv[1]) as f:
+        project = json.load(f)
+    
+    corpus_path = sys.argv[3] if len(sys.argv) > 3 else None
+    result = generate_tutorial(project, 'uploads', sys.argv[2], corpus_path=corpus_path)
+    print(json.dumps(result, indent=2))

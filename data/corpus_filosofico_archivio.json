@@ -1,0 +1,210 @@
+{
+  "corpus": [
+    {
+      "id": "derrida_1",
+      "autore": "Jacques Derrida",
+      "opera": "Mal d'archivio. Un'impressione freudiana",
+      "anno": "1995",
+      "citazione_it": "Il mal d'archivio è ardere di passione. Non riposare mai, interminabilmente, dalla ricerca dell'archivio, proprio là dove esso si sottrae. È correre dopo di lui là dove, anche se ce n'è troppo, qualcosa in esso si anarchivizza. È avere un desiderio irreprimibile e nostalgico di ritorno all'origine, una nostalgia per il ritorno al luogo più arcaico del cominciamento assoluto.",
+      "citazione_en": "It is to burn with a passion. It is never to rest, interminably, from searching for the archive right where it slips away. It is to run after the archive, even if there's too much of it, right where something in it anarchives itself. It is to have a compulsive, repetitive, and nostalgic desire for the archive, an irrepressible desire to return to the origin.",
+      "tema": "pulsione di archiviazione",
+      "uso_tutorial": "Apertura — la voce narrante legge la citazione mentre scorrono le foto di Havana in thumbs mode"
+    },
+    {
+      "id": "derrida_2",
+      "autore": "Jacques Derrida",
+      "opera": "Mal d'archivio. Un'impressione freudiana",
+      "anno": "1995",
+      "citazione_it": "Il futuro instabile secondo l'archivio aperto 'produce più archivio, ed è per questo che l'archivio non è mai chiuso. Si apre sul futuro'.",
+      "citazione_en": "The unstable future according to the open archive 'produces more archive, and that is why the archive is never closed. It opens out of the future'.",
+      "tema": "archivio come apertura al futuro",
+      "uso_tutorial": "Transizione tra Overview e Archive nel sito"
+    },
+    {
+      "id": "derrida_3",
+      "autore": "Jacques Derrida",
+      "opera": "Mal d'archivio. Un'impressione freudiana",
+      "anno": "1995",
+      "citazione_it": "Il concetto dell'archivio ripara in sé, certo, questa memoria del nome arkhe. Ma ripara anche da questa memoria che ripara: quella che viene dall'oblio.",
+      "citazione_en": "The concept of the archive shelters in itself, of course, this memory of the name arkhē. But it also shelters itself from this memory which it shelters: which comes down to saying also that it forgets it.",
+      "tema": "archivio e oblio",
+      "uso_tutorial": "Momento in cui le foto spariscono dalla vista Overview"
+    },
+    {
+      "id": "scotini_1",
+      "autore": "Marco Scotini",
+      "opera": "L'inarchiviabile. L'archivio contro la storia",
+      "anno": "2023",
+      "citazione_it": "Nella contemporaneità è stato l'archivio a prendersi una rivincita sulla storia, ma un archivio non più diviso tra burocrazia e amministrazione. L'attuale 'archivismo' risale agli anni Settanta quando si comincia a vedere questo dispositivo come qualcosa da profanare, come mezzo di eversione e liberazione.",
+      "citazione_en": "In contemporary times, it is the archive that has taken revenge on history, but an archive no longer divided between bureaucracy and administration.",
+      "tema": "archivio come atto politico",
+      "uso_tutorial": "Sequenza di foto documentarie — Istanbul, Havana"
+    },
+    {
+      "id": "scotini_2",
+      "autore": "Marco Scotini",
+      "opera": "L'inarchiviabile. L'archivio contro la storia",
+      "anno": "2023",
+      "citazione_it": "Ci sono tre campi semantici implicati nel termine 'inarchiviabile': tutto ciò che dal potere è stato ritenuto degno di non essere archiviato; un materiale eccedente e di per sé recalcitrante ad essere archiviato; e quel residuo che — malgrado il nostro tentativo di archiviazione digitale globale — sempre rimarrà tale, come una insopprimibile minaccia di oblio.",
+      "citazione_en": "There are three semantic fields implied in the term 'unarchivable': everything that power deemed unworthy of being archived; material that is inherently resistant to being archived; and that residue which — despite our attempt at global digital archiving — will always remain as an irrepressible threat of oblivion.",
+      "tema": "l'inarchiviabile come resistenza",
+      "uso_tutorial": "Foto con grana analogica — ciò che sfugge alla perfezione digitale"
+    },
+    {
+      "id": "scotini_3",
+      "autore": "Marco Scotini",
+      "opera": "L'inarchiviabile. L'archivio contro la storia",
+      "anno": "2023",
+      "citazione_it": "La moltitudine contemporanea aveva bisogno di una proliferazione di genealogie e non di un'unica storia comune, per quanto inclusiva. Questo è il grande lavoro che sta dietro lo sforzo di trasformare un'idea di tempo. Un tempo non più verticista, monodirezionale, cronologico e lineare.",
+      "citazione_en": "Contemporary multitude needed a proliferation of genealogies and not a single common history, however inclusive. This is the great work behind the effort to transform an idea of time. A time no longer top-down, unidirectional, chronological and linear.",
+      "tema": "archivio come tempo non lineare",
+      "uso_tutorial": "Navigazione non lineare tra i progetti del sito"
+    },
+    {
+      "id": "giannachi_1",
+      "autore": "Gabriella Giannachi",
+      "opera": "Archiviare tutto. Una mappatura del quotidiano",
+      "anno": "2021",
+      "citazione_it": "Considerando l'archivio sostanzialmente come un laboratorio di memoria, l'archivio non è mai un deposito passivo ma una pratica attiva di costruzione del presente attraverso il passato.",
+      "citazione_en": "Considering the archive essentially as a laboratory of memory, the archive is never a passive deposit but an active practice of constructing the present through the past.",
+      "tema": "archivio come laboratorio di memoria",
+      "uso_tutorial": "Il CMS come strumento di costruzione dell'archivio"
+    },
+    {
+      "id": "foucault_1",
+      "autore": "Michel Foucault",
+      "opera": "L'archeologia del sapere",
+      "anno": "1969",
+      "citazione_it": "L'archivio è ciò che definisce il modo di esistenza attuale dell'enunciato, costituendone il sistema di funzionamento. Esso si distingue dalla lingua: se questa è il sistema di costruzione di frasi possibili, l'archivio è il sistema di funzionamento degli enunciati reali.",
+      "citazione_en": "The archive is what defines the mode of occurrence of the statement-thing; it is the system of its functioning. It is distinguished from the language: if the latter is the system for constructing possible sentences, the archive is the system that governs the appearance of statements as unique events.",
+      "tema": "archivio come sistema di enunciati",
+      "uso_tutorial": "La struttura del sito come sistema di enunciati visivi"
+    },
+    {
+      "id": "warburg_1",
+      "autore": "Aby Warburg",
+      "opera": "Bilderatlas Mnemosyne",
+      "anno": "1924-1929",
+      "citazione_it": "Il Mnemosyne Atlas non è un libro ma una serie di tavole nere su cui le immagini vengono disposte, spostate, ricomposte. L'archivio visivo come pensiero in movimento, come montaggio che non si chiude mai.",
+      "citazione_en": "The Mnemosyne Atlas is not a book but a series of black panels on which images are arranged, moved, recomposed. The visual archive as thought in motion, as montage that never closes.",
+      "tema": "archivio visivo come montaggio",
+      "uso_tutorial": "La griglia Overview come Mnemosyne Atlas fotografico"
+    },
+    {
+      "id": "warburg_2",
+      "autore": "Aby Warburg",
+      "opera": "Bilderatlas Mnemosyne",
+      "anno": "1924-1929",
+      "citazione_it": "Le immagini non sono illustrazioni di concetti, sono la memoria stessa del pensiero. L'atlas è uno strumento per pensare per immagini, non per parole.",
+      "citazione_en": "Images are not illustrations of concepts, they are the very memory of thought. The atlas is a tool for thinking in images, not in words.",
+      "tema": "pensare per immagini",
+      "uso_tutorial": "Transizione dalla vista testo (Archive) alla vista immagini (Overview)"
+    },
+    {
+      "id": "sontag_1",
+      "autore": "Susan Sontag",
+      "opera": "Sulla fotografia",
+      "anno": "1977",
+      "citazione_it": "Le fotografie sono forse più memorabili delle immagini in movimento perché sono una netta fetta di tempo, non un flusso.",
+      "citazione_en": "Photographs may be more memorable than moving images, because they are a neat slice of time, not a flow.",
+      "tema": "fotografia come frammento di tempo",
+      "uso_tutorial": "La singola foto grande — il momento fermato"
+    },
+    {
+      "id": "sontag_2",
+      "autore": "Susan Sontag",
+      "opera": "Sulla fotografia",
+      "anno": "1977",
+      "citazione_it": "Qualsiasi raccolta di fotografie è un esercizio di montaggio surrealista e di abbreviazione surrealista della storia.",
+      "citazione_en": "Any collection of photographs is an exercise in Surrealist montage and the Surrealist abbreviation of history.",
+      "tema": "la collezione come montaggio",
+      "uso_tutorial": "La griglia Overview — il montaggio delle storie"
+    },
+    {
+      "id": "sontag_3",
+      "autore": "Susan Sontag",
+      "opera": "Sulla fotografia",
+      "anno": "1977",
+      "citazione_it": "La fotografia è l'inventario della mortalità. Un tocco del dito ora basta a investire un momento di ironia postuma.",
+      "citazione_en": "Photography is the inventory of mortality. A touch of the finger now suffices to invest a moment with posthumous irony.",
+      "tema": "fotografia e mortalità",
+      "uso_tutorial": "Apertura del progetto — il gesto di archiviare come atto contro l'oblio"
+    },
+    {
+      "id": "sontag_4",
+      "autore": "Susan Sontag",
+      "opera": "Sulla fotografia",
+      "anno": "1977",
+      "citazione_it": "Fotografare è conferire importanza. Probabilmente non esiste un soggetto che non possa essere abbellito; inoltre, non c'è modo di sopprimere la tendenza insita in ogni fotografia di attribuire valore ai propri soggetti.",
+      "citazione_en": "To photograph is to confer importance. There is probably no subject that cannot be beautified; moreover, there is no way to suppress the tendency inherent in all photographs to accord value to their subjects.",
+      "tema": "fotografia come atto di valorizzazione",
+      "uso_tutorial": "Il gesto di selezionare le foto per il progetto nel CMS"
+    },
+    {
+      "id": "barthes_1",
+      "autore": "Roland Barthes",
+      "opera": "La camera chiara",
+      "anno": "1980",
+      "citazione_it": "Tutte le fotografie sono memento mori. Fare una fotografia significa partecipare alla mortalità, alla vulnerabilità, alla mutabilità di un'altra persona (o cosa).",
+      "citazione_en": "All photographs are memento mori. To take a photograph is to participate in another person's (or thing's) mortality, vulnerability, mutability.",
+      "tema": "fotografia e morte",
+      "uso_tutorial": "Dissolvenza tra una foto e l'altra — il tempo che passa"
+    },
+    {
+      "id": "barthes_2",
+      "autore": "Roland Barthes",
+      "opera": "La camera chiara",
+      "anno": "1980",
+      "citazione_it": "Una foto non può essere trasformata filosoficamente, essa è interamente gravata dalla contingenza di cui è l'involucro trasparente e leggero.",
+      "citazione_en": "A photograph cannot be philosophically transformed, it is entirely burdened by the contingency of which it is the transparent and light envelope.",
+      "tema": "contingenza della fotografia",
+      "uso_tutorial": "La foto analogica — la grana come traccia del reale"
+    },
+    {
+      "id": "benjamin_1",
+      "autore": "Walter Benjamin",
+      "opera": "Piccola storia della fotografia",
+      "anno": "1931",
+      "citazione_it": "La natura che parla alla macchina fotografica è una natura diversa da quella che parla all'occhio. Diversa soprattutto in quanto uno spazio elaborato inconsciamente viene sostituito a uno spazio che l'uomo ha elaborato consciamente.",
+      "citazione_en": "The camera introduces us to unconscious optics as does psychoanalysis to unconscious impulses.",
+      "tema": "fotografia e inconscio ottico",
+      "uso_tutorial": "Il dettaglio — la foto grande che rivela ciò che la griglia nasconde"
+    },
+    {
+      "id": "benjamin_2",
+      "autore": "Walter Benjamin",
+      "opera": "Tesi di filosofia della storia",
+      "anno": "1940",
+      "citazione_it": "Articolare storicamente il passato non significa conoscerlo 'come propriamente è stato'. Significa impadronirsi di un ricordo come esso balena nell'istante di un pericolo.",
+      "citazione_en": "To articulate the past historically does not mean to recognize it 'the way it really was'. It means to seize hold of a memory as it flashes up at a moment of danger.",
+      "tema": "memoria come lampo nel pericolo",
+      "uso_tutorial": "La foto che appare improvvisamente nella transizione Overview"
+    },
+    {
+      "id": "deleuze_1",
+      "autore": "Gilles Deleuze e Félix Guattari",
+      "opera": "Mille piani",
+      "anno": "1980",
+      "citazione_it": "A differenza degli alberi o delle loro radici, il rizoma connette un punto qualsiasi con un altro punto qualsiasi, e ciascuno dei suoi tratti non rimanda necessariamente a tratti della stessa natura.",
+      "citazione_en": "Unlike trees or their roots, the rhizome connects any point to any other point, and its traits are not necessarily linked to traits of the same nature.",
+      "tema": "rizoma come struttura non gerarchica",
+      "uso_tutorial": "La navigazione non lineare tra i progetti — Overview come rizoma visivo"
+    },
+    {
+      "id": "deleuze_2",
+      "autore": "Gilles Deleuze",
+      "opera": "L'immagine-tempo. Cinema 2",
+      "anno": "1985",
+      "citazione_it": "Il tempo non è più subordinato al movimento, è il movimento che è subordinato al tempo. Il tempo è la forma dell'interiorità, nel senso in cui Kant lo definisce, ma questa interiorità ci è costantemente esterna.",
+      "citazione_en": "Time is no longer subordinated to movement, it is movement that is subordinated to time. Time is the form of interiority, in the sense in which Kant defines it, but this interiority is constantly being externalized.",
+      "tema": "tempo e immagine",
+      "uso_tutorial": "Il video del progetto — le immagini nel tempo"
+    }
+  ],
+  "note_editoriali": {
+    "uso": "Questo corpus è la base per i tutorial video-saggio. Ogni citazione ha un campo 'uso_tutorial' che suggerisce il momento visivo del sito in cui inserirla.",
+    "formato_video": "60-90 secondi. Citazione a schermo (testo bianco su nero o nero su bianco) + voce narrante + immagini del sito in movimento.",
+    "tono": "Non didattico. Non 'come funziona il sito'. Ma: 'perché archiviare è un atto di pensiero'.",
+    "lingua": "Italiano per TikTok/Instagram italiano. Inglese per distribuzione internazionale."
+  }
+}

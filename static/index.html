@@ -1350,6 +1350,7 @@
         <button class="tab-btn active" onclick="switchTab('info',this)">Info</button>
         <button class="tab-btn" onclick="switchTab('images',this)">Foto</button>
         <button class="tab-btn" onclick="switchTab('texts',this)">Testi</button>
+        <button class="tab-btn" onclick="switchTab('social',this);loadCorpus()">&#9670; Social</button>
       </div>
 
       <!-- TAB: INFO -->
@@ -1663,6 +1664,69 @@
               <button class="ai-regen-btn" onclick="aiGenerateBlock('ai-text-hint', 'ai-text-lang', 'ai-text-type', 'ai-text-result')">Rigenera</button>
               <button class="ai-discard-btn" onclick="aiDiscard('ai-text-panel')">Scarta</button>
             </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- TAB: SOCIAL -->
+      <div class="tab-panel" id="tab-social">
+        <div style="padding:16px 0 8px;font-size:11px;color:var(--gray);letter-spacing:.5px;text-transform:uppercase">Strumenti Social &amp; Video</div>
+
+        <!-- SEZIONE: HASHTAG + TAG PARTNER -->
+        <div class="social-section">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+            <span style="font-size:12px;font-weight:600"># Hashtag &amp; Tag Partner Instagram</span>
+            <button class="btn-ai-write" onclick="generateSocial()" id="btn-gen-social">✶ Genera</button>
+          </div>
+          <div id="social-result" style="display:none">
+            <div style="margin-bottom:14px">
+              <label>Caption Instagram (pronta da copiare)</label>
+              <textarea id="social-caption" rows="8" readonly style="margin-top:6px;font-size:11px;line-height:1.6"></textarea>
+              <button class="btn-text" onclick="copyToClipboard('social-caption')" style="margin-top:6px;font-size:11px">&#9635; Copia caption</button>
+            </div>
+            <div style="margin-bottom:10px">
+              <label>Tag Partner — Aspirazionali</label>
+              <div id="social-tags-aspirational" style="margin-top:6px;display:flex;flex-wrap:wrap;gap:6px"></div>
+            </div>
+            <div style="margin-bottom:10px">
+              <label>Tag Partner — Realistici</label>
+              <div id="social-tags-realistic" style="margin-top:6px;display:flex;flex-wrap:wrap;gap:6px"></div>
+            </div>
+            <div style="margin-bottom:10px">
+              <label>Meta SEO</label>
+              <div id="social-meta" style="margin-top:6px;font-size:11px;line-height:1.7;color:var(--gray)"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- SEZIONE: REEL VIDEO -->
+        <div style="margin-top:24px;padding-top:20px;border-top:1px solid var(--border)">
+          <div style="font-size:12px;font-weight:600;margin-bottom:10px">&#9654; Reel Video (Instagram / TikTok)</div>
+          <div style="font-size:11px;color:var(--gray);margin-bottom:12px">Genera un video verticale 9:16 con le foto del progetto, pronto per Instagram Reels e TikTok.</div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap">
+            <button class="btn-ai-write" onclick="generateReel('digital')" id="btn-reel-digital">&#9654; Reel Digital</button>
+            <button class="btn-ai-write" onclick="generateReel('analog')" id="btn-reel-analog">&#9654; Reel Analog</button>
+          </div>
+          <div id="reel-status" style="margin-top:10px;font-size:11px;color:var(--gray)"></div>
+          <div id="reel-download" style="display:none;margin-top:10px">
+            <a id="reel-download-link" class="btn-text" style="display:inline-block;font-size:11px">&#8659; Scarica Reel MP4</a>
+          </div>
+        </div>
+
+        <!-- SEZIONE: TUTORIAL VIDEO-SAGGIO -->
+        <div style="margin-top:24px;padding-top:20px;border-top:1px solid var(--border)">
+          <div style="font-size:12px;font-weight:600;margin-bottom:10px">&#9670; Tutorial Video-Saggio (TikTok / YouTube Shorts)</div>
+          <div style="font-size:11px;color:var(--gray);margin-bottom:12px">Video-saggio filosofico sull&apos;archivio fotografico. Citazione + immagini del progetto + testo.</div>
+          <div style="margin-bottom:10px">
+            <label>Citazione filosofica</label>
+            <select id="tutorial-quote" style="width:100%;margin-top:6px">
+              <option value="">— Casuale —</option>
+            </select>
+          </div>
+          <button class="btn-ai-write" onclick="generateTutorial()" id="btn-tutorial">&#9670; Genera Tutorial</button>
+          <div id="tutorial-status" style="margin-top:10px;font-size:11px;color:var(--gray)"></div>
+          <div id="tutorial-download" style="display:none;margin-top:10px">
+            <a id="tutorial-download-link" class="btn-text" style="display:inline-block;font-size:11px">&#8659; Scarica Tutorial MP4</a>
           </div>
         </div>
       </div>
@@ -3889,6 +3953,149 @@ async function applyPhotographerPreset(presetName, btnEl) {
 })();
 
 init();
+
+// ── SOCIAL / REEL / TUTORIAL ──────────────────────────────────────────────────
+async function generateSocial() {
+  if (!currentProject) return;
+  const btn = document.getElementById('btn-gen-social');
+  btn.disabled = true;
+  btn.textContent = '⧗ Generazione...';
+  try {
+    const res = await fetch(`${API}/projects/${currentProject.id}/generate-social`, {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'}
+    });
+    const data = await res.json();
+    if (!data.ok) throw new Error(data.error || 'Errore');
+
+    // Caption
+    document.getElementById('social-caption').value = data.social.instagram_caption;
+
+    // Tag partner aspirazionali
+    const aspDiv = document.getElementById('social-tags-aspirational');
+    aspDiv.innerHTML = (data.social.partner_tags.aspirational || []).map(p =>
+      `<span style="background:var(--light);border:1px solid var(--border);border-radius:20px;padding:3px 10px;font-size:11px;cursor:pointer" onclick="navigator.clipboard.writeText('${p.handle}')" title="Clicca per copiare">${p.handle} <span style="color:var(--gray)">${p.followers}</span></span>`
+    ).join('');
+
+    // Tag partner realistici
+    const realDiv = document.getElementById('social-tags-realistic');
+    realDiv.innerHTML = (data.social.partner_tags.realistic || []).map(p =>
+      `<span style="background:var(--purple-l);border:1px solid var(--border);border-radius:20px;padding:3px 10px;font-size:11px;cursor:pointer" onclick="navigator.clipboard.writeText('${p.handle}')" title="Clicca per copiare">${p.handle} <span style="color:var(--gray)">${p.followers}</span></span>`
+    ).join('');
+
+    // Meta SEO
+    const meta = data.meta;
+    document.getElementById('social-meta').innerHTML = `
+      <div><strong>Title:</strong> ${meta.title}</div>
+      <div><strong>Description:</strong> ${meta.description}</div>
+      <div><strong>Keywords:</strong> ${meta.keywords}</div>
+    `;
+
+    document.getElementById('social-result').style.display = 'block';
+    toast('Social generato ✓');
+  } catch(e) {
+    toast('Errore: ' + e.message);
+  } finally {
+    btn.disabled = false;
+    btn.textContent = '✶ Genera';
+  }
+}
+
+async function generateReel(style) {
+  if (!currentProject) return;
+  const btnId = style === 'digital' ? 'btn-reel-digital' : 'btn-reel-analog';
+  const btn = document.getElementById(btnId);
+  const statusEl = document.getElementById('reel-status');
+  const dlEl = document.getElementById('reel-download');
+  btn.disabled = true;
+  btn.textContent = '⧗ Generazione in corso...';
+  statusEl.textContent = 'Elaborazione video... (può richiedere 1-2 minuti)';
+  dlEl.style.display = 'none';
+  try {
+    const res = await fetch(`${API}/projects/${currentProject.id}/generate-reel`, {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({ style })
+    });
+    const data = await res.json();
+    if (!data.ok) throw new Error(data.error || 'Errore');
+    const link = document.getElementById('reel-download-link');
+    link.href = `${API}/projects/${currentProject.id}/reel/${style}`;
+    link.download = `reel_${currentProject.title}_${style}.mp4`;
+    dlEl.style.display = 'block';
+    statusEl.textContent = 'Reel pronto! Clicca per scaricare.';
+    toast('Reel generato ✓');
+  } catch(e) {
+    statusEl.textContent = 'Errore: ' + e.message;
+    toast('Errore: ' + e.message);
+  } finally {
+    btn.disabled = false;
+    btn.textContent = style === 'digital' ? '▶ Reel Digital' : '▶ Reel Analog';
+  }
+}
+
+async function generateTutorial() {
+  if (!currentProject) return;
+  const btn = document.getElementById('btn-tutorial');
+  const statusEl = document.getElementById('tutorial-status');
+  const dlEl = document.getElementById('tutorial-download');
+  const quoteId = document.getElementById('tutorial-quote').value;
+  btn.disabled = true;
+  btn.textContent = '⧗ Generazione in corso...';
+  statusEl.textContent = 'Elaborazione video-saggio... (può richiedere 1-2 minuti)';
+  dlEl.style.display = 'none';
+  try {
+    const body = {};
+    if (quoteId) body.quote_id = quoteId;
+    const res = await fetch(`${API}/projects/${currentProject.id}/generate-tutorial`, {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify(body)
+    });
+    const data = await res.json();
+    if (!data.ok) throw new Error(data.error || 'Errore');
+    const r = data.result;
+    const link = document.getElementById('tutorial-download-link');
+    link.href = `${API}/projects/${currentProject.id}/tutorial`;
+    link.download = `tutorial_${currentProject.title}.mp4`;
+    dlEl.style.display = 'block';
+    statusEl.textContent = `Tutorial pronto! ${r.duration_sec.toFixed(1)}s — Citazione: ${r.quote_used.autore}`;
+    toast('Tutorial generato ✓');
+  } catch(e) {
+    statusEl.textContent = 'Errore: ' + e.message;
+    toast('Errore: ' + e.message);
+  } finally {
+    btn.disabled = false;
+    btn.textContent = '◆ Genera Tutorial';
+  }
+}
+
+async function loadCorpus() {
+  const sel = document.getElementById('tutorial-quote');
+  if (sel.options.length > 1) return; // già caricato
+  try {
+    const res = await fetch(`${API}/corpus`);
+    const data = await res.json();
+    (data.corpus || []).forEach(q => {
+      const opt = document.createElement('option');
+      opt.value = q.id;
+      opt.textContent = `${q.autore} — ${q.tema}`;
+      sel.appendChild(opt);
+    });
+  } catch(e) {}
+}
+
+function copyToClipboard(id) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  navigator.clipboard.writeText(el.value || el.textContent)
+    .then(() => toast('Copiato negli appunti ✓'))
+    .catch(() => {
+      el.select && el.select();
+      document.execCommand('copy');
+      toast('Copiato negli appunti ✓');
+    });
+}
 </script>
 
 <!-- Popup Live Preview Zoom -->

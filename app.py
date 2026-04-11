@@ -1603,6 +1603,128 @@ def fix_aspect_ratios():
     return jsonify({'ok': True, 'fixed': fixed, 'errors': errors})
 
 
+# ── SOCIAL / REEL / TUTORIAL ──────────────────────────────────────────────────
+@app.route('/api/projects/<pid>/generate-reel', methods=['POST'])
+def generate_reel_endpoint(pid):
+    """Genera un Reel video Instagram/TikTok dal progetto."""
+    import sys
+    sys.path.insert(0, str(BASE))
+    from reel_generator import generate_reel
+
+    db = load_db()
+    project = next((p for p in db['projects'] if p['id'] == pid), None)
+    if not project:
+        return jsonify({'error': 'Progetto non trovato'}), 404
+
+    body  = request.get_json(silent=True) or {}
+    style = body.get('style', 'digital')  # 'digital' o 'analog'
+
+    output_dir = DATA / 'reels'
+    output_dir.mkdir(exist_ok=True)
+    output_path = str(output_dir / f'reel_{pid}_{style}.mp4')
+
+    try:
+        generate_reel(project, str(UPLOAD), output_path, style=style)
+        return jsonify({'ok': True, 'path': f'/api/projects/{pid}/reel/{style}'})
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+
+@app.route('/api/projects/<pid>/reel/<style>', methods=['GET'])
+def download_reel(pid, style):
+    """Scarica il Reel video generato."""
+    reel_path = DATA / 'reels' / f'reel_{pid}_{style}.mp4'
+    if not reel_path.exists():
+        return jsonify({'error': 'Reel non ancora generato'}), 404
+    return send_file(str(reel_path), mimetype='video/mp4',
+                     as_attachment=True,
+                     download_name=f'reel_{style}.mp4')
+
+
+@app.route('/api/projects/<pid>/generate-social', methods=['POST'])
+def generate_social_endpoint(pid):
+    """Genera hashtag, tag partner Instagram e meta SEO per il progetto."""
+    import sys
+    sys.path.insert(0, str(BASE))
+    from social_generator import generate_hashtags_and_tags, generate_meta_seo
+
+    db = load_db()
+    project = next((p for p in db['projects'] if p['id'] == pid), None)
+    if not project:
+        return jsonify({'error': 'Progetto non trovato'}), 404
+
+    try:
+        social_data = generate_hashtags_and_tags(project)
+        meta_data   = generate_meta_seo(project, social_data)
+
+        # Salva nel progetto per uso futuro
+        project['_social'] = social_data
+        project['_meta']   = meta_data
+        save_db(db)
+
+        return jsonify({'ok': True, 'social': social_data, 'meta': meta_data})
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+
+@app.route('/api/projects/<pid>/generate-tutorial', methods=['POST'])
+def generate_tutorial_endpoint(pid):
+    """Genera un video-saggio filosofico per il progetto."""
+    import sys
+    sys.path.insert(0, str(BASE))
+    from tutorial_generator import generate_tutorial
+
+    db = load_db()
+    project = next((p for p in db['projects'] if p['id'] == pid), None)
+    if not project:
+        return jsonify({'error': 'Progetto non trovato'}), 404
+
+    body     = request.get_json(silent=True) or {}
+    quote_id = body.get('quote_id', None)
+
+    output_dir = DATA / 'tutorials'
+    output_dir.mkdir(exist_ok=True)
+    output_path = str(output_dir / f'tutorial_{pid}.mp4')
+
+    corpus_path = BASE / 'data' / 'corpus_filosofico_archivio.json'
+    if not corpus_path.exists():
+        corpus_path = UPLOAD / '_data' / 'corpus_filosofico_archivio.json'
+
+    try:
+        result = generate_tutorial(
+            project, str(UPLOAD), output_path,
+            corpus_path=str(corpus_path) if corpus_path.exists() else None,
+            quote_id=quote_id
+        )
+        return jsonify({'ok': True, 'result': result,
+                        'path': f'/api/projects/{pid}/tutorial'})
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+
+@app.route('/api/projects/<pid>/tutorial', methods=['GET'])
+def download_tutorial(pid):
+    """Scarica il tutorial video generato."""
+    tut_path = DATA / 'tutorials' / f'tutorial_{pid}.mp4'
+    if not tut_path.exists():
+        return jsonify({'error': 'Tutorial non ancora generato'}), 404
+    return send_file(str(tut_path), mimetype='video/mp4',
+                     as_attachment=True,
+                     download_name='tutorial.mp4')
+
+
+@app.route('/api/corpus', methods=['GET'])
+def get_corpus():
+    """Restituisce il corpus filosofico sull'archivio."""
+    corpus_path = BASE / 'data' / 'corpus_filosofico_archivio.json'
+    if not corpus_path.exists():
+        corpus_path = UPLOAD / '_data' / 'corpus_filosofico_archivio.json'
+    if corpus_path.exists():
+        with open(corpus_path) as f:
+            return jsonify(json.load(f))
+    return jsonify({'corpus': []})
+
+
 if __name__ == '__main__':
     print('\n  Rizzi CMS — avviato su http://localhost:5151')
     print('  Sito:  http://localhost:5151/')
