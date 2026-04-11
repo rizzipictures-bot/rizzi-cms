@@ -1226,6 +1226,18 @@
     }
     .ae-fab-close svg { stroke: #fff; }
 
+    /* ── Vista bianca (box-white / thumbs): FAB -25% e + nero/bianco ── */
+    .archive-expanded.box-white .ae-fab-btn {
+      width: 22px;
+      height: 22px;
+    }
+    /* + bianca in cerchio nero (invertito rispetto al box scuro) */
+    .archive-expanded.box-white .ae-fab-zoom {
+      background: #000;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.25);
+    }
+    .archive-expanded.box-white .ae-fab-zoom svg { stroke: #fff; }
+
     /* ══════════════════════════════════════════════════════════════
        ARCHIVE — BOX ESPANSO INK DROP
     ══════════════════════════════════════════════════════════════ */
@@ -1650,11 +1662,12 @@
       user-select: none;
     }
     .archive-expanded.box-white .ae-thumbs-counter { color: rgba(0,0,0,0.65); }
-    /* Bottom bar nella vista thumbs — TV + Back in basso a dx */
+    /* Bottom bar nella vista thumbs — TV in basso a dx, allineato con i FAB */
     .ae-thumbs-bottombar {
       position: absolute;
-      bottom: 0;           /* allineato al margine basso della foto */
-      left: -30px;         /* fuori dal bordo sinistro della foto */
+      bottom: 10px;        /* stesso margine verticale dei FAB */
+      right: 10px;         /* allineato a destra con i FAB */
+      left: auto;          /* annulla il vecchio left:-30px */
       display: flex;
       align-items: center;
       gap: 8px;
