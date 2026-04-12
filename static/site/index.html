@@ -3175,7 +3175,22 @@
     .cip-fab-close svg { stroke: #fff; }
     /* cip-fab-close: stessa rotazione 180° di ae-fab-btn (ereditata) — nessun override */
 
-    /* ── Due FAB a destra della foto nel Box 2 Cities ── */
+    /* ── Due FAB a destra del viewer Cities — posizionamento CSS puro ── */
+    /* Nascosto di default */
+    #cip-fab-bar {
+      display: none;
+    }
+    /* Visibile quando il viewer è aperto (body.cities-box2-open) */
+    body.cities-box2-open #cip-fab-bar {
+      display: flex !important;
+      position: fixed;
+      right: calc(clamp(200px, 22vw, 300px) + 10px);
+      bottom: 10px;
+      z-index: 710;
+      flex-direction: row;
+      gap: 6px;
+      align-items: center;
+    }
     /* Pallino nero esterno: apre lightbox bianco */
     .cip-fab-outer {
       background: #111;
@@ -5180,8 +5195,8 @@
       <button class="ae-zoom-btn" id="cip-zoom-btn" aria-label="Ingrandisci immagine" style="display:none"><svg viewBox="0 0 14 14"><line x1="7" y1="1" x2="7" y2="13"/><line x1="1" y1="7" x2="13" y2="7"/></svg></button>
     </div>
 
-    <!-- Due FAB Cities: a destra del bordo foto (fuori dal viewer per evitare overflow:hidden) -->
-    <div id="cip-fab-bar" style="display:none; position:fixed; z-index:700; flex-direction:row; gap:6px; align-items:center;">
+    <!-- Due FAB Cities: a destra del viewer, in basso — posizionamento CSS puro -->
+    <div id="cip-fab-bar" style="display:none; position:fixed; z-index:710; flex-direction:row; gap:6px; align-items:center;">
       <button class="ae-fab-btn cip-fab-outer" id="cip-fab-white" aria-label="Apri lightbox" title="Lightbox">
         <svg viewBox="0 0 20 20" width="14" height="14" fill="none" stroke-width="1.5" stroke-linecap="round"><line x1="10" y1="1.5" x2="10" y2="18.5"/><line x1="1.5" y1="10" x2="18.5" y2="10"/></svg>
       </button>
@@ -6522,10 +6537,6 @@ if (_cipImages) {
         _cipPhotoViewerImg.classList.add('anim-drop');
       }
       requestAnimationFrame(() => _updateCitiesLines());
-      // Posiziona i FAB dopo che l'altezza del viewer è stata impostata correttamente
-      requestAnimationFrame(() => {
-        if (typeof window._positionCipFabBar === 'function') window._positionCipFabBar();
-      });
     };
     // Memorizza array e indice corrente per navigazione dx/sx
     const allImgs = Array.from(_cipImages.querySelectorAll('.cip-img'));
@@ -6547,7 +6558,7 @@ if (_cipImages) {
 
     // Posiziona le linee decorative dopo che il Box 2 è aperto
     requestAnimationFrame(() => _updateCitiesLines());
-    // Nota: _positionCipFabBar viene chiamato dentro _tmpImg2.onload (dopo che l'altezza è impostata)
+
   });
 }
 
@@ -7646,11 +7657,8 @@ function buildCitiesIndex() {
             _cipPhotoViewerImg.classList.add('anim-drop');
           }
           requestAnimationFrame(() => _updateCitiesLines());
-          // Posiziona i FAB dopo che l'altezza del viewer è stata impostata correttamente
-          requestAnimationFrame(() => {
-            if (typeof window._positionCipFabBar === 'function') window._positionCipFabBar();
-          });
-        };
+      };
+
         _tmpImg.src = firstImg.src;
         _cipPhotoViewerImg.src = firstImg.src;
 
@@ -7659,7 +7667,7 @@ function buildCitiesIndex() {
         if (_cipanel) _cipanel.classList.add('viewer-open');
         _cipPhotoViewer.classList.add('open');
         requestAnimationFrame(() => _updateCitiesLines());
-        // Nota: _positionCipFabBar viene chiamato dentro _tmpImg.onload (dopo che l'altezza è impostata)
+
       }, 370); // attende .35s transizione box 1 + 20ms margine
     });
 
@@ -11301,60 +11309,13 @@ loadFromCMS();
 
 // ════════════════════════════════════════════════════════════════
 // CITIES — DUE FAB A DESTRA DELLA FOTO (lightbox bianco + zoom sgranato)
+// Posizionamento gestito interamente via CSS: body.cities-box2-open #cip-fab-bar
 // ════════════════════════════════════════════════════════════════
 (function() {
-  const _cipViewer  = document.getElementById('cip-photo-viewer');
-  const _cipImg     = document.getElementById('cip-photo-viewer-img');
-  const _cipFabBar  = document.getElementById('cip-fab-bar');
-  const _fabWhite   = document.getElementById('cip-fab-white');
-  const _fabGrain   = document.getElementById('cip-fab-grain');
-  if (!_cipViewer || !_cipImg || !_cipFabBar || !_fabWhite || !_fabGrain) return;
-
-  // Posiziona i due FAB a destra del viewer, allineati al bordo inferiore del viewer.
-  // Viene chiamato dentro _tmpImg.onload, dopo che il viewer ha l'altezza corretta.
-  function _positionCipFabBar() {
-    if (!_cipViewer.classList.contains('open')) { _cipFabBar.style.display = 'none'; return; }
-
-    const vRect = _cipViewer.getBoundingClientRect();
-    if (vRect.width === 0 || vRect.height === 0) return;
-
-    // Il body usa zoom:calc(100vw/1440) — getBoundingClientRect() restituisce coordinate
-    // in pixel viewport reali, ma style.left/top sono in pixel logici (pre-zoom).
-    // Dobbiamo dividere per il fattore di zoom per ottenere i pixel logici corretti.
-    const zoom = window.innerWidth / 1440;
-
-    const MARGIN = 10;  // spazio tra viewer e FAB (in pixel logici)
-    const FAB_H  = 22;  // altezza del singolo FAB (in pixel logici)
-    const GAP    = 10;  // distanza dal bordo inferiore del viewer (in pixel logici)
-
-    // Converti le coordinate viewport in pixel logici dividendo per zoom
-    const fabLeft = (vRect.right  / zoom) + MARGIN;
-    const fabTop  = (vRect.bottom / zoom) - FAB_H - GAP;
-
-    _cipFabBar.style.left    = Math.round(fabLeft) + 'px';
-    _cipFabBar.style.top     = Math.round(fabTop)  + 'px';
-    _cipFabBar.style.right   = 'auto';
-    _cipFabBar.style.bottom  = 'auto';
-    _cipFabBar.style.display = 'flex';
-  }
-
-  // Esponi globalmente così può essere chiamata dal codice Cities
-  window._positionCipFabBar = _positionCipFabBar;
-
-  // MutationObserver sul viewer
-  const _cipFabObs = new MutationObserver(() => {
-    if (_cipViewer.classList.contains('open')) {
-      // Aspetta che la transizione sia completata prima di posizionare
-      setTimeout(_positionCipFabBar, 400);
-    } else {
-      _cipFabBar.style.display = 'none';
-    }
-  });
-  _cipFabObs.observe(_cipViewer, { attributes: true, attributeFilter: ['class'] });
-
-  // Riposiziona quando cambia l'immagine o la finestra
-  _cipImg.addEventListener('load', () => { if (_cipViewer.classList.contains('open')) _positionCipFabBar(); });
-  window.addEventListener('resize', _positionCipFabBar);
+  const _cipImg   = document.getElementById('cip-photo-viewer-img');
+  const _fabWhite = document.getElementById('cip-fab-white');
+  const _fabGrain = document.getElementById('cip-fab-grain');
+  if (!_cipImg || !_fabWhite || !_fabGrain) return;
 
   // Recupera lista immagini del progetto corrente
   function _getCipNav() {
