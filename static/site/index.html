@@ -11316,22 +11316,21 @@ loadFromCMS();
     const natW = _cipImg.naturalWidth;
     const natH = _cipImg.naturalHeight;
 
-    // Se l'immagine non è ancora caricata, riprova dopo il load
-    if (!natW || !natH) {
-      _cipFabBar.style.display = 'none';
-      return;
+    let photoRight, photoBottom;
+
+    if (natW && natH) {
+      // Immagine caricata: calcola le dimensioni renderizzate con object-fit:contain
+      const scale  = Math.min(iRect.width / natW, iRect.height / natH);
+      const rendW  = natW * scale;
+      // object-position: left bottom
+      photoRight  = iRect.left + rendW;   // bordo destro della foto renderizzata
+      photoBottom = iRect.bottom;         // bordo inferiore (allineata al fondo)
+    } else {
+      // Immagine non ancora caricata (es. 404 o lenta):
+      // usa il bordo destro dell'elemento <img> come fallback
+      photoRight  = iRect.right;
+      photoBottom = iRect.bottom;
     }
-
-    // Calcola le dimensioni renderizzate con object-fit:contain
-    const scale  = Math.min(iRect.width / natW, iRect.height / natH);
-    const rendW  = natW * scale;
-    const rendH  = natH * scale;
-
-    // object-position: left bottom
-    // — orizzontalmente: allineata a sinistra (x = iRect.left)
-    // — verticalmente:   allineata al fondo   (y = iRect.bottom - rendH)
-    const photoRight  = iRect.left + rendW;    // bordo destro della foto
-    const photoBottom = iRect.bottom;          // bordo inferiore della foto (allineata al fondo)
 
     const MARGIN  = 10;  // spazio tra foto e FAB
     const FAB_H   = 22;  // altezza del singolo FAB
