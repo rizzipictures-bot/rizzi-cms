@@ -6956,6 +6956,12 @@ let currentView = 'home';
 // Nessun cursor-red all'avvio — Overview usa il cursore nero standard
 
 function switchView(name) {
+  // Se si lascia Overview, rimuovi il darkmode
+  if (name !== 'home' && document.documentElement.getAttribute('data-theme') === 'dark') {
+    document.documentElement.setAttribute('data-theme', 'light');
+    const _btn = document.getElementById('ov-theme-toggle');
+    if (_btn) _btn.textContent = 'darkmode';
+  }
   // Chiudi l'overlay Overview se aperto — navbar sempre funzionante
   if (typeof overlayOpen !== 'undefined' && overlayOpen) {
     closeOverview();
