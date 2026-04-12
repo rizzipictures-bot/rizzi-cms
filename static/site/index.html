@@ -3185,7 +3185,7 @@
       display: flex !important;
       position: fixed;
       right: calc(clamp(200px, 22vw, 300px) + 10px);
-      bottom: 10px;
+      /* top impostato via JS in base all'altezza del viewer */
       z-index: 710;
       flex-direction: row;
       gap: 6px;
@@ -11325,6 +11325,33 @@ loadFromCMS();
       return { list: imgs, index: idx >= 0 ? idx : 0 };
     }
     return { list: [_cipImg.src], index: 0 };
+  }
+
+  // Posizionamento verticale: appena sotto il bordo inferiore del viewer
+  // Il right è gestito dal CSS (body.cities-box2-open #cip-fab-bar)
+  const _cipViewer = document.getElementById('cip-photo-viewer');
+  const _cipFabBar = document.getElementById('cip-fab-bar');
+
+  function _setFabTop() {
+    if (!_cipViewer || !_cipFabBar) return;
+    const vRect = _cipViewer.getBoundingClientRect();
+    if (vRect.height === 0) return;
+    // vRect.bottom è in pixel viewport reali; divido per zoom per ottenere pixel logici
+    const zoom = window.innerWidth / 1440;
+    const topLogical = (vRect.bottom / zoom) + 10;
+    _cipFabBar.style.top    = Math.round(topLogical) + 'px';
+    _cipFabBar.style.bottom = 'auto';
+  }
+
+  // Aggiorna top quando l'immagine carica (altezza viewer aggiornata)
+  _cipImg.addEventListener('load', _setFabTop);
+  // Aggiorna top al resize
+  window.addEventListener('resize', _setFabTop);
+  // Aggiorna top quando il viewer si apre (MutationObserver sulla classe)
+  if (_cipViewer) {
+    new MutationObserver(() => {
+      if (_cipViewer.classList.contains('open')) setTimeout(_setFabTop, 50);
+    }).observe(_cipViewer, { attributes: true, attributeFilter: ['class', 'style'] });
   }
 
   // Pallino NERO: apre sempre il lightbox bianco (white popup)
