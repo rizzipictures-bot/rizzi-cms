@@ -7668,6 +7668,8 @@ function buildArchive() {
     projects.forEach(p => {
       const row = document.createElement('div');
       row.className = 'archive-row';
+      // Salva il riferimento al progetto sulla riga DOM (usato da _openArchiveRow)
+      row._proj = p;
       // Determina i tipi media del progetto
       const hasPhotos = (p.images || []).length > 0;
       const hasTexts  = (p.texts  || []).length > 0;
@@ -7895,10 +7897,16 @@ function buildArchive() {
         inner.className = 'archive-expanded-inner';
 
         // Strip thumbs scorrevole
-        // Fallback: se p.images è vuoto ma la riga ha un progetto VAO con immagini, usalo
+        // Usa row._proj (aggiornato da _openArchiveRow) come sorgente primaria,
+        // poi p dalla closure, poi _vaoProject come fallback finale
         const _vaoProj = row._vaoProject;
         row._vaoProject = undefined;  // reset
-        const images = (p.images && p.images.length > 0) ? p.images : (_vaoProj && _vaoProj.images && _vaoProj.images.length > 0 ? _vaoProj.images : []);
+        const _rowProj = row._proj;   // progetto aggiornato da _openArchiveRow (può avere immagini anche se p non le ha)
+        const _srcProj = (_rowProj && (_rowProj.images || []).length > 0) ? _rowProj
+                       : (p.images && p.images.length > 0) ? p
+                       : (_vaoProj && (_vaoProj.images || []).length > 0) ? _vaoProj
+                       : null;
+        const images = _srcProj ? _srcProj.images : [];
         if (images.length > 0) {
           // ── HERO: foto grande a sinistra ──
           const hero = document.createElement('div');
@@ -8843,11 +8851,18 @@ function buildArchive() {
       if (_cellText === _ptitle) targetRow = row;
     });
     if (!targetRow) return;
+    // Usa row._proj (salvato da renderRows) come progetto primario
+    // Se non disponibile, usa fallbackProject passato da _navigateToProject
+    if (fallbackProject && (!targetRow._proj || !(targetRow._proj.images || []).length)) {
+      targetRow._proj = fallbackProject;
+    }
     // Imposta i flag sulla riga
     targetRow._openInThumbsMode = !!thumbsMode;
     targetRow._openPhotoIdx = (photoIdx !== undefined && photoIdx !== null) ? photoIdx : 0;
     targetRow._forceReopen = true;
-    if (fallbackProject) targetRow._vaoProject = fallbackProject;
+    // Usa _vaoNavigating=true SOLO durante il click per bloccare il guard interno
+    // poi lo resetta subito dopo (il click è sincrono)
+    window._vaoNavigating = false;
     targetRow.click();
   };
 
