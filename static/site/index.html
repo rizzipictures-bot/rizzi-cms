@@ -3159,7 +3159,7 @@
       pointer-events: auto;
     }
     .cip-header {
-      padding: 6px 7px 10px 18px;   /* padding-top ridotto per alzare X */
+      padding: 0px 7px 10px 18px;   /* padding-top ridotto per alzare X */
       border-bottom: 0.5px solid #333;
       flex-shrink: 0;
       display: flex;
@@ -3197,6 +3197,7 @@
       height: 22px !important;
       background: #4C00FC !important;
       box-shadow: 0 2px 8px rgba(76,0,252,0.45) !important;
+      margin-top: -7px !important;
     }
     .cip-fab-close svg { stroke: #fff; }
     /* cip-fab-close: stessa rotazione 180° di ae-fab-btn (ereditata) — nessun override */
@@ -3358,7 +3359,7 @@
     /* Header box 2 — icona monitor + testo descrittivo + pallino viola sulla stessa riga */
     #cip-photo-viewer-header {
       flex-shrink: 0;
-      padding: 6px 7px 10px 18px;  /* padding-top ridotto per alzare X */
+      padding: 0px 7px 10px 18px;  /* padding-top ridotto per alzare X */
       background: transparent;
       display: flex;
       align-items: flex-start;   /* icona monitor allineata in alto al testo */
@@ -3380,7 +3381,7 @@
       --close-color: #7b2fff !important;
       width: 17px;
       height: 17px;
-      margin-top: -13px;   /* alzato di ulteriori 5px */
+      margin-top: -20px;   /* alzato di ulteriori 7px */
     }
 
     /* Titolo progetto nel box 2 — non usato (titolo ora in #cpv-title dentro l'header) */
