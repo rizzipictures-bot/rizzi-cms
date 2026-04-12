@@ -1389,7 +1389,10 @@
     [data-theme="dark"] #view-archive .archive-info {
       color: rgba(255,255,255,0.4);
     }
-    /* Pallino Media su riga hover in darkmode: rimane rosso */
+    /* Pallini Media in darkmode: bianchi di default, rossi su hover riga */
+    [data-theme="dark"] .media-ball.ball-photo { background: #fff; }
+    [data-theme="dark"] .media-ball.ball-text  { background: rgba(255,255,255,0.5); }
+    /* Su hover riga (sfondo bianco): diventano rossi */
     [data-theme="dark"] .archive-row:not(.header):hover .media-ball.ball-photo {
       background: #e00;
     }
