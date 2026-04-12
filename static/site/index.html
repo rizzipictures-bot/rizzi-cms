@@ -1246,7 +1246,8 @@
       padding: 0;
     }
     /* Hover stile Corboz: rotazione 180° con easing 0.7s identico a andrecorboz.usi.ch */
-    .ae-fab-btn:hover {
+    .ae-fab-btn:hover,
+    .ae-fab-btn.fab-pre-hover {
       transform: rotate(180deg);
     }
     /* + nera in cerchio bianco */
@@ -5878,8 +5879,20 @@ document.addEventListener('mousemove', e => {
           if (Math.abs(mx - cx) < 60 && Math.abs(my - cy) < 60) _nearAnyBall = true;
         });
         document.body.classList.toggle('cursor-arrow-white', _nearAnyBall);
+        // Pre-hover FAB: attiva la rotazione 20px prima del contatto fisico
+        const _fabBtns = document.querySelectorAll('.ae-fab-btn');
+        _fabBtns.forEach(btn => {
+          const r = btn.getBoundingClientRect();
+          if (r.width === 0 || r.height === 0) return;
+          const cx = r.left + r.width / 2;
+          const cy = r.top  + r.height / 2;
+          const dist = Math.sqrt((mx - cx) * (mx - cx) + (my - cy) * (my - cy));
+          btn.classList.toggle('fab-pre-hover', dist < (r.width / 2 + 20));
+        });
       } else {
         document.body.classList.remove('cursor-arrow-white');
+        // Rimuovi pre-hover FAB quando non siamo in archive
+        document.querySelectorAll('.ae-fab-btn.fab-pre-hover').forEach(b => b.classList.remove('fab-pre-hover'));
       }
 
       // Puntatore vicino a btn-circle-close: diventa freccia ← (nera su chiaro, bianca su scuro)
