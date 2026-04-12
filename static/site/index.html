@@ -3173,11 +3173,7 @@
       box-shadow: 0 2px 8px rgba(76,0,252,0.45) !important;
     }
     .cip-fab-close svg { stroke: #fff; }
-    .cip-fab-close:hover,
-    .cip-fab-close.fab-pre-hover {
-      transform: none !important;  /* no rotazione — solo opacity/scale */
-      opacity: .75;
-    }
+    /* cip-fab-close: stessa rotazione 180° di ae-fab-btn (ereditata) — nessun override */
     .cip-meta {
       padding: 0 18px;           /* allineato alle meta del Box 2 */
       border-bottom: 0.5px solid #333;
@@ -4476,8 +4472,8 @@
     }
     .lightbox-close {
       position: absolute; top: 20px; right: 24px;
-      --close-color: #fff;
       cursor: pointer;
+      /* ae-fab-btn ae-fab-close: sfondo viola, stecche bianche SVG */
     }
     .lightbox-nav {
       position: absolute; top: 50%; transform: translateY(-50%);
@@ -5392,7 +5388,7 @@
 
 <!-- Lightbox esistente -->
 <div id="lightbox">
-  <button class="lightbox-close btn-circle-close white" onclick="closeLightbox()"></button>
+  <button class="lightbox-close ae-fab-btn ae-fab-close" onclick="closeLightbox()" aria-label="Chiudi"><svg viewBox="0 0 20 20" width="12" height="12" fill="none" stroke-width="1.5" stroke-linecap="round"><line x1="2.5" y1="2.5" x2="17.5" y2="17.5"/><line x1="17.5" y1="2.5" x2="2.5" y2="17.5"/></svg></button>
   <button class="lightbox-nav prev" onclick="lightboxNav(-1)">←</button>
   <img id="lightbox-img" src="" alt="">
   <button class="lightbox-nav next" onclick="lightboxNav(1)">→</button>
@@ -5904,25 +5900,29 @@ document.addEventListener('mousemove', e => {
           if (Math.abs(mx - cx) < 60 && Math.abs(my - cy) < 60) _nearAnyBall = true;
         });
         document.body.classList.toggle('cursor-arrow-white', _nearAnyBall);
-        // Pre-hover FAB: attiva la rotazione 20px prima del contatto fisico
+      } else {
+        document.body.classList.remove('cursor-arrow-white');
+      }
+      // Pre-hover FAB: attiva la rotazione 20px prima del contatto fisico
+      // (valido per Archive, Cities e Lightbox — ovunque ci siano ae-fab-btn visibili)
+      {
         const _fabBtns = document.querySelectorAll('.ae-fab-btn');
         _fabBtns.forEach(btn => {
           const r = btn.getBoundingClientRect();
-          if (r.width === 0 || r.height === 0) return;
+          if (r.width === 0 || r.height === 0) { btn.classList.remove('fab-pre-hover'); return; }
+          // Salta i bottoni il cui contenitore non è visibile
+          const _lbEl = document.getElementById('lightbox');
+          if (btn.closest('#lightbox') && _lbEl && _lbEl.style.display === 'none') { btn.classList.remove('fab-pre-hover'); return; }
           const cx = r.left + r.width / 2;
           const cy = r.top  + r.height / 2;
           const dist = Math.sqrt((mx - cx) * (mx - cx) + (my - cy) * (my - cy));
           btn.classList.toggle('fab-pre-hover', dist < (r.width / 2 + 20));
         });
-      } else {
-        document.body.classList.remove('cursor-arrow-white');
-        // Rimuovi pre-hover FAB quando non siamo in archive
-        document.querySelectorAll('.ae-fab-btn.fab-pre-hover').forEach(b => b.classList.remove('fab-pre-hover'));
       }
 
       // Puntatore vicino a btn-circle-close: diventa freccia ← (nera su chiaro, bianca su scuro)
       {
-        const _closeBtns = document.querySelectorAll('.btn-circle-close, .cip-fab-close');
+        const _closeBtns = document.querySelectorAll('.btn-circle-close, .cip-fab-close, .lightbox-close');
         let _nearClose = false;
         let _nearCipClose = false;
         _closeBtns.forEach(btn => {
