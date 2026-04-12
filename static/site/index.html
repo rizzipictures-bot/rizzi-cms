@@ -5178,15 +5178,16 @@
       </div>
       <img id="cip-photo-viewer-img" src="" alt="">
       <button class="ae-zoom-btn" id="cip-zoom-btn" aria-label="Ingrandisci immagine" style="display:none"><svg viewBox="0 0 14 14"><line x1="7" y1="1" x2="7" y2="13"/><line x1="1" y1="7" x2="13" y2="7"/></svg></button>
-      <!-- Due FAB a destra del bordo foto: nero (lightbox bianco) + viola (zoom sgranato) -->
-      <div id="cip-fab-bar" style="display:none; position:fixed; z-index:700; flex-direction:row; gap:6px; align-items:center;">
-        <button class="ae-fab-btn cip-fab-outer" id="cip-fab-white" aria-label="Apri lightbox" title="Lightbox">
-          <svg viewBox="0 0 20 20" width="14" height="14" fill="none" stroke-width="1.5" stroke-linecap="round"><line x1="10" y1="1.5" x2="10" y2="18.5"/><line x1="1.5" y1="10" x2="18.5" y2="10"/></svg>
-        </button>
-        <button class="ae-fab-btn cip-fab-inner" id="cip-fab-grain" aria-label="Apri zoom" title="Zoom">
-          <svg viewBox="0 0 20 20" width="14" height="14" fill="none" stroke-width="1.5" stroke-linecap="round"><line x1="10" y1="1.5" x2="10" y2="18.5"/><line x1="1.5" y1="10" x2="18.5" y2="10"/></svg>
-        </button>
-      </div>
+    </div>
+
+    <!-- Due FAB Cities: a destra del bordo foto (fuori dal viewer per evitare overflow:hidden) -->
+    <div id="cip-fab-bar" style="display:none; position:fixed; z-index:700; flex-direction:row; gap:6px; align-items:center;">
+      <button class="ae-fab-btn cip-fab-outer" id="cip-fab-white" aria-label="Apri lightbox" title="Lightbox">
+        <svg viewBox="0 0 20 20" width="14" height="14" fill="none" stroke-width="1.5" stroke-linecap="round"><line x1="10" y1="1.5" x2="10" y2="18.5"/><line x1="1.5" y1="10" x2="18.5" y2="10"/></svg>
+      </button>
+      <button class="ae-fab-btn cip-fab-inner" id="cip-fab-grain" aria-label="Apri zoom" title="Zoom">
+        <svg viewBox="0 0 20 20" width="14" height="14" fill="none" stroke-width="1.5" stroke-linecap="round"><line x1="10" y1="1.5" x2="10" y2="18.5"/><line x1="1.5" y1="10" x2="18.5" y2="10"/></svg>
+      </button>
     </div>
 
     <!-- Box info fisso Cities (slide da destra) -->
@@ -6542,6 +6543,8 @@ if (_cipImages) {
 
     // Posiziona le linee decorative dopo che il Box 2 è aperto
     requestAnimationFrame(() => _updateCitiesLines());
+    // Posiziona i FAB dopo l'apertura del viewer
+    setTimeout(() => { if (typeof window._positionCipFabBar === 'function') window._positionCipFabBar(); }, 420);
   });
 }
 
@@ -7649,6 +7652,8 @@ function buildCitiesIndex() {
         if (_cipanel) _cipanel.classList.add('viewer-open');
         _cipPhotoViewer.classList.add('open');
         requestAnimationFrame(() => _updateCitiesLines());
+        // Posiziona i FAB dopo l'apertura del viewer
+        setTimeout(() => { if (typeof window._positionCipFabBar === 'function') window._positionCipFabBar(); }, 420);
       }, 370); // attende .35s transizione box 1 + 20ms margine
     });
 
@@ -11299,43 +11304,34 @@ loadFromCMS();
   const _fabGrain   = document.getElementById('cip-fab-grain');
   if (!_cipViewer || !_cipImg || !_cipFabBar || !_fabWhite || !_fabGrain) return;
 
-  // Posiziona i due FAB a destra del bordo destro della foto,
-  // allineati verticalmente al bordo inferiore dell'immagine.
-  // L'immagine usa object-fit:contain con object-position:left bottom,
-  // quindi il bordo inferiore dell'immagine coincide con il fondo del viewer.
-  // I FAB vengono posizionati a destra del viewer, alla stessa altezza del fondo foto.
+  // Posiziona i due FAB a destra del bordo destro del viewer,
+  // all'altezza del bordo inferiore della foto.
   function _positionCipFabBar() {
     const vRect = _cipViewer.getBoundingClientRect();
-    if (vRect.width === 0) return;
+    if (vRect.width === 0 || vRect.height === 0) return;
+    if (!_cipViewer.classList.contains('open')) { _cipFabBar.style.display = 'none'; return; }
 
-    // Calcola la posizione reale dell'immagine con object-fit:contain
-    const natW = _cipImg.naturalWidth  || 1;
-    const natH = _cipImg.naturalHeight || 1;
-    const boxW = vRect.width;
-    const boxH = vRect.height - (_cipViewer.querySelector('#cip-photo-viewer-header') ? _cipViewer.querySelector('#cip-photo-viewer-header').offsetHeight : 0)
-                              - (_cipViewer.querySelector('#cip-photo-viewer-meta')   ? _cipViewer.querySelector('#cip-photo-viewer-meta').offsetHeight   : 0);
-    const scale = Math.min(boxW / natW, boxH / natH);
-    const rendH = natH * scale;
-    // Il fondo dell'immagine è al fondo del viewer (object-position: left bottom)
-    const imgBottom = vRect.bottom;
-    const FAB_SIZE  = 22;  // ae-fab-btn width/height
-    const GAP       = 6;   // gap tra i due bottoni
-    const MARGIN    = 8;   // distanza dal bordo destro del viewer
+    const FAB_SIZE = 22;
+    const MARGIN   = 10;  // distanza dal bordo destro del viewer
+    const GAP_BOT  = 12;  // distanza dal fondo del viewer
 
-    // I FAB sono posizionati a destra del viewer, al livello del fondo foto
-    const rightX = vRect.right + MARGIN;
-    const bottomY = imgBottom - FAB_SIZE / 2;
+    // Posiziona a destra del viewer, al fondo
+    const leftX  = vRect.right + MARGIN;
+    const topY   = vRect.bottom - GAP_BOT - FAB_SIZE;
 
-    _cipFabBar.style.left   = rightX + 'px';
-    _cipFabBar.style.top    = (bottomY - FAB_SIZE) + 'px';
+    _cipFabBar.style.left    = leftX + 'px';
+    _cipFabBar.style.top     = topY + 'px';
     _cipFabBar.style.display = 'flex';
   }
 
-  // Mostra/nasconde i FAB in base allo stato del viewer
+  // Esponi globalmente così può essere chiamata dal codice Cities
+  window._positionCipFabBar = _positionCipFabBar;
+
+  // MutationObserver sul viewer
   const _cipFabObs = new MutationObserver(() => {
-    const isOpen = _cipViewer.classList.contains('open');
-    if (isOpen) {
-      _positionCipFabBar();
+    if (_cipViewer.classList.contains('open')) {
+      // Aspetta che la transizione sia completata prima di posizionare
+      setTimeout(_positionCipFabBar, 400);
     } else {
       _cipFabBar.style.display = 'none';
     }
@@ -11343,12 +11339,10 @@ loadFromCMS();
   _cipFabObs.observe(_cipViewer, { attributes: true, attributeFilter: ['class'] });
 
   // Riposiziona quando cambia l'immagine o la finestra
-  _cipImg.addEventListener('load', _positionCipFabBar);
-  const _cipFabSrcObs = new MutationObserver(_positionCipFabBar);
-  _cipFabSrcObs.observe(_cipImg, { attributes: true, attributeFilter: ['src'] });
+  _cipImg.addEventListener('load', () => { if (_cipViewer.classList.contains('open')) _positionCipFabBar(); });
   window.addEventListener('resize', _positionCipFabBar);
 
-  // Recupera lista immagini del progetto corrente (stessa logica di _getCipImgList)
+  // Recupera lista immagini del progetto corrente
   function _getCipNav() {
     const imgs = window._cipCurrentImages;
     if (imgs && imgs.length) {
