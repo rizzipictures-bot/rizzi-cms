@@ -633,6 +633,17 @@
       background: #fff;
     }
     [data-theme="dark"] header { background: #000; }
+    [data-theme="dark"] nav.pill-nav button,
+    [data-theme="dark"] nav.pill-nav a {
+      color: #fff;
+    }
+    [data-theme="dark"] nav.pill-nav button:hover,
+    [data-theme="dark"] nav.pill-nav a:hover {
+      color: rgba(255,255,255,0.5);
+    }
+    [data-theme="dark"] nav.pill-nav button.active {
+      color: rgba(255,255,255,0.5);
+    }
 
     /* Toggle darkmode/lightmode — visibile solo in Overview */
     #ov-theme-toggle {
@@ -648,8 +659,8 @@
       -webkit-appearance: none;
       appearance: none;
       padding: 0;
-      /* Nella navbar: allineato a sinistra, margin-right auto spinge la pill-nav a destra */
-      margin: 0 auto 0 0;
+      /* Nella navbar: allineato a sinistra — compenso il padding 28px della navbar per allinearmi al bordo foto (12px) */
+      margin: 0 auto 0 calc(12px - 28px);
       cursor: none;
       color: #111;
       transition: color .2s;
