@@ -895,23 +895,27 @@
     [data-theme="dark"] #overview-overlay-bg {
       background: rgba(0,0,0,.85);
     }
-    /* Darkmode: Index bold bianco, Thumbs e nome progetto bianchi leggeri */
+    /* Darkmode: barra Index/Thumbs/progetto — bianco puro, stessa gerarchia del lightmode */
+    [data-theme="dark"] #ov-nav-bar {
+      color: #fff;
+    }
     [data-theme="dark"] #ov-nav-index {
       color: #fff;
       font-weight: 700;
     }
     [data-theme="dark"] #ov-nav-thumbs,
     [data-theme="dark"] #ov-nav-project {
-      color: rgba(255,255,255,0.55);
+      color: #fff;
       font-weight: 300;
     }
     [data-theme="dark"] .ov-nav-sep {
-      color: rgba(255,255,255,0.35);
+      color: #fff;
+      opacity: 0.35;
     }
     [data-theme="dark"] #ov-nav-bar #ov-nav-index:hover,
     [data-theme="dark"] #ov-nav-bar #ov-nav-thumbs:hover,
     [data-theme="dark"] #ov-nav-bar #ov-nav-project:hover {
-      color: rgba(255,255,255,0.4);
+      color: rgba(255,255,255,0.5);
     }
     /* Barra Index | Thumbs sotto la foto overlay */
     #ov-nav-bar {
