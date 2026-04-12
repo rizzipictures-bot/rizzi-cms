@@ -7435,10 +7435,7 @@ function _ovUpdateProjectLink(img) {
   sep.style.display = '';
   lnk.style.display = '';
   lnk.onclick = function() {
-    // Rimuovi darkmode prima di navigare verso Archive
-    document.documentElement.setAttribute('data-theme', 'light');
-    const _btn = document.getElementById('ov-theme-toggle');
-    if (_btn) _btn.textContent = 'darkmode';
+    // Preserva il tema: se si è in darkmode si va in Archive darkmode, altrimenti lightmode
     closeOverview();
     window._navigateToProject(p, img.photoIdx !== undefined ? img.photoIdx : 0);
   };
