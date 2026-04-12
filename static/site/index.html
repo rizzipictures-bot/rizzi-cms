@@ -648,17 +648,13 @@
       -webkit-appearance: none;
       appearance: none;
       padding: 0;
-      margin: 0;
+      /* Nella navbar: allineato a sinistra, margin-right auto spinge la pill-nav a destra */
+      margin: 0 auto 0 0;
       cursor: none;
       color: #111;
       transition: color .2s;
       display: none;  /* nascosto di default */
       border-radius: 0 !important;
-      /* Posizionamento fixed sopra la griglia, allineato al bordo sinistro delle foto */
-      position: fixed;
-      left: 12px;
-      top: calc(var(--nav-h) + 12px);
-      z-index: 999;
     }
     #ov-theme-toggle:hover { color: #888; }
     [data-theme="dark"] #ov-theme-toggle { color: #fff; }
@@ -5113,7 +5109,8 @@
   <header>
     <!-- Back button gallery — visibile solo se si arriva da Cities Thumbs -->
     <button id="gallery-back-btn" onclick="galleryGoBack()" style="display:none">&#8592;&nbsp;&nbsp;Back</button>
-    <!-- Toggle darkmode/lightmode — spostato fuori dalla navbar, posizionato sopra la griglia -->
+    <!-- Toggle darkmode/lightmode — visibile solo in Overview -->
+    <button id="ov-theme-toggle" onclick="ovToggleTheme()">darkmode</button>
     <!-- 3 voci principali a destra -->
     <nav class="pill-nav" id="main-pill-nav">
       <button data-view="index">Index</button>
@@ -5490,9 +5487,6 @@
   </footer>
 
 </div>
-
-<!-- Toggle darkmode/lightmode — posizionato sopra la griglia Overview, allineato al bordo sinistro delle foto -->
-<button id="ov-theme-toggle" onclick="ovToggleTheme()">darkmode</button>
 
 <!-- Overview Overlay (jackdavison) -->
 <div id="overview-overlay">
