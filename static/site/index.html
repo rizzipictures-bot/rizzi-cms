@@ -648,12 +648,17 @@
       -webkit-appearance: none;
       appearance: none;
       padding: 0;
-      margin: 0 0 0 12px;
+      margin: 0;
       cursor: none;
       color: #111;
       transition: color .2s;
       display: none;  /* nascosto di default */
       border-radius: 0 !important;
+      /* Posizionamento fixed sopra la griglia, allineato al bordo sinistro delle foto */
+      position: fixed;
+      left: 12px;
+      top: calc(var(--nav-h) + 12px);
+      z-index: 999;
     }
     #ov-theme-toggle:hover { color: #888; }
     [data-theme="dark"] #ov-theme-toggle { color: #fff; }
@@ -889,6 +894,24 @@
     }
     [data-theme="dark"] #overview-overlay-bg {
       background: rgba(0,0,0,.85);
+    }
+    /* Darkmode: Index bold bianco, Thumbs e nome progetto bianchi leggeri */
+    [data-theme="dark"] #ov-nav-index {
+      color: #fff;
+      font-weight: 700;
+    }
+    [data-theme="dark"] #ov-nav-thumbs,
+    [data-theme="dark"] #ov-nav-project {
+      color: rgba(255,255,255,0.55);
+      font-weight: 300;
+    }
+    [data-theme="dark"] .ov-nav-sep {
+      color: rgba(255,255,255,0.35);
+    }
+    [data-theme="dark"] #ov-nav-bar #ov-nav-index:hover,
+    [data-theme="dark"] #ov-nav-bar #ov-nav-thumbs:hover,
+    [data-theme="dark"] #ov-nav-bar #ov-nav-project:hover {
+      color: rgba(255,255,255,0.4);
     }
     /* Barra Index | Thumbs sotto la foto overlay */
     #ov-nav-bar {
@@ -5071,8 +5094,7 @@
   <header>
     <!-- Back button gallery — visibile solo se si arriva da Cities Thumbs -->
     <button id="gallery-back-btn" onclick="galleryGoBack()" style="display:none">&#8592;&nbsp;&nbsp;Back</button>
-    <!-- Toggle darkmode/lightmode — visibile solo in Overview -->
-    <button id="ov-theme-toggle" onclick="ovToggleTheme()">darkmode</button>
+    <!-- Toggle darkmode/lightmode — spostato fuori dalla navbar, posizionato sopra la griglia -->
     <!-- 3 voci principali a destra -->
     <nav class="pill-nav" id="main-pill-nav">
       <button data-view="index">Index</button>
@@ -5449,6 +5471,9 @@
   </footer>
 
 </div>
+
+<!-- Toggle darkmode/lightmode — posizionato sopra la griglia Overview, allineato al bordo sinistro delle foto -->
+<button id="ov-theme-toggle" onclick="ovToggleTheme()">darkmode</button>
 
 <!-- Overview Overlay (jackdavison) -->
 <div id="overview-overlay">
