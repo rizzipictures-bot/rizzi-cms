@@ -11304,25 +11304,46 @@ loadFromCMS();
   const _fabGrain   = document.getElementById('cip-fab-grain');
   if (!_cipViewer || !_cipImg || !_cipFabBar || !_fabWhite || !_fabGrain) return;
 
-  // Posiziona i due FAB nell'angolo in basso a destra del viewer,
-  // usando right/bottom fissi rispetto alla viewport (position:fixed).
-  // Il viewer ha overflow:hidden, quindi i FAB sono fuori dal DOM del viewer
-  // ma posizionati visivamente sopra di esso.
+  // Posiziona i due FAB a destra della foto, all'altezza del bordo inferiore dell'immagine.
+  // Usa le dimensioni reali dell'immagine con object-fit:contain + object-position:left bottom.
   function _positionCipFabBar() {
     const vRect = _cipViewer.getBoundingClientRect();
     if (vRect.width === 0 || vRect.height === 0) return;
     if (!_cipViewer.classList.contains('open')) { _cipFabBar.style.display = 'none'; return; }
 
-    const MARGIN = 12;  // distanza dal bordo destro e dal fondo del viewer
+    const headerEl = _cipViewer.querySelector('#cip-photo-viewer-header');
+    const metaEl   = _cipViewer.querySelector('#cip-photo-viewer-meta');
+    const headerH  = headerEl ? headerEl.offsetHeight : 0;
+    const metaH    = metaEl   ? metaEl.offsetHeight   : 0;
 
-    // Calcola right e bottom rispetto alla viewport
-    const rightVal  = window.innerWidth  - vRect.right  + MARGIN;
-    const bottomVal = window.innerHeight - vRect.bottom + MARGIN;
+    // Area disponibile per la foto
+    const imgAreaTop  = vRect.top + headerH + metaH;
+    const imgAreaH    = vRect.height - headerH - metaH;
+    const imgAreaW    = vRect.width;
 
-    _cipFabBar.style.right   = rightVal  + 'px';
-    _cipFabBar.style.bottom  = bottomVal + 'px';
-    _cipFabBar.style.left    = 'auto';
-    _cipFabBar.style.top     = 'auto';
+    // Dimensioni reali dell'immagine
+    const natW = _cipImg.naturalWidth  || imgAreaW;
+    const natH = _cipImg.naturalHeight || imgAreaH;
+
+    // Scala con object-fit:contain
+    const scale   = Math.min(imgAreaW / natW, imgAreaH / natH);
+    const rendW   = natW * scale;
+    const rendH   = natH * scale;
+
+    // object-position: left bottom — la foto è allineata in basso a sinistra
+    const imgLeft   = vRect.left;                    // allineata a sinistra
+    const imgBottom = imgAreaTop + imgAreaH;          // allineata al fondo
+    const imgRight  = imgLeft + rendW;               // bordo destro della foto
+
+    const MARGIN = 10;
+    // I FAB stanno a destra del bordo destro della foto, all'altezza del fondo
+    const fabLeft = imgRight + MARGIN;
+    const fabTop  = imgBottom - 22 - MARGIN;         // 22 = altezza FAB
+
+    _cipFabBar.style.left    = fabLeft + 'px';
+    _cipFabBar.style.top     = fabTop  + 'px';
+    _cipFabBar.style.right   = 'auto';
+    _cipFabBar.style.bottom  = 'auto';
     _cipFabBar.style.display = 'flex';
   }
 
