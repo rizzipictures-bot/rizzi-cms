@@ -2564,6 +2564,12 @@
       text-transform: uppercase;
       color: #000;
       line-height: 1;
+      /* Centrato rispetto al viewport, indipendentemente dalla larghezza dei bottoni laterali */
+      position: absolute;
+      left: 50%;
+      transform: translateX(-50%);
+      pointer-events: none;
+      white-space: nowrap;
     }
     #archive-viewall-overlay.theme-dark .vao-title { color: #fff; }
 
