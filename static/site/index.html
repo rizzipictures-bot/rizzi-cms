@@ -11318,14 +11318,18 @@ loadFromCMS();
     const vRect = _cipViewer.getBoundingClientRect();
     if (vRect.width === 0 || vRect.height === 0) return;
 
-    const MARGIN = 10;  // spazio tra viewer e FAB
-    const FAB_H  = 22;  // altezza del singolo FAB
-    const GAP    = 10;  // distanza dal bordo inferiore del viewer
+    // Il body usa zoom:calc(100vw/1440) — getBoundingClientRect() restituisce coordinate
+    // in pixel viewport reali, ma style.left/top sono in pixel logici (pre-zoom).
+    // Dobbiamo dividere per il fattore di zoom per ottenere i pixel logici corretti.
+    const zoom = window.innerWidth / 1440;
 
-    // I FAB stanno a destra del bordo destro del viewer,
-    // con il loro bordo inferiore a GAP px dal bordo inferiore del viewer
-    const fabLeft = vRect.right + MARGIN;
-    const fabTop  = vRect.bottom - FAB_H - GAP;
+    const MARGIN = 10;  // spazio tra viewer e FAB (in pixel logici)
+    const FAB_H  = 22;  // altezza del singolo FAB (in pixel logici)
+    const GAP    = 10;  // distanza dal bordo inferiore del viewer (in pixel logici)
+
+    // Converti le coordinate viewport in pixel logici dividendo per zoom
+    const fabLeft = (vRect.right  / zoom) + MARGIN;
+    const fabTop  = (vRect.bottom / zoom) - FAB_H - GAP;
 
     _cipFabBar.style.left    = Math.round(fabLeft) + 'px';
     _cipFabBar.style.top     = Math.round(fabTop)  + 'px';
