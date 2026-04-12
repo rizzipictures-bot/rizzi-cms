@@ -633,6 +633,32 @@
       background: #fff;
     }
     [data-theme="dark"] header { background: #111; }
+
+    /* Toggle darkmode/lightmode — visibile solo in Overview */
+    #ov-theme-toggle {
+      font-family: var(--font-nav);
+      font-size: 12px;
+      font-weight: 400;
+      letter-spacing: 0.08em;
+      background: none !important;
+      border: none !important;
+      outline: none !important;
+      box-shadow: none !important;
+      -webkit-appearance: none;
+      appearance: none;
+      padding: 0;
+      margin: 0;
+      cursor: none;
+      color: #111;
+      transition: color .2s;
+      display: none;  /* nascosto di default */
+      border-radius: 0 !important;
+    }
+    #ov-theme-toggle:hover { color: #888; }
+    [data-theme="dark"] #ov-theme-toggle { color: #fff; }
+    [data-theme="dark"] #ov-theme-toggle:hover { color: #888; }
+    /* Visibile solo quando Overview è attiva */
+    body.view-overview #ov-theme-toggle { display: inline-block; }
     /* Navbar nascosta durante la landing — appare solo dopo */
     body.landing-active header {
       visibility: hidden;
@@ -5037,6 +5063,8 @@
   <header>
     <!-- Back button gallery — visibile solo se si arriva da Cities Thumbs -->
     <button id="gallery-back-btn" onclick="galleryGoBack()" style="display:none">&#8592;&nbsp;&nbsp;Back</button>
+    <!-- Toggle darkmode/lightmode — visibile solo in Overview -->
+    <button id="ov-theme-toggle" onclick="ovToggleTheme()">darkmode</button>
     <!-- 3 voci principali a destra -->
     <nav class="pill-nav" id="main-pill-nav">
       <button data-view="index">Index</button>
@@ -6872,6 +6900,8 @@ function switchView(name) {
   // Classe body per mostrare/nascondere il photo-viewer solo in cities-index
   document.body.classList.toggle('cities-active', name === 'cities-index');
   document.body.classList.toggle('gallery-active', name === 'gallery');
+  // Classe body per mostrare il toggle darkmode solo in Overview
+  document.body.classList.toggle('view-overview', name === 'home');
 
   // ── Cursore rosso solo per Archive e Cities ──
   const RED_VIEWS = ['archive', 'cities-index'];
@@ -7238,6 +7268,15 @@ function ovNavigate(dir) {
   }, 120);
   ovUpdateCursor(img);
   _ovUpdateProjectLink(img);
+}
+
+// Toggle darkmode/lightmode in Overview
+function ovToggleTheme() {
+  const html = document.documentElement;
+  const btn  = document.getElementById('ov-theme-toggle');
+  const isDark = html.getAttribute('data-theme') === 'dark';
+  html.setAttribute('data-theme', isDark ? 'light' : 'dark');
+  if (btn) btn.textContent = isDark ? 'darkmode' : 'lightmode';
 }
 
 function closeOverview() {
@@ -10390,6 +10429,8 @@ async function loadFromCMS() {
   }
 
   // Inizializza le viste con i dati (CMS o statici)
+  // Overview è la view iniziale — aggiungi subito la classe body
+  document.body.classList.add('view-overview');
   buildOverviewGrid();
   buildCitiesIndex();
   buildArchive();
