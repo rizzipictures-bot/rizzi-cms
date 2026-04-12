@@ -7831,6 +7831,8 @@ function buildArchive() {
       });
 
       row.addEventListener('click', () => {
+        // Blocca click se stiamo navigando dal VAO (evita race condition)
+        if (window._vaoNavigating) return;
         // Se c'è già una espansione aperta, rimuovila
         if (activeExpanded) {
           if (activeExpanded._textBlock) activeExpanded._textBlock.remove();
@@ -8826,6 +8828,29 @@ function buildArchive() {
     return results;
   }
 
+  // Espone funzione pubblica per aprire direttamente una riga archivio senza simulare click
+  // Usata da _navigateToProject per evitare race condition
+  window._openArchiveRow = function(projectTitle, photoIdx, thumbsMode, fallbackProject) {
+    // Trova la riga corrispondente al titolo
+    const rows = document.querySelectorAll('.archive-row:not(.header)');
+    let targetRow = null;
+    const _ptitle = (projectTitle || '').trim();
+    rows.forEach(row => {
+      const titleCell = row.querySelectorAll('div')[1];
+      if (!titleCell) return;
+      const _pill = titleCell.querySelector('.ar-pill');
+      const _cellText = (_pill ? _pill.textContent : titleCell.textContent).trim();
+      if (_cellText === _ptitle) targetRow = row;
+    });
+    if (!targetRow) return;
+    // Imposta i flag sulla riga
+    targetRow._openInThumbsMode = !!thumbsMode;
+    targetRow._openPhotoIdx = (photoIdx !== undefined && photoIdx !== null) ? photoIdx : 0;
+    targetRow._forceReopen = true;
+    if (fallbackProject) targetRow._vaoProject = fallbackProject;
+    targetRow.click();
+  };
+
   // Apre l'overlay View All per una keyword
   // isDark: true = sfondo nero, false/undefined = sfondo bianco
   // Espone la funzione per navigare a un progetto da Overview
@@ -8853,35 +8878,16 @@ function buildArchive() {
         : true;  // default: thumbs (comportamento precedente dall'Overview)
       window._vaoOpenInThumbsMode = undefined;  // reset flag
 
+      // Blocca click accidentali durante la navigazione
+      window._vaoNavigating = true;
       switchView('archive');
-      // Delay aumentato a 500ms per evitare race condition tra chiusura VAO e apertura box
+      // Delay 600ms: aspetta che switchView completi e che eventuali eventi click si dissolvano
       setTimeout(() => {
-        // Trova la riga corrispondente al progetto
-        const rows = document.querySelectorAll('.archive-row:not(.header)');
-        let targetRow = null;
-        const _ptitle = (p.title || '').trim();
-        rows.forEach(row => {
-          const titleCell = row.querySelectorAll('div')[1];
-          if (!titleCell) return;
-          // Il titolo potrebbe avere un pill viola (span.ar-pill) — leggi il testo grezzo
-          const _pill = titleCell.querySelector('.ar-pill');
-          const _cellText = (_pill ? _pill.textContent : titleCell.textContent).trim();
-          if (_cellText === _ptitle) {
-            targetRow = row;
-          }
-        });
-        if (targetRow) {
-          // Imposta il flag di modalità apertura
-          targetRow._openInThumbsMode = _openThumbs;
-          // Passa l'indice della foto da mostrare
-          targetRow._openPhotoIdx = (photoIdx !== undefined && photoIdx !== null) ? photoIdx : 0;
-          // Flag per forzare la riapertura anche se la riga è già la sorgente di activeExpanded
-          targetRow._forceReopen = true;
-          // Salva il progetto VAO come fallback se p.images della riga è vuoto
-          targetRow._vaoProject = p;
-          targetRow.click();
+        window._vaoNavigating = false;
+        if (window._openArchiveRow) {
+          window._openArchiveRow(p.title, photoIdx, _openThumbs, p);
         }
-      }, 500);
+      }, 600);
     } else if (inCities) {
       // Naviga a Cities
       switchView('cities-index');
@@ -10622,18 +10628,20 @@ loadFromCMS();
 
       // Se il click è sulla foto stessa → naviga al progetto archivio
       if (e.target === vaoViewerImg) {
+        e.stopPropagation();
+        e.stopImmediatePropagation();
         const img = svImages[svIndex];
         if (img && img.project && window._navigateToProject) {
           // Determina il tema attivo: dark mode = box nero, light mode = box bianco
           const isDarkMode = overlay.classList.contains('theme-dark');
           // Chiudi il VAO prima di navigare
           window.closeViewAllOverlay();
-          // Naviga al progetto con il tema corretto
-          requestAnimationFrame(() => {
+          // Naviga al progetto con il tema corretto (delay 700ms per evitare race condition)
+          setTimeout(() => {
             // Imposta il flag di modalità in base al tema VAO
             window._vaoOpenInThumbsMode = !isDarkMode;  // light=thumbs(bianco), dark=box nero
             window._navigateToProject(img.project, img.photoIdx !== undefined ? img.photoIdx : 0);
-          });
+          }, 50);
         }
         return;
       }
