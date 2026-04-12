@@ -392,6 +392,11 @@
     body.cursor-near-close #cursor-dot::after {
       opacity: 0 !important;
     }
+    /* Nasconde il label flottante (pill) quando vicino alla X di chiusura */
+    body.cursor-near-close #cursor-label {
+      opacity: 0 !important;
+      pointer-events: none;
+    }
     /* Su sfondo scuro (Box 1 nero): freccia bianca */
     body.cursor-near-close.cursor-on-dark #cursor-dot::before,
     body.cursor-near-close [data-theme="dark"] #cursor-dot::before {
