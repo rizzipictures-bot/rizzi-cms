@@ -6056,9 +6056,30 @@ document.addEventListener('mousemove', e => {
           const r = _bx1.getBoundingClientRect();
           if (mx >= r.left && mx <= r.right && my >= r.top && my <= r.bottom) _inAnyBox = true;
         }
+        let _inBox2 = false;
         if (_bx2Open) {
           const r = _pv2.getBoundingClientRect();
-          if (mx >= r.left && mx <= r.right && my >= r.top && my <= r.bottom) _inAnyBox = true;
+          if (mx >= r.left && mx <= r.right && my >= r.top && my <= r.bottom) {
+            _inAnyBox = true;
+            _inBox2 = true;
+          }
+        }
+        // Freccia sx/dx dentro il Box 2 (come Archive box nero)
+        if (_inBox2) {
+          const _cipImg2 = document.getElementById('cip-photo-viewer-img');
+          if (_cipImg2) {
+            const _ir2 = _cipImg2.getBoundingClientRect();
+            const _onImg2 = mx >= _ir2.left && mx <= _ir2.right && my >= _ir2.top && my <= _ir2.bottom;
+            if (_onImg2) {
+              const _half2 = _ir2.left + _ir2.width / 2;
+              document.body.classList.toggle('archive-hero-next', mx >= _half2);
+              document.body.classList.toggle('archive-hero-prev', mx < _half2);
+            } else {
+              document.body.classList.remove('archive-hero-next', 'archive-hero-prev');
+            }
+          }
+        } else {
+          document.body.classList.remove('archive-hero-next', 'archive-hero-prev');
         }
         if (_inAnyBox) {
           document.body.classList.add('cursor-on-dark');
