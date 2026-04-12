@@ -7812,10 +7812,12 @@ function buildArchive() {
             if (_prevTitle) { const _p = _prevTitle.querySelector('.ar-pill'); if (_p) { _prevTitle.textContent = _p.textContent; } }
             prevRow.classList.remove('is-open');
           }
-          if (activeExpanded._sourceRow === row) {
+          // Se _forceReopen è impostato (navigazione da VAO), non chiudere ma riaprire
+          if (activeExpanded._sourceRow === row && !row._forceReopen) {
             activeExpanded = null;
             return;
           }
+          row._forceReopen = false;  // reset flag
         }
 
         // ── TESTO sopra il box nero (sfondo bianco) ──
@@ -8643,6 +8645,17 @@ function buildArchive() {
             _aeThumbsView._kwPanel.style.display = 'flex';
           }
         } else {
+          // Box nero (dark mode): imposta la foto specifica se passata da VAO
+          if (row._openPhotoIdx !== undefined) {
+            const _targetIdx = row._openPhotoIdx;
+            row._openPhotoIdx = undefined;
+            _heroIndex = Math.max(0, Math.min(_targetIdx, images.length - 1));
+            heroImg.src = images[_heroIndex] ? images[_heroIndex].url : heroImg.src;
+            _updateHeroAr(images[_heroIndex] ? images[_heroIndex].ar : undefined);
+            // Aggiorna la strip thumbs: rimuovi active e imposta sulla foto corrente
+            const _stripItems = inner.querySelectorAll('.proj-thumb, .ae-strip-item');
+            _stripItems.forEach((el, i) => el.classList.toggle('active', i === _heroIndex));
+          }
           // Animazione Ink Drop: trigger dopo un frame
           requestAnimationFrame(() => {
             requestAnimationFrame(() => panel.classList.add('ink-open'));
@@ -8801,31 +8814,32 @@ function buildArchive() {
       window._vaoOpenInThumbsMode = undefined;  // reset flag
 
       switchView('archive');
-      requestAnimationFrame(() => {
-        setTimeout(() => {
-          // Trova la riga corrispondente al progetto
-          const rows = document.querySelectorAll('.archive-row:not(.header)');
-          let targetRow = null;
-          const _ptitle = (p.title || '').trim();
-          rows.forEach(row => {
-            const titleCell = row.querySelectorAll('div')[1];
-            if (!titleCell) return;
-            // Il titolo potrebbe avere un pill viola (span.ar-pill) — leggi il testo grezzo
-            const _pill = titleCell.querySelector('.ar-pill');
-            const _cellText = (_pill ? _pill.textContent : titleCell.textContent).trim();
-            if (_cellText === _ptitle) {
-              targetRow = row;
-            }
-          });
-          if (targetRow) {
-            // Imposta il flag di modalità apertura
-            targetRow._openInThumbsMode = _openThumbs;
-            // Passa l'indice della foto da mostrare
-            targetRow._openPhotoIdx = (photoIdx !== undefined && photoIdx !== null) ? photoIdx : 0;
-            targetRow.click();
+      // Delay aumentato a 500ms per evitare race condition tra chiusura VAO e apertura box
+      setTimeout(() => {
+        // Trova la riga corrispondente al progetto
+        const rows = document.querySelectorAll('.archive-row:not(.header)');
+        let targetRow = null;
+        const _ptitle = (p.title || '').trim();
+        rows.forEach(row => {
+          const titleCell = row.querySelectorAll('div')[1];
+          if (!titleCell) return;
+          // Il titolo potrebbe avere un pill viola (span.ar-pill) — leggi il testo grezzo
+          const _pill = titleCell.querySelector('.ar-pill');
+          const _cellText = (_pill ? _pill.textContent : titleCell.textContent).trim();
+          if (_cellText === _ptitle) {
+            targetRow = row;
           }
-        }, 200);
-      });
+        });
+        if (targetRow) {
+          // Imposta il flag di modalità apertura
+          targetRow._openInThumbsMode = _openThumbs;
+          // Passa l'indice della foto da mostrare
+          targetRow._openPhotoIdx = (photoIdx !== undefined && photoIdx !== null) ? photoIdx : 0;
+          // Flag per forzare la riapertura anche se la riga è già la sorgente di activeExpanded
+          targetRow._forceReopen = true;
+          targetRow.click();
+        }
+      }, 500);
     } else if (inCities) {
       // Naviga a Cities
       switchView('cities-index');
