@@ -8759,13 +8759,14 @@ function buildArchive() {
     const results = [];
     const _allProjects = PROJECTS.length > 0 ? PROJECTS : PROJECTS_STATIC;
     _allProjects.forEach(p => {
-      (p.images || []).forEach(img => {
+      (p.images || []).forEach((img, photoIdx) => {
         const inKeywords = (img.keywords || '').toLowerCase().includes(q);
         const inCaption  = (img.title || img.caption || '').toLowerCase().includes(q);
         const inProject  = [p.title, p.subtitle, p.place, p.publication, p.description, String(p.year || '')]
           .some(v => (v || '').toLowerCase().includes(q));
         if (inKeywords || inCaption || inProject) {
-          results.push(img);
+          // Includi project e photoIdx per permettere la navigazione al progetto archivio
+          results.push({ url: img.url, ar: img.ar, project: p, photoIdx: photoIdx });
         }
       });
     });
@@ -8778,12 +8779,14 @@ function buildArchive() {
   // Preferisce Archive (thumbs, box bianco), altrimenti Cities
   window._navigateToProject = function(p, photoIdx) {
     if (!p) return;
+    // Match per id (se disponibile) o per titolo come fallback
+    const _matchProj = proj => (p.id && proj.id === p.id) || (proj.title && proj.title === p.title);
     // Determina se il progetto è in Archive
-    const inArchive = PROJECTS.some(proj => proj.id === p.id &&
+    const inArchive = PROJECTS.some(proj => _matchProj(proj) &&
       (!proj.sections || proj.sections.includes('archive') || proj.sections.includes('Archive') ||
        (proj.category_id || proj.section || '').toLowerCase() === 'archive'));
     // Determina se è in Cities
-    const inCities = PROJECTS.some(proj => proj.id === p.id &&
+    const inCities = PROJECTS.some(proj => _matchProj(proj) &&
       (proj.sections ? proj.sections.includes('cities') :
        (proj.category_id || proj.section || '').toLowerCase() === 'cities'));
 
@@ -8803,9 +8806,14 @@ function buildArchive() {
           // Trova la riga corrispondente al progetto
           const rows = document.querySelectorAll('.archive-row:not(.header)');
           let targetRow = null;
+          const _ptitle = (p.title || '').trim();
           rows.forEach(row => {
             const titleCell = row.querySelectorAll('div')[1];
-            if (titleCell && titleCell.textContent.trim() === (p.title || '').trim()) {
+            if (!titleCell) return;
+            // Il titolo potrebbe avere un pill viola (span.ar-pill) — leggi il testo grezzo
+            const _pill = titleCell.querySelector('.ar-pill');
+            const _cellText = (_pill ? _pill.textContent : titleCell.textContent).trim();
+            if (_cellText === _ptitle) {
               targetRow = row;
             }
           });
