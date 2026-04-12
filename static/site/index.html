@@ -1917,22 +1917,22 @@
       transform: translateY(-50%);
       background: none;
       border: none;
-      font-size: 11px;
-      color: rgba(0,0,0,0.35);
+      font-size: 16.5px;  /* +50%: 11px → 16.5px */
+      color: rgba(0,0,0,0.55);
       padding: 20px;
       cursor: none;
       transition: color .15s;
       letter-spacing: 0.4px;
       font-family: var(--font);
     }
-    .vao-viewer-nav:hover { color: rgba(0,0,0,0.85); }
+    .vao-viewer-nav:hover { color: rgba(0,0,0,0.9); }
     .vao-viewer-nav.prev { left: 2vw; }
     .vao-viewer-nav.next { right: 2vw; }
     #archive-viewall-overlay.theme-dark .vao-viewer-nav {
-      color: rgba(255,255,255,0.35);
+      color: rgba(255,255,255,0.65);  /* più bianche in dark mode */
     }
     #archive-viewall-overlay.theme-dark .vao-viewer-nav:hover {
-      color: rgba(255,255,255,0.9);
+      color: rgba(255,255,255,1);
     }
     .vao-viewer-counter {
       position: absolute;
@@ -8785,7 +8785,15 @@ function buildArchive() {
        (proj.category_id || proj.section || '').toLowerCase() === 'cities'));
 
     if (inArchive || (!inCities)) {
-      // Naviga ad Archive e apri la riga direttamente in thumbs mode (senza flash del box nero)
+      // Naviga ad Archive e apri la riga nel modo corretto:
+      // - se arriva dal VAO in light mode → box bianco (thumbs)
+      // - se arriva dal VAO in dark mode → box nero (normale)
+      // - se arriva dall'Overview → thumbs mode (comportamento precedente)
+      const _openThumbs = (window._vaoOpenInThumbsMode !== undefined)
+        ? window._vaoOpenInThumbsMode
+        : true;  // default: thumbs (comportamento precedente dall'Overview)
+      window._vaoOpenInThumbsMode = undefined;  // reset flag
+
       switchView('archive');
       requestAnimationFrame(() => {
         setTimeout(() => {
@@ -8799,9 +8807,9 @@ function buildArchive() {
             }
           });
           if (targetRow) {
-            // Imposta il flag: il click handler aprirà direttamente in thumbs mode
-            targetRow._openInThumbsMode = true;
-            // Passa l'indice della foto da mostrare (dalla Overview)
+            // Imposta il flag di modalità apertura
+            targetRow._openInThumbsMode = _openThumbs;
+            // Passa l'indice della foto da mostrare
             targetRow._openPhotoIdx = (photoIdx !== undefined && photoIdx !== null) ? photoIdx : 0;
             targetRow.click();
           }
@@ -10535,11 +10543,31 @@ loadFromCMS();
   if (vaoViewerPrev) vaoViewerPrev.addEventListener('click', e => { e.stopPropagation(); _svNav(-1); });
   if (vaoViewerNext) vaoViewerNext.addEventListener('click', e => { e.stopPropagation(); _svNav(1); });
 
-  // Click sul viewer: metà sinistra = indietro, metà destra = avanti
+  // Click sul viewer: click sulla FOTO naviga al progetto archivio; click sui lati naviga
   if (vaoViewer) {
     vaoViewer.addEventListener('click', e => {
       if (e.target.closest('.vao-viewer-nav')) return;
       if (!_svOpen) return;
+
+      // Se il click è sulla foto stessa → naviga al progetto archivio
+      if (e.target === vaoViewerImg) {
+        const img = svImages[svIndex];
+        if (img && img.project && window._navigateToProject) {
+          // Determina il tema attivo: dark mode = box nero, light mode = box bianco
+          const isDarkMode = overlay.classList.contains('theme-dark');
+          // Chiudi il VAO prima di navigare
+          window.closeViewAllOverlay();
+          // Naviga al progetto con il tema corretto
+          requestAnimationFrame(() => {
+            // Imposta il flag di modalità in base al tema VAO
+            window._vaoOpenInThumbsMode = !isDarkMode;  // light=thumbs(bianco), dark=box nero
+            window._navigateToProject(img.project, img.photoIdx !== undefined ? img.photoIdx : 0);
+          });
+        }
+        return;
+      }
+
+      // Click sui lati: sx = foto precedente, dx = foto successiva
       const dir = e.clientX >= window.innerWidth / 2 ? 1 : -1;
       _svNav(dir);
     });
