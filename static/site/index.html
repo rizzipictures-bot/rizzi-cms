@@ -1459,22 +1459,22 @@
       background: #8fa8b4;
       border: 1px solid #7a96a2;
       padding: 18px 20px 16px;
-      min-width: 220px;
-      max-width: 320px;
+      min-width: 280px;
+      max-width: 420px;
       box-shadow: 0 4px 24px rgba(0,0,0,0.35);
       pointer-events: auto;
       /* Animazione: scala da 0 a 1 dall'angolo in alto a destra + scivola a sx */
       transform-origin: top right;
       transform: scale(0) translateX(0px);
       opacity: 0;
-      transition: transform .22s cubic-bezier(.34,1.56,.64,1),
-                  opacity .18s ease;
+      transition: transform .12s cubic-bezier(.34,1.56,.64,1),
+                  opacity .10s ease;
     }
     .media-popup.open {
       transform: scale(1) translateX(0px);
       opacity: 1;
-      /* Dopo l'apertura, scivola lentamente di 12px a sinistra */
-      animation: media-popup-slide-left 1.8s ease-in-out 0.3s forwards;
+      /* Dopo l'apertura, scivola di 12px a sinistra */
+      animation: media-popup-slide-left 0.6s ease-in-out 0.1s forwards;
     }
     @keyframes media-popup-slide-left {
       from { transform: scale(1) translateX(0px); }
@@ -1513,7 +1513,7 @@
     .media-popup-thumb {
       margin-top: 12px;
       width: 100%;
-      max-height: 140px;
+      max-height: 175px;  /* +25% rispetto a 140px */
       object-fit: contain;
       display: block;
       background: #7a96a2;
@@ -7977,7 +7977,7 @@ function buildArchive() {
           // Posiziona popup: ancorato alla ball, in alto a destra
           document.body.appendChild(popup);
           const ballRect = ball.getBoundingClientRect();
-          const popW = 280;
+          const popW = 378;  /* +35% rispetto a 280px */
           popup.style.width = popW + 'px';
           // Allinea il bordo destro del popup con la ball
           let left = ballRect.right - popW;
