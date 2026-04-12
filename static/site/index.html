@@ -8839,7 +8839,16 @@ function buildArchive() {
   // Espone funzione pubblica per aprire direttamente una riga archivio senza simulare click
   // Usata da _navigateToProject per evitare race condition
   window._openArchiveRow = function(projectTitle, photoIdx, thumbsMode, fallbackProject) {
-    // Trova la riga corrispondente al titolo
+    // STEP 1: Resetta il campo di ricerca e ricrea le righe con tutti i progetti
+    // Questo evita la race condition con semanticSearch (debounce 600ms) che potrebbe
+    // aver ricreato le righe con un sottoinsieme filtrato, rendendo la riga non trovabile
+    const _searchEl = document.getElementById('archive-search');
+    if (_searchEl && _searchEl.value.trim()) {
+      _searchEl.value = '';
+      // Ricrea le righe con tutti i progetti (senza filtro)
+      renderRows(getSortedProjects(archiveProjects));
+    }
+    // STEP 2: Trova la riga corrispondente al titolo
     const rows = document.querySelectorAll('.archive-row:not(.header)');
     let targetRow = null;
     const _ptitle = (projectTitle || '').trim();
@@ -8851,17 +8860,22 @@ function buildArchive() {
       if (_cellText === _ptitle) targetRow = row;
     });
     if (!targetRow) return;
-    // Usa row._proj (salvato da renderRows) come progetto primario
-    // Se non disponibile, usa fallbackProject passato da _navigateToProject
-    if (fallbackProject && (!targetRow._proj || !(targetRow._proj.images || []).length)) {
+    // STEP 3: Imposta il progetto sulla riga
+    // Usa sempre fallbackProject se ha immagini (viene da VAO/Overview con dati freschi)
+    // altrimenti usa row._proj (salvato da renderRows)
+    if (fallbackProject && (fallbackProject.images || []).length > 0) {
       targetRow._proj = fallbackProject;
+    } else if (!targetRow._proj || !(targetRow._proj.images || []).length) {
+      // Fallback: cerca il progetto in PROJECTS per titolo
+      const _allProjects = PROJECTS.length > 0 ? PROJECTS : PROJECTS_STATIC;
+      const _found = _allProjects.find(proj => (proj.title || '').trim() === _ptitle);
+      if (_found) targetRow._proj = _found;
     }
-    // Imposta i flag sulla riga
+    // STEP 4: Imposta i flag sulla riga
     targetRow._openInThumbsMode = !!thumbsMode;
     targetRow._openPhotoIdx = (photoIdx !== undefined && photoIdx !== null) ? photoIdx : 0;
     targetRow._forceReopen = true;
-    // Usa _vaoNavigating=true SOLO durante il click per bloccare il guard interno
-    // poi lo resetta subito dopo (il click è sincrono)
+    // Usa _vaoNavigating=false per permettere il click (il guard è già resettato)
     window._vaoNavigating = false;
     targetRow.click();
   };
