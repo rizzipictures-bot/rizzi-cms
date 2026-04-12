@@ -674,6 +674,34 @@
     [data-theme="dark"] #ov-theme-toggle:hover { color: #888; }
     /* Visibile solo quando Overview è attiva */
     body.view-overview #ov-theme-toggle { display: inline-block; }
+
+    /* Toggle LIGHTMODE — visibile solo in Archive darkmode */
+    #archive-theme-toggle {
+      font-family: var(--font-nav);
+      font-size: 12px;
+      font-weight: 400;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      background: none !important;
+      border: none !important;
+      outline: none !important;
+      box-shadow: none !important;
+      -webkit-appearance: none;
+      appearance: none;
+      padding: 0;
+      margin: 0 auto 0 calc(12px - 28px);
+      cursor: none;
+      color: #fff;
+      transition: color .2s;
+      display: none;  /* nascosto di default */
+      border-radius: 0 !important;
+    }
+    #archive-theme-toggle:hover { color: rgba(255,255,255,0.5); }
+    /* Visibile solo in Archive darkmode */
+    body.view-archive[data-theme="dark"] #archive-theme-toggle,
+    [data-theme="dark"] body.view-archive #archive-theme-toggle { display: inline-block; }
+    /* Nascosto in lightmode anche se in Archive */
+    body.view-archive:not([data-theme="dark"]) #archive-theme-toggle { display: none; }
     /* Navbar nascosta durante la landing — appare solo dopo */
     body.landing-active header {
       visibility: hidden;
@@ -5290,6 +5318,8 @@
     <button id="gallery-back-btn" onclick="galleryGoBack()" style="display:none">&#8592;&nbsp;&nbsp;Back</button>
     <!-- Toggle darkmode/lightmode — visibile solo in Overview -->
     <button id="ov-theme-toggle" onclick="ovToggleTheme()">darkmode</button>
+    <!-- Toggle lightmode — visibile solo in Archive darkmode -->
+    <button id="archive-theme-toggle" onclick="archiveToggleTheme()">lightmode</button>
     <!-- 3 voci principali a destra -->
     <nav class="pill-nav" id="main-pill-nav">
       <button data-view="index">Index</button>
@@ -7121,8 +7151,10 @@ let currentView = 'home';
 // Nessun cursor-red all'avvio — Overview usa il cursore nero standard
 
 function switchView(name) {
-  // Se si lascia Overview, rimuovi il darkmode (salvo modalità dev ?dark=1)
-  if (name !== 'home' && !window._devDarkMode && document.documentElement.getAttribute('data-theme') === 'dark') {
+  // Se si lascia Overview verso sezioni non-dark, rimuovi il darkmode
+  // Archive è ora compatibile con il darkmode — non resettare
+  const _leavingToDark = (name === 'archive');
+  if (name !== 'home' && !_leavingToDark && !window._devDarkMode && document.documentElement.getAttribute('data-theme') === 'dark') {
     document.documentElement.setAttribute('data-theme', 'light');
     const _btn = document.getElementById('ov-theme-toggle');
     if (_btn) _btn.textContent = 'darkmode';
@@ -7156,6 +7188,8 @@ function switchView(name) {
   document.body.classList.toggle('gallery-active', name === 'gallery');
   // Classe body per mostrare il toggle darkmode solo in Overview
   document.body.classList.toggle('view-overview', name === 'home');
+  // Classe body per mostrare il toggle lightmode solo in Archive
+  document.body.classList.toggle('view-archive', name === 'archive');
 
   // ── Cursore rosso solo per Archive e Cities ──
   const RED_VIEWS = ['archive', 'cities-index'];
@@ -7543,6 +7577,14 @@ function ovToggleTheme() {
   const isDark = html.getAttribute('data-theme') === 'dark';
   html.setAttribute('data-theme', isDark ? 'light' : 'dark');
   if (btn) btn.textContent = isDark ? 'darkmode' : 'lightmode';
+}
+
+// Toggle LIGHTMODE in Archive darkmode — riporta Archive in lightmode
+function archiveToggleTheme() {
+  document.documentElement.setAttribute('data-theme', 'light');
+  // Aggiorna anche il testo del toggle Overview per coerenza
+  const ovBtn = document.getElementById('ov-theme-toggle');
+  if (ovBtn) ovBtn.textContent = 'darkmode';
 }
 
 function closeOverview() {
