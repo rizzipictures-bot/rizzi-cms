@@ -984,7 +984,8 @@
       transition: transform .15s, opacity .15s;
       position: relative;
     }
-    .btn-circle-close:hover { opacity: .75; transform: scale(1.08); }
+    .btn-circle-close:hover,
+    .btn-circle-close.btn-pre-hover { opacity: .75; transform: scale(1.08); }
     .btn-circle-close::before,
     .btn-circle-close::after {
       content: '';
@@ -5933,6 +5934,24 @@ document.addEventListener('mousemove', e => {
         if (_nearCipClose) {
           document.body.classList.add('cursor-on-dark');
         }
+        // Pre-hover: attiva l'animazione 20px prima dell'hover fisico
+        _closeBtns.forEach(btn => {
+          const r2 = btn.getBoundingClientRect();
+          if (r2.width === 0 || r2.height === 0) return;
+          const parentBox2 = btn.closest('#cip-photo-viewer, #cities-info-panel, #overview-overlay, #lightbox, #archive-viewall-overlay');
+          if (parentBox2) {
+            if (parentBox2.id === 'cip-photo-viewer' || parentBox2.id === 'cities-info-panel') {
+              if (!parentBox2.classList.contains('open')) { btn.classList.remove('btn-pre-hover'); return; }
+            }
+            const style2 = window.getComputedStyle(parentBox2);
+            if (style2.display === 'none' || style2.opacity === '0' || style2.visibility === 'hidden') { btn.classList.remove('btn-pre-hover'); return; }
+          }
+          const cx2 = r2.left + r2.width / 2;
+          const cy2 = r2.top  + r2.height / 2;
+          const dist2 = Math.sqrt((mx - cx2) ** 2 + (my - cy2) ** 2);
+          const radius2 = r2.width / 2;
+          btn.classList.toggle('btn-pre-hover', dist2 < radius2 + 20);
+        });
       }
 
       // ── CITIES: pallino bianco dentro i due box, rosso fuori ──
