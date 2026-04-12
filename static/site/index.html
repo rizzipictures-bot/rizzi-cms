@@ -906,9 +906,10 @@
     #overview-overlay-fab-close {
       display: none;  /* nascosto in lightmode */
       position: fixed;
-      top: calc(var(--nav-h) + 12px);
-      right: 18px;
-      z-index: 310;
+      top: calc(var(--nav-h) / 2);  /* centrato verticalmente nella navbar */
+      transform: translateY(-50%);
+      right: 28px;  /* allineato al padding destro della navbar */
+      z-index: 1001;  /* sopra la navbar */
     }
     [data-theme="dark"] #overview-overlay.open #overview-overlay-fab-close {
       display: flex;
@@ -927,17 +928,19 @@
     }
     [data-theme="dark"] #ov-nav-thumbs,
     [data-theme="dark"] #ov-nav-project {
-      color: #fff;
+      color: rgba(255,255,255,0.38);
       font-weight: 300;
     }
     [data-theme="dark"] .ov-nav-sep {
       color: #fff;
       opacity: 0.35;
     }
-    [data-theme="dark"] #ov-nav-bar #ov-nav-index:hover,
+    [data-theme="dark"] #ov-nav-bar #ov-nav-index:hover {
+      color: rgba(255,255,255,0.6);
+    }
     [data-theme="dark"] #ov-nav-bar #ov-nav-thumbs:hover,
     [data-theme="dark"] #ov-nav-bar #ov-nav-project:hover {
-      color: rgba(255,255,255,0.5);
+      color: #fff;
     }
     /* Barra Index | Thumbs sotto la foto overlay */
     #ov-nav-bar {
