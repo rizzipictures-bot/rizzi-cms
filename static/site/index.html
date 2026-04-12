@@ -2513,8 +2513,8 @@
       display: flex !important;
       align-items: center;
       justify-content: space-between;
-      height: var(--nav-h);
-      padding: 0 16px 0 12px;
+      min-height: var(--nav-h);
+      padding: 8px 16px 8px 12px;
       flex-shrink: 0;
       z-index: 2100;
       position: relative;
@@ -2522,11 +2522,12 @@
     .vao-title {
       display: block !important;
       font-family: var(--font-nav);
-      font-size: 11px;
-      font-weight: 400;
-      letter-spacing: 0.06em;
+      font-size: 44px;  /* +300%: 11px × 4 */
+      font-weight: 700;
+      letter-spacing: 0.04em;
       text-transform: uppercase;
       color: #000;
+      line-height: 1;
     }
     #archive-viewall-overlay.theme-dark .vao-title { color: #fff; }
 
