@@ -108,6 +108,12 @@
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     /* Cursore custom globale: nasconde SEMPRE il cursore di sistema incluse manina su link/button */
     *, *::before, *::after { cursor: none !important; }
+    html {
+      /* Layout fluido: scala proporzionalmente su tutti gli schermi non-mobile.
+         Riferimento: 1440px. Su 2560px = ×1.78, su 3840px = ×2.67.
+         La media query mobile (≤768px) sovrascrive con zoom:1. */
+      zoom: calc(100vw / 1440);
+    }
     html, body {
       height: 100%;
       font-family: var(--font);
@@ -4555,6 +4561,8 @@
   ══════════════════════════════════════════════════════════════ */
   @media (max-width: 768px) {
 
+    /* ── Zoom: disabilitato su mobile (usa layout mobile dedicato) ── */
+    html { zoom: 1; }
     /* ── Cursore custom: nascosto su mobile ── */
     #cursor, #cursor-label { display: none !important; }
     * { cursor: auto !important; }
