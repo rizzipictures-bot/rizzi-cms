@@ -1413,16 +1413,22 @@
       max-width: 320px;
       box-shadow: 0 4px 24px rgba(0,0,0,0.35);
       pointer-events: auto;
-      /* Animazione: scala da 0 a 1 dall'angolo in alto a destra */
+      /* Animazione: scala da 0 a 1 dall'angolo in alto a destra + scivola a sx */
       transform-origin: top right;
-      transform: scale(0);
+      transform: scale(0) translateX(0px);
       opacity: 0;
       transition: transform .22s cubic-bezier(.34,1.56,.64,1),
                   opacity .18s ease;
     }
     .media-popup.open {
-      transform: scale(1);
+      transform: scale(1) translateX(0px);
       opacity: 1;
+      /* Dopo l'apertura, scivola lentamente di 12px a sinistra */
+      animation: media-popup-slide-left 1.8s ease-in-out 0.3s forwards;
+    }
+    @keyframes media-popup-slide-left {
+      from { transform: scale(1) translateX(0px); }
+      to   { transform: scale(1) translateX(-12px); }
     }
     /* Ball allineata verticalmente alla label FOTOGRAFIA */
     .media-popup-ball {
