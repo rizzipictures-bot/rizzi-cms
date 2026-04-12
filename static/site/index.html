@@ -8379,7 +8379,7 @@ function buildArchive() {
                 const _backRect1 = _aeBackBtn1.getBoundingClientRect();
                 const _backMidY1 = _backRect1.top + _backRect1.height / 2;
                 if (_backMidY1 > 5 && _backMidY1 < window.innerHeight) {
-                  fabBar1.style.top   = Math.round(_backMidY1 - 10) + 'px';
+                  fabBar1.style.top   = Math.round(_backMidY1 - 5) + 'px';  /* -5 = abbassato di 5px rispetto al centro del Back */
                   fabBar1.style.right = '14px';
                 } else {
                   setTimeout(_alignFabToBack1, 200);
@@ -8618,7 +8618,7 @@ function buildArchive() {
               const _backRect2 = _aeBackBtn2.getBoundingClientRect();
               const _backMidY2 = _backRect2.top + _backRect2.height / 2;
               if (_backMidY2 > 5 && _backMidY2 < window.innerHeight) {
-                fabBar2.style.top   = Math.round(_backMidY2 - 10) + 'px';
+                fabBar2.style.top   = Math.round(_backMidY2 - 5) + 'px';  /* -5 = abbassato di 5px rispetto al centro del Back */
                 fabBar2.style.right = '14px';
               } else {
                 setTimeout(_alignFabToBack, 200);
