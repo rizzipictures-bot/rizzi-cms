@@ -6980,6 +6980,10 @@ function showOverview(img, idx, imageList, sourceThumb) {
     const thumbRect = sourceThumb.getBoundingClientRect();
     const thumbImg  = sourceThumb.querySelector('img');
 
+    // Nasconde subito la thumbnail sorgente (il clone la sostituisce visivamente)
+    sourceThumb.style.transition = 'none';
+    sourceThumb.style.opacity = '0';
+
     // Fade out tutte le altre thumbnail (stagger leggero)
     const allItems = document.querySelectorAll('#thumbs-grid .thumb-item:not(.thumb-blank)');
     allItems.forEach((el, i) => {
