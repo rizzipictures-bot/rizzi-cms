@@ -689,19 +689,25 @@
       -webkit-appearance: none;
       appearance: none;
       padding: 0;
-      margin: 0 auto 0 calc(12px - 28px);
       cursor: none;
       color: #fff;
       transition: color .2s;
       display: none;  /* nascosto di default */
       border-radius: 0 !important;
+      /* Posizionato sopra la A di Archive nella navbar */
+      position: fixed;
+      top: 0;
+      transform: translateX(-50%);
+      height: var(--nav-h);
+      line-height: var(--nav-h);
+      z-index: 9999;
     }
     #archive-theme-toggle:hover { color: rgba(255,255,255,0.5); }
     /* Visibile solo in Archive darkmode */
-    body.view-archive[data-theme="dark"] #archive-theme-toggle,
-    [data-theme="dark"] body.view-archive #archive-theme-toggle { display: inline-block; }
+    [data-theme="dark"] body.view-archive #archive-theme-toggle,
+    body.view-archive[data-theme="dark"] #archive-theme-toggle { display: block; }
     /* Nascosto in lightmode anche se in Archive */
-    body.view-archive:not([data-theme="dark"]) #archive-theme-toggle { display: none; }
+    body.view-archive:not([data-theme="dark"]) #archive-theme-toggle { display: none !important; }
     /* Navbar nascosta durante la landing — appare solo dopo */
     body.landing-active header {
       visibility: hidden;
@@ -7190,6 +7196,8 @@ function switchView(name) {
   document.body.classList.toggle('view-overview', name === 'home');
   // Classe body per mostrare il toggle lightmode solo in Archive
   document.body.classList.toggle('view-archive', name === 'archive');
+  // Posiziona il toggle LIGHTMODE sopra la A di Archive
+  if (name === 'archive') setTimeout(positionArchiveToggle, 50);
 
   // ── Cursore rosso solo per Archive e Cities ──
   const RED_VIEWS = ['archive', 'cities-index'];
@@ -7586,6 +7594,19 @@ function archiveToggleTheme() {
   const ovBtn = document.getElementById('ov-theme-toggle');
   if (ovBtn) ovBtn.textContent = 'darkmode';
 }
+
+// Posiziona il toggle LIGHTMODE sopra la A di Archive nella pill-nav
+function positionArchiveToggle() {
+  const btn = document.getElementById('archive-theme-toggle');
+  const archiveNavBtn = document.querySelector('nav.pill-nav button[data-view="archive"]');
+  if (!btn || !archiveNavBtn) return;
+  const rect = archiveNavBtn.getBoundingClientRect();
+  // Centro orizzontale del bottone Archive nella navbar
+  const centerX = rect.left + rect.width / 2;
+  btn.style.left = centerX + 'px';
+}
+
+window.addEventListener('resize', positionArchiveToggle);
 
 function closeOverview() {
   const ov   = document.getElementById('overview-overlay');
