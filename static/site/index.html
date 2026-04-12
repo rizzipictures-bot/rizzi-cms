@@ -8660,7 +8660,13 @@ function buildArchive() {
           if (_aeThumbsView) {
             _aeThumbsIdx = _heroIndex;
             const _aeImgEl = _aeThumbsView.querySelector('.ae-thumbs-img-wrap img, .ae-thumbs-hero img');
-            if (_aeImgEl && images[_aeThumbsIdx]) _aeImgEl.src = images[_aeThumbsIdx].url;
+            if (_aeImgEl && images[_aeThumbsIdx]) {
+              _aeImgEl.src = images[_aeThumbsIdx].url;
+              // Attiva l'animazione tenda: rimuovi revealing, forza reflow, poi aggiungi
+              _aeImgEl.classList.remove('revealing');
+              void _aeImgEl.offsetWidth;
+              setTimeout(() => _aeImgEl.classList.add('revealing'), 20);
+            }
             // Aggiorna la strip thumbs: rimuovi active e imposta sulla foto corrente
             const _aeItems = _aeThumbsView.querySelectorAll('.ae-thumbs-strip-item');
             _aeItems.forEach((el, i) => el.classList.toggle('active', i === _aeThumbsIdx));
@@ -8684,21 +8690,28 @@ function buildArchive() {
             fabBarEl2.style.transition = 'none';
           }
           // Allinea i FAB al bottone Back
-          const _alignFabToBack = () => {
+          // Usa un approccio più robusto: aspetta che il panel sia scrollato nel viewport
+          const _alignFabToBack = (attempt) => {
             const _aeBackBtn2 = _aeThumbsView.querySelector('.ae-thumbs-back');
             const fabBar2 = document.body.querySelector('.ae-fab-bar') || panel.querySelector('.ae-fab-bar');
             if (_aeBackBtn2 && fabBar2) {
               const _backRect2 = _aeBackBtn2.getBoundingClientRect();
               const _backMidY2 = _backRect2.top + _backRect2.height / 2;
               if (_backMidY2 > 5 && _backMidY2 < window.innerHeight) {
-                fabBar2.style.top   = Math.round(_backMidY2 - 5) + 'px';  /* -5 = abbassato di 5px rispetto al centro del Back */
+                fabBar2.style.top   = Math.round(_backMidY2 - 5) + 'px';
                 fabBar2.style.right = '41px';
+              } else if ((attempt || 0) < 15) {
+                // Riprova fino a 15 volte (3 secondi totali) con intervallo crescente
+                setTimeout(() => _alignFabToBack((attempt || 0) + 1), 200);
               } else {
-                setTimeout(_alignFabToBack, 200);
+                // Fallback: usa una posizione fissa ragionevole
+                fabBar2.style.top   = '160px';
+                fabBar2.style.right = '41px';
               }
             }
           };
-          setTimeout(_alignFabToBack, 60);
+          // Prima prova dopo lo scroll (600ms = durata animazione scroll)
+          setTimeout(() => _alignFabToBack(0), 700);
           const _tdBtn = toggle.querySelector('.ae-toggle-dark');
           const _tlBtn = toggle.querySelector('.ae-toggle-light');
           if (_tdBtn) _tdBtn.style.display = 'none';
