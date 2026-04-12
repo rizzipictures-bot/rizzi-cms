@@ -111,8 +111,30 @@
     html {
       /* Layout fluido: scala proporzionalmente su tutti gli schermi non-mobile.
          Riferimento: 1440px. Su 2560px = ×1.78, su 3840px = ×2.67.
-         La media query mobile (≤768px) sovrascrive con zoom:1. */
+         La media query mobile (≤768px) sovrascrive con zoom:1.
+         Nota: zoom è supportato da Chrome/Edge/Firefox 126+.
+         Safari usa il fallback transform su body (vedi sotto). */
       zoom: calc(100vw / 1440);
+    }
+    /* ── Font rendering ottimizzato per schermi HiDPI/Retina ── */
+    html, body {
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+      text-rendering: optimizeLegibility;
+    }
+    /* ── Fallback Safari: usa transform:scale su body per schermi non-mobile.
+       Safari non supporta zoom su html, ma supporta transform.
+       Nota: con transform su body, position:fixed è relativo al body trasformato,
+       quindi tutti gli overlay già funzionano correttamente. ── */
+    @supports not (zoom: 1) {
+      @media (min-width: 769px) {
+        body {
+          transform-origin: top left;
+          transform: scale(calc(100vw / 1440));
+          width: 1440px;
+          overflow-x: hidden;
+        }
+      }
     }
     html, body {
       height: 100%;
@@ -746,6 +768,8 @@
       object-position: center top;
       transition: opacity .18s var(--ease-out), transform .15s cubic-bezier(0.4,0,0.2,1);
       transform: scale(1);
+      will-change: transform;        /* GPU layer per hover scale */
+      backface-visibility: hidden;   /* evita flickering su schermi HiDPI */
     }
     #view-home .thumbs-grid .thumb-item:hover img {
       transform: scale(1.18);
@@ -801,6 +825,7 @@
       justify-content: center;
       pointer-events: none;
       visibility: hidden;
+      will-change: visibility, opacity;  /* GPU compositing */
     }
     #overview-overlay.open {
       pointer-events: all;  /* tutta l'area sotto la navbar è interattiva */
@@ -824,6 +849,8 @@
       /* Animazione jackdavison: si svolge dall'alto verso il basso */
       clip-path: inset(0 0 100% 0);
       transition: clip-path .7s cubic-bezier(.77, 0, .175, 1);
+      will-change: clip-path;        /* GPU compositing per l'animazione */
+      backface-visibility: hidden;   /* evita flickering su schermi HiDPI */
     }
     #overview-overlay.open #overview-overlay-img {
       clip-path: inset(0 0 0% 0);
@@ -1412,6 +1439,7 @@
       /* Animazione: si svolge dall'alto al basso */
       clip-path: inset(0 0 100% 0);
       transition: clip-path .65s cubic-bezier(.16, 1, 0.3, 1);
+      will-change: clip-path;      /* GPU compositing per l'animazione */
     }
     .archive-expanded.ink-open {
       clip-path: inset(0 0 0% 0);
@@ -2511,6 +2539,7 @@
       display: none;
       flex-direction: column;
       overflow: hidden;
+      will-change: opacity;  /* GPU compositing */
     }
     #archive-viewall-overlay.open { display: flex; }
 
@@ -4563,6 +4592,8 @@
 
     /* ── Zoom: disabilitato su mobile (usa layout mobile dedicato) ── */
     html { zoom: 1; }
+    /* Reset fallback Safari su mobile */
+    body { transform: none !important; width: 100% !important; }
     /* ── Cursore custom: nascosto su mobile ── */
     #cursor, #cursor-label { display: none !important; }
     * { cursor: auto !important; }
