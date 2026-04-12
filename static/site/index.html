@@ -8546,44 +8546,44 @@ function buildArchive() {
 
             kwCol.appendChild(kwPanel);
           }
+
+          // ── FAB BAR: + viola (zoom) e X nera (chiudi) in alto a destra del box ──
+          const fabBar = document.createElement('div');
+          fabBar.className = 'ae-fab-bar';
+  
+          // Bottone + viola: apre il lightbox (stessa funzione del ae-zoom-btn sulla foto)
+          const fabZoom = document.createElement('button');
+          fabZoom.className = 'ae-fab-btn ae-fab-zoom';
+          fabZoom.setAttribute('aria-label', 'Ingrandisci');
+          fabZoom.innerHTML = `<svg viewBox="0 0 20 20" width="14" height="14" fill="none" stroke-width="1.5" stroke-linecap="round"><line x1="10" y1="3" x2="10" y2="17"/><line x1="3" y1="10" x2="17" y2="10"/></svg>`;
+          fabZoom.addEventListener('click', e => {
+            e.stopPropagation();
+            // Usa l'indice della vista thumbs se attiva, altrimenti quello della hero normale
+            const _activeIdx = (_aeThumbsView && _aeThumbsView.style.display !== 'none') ? _aeThumbsIdx : _heroIndex;
+            const imgUrl = images[_activeIdx] ? images[_activeIdx].url : heroImg.src;
+            const imgList = images.map(im => im.url);
+            if (window._openAeZoom) {
+              window._openAeZoom(imgUrl, imgList, _activeIdx);
+            }
+          });
+  
+          // Bottone X nera: chiude il box (stessa logica del click sulla riga)
+          const fabClose = document.createElement('button');
+          fabClose.className = 'ae-fab-btn ae-fab-close';
+          fabClose.setAttribute('aria-label', 'Chiudi');
+          fabClose.innerHTML = `<svg viewBox="0 0 20 20" width="12" height="12" fill="none" stroke-width="1.5" stroke-linecap="round"><line x1="4" y1="4" x2="16" y2="16"/><line x1="16" y1="4" x2="4" y2="16"/></svg>`;
+          fabClose.addEventListener('click', e => {
+            e.stopPropagation();
+            // Simula click sulla riga per chiudere il box
+            row.click();
+          });
+  
+          fabBar.appendChild(fabZoom);
+          fabBar.appendChild(fabClose);
+          panel.appendChild(fabBar);
         }
 
         panel.appendChild(inner);
-
-        // ── FAB BAR: + viola (zoom) e X nera (chiudi) in alto a destra del box ──
-        const fabBar = document.createElement('div');
-        fabBar.className = 'ae-fab-bar';
-
-        // Bottone + viola: apre il lightbox (stessa funzione del ae-zoom-btn sulla foto)
-        const fabZoom = document.createElement('button');
-        fabZoom.className = 'ae-fab-btn ae-fab-zoom';
-        fabZoom.setAttribute('aria-label', 'Ingrandisci');
-        fabZoom.innerHTML = `<svg viewBox="0 0 20 20" width="14" height="14" fill="none" stroke-width="1.5" stroke-linecap="round"><line x1="10" y1="3" x2="10" y2="17"/><line x1="3" y1="10" x2="17" y2="10"/></svg>`;
-        fabZoom.addEventListener('click', e => {
-          e.stopPropagation();
-          // Il + esterno usa sempre il popup scuro con grana (_openZoom)
-          // Il + sulla foto usa il lightbox bianco (_openWhiteZoom) — i due sono separati
-          const imgUrl = images[_heroIndex] ? images[_heroIndex].url : heroImg.src;
-          const imgList = images.map(im => im.url);
-          if (window._openAeZoom) {
-            window._openAeZoom(imgUrl, imgList, _heroIndex);
-          }
-        });
-
-        // Bottone X nera: chiude il box (stessa logica del click sulla riga)
-        const fabClose = document.createElement('button');
-        fabClose.className = 'ae-fab-btn ae-fab-close';
-        fabClose.setAttribute('aria-label', 'Chiudi');
-        fabClose.innerHTML = `<svg viewBox="0 0 20 20" width="12" height="12" fill="none" stroke-width="1.5" stroke-linecap="round"><line x1="4" y1="4" x2="16" y2="16"/><line x1="16" y1="4" x2="4" y2="16"/></svg>`;
-        fabClose.addEventListener('click', e => {
-          e.stopPropagation();
-          // Simula click sulla riga per chiudere il box
-          row.click();
-        });
-
-        fabBar.appendChild(fabZoom);
-        fabBar.appendChild(fabClose);
-        panel.appendChild(fabBar);
 
         // Inserisci: prima il testo, poi il box nero
         row.insertAdjacentElement('afterend', panel);
