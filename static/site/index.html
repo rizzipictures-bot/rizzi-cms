@@ -7893,7 +7893,10 @@ function buildArchive() {
         inner.className = 'archive-expanded-inner';
 
         // Strip thumbs scorrevole
-        const images = p.images || [];
+        // Fallback: se p.images è vuoto ma la riga ha un progetto VAO con immagini, usalo
+        const _vaoProj = row._vaoProject;
+        row._vaoProject = undefined;  // reset
+        const images = (p.images && p.images.length > 0) ? p.images : (_vaoProj && _vaoProj.images && _vaoProj.images.length > 0 ? _vaoProj.images : []);
         if (images.length > 0) {
           // ── HERO: foto grande a sinistra ──
           const hero = document.createElement('div');
@@ -8874,6 +8877,8 @@ function buildArchive() {
           targetRow._openPhotoIdx = (photoIdx !== undefined && photoIdx !== null) ? photoIdx : 0;
           // Flag per forzare la riapertura anche se la riga è già la sorgente di activeExpanded
           targetRow._forceReopen = true;
+          // Salva il progetto VAO come fallback se p.images della riga è vuoto
+          targetRow._vaoProject = p;
           targetRow.click();
         }
       }, 500);
@@ -10555,6 +10560,10 @@ loadFromCMS();
     _svOpen  = true;
     _svRender();
     if (vaoViewer) vaoViewer.classList.remove('hidden');
+    // Nascondi frecce se c'è solo 1 foto, mostra da 2 in su
+    const _showNav = images.length > 1;
+    if (vaoViewerPrev) vaoViewerPrev.style.display = _showNav ? '' : 'none';
+    if (vaoViewerNext) vaoViewerNext.style.display = _showNav ? '' : 'none';
     vaoGrid.style.opacity      = '0';
     vaoGrid.style.pointerEvents = 'none';
     cursorDot.style.visibility = '';
