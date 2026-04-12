@@ -7196,8 +7196,18 @@ function switchView(name) {
   document.body.classList.toggle('view-overview', name === 'home');
   // Classe body per mostrare il toggle lightmode solo in Archive
   document.body.classList.toggle('view-archive', name === 'archive');
-  // Posiziona il toggle LIGHTMODE sopra la A di Archive
-  if (name === 'archive') setTimeout(positionArchiveToggle, 50);
+  // Mostra/nascondi il toggle LIGHTMODE in Archive darkmode tramite JS diretto
+  (function() {
+    const _archBtn = document.getElementById('archive-theme-toggle');
+    if (!_archBtn) return;
+    const _isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+    if (name === 'archive' && _isDark) {
+      _archBtn.style.display = 'block';
+      setTimeout(positionArchiveToggle, 50);
+    } else {
+      _archBtn.style.display = 'none';
+    }
+  })();
 
   // ── Cursore rosso solo per Archive e Cities ──
   const RED_VIEWS = ['archive', 'cities-index'];
@@ -7593,6 +7603,9 @@ function archiveToggleTheme() {
   // Aggiorna anche il testo del toggle Overview per coerenza
   const ovBtn = document.getElementById('ov-theme-toggle');
   if (ovBtn) ovBtn.textContent = 'darkmode';
+  // Nascondi il bottone LIGHTMODE
+  const archBtn = document.getElementById('archive-theme-toggle');
+  if (archBtn) archBtn.style.display = 'none';
 }
 
 // Posiziona il toggle LIGHTMODE sopra la A di Archive nella pill-nav
