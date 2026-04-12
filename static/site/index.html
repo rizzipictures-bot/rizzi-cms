@@ -6522,6 +6522,10 @@ if (_cipImages) {
         _cipPhotoViewerImg.classList.add('anim-drop');
       }
       requestAnimationFrame(() => _updateCitiesLines());
+      // Posiziona i FAB dopo che l'altezza del viewer è stata impostata correttamente
+      requestAnimationFrame(() => {
+        if (typeof window._positionCipFabBar === 'function') window._positionCipFabBar();
+      });
     };
     // Memorizza array e indice corrente per navigazione dx/sx
     const allImgs = Array.from(_cipImages.querySelectorAll('.cip-img'));
@@ -6543,8 +6547,7 @@ if (_cipImages) {
 
     // Posiziona le linee decorative dopo che il Box 2 è aperto
     requestAnimationFrame(() => _updateCitiesLines());
-    // Posiziona i FAB dopo l'apertura del viewer
-    setTimeout(() => { if (typeof window._positionCipFabBar === 'function') window._positionCipFabBar(); }, 420);
+    // Nota: _positionCipFabBar viene chiamato dentro _tmpImg2.onload (dopo che l'altezza è impostata)
   });
 }
 
@@ -7643,6 +7646,10 @@ function buildCitiesIndex() {
             _cipPhotoViewerImg.classList.add('anim-drop');
           }
           requestAnimationFrame(() => _updateCitiesLines());
+          // Posiziona i FAB dopo che l'altezza del viewer è stata impostata correttamente
+          requestAnimationFrame(() => {
+            if (typeof window._positionCipFabBar === 'function') window._positionCipFabBar();
+          });
         };
         _tmpImg.src = firstImg.src;
         _cipPhotoViewerImg.src = firstImg.src;
@@ -7652,8 +7659,7 @@ function buildCitiesIndex() {
         if (_cipanel) _cipanel.classList.add('viewer-open');
         _cipPhotoViewer.classList.add('open');
         requestAnimationFrame(() => _updateCitiesLines());
-        // Posiziona i FAB dopo l'apertura del viewer
-        setTimeout(() => { if (typeof window._positionCipFabBar === 'function') window._positionCipFabBar(); }, 420);
+        // Nota: _positionCipFabBar viene chiamato dentro _tmpImg.onload (dopo che l'altezza è impostata)
       }, 370); // attende .35s transizione box 1 + 20ms margine
     });
 
@@ -11304,41 +11310,22 @@ loadFromCMS();
   const _fabGrain   = document.getElementById('cip-fab-grain');
   if (!_cipViewer || !_cipImg || !_cipFabBar || !_fabWhite || !_fabGrain) return;
 
-  // Posiziona i due FAB a destra della foto, all'altezza del bordo inferiore dell'immagine.
-  // Usa getBoundingClientRect() dell'<img> (che include già lo zoom CSS del body)
-  // e calcola la posizione della foto renderizzata con object-fit:contain + object-position:left bottom.
+  // Posiziona i due FAB a destra del viewer, allineati al bordo inferiore del viewer.
+  // Viene chiamato dentro _tmpImg.onload, dopo che il viewer ha l'altezza corretta.
   function _positionCipFabBar() {
     if (!_cipViewer.classList.contains('open')) { _cipFabBar.style.display = 'none'; return; }
 
-    const iRect = _cipImg.getBoundingClientRect();
-    if (iRect.width === 0 || iRect.height === 0) return;
+    const vRect = _cipViewer.getBoundingClientRect();
+    if (vRect.width === 0 || vRect.height === 0) return;
 
-    const natW = _cipImg.naturalWidth;
-    const natH = _cipImg.naturalHeight;
+    const MARGIN = 10;  // spazio tra viewer e FAB
+    const FAB_H  = 22;  // altezza del singolo FAB
+    const GAP    = 10;  // distanza dal bordo inferiore del viewer
 
-    let photoRight, photoBottom;
-
-    if (natW && natH) {
-      // Immagine caricata: calcola le dimensioni renderizzate con object-fit:contain
-      const scale  = Math.min(iRect.width / natW, iRect.height / natH);
-      const rendW  = natW * scale;
-      // object-position: left bottom
-      photoRight  = iRect.left + rendW;   // bordo destro della foto renderizzata
-      photoBottom = iRect.bottom;         // bordo inferiore (allineata al fondo)
-    } else {
-      // Immagine non ancora caricata (es. 404 o lenta):
-      // usa il bordo destro dell'elemento <img> come fallback
-      photoRight  = iRect.right;
-      photoBottom = iRect.bottom;
-    }
-
-    const MARGIN  = 10;  // spazio tra foto e FAB
-    const FAB_H   = 22;  // altezza del singolo FAB
-
-    // I FAB stanno a destra del bordo destro della foto,
-    // con il loro bordo inferiore allineato al bordo inferiore della foto
-    const fabLeft = photoRight + MARGIN;
-    const fabTop  = photoBottom - FAB_H;
+    // I FAB stanno a destra del bordo destro del viewer,
+    // con il loro bordo inferiore a GAP px dal bordo inferiore del viewer
+    const fabLeft = vRect.right + MARGIN;
+    const fabTop  = vRect.bottom - FAB_H - GAP;
 
     _cipFabBar.style.left    = Math.round(fabLeft) + 'px';
     _cipFabBar.style.top     = Math.round(fabTop)  + 'px';
