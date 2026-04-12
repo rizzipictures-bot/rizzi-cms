@@ -5730,7 +5730,8 @@ function _detectDarkBg(el) {
   _isDarkBgCache = isDarkBg;
   return isDarkBg;
 }
-
+// Variabile globale per il box espanso dell'archivio (usata dal mousemove listener)
+let activeExpanded = null;
 document.addEventListener('mousemove', e => {
   mx = e.clientX; my = e.clientY;
 
@@ -7660,8 +7661,7 @@ function buildArchive() {
     return (p.category_id || p.section) === 'archive' || (!p.category_id && !p.section);
   });
 
-  let activeExpanded = null; // tiene traccia della riga espansa
-
+   // activeExpanded è dichiarata globalmente (prima del mousemove listener)
   function renderRows(projects) {
     list.innerHTML = '';
     activeExpanded = null;
@@ -7902,12 +7902,10 @@ function buildArchive() {
         const _vaoProj = row._vaoProject;
         row._vaoProject = undefined;  // reset
         const _rowProj = row._proj;   // progetto aggiornato da _openArchiveRow (può avere immagini anche se p non le ha)
-        console.log('[click handler] p.title:', p.title, '| p.images:', (p.images||[]).length, '| row._proj.images:', (_rowProj&&_rowProj.images?_rowProj.images.length:0));
         const _srcProj = (_rowProj && (_rowProj.images || []).length > 0) ? _rowProj
                        : (p.images && p.images.length > 0) ? p
                        : (_vaoProj && (_vaoProj.images || []).length > 0) ? _vaoProj
                        : null;
-        console.log('[click handler] _srcProj:', _srcProj ? _srcProj.title : 'null', '| images:', _srcProj ? (_srcProj.images||[]).length : 0);
         const images = _srcProj ? _srcProj.images : [];
         if (images.length > 0) {
           // ── HERO: foto grande a sinistra ──
@@ -8583,7 +8581,7 @@ function buildArchive() {
           fabBar.appendChild(fabZoom);
           fabBar.appendChild(fabClose);
           panel.appendChild(fabBar);
-        }
+
 
         panel.appendChild(inner);
 
@@ -8713,6 +8711,7 @@ function buildArchive() {
             requestAnimationFrame(() => panel.classList.add('ink-open'));
           });
         }
+        }
 
         // Scroll alla riga: usa il container view-archive per non uscire dal viewport
         setTimeout(() => {
@@ -8841,7 +8840,6 @@ function buildArchive() {
   // Espone funzione pubblica per aprire direttamente una riga archivio senza simulare click
   // Usata da _navigateToProject per evitare race condition
   window._openArchiveRow = function(projectTitle, photoIdx, thumbsMode, fallbackProject) {
-    console.log('[_openArchiveRow] chiamata con:', projectTitle, 'fallbackProject.images:', fallbackProject ? (fallbackProject.images||[]).length : 'N/A');
     // STEP 1: Resetta il campo di ricerca e ricrea le righe con tutti i progetti
     // Questo evita la race condition con semanticSearch (debounce 600ms) che potrebbe
     // aver ricreato le righe con un sottoinsieme filtrato, rendendo la riga non trovabile
@@ -8862,7 +8860,6 @@ function buildArchive() {
       const _cellText = (_pill ? _pill.textContent : titleCell.textContent).trim();
       if (_cellText === _ptitle) targetRow = row;
     });
-    console.log('[_openArchiveRow] targetRow trovata:', !!targetRow, '| row._proj.images:', targetRow ? (targetRow._proj && targetRow._proj.images ? targetRow._proj.images.length : 0) : 'N/A');
     if (!targetRow) return;
     // STEP 3: Imposta il progetto sulla riga
     // Usa sempre fallbackProject se ha immagini (viene da VAO/Overview con dati freschi)
@@ -8875,7 +8872,6 @@ function buildArchive() {
       const _found = _allProjects.find(proj => (proj.title || '').trim() === _ptitle);
       if (_found) targetRow._proj = _found;
     }
-    console.log('[_openArchiveRow] dopo STEP3 row._proj.images:', (targetRow._proj && targetRow._proj.images ? targetRow._proj.images.length : 0));
     // STEP 4: Imposta i flag sulla riga
     targetRow._openInThumbsMode = !!thumbsMode;
     targetRow._openPhotoIdx = (photoIdx !== undefined && photoIdx !== null) ? photoIdx : 0;
