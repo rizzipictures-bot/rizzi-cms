@@ -4222,53 +4222,39 @@
       color: #fff;
     }
     #sculptures-section-content p:first-of-type { text-indent: 0; }
-    #sculptures-section-content .sc-section-images {
-      display: flex;
-      flex-wrap: wrap;
-      margin-top: 30px;
-    }
-    #sculptures-section-content .sc-section-images > div {
-      width: 25%;
-      padding: 5px;
-    }
-    #sculptures-section-content .sc-section-images img {
-      width: 100%;
-      cursor: pointer;
-      display: block;
-      margin-bottom: 5px;
-    }
-    #sculptures-section-content .sc-section-images .sc-caption p {
-      font-family: 'Times New Roman', Times, serif;
-      font-size: 1.3rem;
-      color: #fff;
-      margin: 0;
-    }
-
-    /* ── Viewer Sculptures — 3 stati: griglia / pannello-basso / fullscreen ── */
-
-    /* Griglia thumbnail (sfondo nero, colonne masonry-like) */
+    /* ── Viewer Sculptures — griglia images-book ── */
     #sculptures-section-content .sc-section-images {
       display: grid;
       grid-template-columns: repeat(4, 1fr);
-      gap: 0;
+      gap: 6px;
       margin-top: 0;
+      padding: 6px;
       background: #000;
     }
     #sculptures-section-content .sc-section-images > div {
-      width: 100%;
-      padding: 0;
       cursor: pointer;
       position: relative;
     }
-    #sculptures-section-content .sc-section-images > div:hover .sc-caption { opacity: 1; }
-    #sculptures-section-content .sc-section-images img {
+    /* Contenitore con aspect ratio verticale 3:4 */
+    #sculptures-section-content .sc-section-images > div .sc-img-wrap {
       width: 100%;
-      display: block;
-      margin-bottom: 0;
-      aspect-ratio: auto;
+      padding-top: 133.33%;
+      position: relative;
+      overflow: hidden;
     }
+    #sculptures-section-content .sc-section-images > div .sc-img-wrap img {
+      position: absolute;
+      top: 0; left: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      object-position: center;
+      display: block;
+      transition: opacity .3s;
+    }
+    #sculptures-section-content .sc-section-images > div:hover .sc-img-wrap img { opacity: 0.85; }
     #sculptures-section-content .sc-section-images .sc-caption {
-      padding: 8px 10px 12px;
+      padding: 6px 4px 10px;
       background: #000;
     }
     #sculptures-section-content .sc-section-images .sc-caption p {
@@ -4281,18 +4267,6 @@
     #sculptures-section-content .sc-section-images .sc-caption p.sc-desc {
       color: #aaa;
       font-style: italic;
-    }
-    #sculptures-section-content h2 {
-      font-family: 'Times New Roman', Times, serif;
-      font-size: clamp(2.5rem, 6vw, 5rem);
-      font-weight: 700;
-      color: #fff;
-      text-align: center;
-      letter-spacing: .04em;
-      margin: 0 0 0 0;
-      padding: 20px 0 16px;
-      background: #000;
-      text-transform: uppercase;
     }
 
     /* Pannello viewer in basso — STATO 2 */
@@ -10842,8 +10816,8 @@ function scBuildSectionContent(section) {
     html += '<div class="sc-section-images">';
     sectionImages.forEach((img, idx) => {
       html += `
-        <div>
-          <img src="${img.url}" alt="${img.title}" loading="lazy" onclick="scOpenChild(${idx})">
+        <div onclick="scOpenChild(${idx})">
+          <div class="sc-img-wrap"><img src="${img.url}" alt="${img.title}" loading="lazy"></div>
           <div class="sc-caption"><p>${img.title}</p>${img.desc ? `<p class="sc-desc">${img.desc}</p>` : ''}</div>
         </div>
       `;
