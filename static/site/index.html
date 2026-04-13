@@ -4040,37 +4040,35 @@
       pointer-events: all !important;
     }
 
-    /* ── Nav Sculptures (stile Corboz) ── */
-    /* ── Drawer verticale a scomparsa sul bordo sinistro ── */
+    /* ── Nav Sculptures — menu fisso in alto a sinistra con animazione reveal ── */
     #sculptures-nav {
       position: fixed;
       top: 0;
-      left: -130px;          /* nascosto fuori schermo */
-      width: 140px;
-      height: 100vh;
+      left: 0;
+      width: auto;
+      height: auto;
       z-index: 1200;
       display: flex;
       flex-direction: column;
       align-items: flex-start;
       justify-content: flex-start;
-      padding: 40px 0 20px 0;
+      /* padding-top allineato alla S di Sculptures: titolo h1 ha padding-top:18px,
+         font-size:72px, line-height:0.85 → top della S ≈ 18px dal top della pagina.
+         Usiamo lo stesso valore per allineare la prima voce del menu */
+      padding: 18px 0 0 0;
       user-select: none;
       pointer-events: auto;
-      background: #000;
-      transition: left 0.25s ease;
-      box-shadow: 2px 0 8px rgba(0,0,0,0.5);
+      background: transparent;
     }
-    /* Il tab di apertura è creato via JS (#sculptures-nav-tab) */
-    #sculptures-nav.open {
-      left: 0;
-    }
-    #sculptures-nav [data-sc-section] {
+    /* Ogni voce è nascosta inizialmente con clip-path */
+    #sculptures-nav [data-sc-section],
+    #sculptures-back {
       margin: 0;
-      padding: 5px 10px 5px 14px;
+      padding: 2px 8px 2px 0;
       cursor: pointer;
       font-family: 'Times New Roman', Times, serif;
       font-size: 10px;
-      line-height: 1.4;
+      line-height: 1.5;
       color: #fff;
       text-decoration: none;
       letter-spacing: 0.4px;
@@ -4080,30 +4078,28 @@
       border: none;
       outline: none;
       display: block;
-      width: 100%;
+      /* Stato iniziale: testo nascosto (clip da sinistra) */
+      clip-path: inset(0 100% 0 0);
+      opacity: 0;
+    }
+    /* Stato animato: testo visibile */
+    #sculptures-nav [data-sc-section].sc-revealed,
+    #sculptures-back.sc-revealed {
+      clip-path: inset(0 0% 0 0);
+      opacity: 1;
+      transition: clip-path 0.35s cubic-bezier(0.4,0,0.2,1),
+                  opacity 0.2s ease;
     }
     #sculptures-nav [data-sc-section]:hover,
     #sculptures-nav [data-sc-section].active {
       color: #4c00fc;
     }
     #sculptures-back {
-      margin-top: auto;
-      margin-left: 0;
-      margin-right: 0;
-      padding: 5px 10px 5px 14px;
-      cursor: pointer;
-      font-family: 'Times New Roman', Times, serif;
-      font-size: 10px;
-      line-height: 1.4;
-      color: #fff;
-      text-decoration: none;
-      letter-spacing: 0.4px;
-      white-space: nowrap;
-      background: none;
-      border: none;
-      outline: none;
+      margin-top: 6px;
     }
     #sculptures-back:hover { color: #4c00fc; }
+    /* Pulsante Back separato in alto a destra */
+    #sculptures-back-btn:hover { color: #4c00fc; }
 
     /* ── Titolo grande (stile Corboz) ── */
     #sculptures-page-title {
@@ -5906,7 +5902,7 @@
     <!-- ── VIEW: SCULPTURES PROJECT (sito-nel-sito stile Corboz) ── -->
     <div id="view-sculptures" class="view">
 
-      <!-- Nav orizzontale in alto a sinistra -->
+      <!-- Menu verticale animato in alto a sinistra -->
       <nav id="sculptures-nav">
         <span data-sc-section="overview" class="active">Overview</span>
         <span data-sc-section="images-book">Images Book Vol. I</span>
@@ -5918,9 +5914,16 @@
         <span data-sc-section="recordings">Recordings</span>
         <span data-sc-section="experience">Experience</span>
         <span data-sc-section="information">Information</span>
-        <!-- Back a destra -->
         <span id="sculptures-back" onclick="scGoBack()">&#8592; Back</span>
       </nav>
+
+      <!-- Pulsante Back fisso in alto a destra -->
+      <span id="sculptures-back-btn" onclick="scGoBack()" style="
+        position:fixed; top:18px; right:18px; z-index:1300;
+        font-family:'Times New Roman',Times,serif; font-size:10px;
+        color:#fff; cursor:pointer; letter-spacing:0.4px;
+        opacity:0; transition:opacity 0.3s ease;
+      ">&#8592; Back</span>
 
       <!-- Titolo grande (visibile solo in Overview, stile Corboz) -->
       <div id="sculptures-page-title">
@@ -7656,11 +7659,8 @@ function switchView(name) {
     if (sectionContent) sectionContent.classList.remove('active');
     if (pageTitle) pageTitle.style.display = 'block';
     scBuildGrid();
-    // Mostra il tab del drawer
-    setTimeout(() => {
-      const scTab = document.getElementById('sculptures-nav-tab');
-      if (scTab) scTab.style.display = 'flex';
-    }, 50);
+    // Avvia l'animazione reveal del menu
+    scRevealMenu();
   } else {
     // Chiudi popup lightbox Sculptures se aperto
     const scChild = document.getElementById('sculptures-child');
@@ -7668,11 +7668,11 @@ function switchView(name) {
     // Chiudi info panel Sculptures se aperto
     const scInfo = document.getElementById('sculptures-info');
     if (scInfo) { scInfo.classList.remove('active'); scInfo.classList.remove('open'); }
-    // Chiudi il drawer e resetta il tab
-    const scNav = document.getElementById('sculptures-nav');
-    if (scNav) scNav.classList.remove('open');
-    const scTab = document.getElementById('sculptures-nav-tab');
-    if (scTab) { scTab.style.left = '10px'; scTab.style.display = 'none'; }
+    // Resetta le voci del menu (nascondile di nuovo per la prossima apertura)
+    document.querySelectorAll('#sculptures-nav [data-sc-section], #sculptures-back')
+      .forEach(el => el.classList.remove('sc-revealed'));
+    // Nasconde il pulsante Back
+    scHideBackBtn();
   }
 }
 
@@ -10675,61 +10675,40 @@ function buildSculpturesIndex() {
   document.querySelectorAll('#sculptures-nav [data-sc-section]').forEach(el => {
     el.addEventListener('click', () => {
       scSwitchSection(el.dataset.scSection);
-      // Chiude il drawer dopo la selezione
-      const nav = document.getElementById('sculptures-nav');
-      if (nav) nav.classList.remove('open');
     });
   });
 
-  // Toggle drawer: click sulla linguetta (::before non è cliccabile direttamente,
-  // usiamo un elemento reale sovrapposto)
-  const nav = document.getElementById('sculptures-nav');
-  if (nav) {
-    // Crea il tab di apertura se non esiste
-    if (!document.getElementById('sculptures-nav-tab')) {
-      const tab = document.createElement('div');
-      tab.id = 'sculptures-nav-tab';
-      tab.innerHTML = '&#9776;'; // ≡
-      tab.style.cssText = [
-        'position:fixed',
-        'top:50%',
-        'left:10px',
-        'transform:translateY(-50%)',
-        'width:18px',
-        'height:40px',
-        'background:#000',
-        'color:#fff',
-        'font-size:12px',
-        'display:flex',
-        'align-items:center',
-        'justify-content:center',
-        'cursor:pointer',
-        'border-radius:3px',
-        'z-index:1300',
-        'user-select:none',
-        'transition:left 0.25s ease'
-      ].join(';');
-      tab.addEventListener('click', (e) => {
-        e.stopPropagation();
-        const isOpen = nav.classList.toggle('open');
-        // Sposta il tab quando il drawer è aperto
-        tab.style.left = isOpen ? '150px' : '10px';
-      });
-      document.getElementById('view-sculptures').appendChild(tab);
-    }
-
-    // Chiude il drawer cliccando fuori
-    document.getElementById('view-sculptures').addEventListener('click', (e) => {
-      if (!nav.contains(e.target) && e.target.id !== 'sculptures-nav-tab') {
-        nav.classList.remove('open');
-        const t = document.getElementById('sculptures-nav-tab');
-        if (t) t.style.left = '10px';
-      }
-    }, true);
-  }
-
   // Costruisce la griglia Overview
   scBuildGrid();
+}
+
+// Anima le voci del menu Sculptures una dopo l'altra (reveal da sx verso dx)
+function scRevealMenu() {
+  const items = document.querySelectorAll(
+    '#sculptures-nav [data-sc-section], #sculptures-back'
+  );
+  // Reset: rimuovi la classe revealed da tutti
+  items.forEach(el => el.classList.remove('sc-revealed'));
+
+  // Stagger: ogni voce appare con un ritardo crescente
+  items.forEach((el, i) => {
+    setTimeout(() => {
+      el.classList.add('sc-revealed');
+    }, 120 + i * 80); // prima voce dopo 120ms, poi +80ms per ciascuna
+  });
+
+  // Mostra il pulsante Back in alto a destra con fade-in
+  const backBtn = document.getElementById('sculptures-back-btn');
+  if (backBtn) {
+    backBtn.style.opacity = '0';
+    setTimeout(() => { backBtn.style.opacity = '1'; }, 400);
+  }
+}
+
+// Nasconde il pulsante Back quando si esce da Sculptures
+function scHideBackBtn() {
+  const backBtn = document.getElementById('sculptures-back-btn');
+  if (backBtn) backBtn.style.opacity = '0';
 }
 
 // ════════════════════════════════════════════════════════════════
