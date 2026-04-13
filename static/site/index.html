@@ -10749,13 +10749,33 @@ function scBuildGrid() {
     return;
   }
 
+  // Mappatura posizione (0-based) → sezione del menu
+  const sectionMap = [
+    'images-book',  // thumb 1
+    'studies',      // thumb 2
+    'diary',        // thumb 3
+    'life',         // thumb 4
+    'video',        // thumb 5
+    'synopsis',     // thumb 6
+    'recordings',   // thumb 7
+    'experience'    // thumb 8
+  ];
+
   scCurrentImages.forEach((img, idx) => {
     const cell = document.createElement('div');
+    cell.style.cursor = 'pointer';
     const imgEl = document.createElement('img');
     imgEl.src = img.url;
     imgEl.alt = img.title;
     imgEl.loading = 'lazy';
-    imgEl.addEventListener('click', () => scOpenChild(idx));
+    const targetSection = sectionMap[idx];
+    if (targetSection) {
+      // Naviga alla sezione corrispondente
+      cell.addEventListener('click', () => scSwitchSection(targetSection));
+    } else {
+      // Oltre le 8 thumb: apre il lightbox
+      cell.addEventListener('click', () => scOpenChild(idx));
+    }
     const caption = document.createElement('div');
     caption.className = 'sc-caption';
     caption.innerHTML = `<p>${img.title}</p>${img.desc ? `<p class="sc-desc">${img.desc}</p>` : ''}`;
