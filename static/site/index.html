@@ -4014,31 +4014,358 @@
     /* ════════════════════════════════════════════════════════════════
        SCULPTURES PROJECT
     ════════════════════════════════════════════════════════════════ */
+    /* ════════════════════════════════════════════════════════════════
+       SCULPTURES — Sito-nel-sito stile Corboz
+    ════════════════════════════════════════════════════════════════ */
     #view-sculptures {
-      padding: var(--nav-h) 0 0 0;
+      position: fixed !important;
+      top: 0 !important; left: 0 !important; right: 0 !important; bottom: 0 !important;
+      background-color: #000;
+      overflow: hidden;
+      z-index: 100;
+      font-family: 'Times New Roman', Times, serif;
+      font-size: 10px;
+      color: #fff;
+      /* Sovrascrive il sistema .view: usa transform per nascondere invece di opacity */
+      transform: translateY(0) !important;
+    }
+    #view-sculptures:not(.active) {
+      pointer-events: none !important;
+      opacity: 0 !important;
+    }
+    #view-sculptures.active {
+      opacity: 1 !important;
+      pointer-events: all !important;
+    }
+
+    /* ── Nav Sculptures (stile Corboz) ── */
+    #sculptures-nav {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      z-index: 200;
+      display: flex;
+      flex-direction: row;
+      align-items: flex-end;
+      padding-bottom: 5px;
+      user-select: none;
+      pointer-events: auto;
+    }
+    #sculptures-nav p,
+    #sculptures-nav a,
+    #sculptures-nav span {
+      margin-left: 10px;
+      padding-top: 5px;
+      cursor: pointer;
+      font-family: 'Times New Roman', Times, serif;
+      font-size: 10px;
+      color: #fff;
+      text-decoration: none;
+      letter-spacing: 0.4px;
+      font-weight: 400;
+      white-space: nowrap;
+    }
+    #sculptures-nav p:hover,
+    #sculptures-nav a:hover,
+    #sculptures-nav span:hover,
+    #sculptures-nav p.active,
+    #sculptures-nav a.active,
+    #sculptures-nav span.active {
+      color: #4c00fc;
+    }
+    #sculptures-back {
+      margin-left: auto !important;
+      margin-right: 10px;
+      padding-top: 5px;
+      cursor: pointer;
+      font-family: 'Times New Roman', Times, serif;
+      font-size: 10px;
+      color: #fff;
+      text-decoration: none;
+      letter-spacing: 0.4px;
+      white-space: nowrap;
+    }
+    #sculptures-back:hover { color: #4c00fc; }
+
+    /* ── Titolo grande (stile Corboz) ── */
+    #sculptures-page-title {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      pointer-events: none;
+      z-index: 5;
+    }
+    #sculptures-page-title h1 {
+      font-family: 'Times New Roman', Times, serif;
+      font-size: 110px;
+      letter-spacing: -3px;
+      line-height: 75%;
+      margin-top: -5px;
+      color: #fff;
+      text-transform: uppercase;
+      padding-left: 5px;
+    }
+
+    /* ── Wrapper scrollabile (stile Corboz #images) ── */
+    #sculptures-images-wrapper {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background-color: #000;
+      padding: 105px 5px 5px;
+      min-height: 100vh;
       overflow-y: auto;
     }
-    #sculptures-list-view {
-      display: none;
-      padding: 36px 0 60px 0;
+    #sculptures-images-wrapper::-webkit-scrollbar { display: none; }
+
+    /* ── Grid immagini (stile Corboz) ── */
+    #sculptures-grid {
+      display: flex;
+      flex-wrap: wrap;
+      width: 100%;
+      animation: scFadeIn 1s;
     }
-    #sculptures-list-view.active { display: block; }
-    /* Cursor preview Sculptures */
-    #sculptures-cursor-preview {
-      position: fixed;
-      pointer-events: none;
-      z-index: 9000;
-      opacity: 0;
-      transition: opacity .15s;
-      transform: translate(-9999px, -9999px);
+    @keyframes scFadeIn { from { opacity: 0; } to { opacity: 1; } }
+    #sculptures-grid > div {
+      width: 25%;
+      padding: 5px;
+      position: relative;
     }
-    #sculptures-cursor-preview.visible { opacity: 1; }
-    #sculptures-cursor-preview img {
-      width: 120px;
-      height: 80px;
-      object-fit: cover;
+    #sculptures-grid img {
+      width: 100%;
+      cursor: pointer;
+      transition: all .4s cubic-bezier(.77,0,.175,1) 0ms;
+      margin-bottom: 5px;
       display: block;
+    }
+    #sculptures-grid img:hover { opacity: 0.85; }
+    #sculptures-grid .sc-caption {
+      color: #fff;
+      width: 100%;
+      padding: 0;
+      margin: 0;
+    }
+    #sculptures-grid .sc-caption p {
+      font-family: 'Times New Roman', Times, serif;
+      font-size: 1.3rem;
+      padding: 0;
+      margin: 0;
+      line-height: 1.4;
+    }
+    #sculptures-grid .sc-caption p.sc-desc {
+      color: #aaa;
+      font-style: italic;
+    }
+
+    /* ── Sezioni non-Overview (testo/contenuto) ── */
+    #sculptures-section-content {
+      position: absolute;
+      top: 25px;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      overflow-y: auto;
+      padding: 80px 20px 60px;
+      color: #fff;
+      font-family: 'Times New Roman', Times, serif;
+      display: none;
+    }
+    #sculptures-section-content.active { display: block; }
+    #sculptures-section-content::-webkit-scrollbar { display: none; }
+    #sculptures-section-content h2 {
+      font-family: 'Times New Roman', Times, serif;
+      font-size: 4rem;
+      letter-spacing: -0.5px;
+      line-height: 95%;
+      margin-bottom: 20px;
+      color: #fff;
+    }
+    #sculptures-section-content p {
+      font-family: 'Times New Roman', Times, serif;
+      font-size: 1.9rem;
+      line-height: 1.6;
+      text-indent: 30px;
+      margin-bottom: 10px;
+      color: #fff;
+    }
+    #sculptures-section-content p:first-of-type { text-indent: 0; }
+    #sculptures-section-content .sc-section-images {
+      display: flex;
+      flex-wrap: wrap;
+      margin-top: 30px;
+    }
+    #sculptures-section-content .sc-section-images > div {
+      width: 25%;
+      padding: 5px;
+    }
+    #sculptures-section-content .sc-section-images img {
+      width: 100%;
+      cursor: pointer;
+      display: block;
+      margin-bottom: 5px;
+    }
+    #sculptures-section-content .sc-section-images .sc-caption p {
+      font-family: 'Times New Roman', Times, serif;
+      font-size: 1.3rem;
+      color: #fff;
+      margin: 0;
+    }
+
+    /* ── Popup lightbox Sculptures (stile Corboz) ── */
+    #sculptures-child {
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background-color: #222;
+      z-index: 300;
+      display: none;
+      overflow: hidden;
+    }
+    #sculptures-child.active { display: block; }
+    #sculptures-child-close {
+      position: absolute;
+      right: 15px;
+      top: 15px;
+      background-color: #000;
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 6;
+      cursor: pointer;
+      transition: all .7s cubic-bezier(.77,0,.175,1) 0ms;
+      border: none;
+      outline: none;
+    }
+    #sculptures-child-close:hover { transform: rotate(180deg); }
+    #sculptures-child-close svg { width: 60%; }
+    #sculptures-carousel {
+      width: 100%;
+      height: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+    }
+    #sculptures-carousel-img {
+      max-width: 85vw;
+      max-height: 80vh;
+      object-fit: contain;
+      display: block;
+      transition: all .4s cubic-bezier(.77,0,.175,1);
+    }
+    #sculptures-carousel-caption {
+      position: absolute;
+      bottom: 20px;
+      left: 0;
+      width: 100%;
+      text-align: center;
+      color: #fff;
+      font-family: 'Times New Roman', Times, serif;
+      z-index: 10;
       pointer-events: none;
+    }
+    #sculptures-carousel-caption p {
+      font-family: 'Times New Roman', Times, serif;
+      font-size: 1.3rem;
+      margin: 0;
+      padding: 0;
+    }
+    #sculptures-carousel-caption p.sc-desc { color: #aaa; font-style: italic; }
+    #sculptures-prev,
+    #sculptures-next {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      background: none;
+      border: none;
+      color: #fff;
+      font-family: 'Times New Roman', Times, serif;
+      font-size: 1.5rem;
+      cursor: pointer;
+      z-index: 10;
+      padding: 10px 20px;
+      opacity: 0.7;
+      transition: opacity .2s;
+      outline: none;
+    }
+    #sculptures-prev:hover, #sculptures-next:hover { opacity: 1; }
+    #sculptures-prev { left: 10px; }
+    #sculptures-next { right: 10px; }
+
+    /* ── Info panel Sculptures (stile Corboz) ── */
+    #sculptures-info {
+      width: calc(58.3vw + 10px);
+      height: auto;
+      background-color: #fff;
+      color: #222;
+      position: fixed;
+      left: 10px;
+      top: 25px;
+      z-index: 400;
+      padding: 10px;
+      box-shadow: 0 2px 15px 3px rgba(0,0,0,.15);
+      border-radius: 5px;
+      transform-origin: top center;
+      transform: scaleY(0);
+      transition: all .5s cubic-bezier(.77,0,.175,1);
+      overflow: hidden;
+      display: none;
+    }
+    #sculptures-info.open {
+      display: block;
+    }
+    #sculptures-info.active {
+      transform: scale(1);
+    }
+    #sculptures-info-close {
+      position: absolute;
+      right: 10px;
+      top: 10px;
+      cursor: pointer;
+      background: none;
+      border: none;
+      z-index: 5;
+      outline: none;
+    }
+    #sculptures-info-close:hover svg path { stroke: #aaa; }
+    #sculptures-info-text {
+      opacity: 0;
+      transition: all .4s cubic-bezier(.77,0,.175,1) .7s;
+    }
+    #sculptures-info.active #sculptures-info-text { opacity: 1; }
+    #sculptures-info-text p {
+      font-family: 'Times New Roman', Times, serif;
+      font-size: 1.9rem;
+      line-height: 1.6;
+      text-indent: 30px;
+      margin-bottom: 8px;
+      color: #222;
+    }
+    #sculptures-info-text p:first-child { text-indent: 0; }
+    .sc-info-title {
+      font-family: 'Times New Roman', Times, serif;
+      font-size: 1.2rem;
+      text-transform: uppercase;
+      color: #4c00fc;
+      margin-top: 10px;
+      letter-spacing: 0.4px;
+    }
+    #sculptures-info-impressum {
+      display: flex;
+      flex-wrap: nowrap;
+      margin-top: 8px;
+    }
+    #sculptures-info-impressum > div:first-child { width: 180px; }
+    #sculptures-info-impressum p {
+      font-family: 'Times New Roman', Times, serif;
+      font-size: 1.2rem;
+      text-indent: 0;
     }
 
     /* ════════════════════════════════════════════════════════════════
@@ -5554,26 +5881,87 @@
       </div>
     </div>
 
-    <!-- ── VIEW: SCULPTURES PROJECT ── -->
-    <div class="view" id="view-sculptures" style="position:relative;">
-      <!-- Toggle lista / thumbs (stesso pattern Cities) -->
-      <div class="cities-view-toggle">
-        <button class="cities-toggle-btn active" id="sculptures-btn-list">lista</button>
-        <button class="cities-toggle-btn" id="sculptures-btn-thumbs">thumbs</button>
+    <!-- ── VIEW: SCULPTURES PROJECT (sito-nel-sito stile Corboz) ── -->
+    <div id="view-sculptures" class="view">
+
+      <!-- Nav orizzontale in alto a sinistra -->
+      <nav id="sculptures-nav">
+        <span data-sc-section="overview" class="active">Overview</span>
+        <span data-sc-section="images-book">Images Book Vol. I</span>
+        <span data-sc-section="studies">Studies</span>
+        <span data-sc-section="diary">Diary Witness</span>
+        <span data-sc-section="life">A Life Beside</span>
+        <span data-sc-section="video">Video Book</span>
+        <span data-sc-section="synopsis">Synopsis</span>
+        <span data-sc-section="recordings">Recordings</span>
+        <span data-sc-section="experience">Experience</span>
+        <span data-sc-section="information">Information</span>
+        <!-- Back a destra -->
+        <span id="sculptures-back" onclick="scGoBack()">&#8592; Back</span>
+      </nav>
+
+      <!-- Titolo grande (visibile solo in Overview, stile Corboz) -->
+      <div id="sculptures-page-title">
+        <h1>Sculptures</h1>
       </div>
-      <!-- Vista Lista -->
-      <div id="sculptures-list-view" class="active">
-        <!-- Generata via JS -->
-      </div>
-      <!-- Vista Thumbs -->
-      <div id="sculptures-thumbs-view" style="display:none">
-        <div class="cities-index-grid" id="sculptures-index-grid">
+
+      <!-- Wrapper scrollabile con griglia immagini (Overview) -->
+      <div id="sculptures-images-wrapper">
+        <div id="sculptures-grid">
           <!-- Generata via JS -->
         </div>
       </div>
+
+      <!-- Contenuto sezioni non-Overview -->
+      <div id="sculptures-section-content">
+        <!-- Generata via JS -->
+      </div>
+
+      <!-- Info panel (stile Corboz) -->
+      <div id="sculptures-info">
+        <button id="sculptures-info-close" onclick="scCloseInfo()">
+          <svg viewBox="0 0 20 20" width="14" height="14" fill="none" stroke="#222" stroke-width="1.5" stroke-linecap="round">
+            <line x1="2.5" y1="2.5" x2="17.5" y2="17.5"/>
+            <line x1="17.5" y1="2.5" x2="2.5" y2="17.5"/>
+          </svg>
+        </button>
+        <div id="sculptures-info-text">
+          <p class="sc-info-title">Sculptures Project</p>
+          <p>Alessandro Rizzi — Sculptures Project is a long-term photographic investigation into the relationship between the human body, space, and sculptural form.</p>
+          <p>The project spans multiple series and formats, from documentary photography to artist books, video works, and immersive installations.</p>
+          <div id="sculptures-info-impressum">
+            <div>
+              <p class="sc-info-title">Author</p>
+              <p>Alessandro Rizzi</p>
+            </div>
+            <div>
+              <p class="sc-info-title">Website</p>
+              <p><a href="https://www.alessandrorizzi.co" style="color:#4c00fc">alessandrorizzi.co</a></p>
+            </div>
+          </div>
+        </div>
+      </div>
+
     </div>
-    <!-- Preview thumbnail al cursore per Sculptures -->
-    <div id="sculptures-cursor-preview"><img id="sculptures-cursor-preview-img" src="" alt=""></div>
+
+    <!-- Popup lightbox Sculptures (stile Corboz) -->
+    <div id="sculptures-child">
+      <button id="sculptures-child-close" onclick="scCloseChild()">
+        <svg viewBox="0 0 20 20" width="20" height="20" fill="none" stroke="#fff" stroke-width="1.5" stroke-linecap="round">
+          <line x1="2.5" y1="2.5" x2="17.5" y2="17.5"/>
+          <line x1="17.5" y1="2.5" x2="2.5" y2="17.5"/>
+        </svg>
+      </button>
+      <button id="sculptures-prev" onclick="scCarouselNav(-1)">&#8592;</button>
+      <button id="sculptures-next" onclick="scCarouselNav(1)">&#8594;</button>
+      <div id="sculptures-carousel">
+        <img id="sculptures-carousel-img" src="" alt="">
+        <div id="sculptures-carousel-caption">
+          <p id="sculptures-carousel-title"></p>
+          <p id="sculptures-carousel-desc" class="sc-desc"></p>
+        </div>
+      </div>
+    </div>
 
     <!-- ── VIEW: MISCELLANEA ── -->
     <div class="view" id="view-miscellanea" style="position:relative;">
@@ -7227,6 +7615,29 @@ function switchView(name) {
   // Aggiorna le linee decorative Cities quando si entra nella view
   if (name === 'cities-index') {
     requestAnimationFrame(() => _updateCitiesLines());
+  }
+
+  // ── Sculptures: reset sezione e chiusura popup quando si entra/esce ──
+  if (name === 'sculptures') {
+    // Reset alla sezione Overview quando si entra
+    scCurrentSection = 'overview';
+    document.querySelectorAll('#sculptures-nav [data-sc-section]').forEach(el => {
+      el.classList.toggle('active', el.dataset.scSection === 'overview');
+    });
+    const wrapper = document.getElementById('sculptures-images-wrapper');
+    const sectionContent = document.getElementById('sculptures-section-content');
+    const pageTitle = document.getElementById('sculptures-page-title');
+    if (wrapper) wrapper.style.display = 'block';
+    if (sectionContent) sectionContent.classList.remove('active');
+    if (pageTitle) pageTitle.style.display = 'block';
+    scBuildGrid();
+  } else {
+    // Chiudi popup lightbox Sculptures se aperto
+    const scChild = document.getElementById('sculptures-child');
+    if (scChild) scChild.classList.remove('active');
+    // Chiudi info panel Sculptures se aperto
+    const scInfo = document.getElementById('sculptures-info');
+    if (scInfo) { scInfo.classList.remove('active'); scInfo.classList.remove('open'); }
   }
 }
 
@@ -10008,103 +10419,229 @@ function buildBooks() {
 }
 
 // ════════════════════════════════════════════════════════════════
-// SCULPTURES PROJECT
+// SCULPTURES PROJECT — Sito-nel-sito stile Corboz
 // ════════════════════════════════════════════════════════════════
-function buildSculpturesIndex() {
-  const grid     = document.getElementById('sculptures-index-grid');
-  const listView = document.getElementById('sculptures-list-view');
-  if (!grid || !listView) return;
+
+// Stato corrente della sezione Sculptures
+let scCurrentSection = 'overview';
+let scCurrentImages  = [];  // immagini della sezione corrente per il carousel
+let scCurrentIndex   = 0;   // indice immagine nel carousel
+
+// Torna alla vista precedente (Index)
+function scGoBack() {
+  switchView('index');
+}
+
+// Naviga tra le sezioni del menu Sculptures
+function scSwitchSection(section) {
+  scCurrentSection = section;
+  // Aggiorna nav active
+  document.querySelectorAll('#sculptures-nav [data-sc-section]').forEach(el => {
+    el.classList.toggle('active', el.dataset.scSection === section);
+  });
+  const wrapper = document.getElementById('sculptures-images-wrapper');
+  const sectionContent = document.getElementById('sculptures-section-content');
+  const pageTitle = document.getElementById('sculptures-page-title');
+  if (section === 'overview') {
+    // Mostra griglia immagini + titolo grande
+    if (wrapper) wrapper.style.display = 'block';
+    if (sectionContent) sectionContent.classList.remove('active');
+    if (pageTitle) pageTitle.style.display = 'block';
+    scBuildGrid();
+  } else if (section === 'information') {
+    // Apri info panel
+    scOpenInfo();
+  } else {
+    // Mostra sezione testuale con eventuali immagini
+    if (wrapper) wrapper.style.display = 'none';
+    if (pageTitle) pageTitle.style.display = 'none';
+    if (sectionContent) {
+      sectionContent.classList.add('active');
+      scBuildSectionContent(section);
+    }
+  }
+}
+
+// Costruisce la griglia Overview con tutte le immagini dei progetti sculptures
+function scBuildGrid() {
+  const grid = document.getElementById('sculptures-grid');
+  if (!grid) return;
   grid.innerHTML = '';
-  listView.innerHTML = '';
+  scCurrentImages = [];
 
-  // Filtra i progetti con category_id === 'sculptures'
+  // Raccoglie tutte le immagini da tutti i progetti sculptures
   const projects = PROJECTS.filter(p => p.category_id === 'sculptures');
+  projects.forEach(p => {
+    (p.images || []).forEach(img => {
+      scCurrentImages.push({
+        url: img.url,
+        title: p.title || '',
+        desc: p.subtitle || p.place || ''
+      });
+    });
+  });
 
-  if (projects.length === 0) {
-    listView.innerHTML = '<div style="padding:40px;font-family:var(--font-mono);font-size:10px;color:var(--gray);letter-spacing:.06em">Nessun progetto ancora. Aggiungilo dal CMS.</div>';
-    grid.innerHTML = listView.innerHTML;
+  if (scCurrentImages.length === 0) {
+    // Placeholder se non ci sono immagini
+    for (let i = 0; i < 8; i++) {
+      const cell = document.createElement('div');
+      cell.innerHTML = `
+        <div style="background:#111;width:100%;padding-top:75%;margin-bottom:5px;"></div>
+        <div class="sc-caption"><p>Sculpture ${i+1}</p><p class="sc-desc">Sculptures Project</p></div>
+      `;
+      grid.appendChild(cell);
+    }
     return;
   }
 
-  // ── Vista Lista (stesso stile Cities) ──
-  projects.forEach((p, idx) => {
-    const coverUrl = p.images.length > 0 ? p.images[0].url : '';
-    const row = document.createElement('div');
-    row.className = 'cities-list-row';
-    const code = String.fromCharCode(65 + Math.floor(idx / 26)) + String(idx + 1).padStart(2, '0');
-    row.innerHTML = `
-      <span class="cities-list-code"><span class="code-letter">${code[0]}</span>${code.slice(1)}</span>
-      <span class="cities-list-name">${p.title || ''}</span>
-      <span class="cities-list-year">${p.year || ''}</span>
-    `;
-    // Preview al cursore
-    const previewEl  = document.getElementById('sculptures-cursor-preview');
-    const previewImg = document.getElementById('sculptures-cursor-preview-img');
-    row.addEventListener('mouseenter', () => {
-      if (coverUrl && previewImg) {
-        previewImg.src = coverUrl;
-        previewEl.classList.add('visible');
-      }
-    });
-    row.addEventListener('mouseleave', () => {
-      if (previewEl) previewEl.classList.remove('visible');
-    });
-    row.addEventListener('click', () => {
-      switchView('gallery');
-      openGallery(p);
-    });
-    listView.appendChild(row);
+  scCurrentImages.forEach((img, idx) => {
+    const cell = document.createElement('div');
+    const imgEl = document.createElement('img');
+    imgEl.src = img.url;
+    imgEl.alt = img.title;
+    imgEl.loading = 'lazy';
+    imgEl.addEventListener('click', () => scOpenChild(idx));
+    const caption = document.createElement('div');
+    caption.className = 'sc-caption';
+    caption.innerHTML = `<p>${img.title}</p>${img.desc ? `<p class="sc-desc">${img.desc}</p>` : ''}`;
+    cell.appendChild(imgEl);
+    cell.appendChild(caption);
+    grid.appendChild(cell);
   });
+}
 
-  // ── Vista Thumbs (stesso stile Cities) ──
+// Costruisce il contenuto di una sezione non-Overview
+function scBuildSectionContent(section) {
+  const el = document.getElementById('sculptures-section-content');
+  if (!el) return;
+  // Mappa sezione -> titolo
+  const titles = {
+    'images-book': 'Images Book Vol. I',
+    'studies': 'Studies',
+    'diary': 'Diary Witness',
+    'life': 'A Life Beside',
+    'video': 'Video Book',
+    'synopsis': 'Synopsis',
+    'recordings': 'Recordings',
+    'experience': 'Experience'
+  };
+  const title = titles[section] || section;
+  // Raccoglie immagini dei progetti con tag/section corrispondente
+  const projects = PROJECTS.filter(p => p.category_id === 'sculptures');
+  let sectionImages = [];
   projects.forEach(p => {
-    const coverUrl = p.images.length > 0 ? p.images[0].url : '';
-    const card = document.createElement('div');
-    card.className = 'cities-card';
-    card.innerHTML = `
-      <div class="cities-card-cover">
-        ${coverUrl ? `<img src="${coverUrl}" alt="${p.title}" loading="lazy">` : ''}
-      </div>
-      <div class="cities-card-title">${p.title || ''}</div>
-      <div class="cities-card-sub">${p.subtitle || p.place || ''}</div>
-    `;
-    card.addEventListener('click', () => {
-      switchView('gallery');
-      openGallery(p);
-    });
-    grid.appendChild(card);
+    if ((p.section || p.subtitle || '').toLowerCase().includes(section.replace('-', ' ')) ||
+        (p.title || '').toLowerCase().includes(section.replace('-', ' '))) {
+      (p.images || []).forEach(img => {
+        sectionImages.push({ url: img.url, title: p.title || '', desc: p.subtitle || '' });
+      });
+    }
   });
-
-  // Toggle lista/thumbs
-  const btnList   = document.getElementById('sculptures-btn-list');
-  const btnThumbs = document.getElementById('sculptures-btn-thumbs');
-  const thumbsView = document.getElementById('sculptures-thumbs-view');
-  if (btnList && btnThumbs) {
-    btnList.addEventListener('click', () => {
-      btnList.classList.add('active');
-      btnThumbs.classList.remove('active');
-      listView.style.display = '';
-      listView.classList.add('active');
-      thumbsView.style.display = 'none';
-    });
-    btnThumbs.addEventListener('click', () => {
-      btnThumbs.classList.add('active');
-      btnList.classList.remove('active');
-      thumbsView.style.display = '';
-      listView.classList.remove('active');
-      listView.style.display = 'none';
+  // Fallback: mostra tutte le immagini se non ci sono match
+  if (sectionImages.length === 0) {
+    projects.forEach(p => {
+      (p.images || []).forEach(img => {
+        sectionImages.push({ url: img.url, title: p.title || '', desc: p.subtitle || '' });
+      });
     });
   }
-
-  // Aggiorna preview al mousemove
-  const previewEl  = document.getElementById('sculptures-cursor-preview');
-  const previewImg = document.getElementById('sculptures-cursor-preview-img');
-  if (previewEl) {
-    document.addEventListener('mousemove', e => {
-      if (currentView !== 'sculptures') return;
-      previewEl.style.transform = `translate(${e.clientX + 16}px, ${e.clientY - 40}px)`;
+  scCurrentImages = sectionImages;
+  let html = `<h2>${title}</h2>`;
+  if (sectionImages.length > 0) {
+    html += '<div class="sc-section-images">';
+    sectionImages.forEach((img, idx) => {
+      html += `
+        <div>
+          <img src="${img.url}" alt="${img.title}" loading="lazy" onclick="scOpenChild(${idx})">
+          <div class="sc-caption"><p>${img.title}</p>${img.desc ? `<p class="sc-desc">${img.desc}</p>` : ''}</div>
+        </div>
+      `;
     });
+    html += '</div>';
+  } else {
+    html += '<p style="opacity:.5;font-style:italic">Contenuto in preparazione.</p>';
   }
+  el.innerHTML = html;
+}
+
+// Apre il popup lightbox Sculptures
+function scOpenChild(idx) {
+  scCurrentIndex = idx;
+  const child = document.getElementById('sculptures-child');
+  if (!child) return;
+  child.classList.add('active');
+  scUpdateCarousel();
+  // Keyboard nav
+  document._scKeyHandler = function(e) {
+    if (e.key === 'ArrowRight') scCarouselNav(1);
+    if (e.key === 'ArrowLeft')  scCarouselNav(-1);
+    if (e.key === 'Escape')     scCloseChild();
+  };
+  document.addEventListener('keydown', document._scKeyHandler);
+}
+
+// Chiude il popup lightbox Sculptures
+function scCloseChild() {
+  const child = document.getElementById('sculptures-child');
+  if (child) child.classList.remove('active');
+  if (document._scKeyHandler) {
+    document.removeEventListener('keydown', document._scKeyHandler);
+    document._scKeyHandler = null;
+  }
+}
+
+// Naviga nel carousel del popup
+function scCarouselNav(dir) {
+  if (!scCurrentImages.length) return;
+  scCurrentIndex = (scCurrentIndex + dir + scCurrentImages.length) % scCurrentImages.length;
+  scUpdateCarousel();
+}
+
+// Aggiorna l'immagine nel carousel
+function scUpdateCarousel() {
+  const img = document.getElementById('sculptures-carousel-img');
+  const titleEl = document.getElementById('sculptures-carousel-title');
+  const descEl  = document.getElementById('sculptures-carousel-desc');
+  if (!img || !scCurrentImages[scCurrentIndex]) return;
+  const item = scCurrentImages[scCurrentIndex];
+  img.style.opacity = '0';
+  setTimeout(() => {
+    img.src = item.url;
+    img.onload = () => { img.style.opacity = '1'; };
+    if (img.complete) img.style.opacity = '1';
+  }, 200);
+  if (titleEl) titleEl.textContent = item.title || '';
+  if (descEl)  descEl.textContent  = item.desc  || '';
+}
+
+// Apre il pannello Information
+function scOpenInfo() {
+  const info = document.getElementById('sculptures-info');
+  if (!info) return;
+  info.classList.add('open');
+  requestAnimationFrame(() => info.classList.add('active'));
+}
+
+// Chiude il pannello Information
+function scCloseInfo() {
+  const info = document.getElementById('sculptures-info');
+  if (!info) return;
+  info.classList.remove('active');
+  setTimeout(() => {
+    info.classList.remove('open');
+    // Riporta la nav su Overview
+    scSwitchSection('overview');
+  }, 500);
+}
+
+// Inizializza la pagina Sculptures (chiamata da buildSculpturesIndex per compatibilità)
+function buildSculpturesIndex() {
+  // Collega i click del nav
+  document.querySelectorAll('#sculptures-nav [data-sc-section]').forEach(el => {
+    el.addEventListener('click', () => scSwitchSection(el.dataset.scSection));
+  });
+  // Costruisce la griglia Overview
+  scBuildGrid();
 }
 
 // ════════════════════════════════════════════════════════════════
