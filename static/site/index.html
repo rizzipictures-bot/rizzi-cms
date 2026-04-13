@@ -4384,12 +4384,17 @@
     #sculptures-carousel {
       flex: 1;
       display: flex;
-      align-items: center;
+      align-items: flex-start;
       justify-content: center;
       position: relative;
       overflow: hidden;
       background: #000;
+      padding-top: 10vh;
     }
+    /* Posizionamento ciclico dx → sx → centro (identico ad ae-zoom-popup-inner) */
+    #sculptures-carousel.sc-pos-right  { justify-content: flex-end;  padding-right: 5vw; }
+    #sculptures-carousel.sc-pos-left   { justify-content: flex-start; padding-left: 5vw; }
+    #sculptures-carousel.sc-pos-center { justify-content: center; }
     /* Sfondo blurrato: stessa foto a tutto schermo — identico ad ae-zoom-popup-bg */
     #sc-child-bg {
       position: absolute;
@@ -11073,14 +11078,25 @@ function scCarouselNav(dir) {
   scUpdateCarousel();
 }
 
+// Posizionamento ciclico: dx → sx → centro (identico al popup zoom)
+const _scPositions = ['sc-pos-right', 'sc-pos-left', 'sc-pos-center'];
+let _scPosIdx = 0;
+
 // Aggiorna l'immagine nel carousel
 function scUpdateCarousel() {
-  const img   = document.getElementById('sculptures-carousel-img');
-  const bgImg = document.getElementById('sc-child-bg');
-  const titleEl = document.getElementById('sculptures-carousel-title');
-  const descEl  = document.getElementById('sculptures-carousel-desc');
+  const img      = document.getElementById('sculptures-carousel-img');
+  const bgImg    = document.getElementById('sc-child-bg');
+  const carousel = document.getElementById('sculptures-carousel');
+  const titleEl  = document.getElementById('sculptures-carousel-title');
+  const descEl   = document.getElementById('sculptures-carousel-desc');
   if (!img || !scCurrentImages[scCurrentIndex]) return;
   const item = scCurrentImages[scCurrentIndex];
+  // Applica posizione ciclica al carousel container
+  if (carousel) {
+    carousel.classList.remove('sc-pos-right', 'sc-pos-left', 'sc-pos-center');
+    carousel.classList.add(_scPositions[_scPosIdx]);
+    _scPosIdx = (_scPosIdx + 1) % 3;
+  }
   img.style.opacity = '0';
   if (bgImg) { bgImg.style.opacity = '0'; }
   setTimeout(() => {
