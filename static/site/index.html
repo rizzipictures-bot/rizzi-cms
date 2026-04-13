@@ -11586,6 +11586,15 @@ function scStartKaraoke(filename) {
   });
 }
 
+// Filtra i token musicali Whisper (♪, ♩, ♫, ♬, ecc.)
+function _scIsMusicToken(word) {
+  // Rimuove spazi e punteggiatura, controlla se rimangono solo simboli musicali
+  const cleaned = word.replace(/[\s.,!?;:'"-]/g, '');
+  if (cleaned.length === 0) return true;
+  // Simboli musicali unicode: U+2669–U+266F e varianti
+  return /^[\u2669\u266a\u266b\u266c\u266d\u266e\u266f\u1f3b5\u1f3b6\u1f3bc]+$/.test(cleaned);
+}
+
 // Tick del karaoke: controlla il currentTime e mostra le parole al momento giusto
 function _scKaraokeStep() {
   const player = document.getElementById('sc-audio-player');
@@ -11595,7 +11604,10 @@ function _scKaraokeStep() {
   // Mostra tutte le parole il cui start <= t e che non sono ancora state mostrate
   while (_scKaraokeIdx < _scKaraokeWords.length &&
          _scKaraokeWords[_scKaraokeIdx].start <= t) {
-    _scKaraokeShowWord(_scKaraokeWords[_scKaraokeIdx].word);
+    const w = _scKaraokeWords[_scKaraokeIdx].word;
+    if (!_scIsMusicToken(w)) {
+      _scKaraokeShowWord(w);
+    }
     _scKaraokeIdx++;
   }
 }
