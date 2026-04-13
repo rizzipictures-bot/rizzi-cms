@@ -4390,7 +4390,7 @@
       overflow: hidden;
       background: #000;
     }
-    /* Sfondo blurrato: stessa foto a tutto schermo */
+    /* Sfondo blurrato: stessa foto a tutto schermo — identico ad ae-zoom-popup-bg */
     #sc-child-bg {
       position: absolute;
       inset: 0;
@@ -4398,11 +4398,31 @@
       height: 100%;
       object-fit: cover;
       object-position: center;
-      filter: blur(18px) brightness(0.7);
-      transform: scale(1.08);
+      filter: blur(8px) brightness(0.85);
+      transform: scale(1.05);
       z-index: 0;
       pointer-events: none;
       transition: opacity .4s ease;
+    }
+    /* Overlay grigio 15% sopra lo sfondo — identico ad ae-zoom-popup::before */
+    #sculptures-carousel::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: rgba(128,128,128,0.15);
+      z-index: 1;
+      pointer-events: none;
+    }
+    /* Canvas grana pellicola 6400 ISO — identico ad ae-zoom-grain */
+    #sc-child-grain {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 1;
+      pointer-events: none;
+      mix-blend-mode: screen;
+      opacity: 0.28;
     }
     #sculptures-carousel-img {
       max-width: 90vw;
@@ -6335,6 +6355,7 @@
       <button id="sculptures-next" onclick="scCarouselNav(1)">NEXT</button>
       <div id="sculptures-carousel">
         <img id="sc-child-bg" src="" alt="" aria-hidden="true">
+        <canvas id="sc-child-grain"></canvas>
         <img id="sculptures-carousel-img" src="" alt="">
         <div id="sculptures-carousel-caption">
           <p id="sculptures-carousel-title"></p>
@@ -13177,6 +13198,79 @@ loadFromCMS();
     }
   });
   _grainObs.observe(_popup, { attributes: true, attributeFilter: ['class'] });
+  window.addEventListener('resize', () => { if (_running) _resize(); });
+})();
+
+// ════════════════════════════════════════════════════════════════
+// Grana pellicola 6400 ISO per il viewer Sculptures (sc-child-grain)
+// Identica al popup ae-zoom-grain — avvia/ferma con sculptures-child.active
+// ════════════════════════════════════════════════════════════════
+(function() {
+  const canvas = document.getElementById('sc-child-grain');
+  if (!canvas) return;
+  const ctx = canvas.getContext('2d');
+  let _raf = null;
+  let _running = false;
+  let _lastFrame = 0;
+  const _FPS = 90;
+  const _INTERVAL = 1000 / _FPS;
+
+  function _resize() {
+    const rect = canvas.parentElement.getBoundingClientRect();
+    canvas.width  = rect.width  || window.innerWidth;
+    canvas.height = rect.height || window.innerHeight;
+  }
+
+  function _drawGrain() {
+    if (!_running) return;
+    const w = canvas.width;
+    const h = canvas.height;
+    const bw = Math.ceil(w / 2);
+    const bh = Math.ceil(h / 2);
+    const imageData = ctx.createImageData(bw, bh);
+    const data = imageData.data;
+    const len = data.length;
+    for (let i = 0; i < len; i += 4) {
+      const r = Math.random();
+      let v;
+      if (r < 0.55) {
+        v = Math.random() * 60;
+      } else if (r < 0.80) {
+        v = 60 + Math.random() * 80;
+      } else {
+        v = 160 + Math.random() * 95;
+      }
+      data[i] = v; data[i+1] = v; data[i+2] = v; data[i+3] = 255;
+    }
+    const offscreen = document.createElement('canvas');
+    offscreen.width  = bw;
+    offscreen.height = bh;
+    offscreen.getContext('2d').putImageData(imageData, 0, 0);
+    ctx.clearRect(0, 0, w, h);
+    ctx.imageSmoothingEnabled = false;
+    ctx.drawImage(offscreen, 0, 0, w, h);
+    _raf = requestAnimationFrame(function(ts) {
+      if (ts - _lastFrame < _INTERVAL) { _raf = requestAnimationFrame(arguments.callee); return; }
+      _lastFrame = ts;
+      _drawGrain();
+    });
+  }
+
+  // Avvia/ferma il grain in sync con sculptures-child.active
+  const _child = document.getElementById('sculptures-child');
+  if (_child) {
+    const _obs = new MutationObserver(() => {
+      if (_child.classList.contains('active')) {
+        _running = true;
+        _resize();
+        _drawGrain();
+      } else {
+        _running = false;
+        if (_raf) { cancelAnimationFrame(_raf); _raf = null; }
+      }
+    });
+    _obs.observe(_child, { attributes: true, attributeFilter: ['class'] });
+  }
   window.addEventListener('resize', () => { if (_running) _resize(); });
 })();
 </script>
