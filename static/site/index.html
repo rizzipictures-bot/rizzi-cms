@@ -4497,8 +4497,15 @@
       font-size: 19px;
       font-weight: 700;  /* bold come Corboz */
       line-height: 1.35;
-      margin-bottom: 12px;
+      margin: 0 0 0 0;   /* nessun margine — testo continuo */
       color: rgb(34, 34, 34);
+      display: inline;   /* inline: i paragrafi si concatenano senza a capo */
+    }
+    #sculptures-info-text > p + p::before {
+      content: ' ';      /* spazio tra i due paragrafi inline */
+    }
+    #sculptures-info-text .sc-info-title {
+      display: block;    /* il titolo Impressum va a capo */
     }
     /* Titolo sezione (Impressum, Terms of use) in viola #4c00fc come Corboz */
     .sc-info-title {
@@ -4510,22 +4517,24 @@
       display: block;
       letter-spacing: 0.05em;
     }
-    /* Righe impressum: flex con label a sinistra e valore a destra */
+    /* Righe impressum: flex con label sinistra e valore destra — stile Corboz */
     .sc-impressum-row {
       display: flex;
       flex-wrap: nowrap;
-      margin-top: 0;
+      margin: 0;
+      line-height: 1.25;  /* interlinea compatta come Corboz */
     }
     .sc-impressum-row > div:first-child {
-      min-width: 160px;
-      width: 160px;
+      min-width: 200px;
+      width: 200px;
+      flex-shrink: 0;
     }
     .sc-impressum-row p {
       font-family: Helvetica, Arial, sans-serif;
       font-size: 14px;
       font-weight: 700;
       margin: 0;
-      line-height: 1.5;
+      line-height: 1.25;
       color: rgb(34, 34, 34);
     }
     .sc-impressum-row a {
@@ -6248,9 +6257,7 @@
         </svg>
       </button>
       <div id="sculptures-info-text">
-        <p>Sculptures is a Long Term Project about the Afro-Americans Issue. A contemporary photographic work that focus on different layers of the complexity social matter. The first Volume of a trilogy books which has been published by Yard Press at the end of 2015 received awards and international interest.</p>
-
-        <p>Sculptures VOL I, has been selected as one of the Best European Publication in the 2016 by Kaleid Edition London and is collected in the permanent Art Book Collection of M.o.M.A. and Metropolitan Museum of Art.</p>
+        <p>Sculptures is a Long Term Project about the Afro-Americans Issue. A contemporary photographic work that focus on different layers of the complexity social matter. The first Volume of a trilogy books which has been published by Yard Press at the end of 2015 received awards and international interest.</p><p>Sculptures VOL I, has been selected as one of the Best European Publication in the 2016 by Kaleid Edition London and is collected in the permanent Art Book Collection of M.o.M.A. and Metropolitan Museum of Art.</p>
 
         <span class="sc-info-title">Impressum</span>
 
@@ -6264,11 +6271,17 @@
         </div>
         <div class="sc-impressum-row">
           <div><p>Art direction—Design</p></div>
-          <div><p>Giandomenico Carpentieri<br>Achille Filipponi</p></div>
+          <div>
+            <p>Giandomenico Carpentieri</p>
+            <p>Achille Filipponi</p>
+          </div>
         </div>
         <div class="sc-impressum-row">
           <div><p>Printed</p></div>
-          <div><p>Grafiche CMF<br>Foligno (PG), Italy</p></div>
+          <div>
+            <p>Grafiche CMF</p>
+            <p>Foligno (PG), Italy</p>
+          </div>
         </div>
         <div class="sc-impressum-row">
           <div><p>October 2015</p></div>
