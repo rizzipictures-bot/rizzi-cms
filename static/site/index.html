@@ -4753,6 +4753,30 @@
       to   { opacity: 0; }
     }
 
+    /* ── Karaoke dentro il viewer Sculptures ── */
+    #sc-karaoke-viewer {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      z-index: 10;
+      pointer-events: none;
+      overflow: hidden;
+      height: 48px;
+      display: none;
+      align-items: flex-end;
+      padding: 0 50px 10px 50px;
+    }
+    #sc-karaoke-viewer.active { display: flex; }
+    #sc-karaoke-viewer-line {
+      display: flex;
+      flex-wrap: nowrap;
+      gap: 0.35em;
+      align-items: baseline;
+      overflow: hidden;
+      max-width: 100%;
+    }
+
     /* ── Box video overlay Sculptures (identico a Information) ── */
     #sc-video-box {
       position: fixed;
@@ -6460,6 +6484,8 @@
         <!-- Playlist laterale Recordings (visibile solo in sezione recordings) -->
         <div id="sc-recordings-playlist" style="display:none"></div>
         <img id="sculptures-carousel-img" src="" alt="">
+        <!-- Karaoke typewriter dentro il viewer -->
+        <div id="sc-karaoke-viewer"><div id="sc-karaoke-viewer-line"></div></div>
         <div id="sculptures-carousel-caption">
           <p id="sculptures-carousel-title"></p>
           <p id="sculptures-carousel-desc" class="sc-desc"></p>
@@ -11491,7 +11517,8 @@ let SC_SUBTITLES = null;   // dati caricati da subtitles.json
 let _scKaraokeTimer = null;
 let _scKaraokeWords = [];  // array { word, start, end } del file corrente
 let _scKaraokeIdx = 0;     // indice della prossima parola da mostrare
-let _scKaraokeLineWords = []; // parole attualmente visibili nella riga
+let _scKaraokeLineWords = []; // parole attualmente visibili nella riga (overview)
+let _scKaraokeViewerWords = []; // parole attualmente visibili nel viewer
 const SC_KARAOKE_MAX_WORDS = 10; // max parole visibili contemporaneamente
 
 // Carica subtitles.json una sola volta
@@ -11516,6 +11543,12 @@ function scStartKaraoke(filename) {
     const line = document.getElementById('sc-karaoke-line');
     if (box) box.classList.add('active');
     if (line) line.innerHTML = '';
+    // Attiva anche il karaoke nel viewer se è aperto
+    const vbox = document.getElementById('sc-karaoke-viewer');
+    const vline = document.getElementById('sc-karaoke-viewer-line');
+    if (vbox) vbox.classList.add('active');
+    if (vline) vline.innerHTML = '';
+    _scKaraokeViewerWords = [];
     _scKaraokeTimer = setInterval(_scKaraokeStep, 80);
   });
 }
@@ -11535,55 +11568,64 @@ function _scKaraokeStep() {
 }
 
 // Aggiunge una parola con effetto macchina da scrivere (lettera per lettera)
+// Scrive in parallelo su tutti i target karaoke attivi
 function _scKaraokeShowWord(word) {
-  const line = document.getElementById('sc-karaoke-line');
-  if (!line) return;
+  const targets = [
+    { lineId: 'sc-karaoke-line', wordsArr: _scKaraokeLineWords },
+    { lineId: 'sc-karaoke-viewer-line', wordsArr: _scKaraokeViewerWords }
+  ];
 
-  // Se la riga è troppo piena, rimuovi la parola più vecchia con fade-out
-  if (_scKaraokeLineWords.length >= SC_KARAOKE_MAX_WORDS) {
-    const oldest = _scKaraokeLineWords.shift();
-    if (oldest) {
-      oldest.classList.add('fade-out');
-      setTimeout(() => { if (oldest.parentNode) oldest.parentNode.removeChild(oldest); }, 400);
+  targets.forEach(({ lineId, wordsArr }) => {
+    const line = document.getElementById(lineId);
+    if (!line) return;
+
+    // Se la riga è troppo piena, rimuovi la parola più vecchia con fade-out
+    if (wordsArr.length >= SC_KARAOKE_MAX_WORDS) {
+      const oldest = wordsArr.shift();
+      if (oldest) {
+        oldest.classList.add('fade-out');
+        setTimeout(() => { if (oldest.parentNode) oldest.parentNode.removeChild(oldest); }, 400);
+      }
     }
-  }
 
-  const span = document.createElement('span');
-  span.className = 'sc-kword';
-  span.textContent = word;
-  line.appendChild(span);
-  _scKaraokeLineWords.push(span);
+    const span = document.createElement('span');
+    span.className = 'sc-kword';
+    span.textContent = word;
+    line.appendChild(span);
+    wordsArr.push(span);
 
-  // Misura la larghezza reale della parola (con font monospace)
-  // Forza reflow per ottenere la larghezza naturale
-  void span.offsetWidth;
-  const naturalWidth = span.scrollWidth;
-  const letters = word.length;
+    // Misura la larghezza reale della parola (con font monospace)
+    void span.offsetWidth;
+    const naturalWidth = span.scrollWidth;
+    const letters = word.length;
 
-  // Velocità typewriter: ~55ms per carattere, minimo 80ms totali
-  const msPerChar = 55;
-  const totalMs = Math.max(80, letters * msPerChar);
+    // Velocità typewriter: ~55ms per carattere, minimo 80ms totali
+    const msPerChar = 55;
+    const totalMs = Math.max(80, letters * msPerChar);
 
-  // Imposta le CSS custom properties per l'animazione
-  span.style.setProperty('--tw-width', naturalWidth + 'px');
-  span.style.setProperty('--tw-steps', letters);
-  span.style.setProperty('--tw-dur', totalMs + 'ms');
-
-  // Avvia l'animazione typewriter
-  span.classList.add('typing');
+    span.style.setProperty('--tw-width', naturalWidth + 'px');
+    span.style.setProperty('--tw-steps', letters);
+    span.style.setProperty('--tw-dur', totalMs + 'ms');
+    span.classList.add('typing');
+  });
 }
 
-// Ferma il karaoke e pulisce la riga
+// Ferma il karaoke e pulisce la riga (entrambi i target)
 function scStopKaraoke() {
   clearInterval(_scKaraokeTimer);
   _scKaraokeTimer = null;
   _scKaraokeWords = [];
   _scKaraokeIdx = 0;
   _scKaraokeLineWords = [];
+  _scKaraokeViewerWords = [];
   const box = document.getElementById('sc-karaoke');
   const line = document.getElementById('sc-karaoke-line');
   if (box) box.classList.remove('active');
   if (line) line.innerHTML = '';
+  const vbox = document.getElementById('sc-karaoke-viewer');
+  const vline = document.getElementById('sc-karaoke-viewer-line');
+  if (vbox) vbox.classList.remove('active');
+  if (vline) vline.innerHTML = '';
 }
 
 // Toggle play/pause
