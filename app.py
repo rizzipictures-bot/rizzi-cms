@@ -425,6 +425,11 @@ def site_index():
 def serve_site_static(filename):
     return send_from_directory(STATIC / 'site', filename)
 
+# ── Subtitles JSON (karaoke Sculptures) ──────
+@app.route('/subtitles.json')
+def serve_subtitles():
+    return send_from_directory(STATIC / 'site', 'subtitles.json')
+
 # ── CMS ───────────────────────────────────────
 # http://localhost:5151/cms  →  CMS
 @app.route('/cms')

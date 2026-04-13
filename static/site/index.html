@@ -4554,6 +4554,55 @@
     #sc-audio-btn:hover { border-color: #fff; opacity: 0.8; }
     #sc-audio-btn.playing { border-color: #fff; }
 
+    /* ── Karaoke / sottotitoli sincronizzati ── */
+    #sc-karaoke {
+      position: fixed;
+      bottom: 14px;
+      left: 0;
+      right: 0;
+      z-index: 1290;
+      pointer-events: none;
+      overflow: hidden;
+      height: 52px;
+      display: none;           /* visibile solo durante la riproduzione */
+      align-items: flex-end;
+      padding: 0 60px 0 60px;  /* spazio per il bottone play a sinistra */
+    }
+    #sc-karaoke.active { display: flex; }
+    #sc-karaoke-line {
+      display: flex;
+      flex-wrap: nowrap;
+      gap: 0.28em;
+      align-items: baseline;
+      overflow: hidden;
+      max-width: 100%;
+    }
+    .sc-kword {
+      font-family: Helvetica, Arial, sans-serif;
+      font-size: clamp(13px, 1.6vw, 20px);
+      font-weight: 700;
+      color: #fff;
+      white-space: nowrap;
+      opacity: 0;
+      transform: translateX(-18px);
+      transition: none;
+      line-height: 1.2;
+    }
+    .sc-kword.visible {
+      animation: scKaraokeSlide 0.22s cubic-bezier(.22,1,.36,1) forwards;
+    }
+    .sc-kword.fade-out {
+      animation: scKaraokeFade 0.5s ease forwards;
+    }
+    @keyframes scKaraokeSlide {
+      from { opacity: 0; transform: translateX(-18px); }
+      to   { opacity: 1; transform: translateX(0); }
+    }
+    @keyframes scKaraokeFade {
+      from { opacity: 1; }
+      to   { opacity: 0; }
+    }
+
     /* ── Box video overlay Sculptures (identico a Information) ── */
     #sc-video-box {
       position: fixed;
@@ -6166,6 +6215,11 @@
 
       <!-- Elemento audio (nascosto) -->
       <audio id="sc-audio-player" preload="none"></audio>
+
+      <!-- Karaoke: sottotitoli sincronizzati in basso -->
+      <div id="sc-karaoke">
+        <div id="sc-karaoke-line"></div>
+      </div>
 
       <!-- Box video overlay (stile Information) -->
       <div id="sc-video-box">
@@ -11062,6 +11116,7 @@ function scPrepareRandomAudio() {
   const btn = document.getElementById('sc-audio-btn');
   if (btn) btn.style.display = 'flex';
   // Autoplay con fade-in (parte subito, il browser permette autoplay muted/low-volume)
+  const currentSrc = scAudioFiles[scAudioIndex].url;
   player.play().then(() => {
     // Aggiorna icona → pausa
     const iconPlay  = document.getElementById('sc-audio-icon-play');
@@ -11071,6 +11126,8 @@ function scPrepareRandomAudio() {
     if (btn) btn.classList.add('playing');
     // Fade-in: porta il volume da 0 a 0.72 in 2 secondi
     scAudioFadeTo(0.72, 2000);
+    // Avvia karaoke sincronizzato
+    scStartKaraoke(currentSrc);
   }).catch(() => {
     // Autoplay bloccato dal browser: rimane in standby, l'utente clicca il bottone
   });
@@ -11096,6 +11153,96 @@ function scAudioFadeTo(target, ms) {
   }, interval);
 }
 
+// ════════════════════════════════════════════════════════════════
+// SCULPTURES — KARAOKE (sottotitoli sincronizzati word-by-word)
+// ════════════════════════════════════════════════════════════════
+
+let SC_SUBTITLES = null;   // dati caricati da subtitles.json
+let _scKaraokeTimer = null;
+let _scKaraokeWords = [];  // array { word, start, end } del file corrente
+let _scKaraokeIdx = 0;     // indice della prossima parola da mostrare
+let _scKaraokeLineWords = []; // parole attualmente visibili nella riga
+const SC_KARAOKE_MAX_WORDS = 7; // max parole visibili contemporaneamente
+
+// Carica subtitles.json una sola volta
+function scLoadSubtitles(callback) {
+  if (SC_SUBTITLES) { callback(); return; }
+  fetch('/subtitles.json')
+    .then(r => r.json())
+    .then(data => { SC_SUBTITLES = data; callback(); })
+    .catch(() => { SC_SUBTITLES = {}; callback(); });
+}
+
+// Avvia il karaoke per il file corrente
+function scStartKaraoke(filename) {
+  scStopKaraoke();
+  scLoadSubtitles(() => {
+    const fname = filename.split('/').pop(); // estrae solo il nome file
+    _scKaraokeWords = (SC_SUBTITLES && SC_SUBTITLES[fname]) || [];
+    if (_scKaraokeWords.length === 0) return; // nessun testo
+    _scKaraokeIdx = 0;
+    _scKaraokeLineWords = [];
+    const box = document.getElementById('sc-karaoke');
+    const line = document.getElementById('sc-karaoke-line');
+    if (box) box.classList.add('active');
+    if (line) line.innerHTML = '';
+    _scKaraokeTimer = setInterval(_scKaraokeStep, 80);
+  });
+}
+
+// Tick del karaoke: controlla il currentTime e mostra le parole al momento giusto
+function _scKaraokeStep() {
+  const player = document.getElementById('sc-audio-player');
+  if (!player || player.paused) return;
+  const t = player.currentTime;
+
+  // Mostra tutte le parole il cui start <= t e che non sono ancora state mostrate
+  while (_scKaraokeIdx < _scKaraokeWords.length &&
+         _scKaraokeWords[_scKaraokeIdx].start <= t) {
+    _scKaraokeShowWord(_scKaraokeWords[_scKaraokeIdx].word);
+    _scKaraokeIdx++;
+  }
+}
+
+// Aggiunge una parola alla riga con animazione slide-in da sinistra
+function _scKaraokeShowWord(word) {
+  const line = document.getElementById('sc-karaoke-line');
+  if (!line) return;
+
+  // Se la riga è troppo piena, rimuovi le parole più vecchie con fade-out
+  if (_scKaraokeLineWords.length >= SC_KARAOKE_MAX_WORDS) {
+    const oldest = _scKaraokeLineWords.shift();
+    if (oldest) {
+      oldest.classList.remove('visible');
+      oldest.classList.add('fade-out');
+      setTimeout(() => { if (oldest.parentNode) oldest.parentNode.removeChild(oldest); }, 500);
+    }
+  }
+
+  const span = document.createElement('span');
+  span.className = 'sc-kword';
+  span.textContent = word;
+  line.appendChild(span);
+  _scKaraokeLineWords.push(span);
+
+  // Forza reflow poi aggiungi classe .visible per triggerare l'animazione
+  void span.offsetWidth;
+  span.classList.add('visible');
+}
+
+// Ferma il karaoke e pulisce la riga
+function scStopKaraoke() {
+  clearInterval(_scKaraokeTimer);
+  _scKaraokeTimer = null;
+  _scKaraokeWords = [];
+  _scKaraokeIdx = 0;
+  _scKaraokeLineWords = [];
+  const box = document.getElementById('sc-karaoke');
+  const line = document.getElementById('sc-karaoke-line');
+  if (box) box.classList.remove('active');
+  if (line) line.innerHTML = '';
+}
+
 // Toggle play/pause
 function scToggleAudio() {
   const player = document.getElementById('sc-audio-player');
@@ -11109,12 +11256,17 @@ function scToggleAudio() {
       iconPlay.style.display  = 'none';
       iconPause.style.display = 'block';
       if (btn) btn.classList.add('playing');
+      // Riprendi karaoke dal punto corrente
+      if (_scKaraokeWords.length === 0 && scAudioFiles[scAudioIndex]) {
+        scStartKaraoke(scAudioFiles[scAudioIndex].url);
+      }
     }).catch(() => {});
   } else {
     player.pause();
     iconPlay.style.display  = 'block';
     iconPause.style.display = 'none';
     if (btn) btn.classList.remove('playing');
+    // Il karaoke si ferma da solo (controlla player.paused nel tick)
   }
 }
 
@@ -11139,6 +11291,8 @@ function _scStopAudioNow() {
   if (iconPlay)  iconPlay.style.display  = 'block';
   if (iconPause) iconPause.style.display = 'none';
   if (btn) { btn.classList.remove('playing'); btn.style.display = 'none'; }
+  // Ferma anche il karaoke
+  scStopKaraoke();
 }
 
 // ════════════════════════════════════════════════════════════════
