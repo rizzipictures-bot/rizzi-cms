@@ -4304,6 +4304,88 @@
       font-style: italic;
     }
 
+    /* Hover dimming −10% per le thumbs della sezione Recordings */
+    .sc-section-recordings .sc-section-images > div:hover .sc-img-wrap img {
+      opacity: 0.75 !important;  /* 85% base − 10% = 75% */
+    }
+
+    /* Playlist laterale nel viewer Recordings */
+    #sc-recordings-playlist {
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      width: 260px;
+      z-index: 5;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      padding: 20px 16px;
+      box-sizing: border-box;
+      overflow-y: auto;
+      scrollbar-width: none;
+    }
+    #sc-recordings-playlist::-webkit-scrollbar { display: none; }
+    #sc-recordings-playlist.pl-left  { left: 0; }
+    #sc-recordings-playlist.pl-right { right: 0; }
+    #sc-recordings-playlist.pl-center-left  { left: 0; }
+
+    .sc-pl-track {
+      display: flex;
+      align-items: flex-start;
+      gap: 8px;
+      padding: 9px 0;
+      border-bottom: 1px solid rgba(255,255,255,0.12);
+      cursor: default;
+    }
+    .sc-pl-track:first-child { border-top: 1px solid rgba(255,255,255,0.12); }
+    .sc-pl-track-info {
+      flex: 1;
+      min-width: 0;
+    }
+    .sc-pl-track-title {
+      font-family: 'Courier New', Courier, monospace;
+      font-size: 11px;
+      font-weight: 700;
+      color: #fff;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      letter-spacing: -0.02em;
+    }
+    .sc-pl-track-by {
+      font-family: 'Courier New', Courier, monospace;
+      font-size: 9px;
+      color: rgba(255,255,255,0.45);
+      margin-top: 2px;
+      letter-spacing: 0;
+    }
+    .sc-pl-track-dur {
+      font-family: 'Courier New', Courier, monospace;
+      font-size: 10px;
+      color: rgba(255,255,255,0.5);
+      white-space: nowrap;
+      padding-top: 2px;
+    }
+    .sc-pl-track-btns {
+      display: flex;
+      gap: 5px;
+      align-items: center;
+      padding-top: 1px;
+    }
+    .sc-pl-btn {
+      background: none;
+      border: none;
+      cursor: pointer;
+      padding: 2px;
+      opacity: 0.7;
+      transition: opacity .15s, transform .15s;
+      line-height: 0;
+    }
+    .sc-pl-btn:hover { opacity: 1; transform: scale(1.15); }
+    .sc-pl-btn svg { display: block; }
+    .sc-pl-track.playing .sc-pl-track-title { color: #a78bfa; }
+    .sc-pl-track.playing .sc-pl-btn.play-btn { opacity: 0.3; pointer-events: none; }
+
     /* Testo descrittivo sezione Recordings */
     .sc-recordings-note {
       width: 100%;
@@ -6375,6 +6457,8 @@
       <div id="sculptures-carousel">
         <img id="sc-child-bg" src="" alt="" aria-hidden="true">
         <canvas id="sc-child-grain"></canvas>
+        <!-- Playlist laterale Recordings (visibile solo in sezione recordings) -->
+        <div id="sc-recordings-playlist" style="display:none"></div>
         <img id="sculptures-carousel-img" src="" alt="">
         <div id="sculptures-carousel-caption">
           <p id="sculptures-carousel-title"></p>
@@ -11009,7 +11093,8 @@ function scBuildSectionContent(section) {
     el.style.minHeight  = '';
   }
   if (sectionImages.length > 0) {
-    html += '<div class="sc-section-images">';
+    const sectionClass = section === 'recordings' ? 'sc-section-images sc-section-recordings' : 'sc-section-images';
+    html += `<div class="${sectionClass}">`;
     // Pattern misto Corboz: H-V-H-V (riga 1), V-H-V-V (riga 2), poi si ripete
     // Posizioni 0-based nel gruppo di 8: 0=H,1=V,2=H,3=V,4=V,5=H,6=V,7=V
     const corbozPattern = ['h','v','h','v','v','h','v','v'];
@@ -11018,8 +11103,11 @@ function scBuildSectionContent(section) {
       const cellType = corbozPattern[posInPattern]; // 'h' o 'v'
       const cellClass = cellType === 'h' ? 'sc-cell-h' : 'sc-cell-v';
       const capHtml = img.caption ? `<div class="sc-img-caption">${img.caption}</div>` : '';
+      const onclickFn = section === 'recordings'
+        ? `scOpenChild(${idx}, 'recordings')`
+        : `scOpenChild(${idx})`;
       html += `
-        <div class="${cellClass}" onclick="scOpenChild(${idx})">
+        <div class="${cellClass}" onclick="${onclickFn}">
           <div class="sc-img-wrap"><img src="${img.url}" alt="${img.title}" loading="lazy"></div>
           ${capHtml}
         </div>
@@ -11041,8 +11129,9 @@ function scBuildSectionContent(section) {
 }
 
 // Apre il pannello viewer in basso (Stato 2)
-function scOpenChild(idx) {
+function scOpenChild(idx, section) {
   scCurrentIndex = idx;
+  _scCurrentSection = section || null;
   const child = document.getElementById('sculptures-child');
   if (!child) return;
   // Assicura che non sia in fullscreen all'apertura
@@ -11104,6 +11193,21 @@ function scCarouselNav(dir) {
 const _scPositions = ['sc-pos-right', 'sc-pos-left', 'sc-pos-center'];
 let _scPosIdx = 0;
 
+// Sezione corrente del viewer (per gestire playlist recordings)
+let _scCurrentSection = null;
+
+// Gruppi di tracce per la playlist recordings (5-5-5-4)
+const _scRecordingsGroups = [
+  { start: 0, end: 4 },   // tracce 1-5  (thumb 0)
+  { start: 5, end: 9 },   // tracce 6-10 (thumb 1)
+  { start: 10, end: 14 }, // tracce 11-15 (thumb 2)
+  { start: 15, end: 18 }  // tracce 16-19 (thumb 3)
+];
+
+// Posizione della playlist in base alla posizione ciclica dell'immagine
+// dx(0)=playlist a sx, sx(1)=playlist a dx, centro(2)=playlist a sx
+const _scPlaylistSide = ['pl-left', 'pl-right', 'pl-left'];
+
 // Aggiorna l'immagine nel carousel
 function scUpdateCarousel() {
   const img      = document.getElementById('sculptures-carousel-img');
@@ -11114,10 +11218,11 @@ function scUpdateCarousel() {
   if (!img || !scCurrentImages[scCurrentIndex]) return;
   const item = scCurrentImages[scCurrentIndex];
   // Applica posizione ciclica al carousel container
+  const posIdx = _scPosIdx;
   if (carousel) {
     carousel.classList.remove('sc-pos-right', 'sc-pos-left', 'sc-pos-center');
-    carousel.classList.add(_scPositions[_scPosIdx]);
-    _scPosIdx = (_scPosIdx + 1) % 3;
+    carousel.classList.add(_scPositions[posIdx]);
+    _scPosIdx = (posIdx + 1) % 3;
   }
   img.style.opacity = '0';
   if (bgImg) { bgImg.style.opacity = '0'; }
@@ -11129,6 +11234,74 @@ function scUpdateCarousel() {
   }, 200);
   if (titleEl) titleEl.textContent = item.title || '';
   if (descEl)  descEl.textContent  = item.desc  || '';
+  // Aggiorna la playlist laterale se siamo in sezione recordings
+  _scUpdateRecordingsPlaylist(posIdx);
+}
+
+// Costruisce/aggiorna la playlist laterale nel viewer Recordings
+function _scUpdateRecordingsPlaylist(posIdx) {
+  const pl = document.getElementById('sc-recordings-playlist');
+  if (!pl) return;
+  if (_scCurrentSection !== 'recordings') {
+    pl.style.display = 'none';
+    return;
+  }
+  // Determina il gruppo in base all'indice immagine corrente
+  const groupIdx = Math.min(scCurrentIndex, _scRecordingsGroups.length - 1);
+  const group = _scRecordingsGroups[groupIdx];
+  // Posizione: opposta alla foto (foto a dx = playlist a sx, foto a sx = playlist a dx)
+  pl.className = '';
+  const side = _scPlaylistSide[posIdx];
+  pl.classList.add(side);
+  pl.style.display = 'flex';
+  // Costruisce le righe
+  let html = '';
+  for (let i = group.start; i <= group.end; i++) {
+    if (i >= scAudioFiles.length) break;
+    const af = scAudioFiles[i];
+    const num = String(i + 1).padStart(3, '0');
+    const title = `Sculptures records - W.DC.#${num}`;
+    const isPlaying = (scAudioIndex === i);
+    html += `
+      <div class="sc-pl-track${isPlaying ? ' playing' : ''}" id="sc-pl-track-${i}">
+        <div class="sc-pl-track-info">
+          <div class="sc-pl-track-title">${title}</div>
+          <div class="sc-pl-track-by">by American People</div>
+        </div>
+        <div class="sc-pl-track-btns">
+          <button class="sc-pl-btn play-btn" onclick="_scPlaylistPlay(${i})" title="Play">
+            <svg width="10" height="12" viewBox="0 0 10 12" fill="none">
+              <polygon points="0,0 10,6 0,12" fill="white"/>
+            </svg>
+          </button>
+          <button class="sc-pl-btn stop-btn" onclick="_scPlaylistStop()" title="Stop">
+            <svg width="10" height="10" viewBox="0 0 10 10" fill="none">
+              <rect x="0" y="0" width="10" height="10" fill="white"/>
+            </svg>
+          </button>
+        </div>
+      </div>
+    `;
+  }
+  pl.innerHTML = html;
+}
+
+// Avvia una traccia dalla playlist laterale
+function _scPlaylistPlay(idx) {
+  if (!scAudioFiles[idx]) return;
+  // Rimuovi 'playing' da tutte le righe
+  document.querySelectorAll('.sc-pl-track').forEach(el => el.classList.remove('playing'));
+  // Aggiungi 'playing' alla riga corrente
+  const row = document.getElementById(`sc-pl-track-${idx}`);
+  if (row) row.classList.add('playing');
+  // Avvia la traccia (usa la stessa funzione del player globale)
+  _scPlayIndex(idx);
+}
+
+// Ferma la traccia dalla playlist laterale
+function _scPlaylistStop() {
+  document.querySelectorAll('.sc-pl-track').forEach(el => el.classList.remove('playing'));
+  scStopAudio();
 }
 
 // Apre il pannello Information
@@ -11247,6 +11420,10 @@ function _scPlayIndex(idx) {
     if (btn) btn.classList.add('playing');
     scAudioFadeTo(0.72, 2000);
     scStartKaraoke(currentSrc);
+    // Aggiorna lo stato playing nella playlist laterale
+    document.querySelectorAll('.sc-pl-track').forEach(el => el.classList.remove('playing'));
+    const row = document.getElementById(`sc-pl-track-${idx}`);
+    if (row) row.classList.add('playing');
   }).catch(() => {});
 }
 
