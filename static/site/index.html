@@ -4581,7 +4581,7 @@
     .sc-kword {
       font-family: 'Courier New', Courier, 'Lucida Console', monospace;
       font-size: clamp(13px, 1.6vw, 20px);
-      font-weight: 700;
+      font-weight: 400;
       color: #fff;
       white-space: nowrap;
       line-height: 1.2;
@@ -11087,9 +11087,11 @@ function scRevealMenu() {
 // ════════════════════════════════════════════════════════════════
 
 // Stato audio
-let scAudioFiles  = [];   // array di URL audio caricati dal CMS
-let scAudioIndex  = -1;   // indice del file corrente
-let scAudioReady  = false; // true dopo la prima interazione utente
+let scAudioFiles    = [];   // array di URL audio caricati dal CMS
+let scAudioIndex    = -1;   // indice del file corrente
+let scAudioReady    = false; // true dopo la prima interazione utente
+let _scPlaylist     = [];   // playlist shuffled (indici non ancora ascoltati)
+let _scPlaylistDone = [];   // indici già ascoltati nel ciclo corrente
 
 // Carica i file audio dal progetto sculptures (campo audio_files)
 function scLoadAudioFiles() {
@@ -11104,37 +11106,85 @@ function scLoadAudioFiles() {
   });
 }
 
+// Restituisce il prossimo indice dalla playlist shuffled (senza ripetizioni)
+// Quando la playlist è esaurita, la rimescola e ricomincia
+function _scPickNextIndex() {
+  if (_scPlaylist.length === 0) {
+    // Ricostruisce la playlist con tutti gli indici disponibili
+    const all = scAudioFiles.map((_, i) => i);
+    // Fisher-Yates shuffle
+    for (let i = all.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [all[i], all[j]] = [all[j], all[i]];
+    }
+    // Evita che il primo del nuovo ciclo sia uguale all'ultimo ascoltato
+    if (all.length > 1 && all[0] === scAudioIndex) {
+      [all[0], all[1]] = [all[1], all[0]];
+    }
+    _scPlaylist = all;
+    _scPlaylistDone = [];
+  }
+  const idx = _scPlaylist.shift();
+  _scPlaylistDone.push(idx);
+  return idx;
+}
+
+// Carica e avvia un file audio per indice, con fade-in e karaoke
+function _scPlayIndex(idx) {
+  scAudioIndex = idx;
+  const player = document.getElementById('sc-audio-player');
+  if (!player) return;
+  const currentSrc = scAudioFiles[idx].url;
+  player.src = currentSrc;
+  player.volume = 0;
+  player.loop = false;  // no loop: alla fine passa al successivo
+  player.load();
+  player.play().then(() => {
+    const iconPlay  = document.getElementById('sc-audio-icon-play');
+    const iconPause = document.getElementById('sc-audio-icon-pause');
+    const btn = document.getElementById('sc-audio-btn');
+    if (iconPlay)  iconPlay.style.display  = 'none';
+    if (iconPause) iconPause.style.display = 'block';
+    if (btn) btn.classList.add('playing');
+    scAudioFadeTo(0.72, 2000);
+    scStartKaraoke(currentSrc);
+  }).catch(() => {});
+}
+
 // Prepara un file audio random e avvia l'autoplay con fade-in
 function scPrepareRandomAudio() {
   scLoadAudioFiles();
   if (scAudioFiles.length === 0) return;
-  // Sceglie un indice random
-  scAudioIndex = Math.floor(Math.random() * scAudioFiles.length);
-  const player = document.getElementById('sc-audio-player');
-  if (!player) return;
-  player.src = scAudioFiles[scAudioIndex].url;
-  player.volume = 0;
-  player.loop = true;
-  player.load();
+  // Reset playlist
+  _scPlaylist = [];
+  _scPlaylistDone = [];
+  scAudioIndex = -1;
   // Mostra il bottone
   const btn = document.getElementById('sc-audio-btn');
   if (btn) btn.style.display = 'flex';
-  // Autoplay con fade-in (parte subito, il browser permette autoplay muted/low-volume)
-  const currentSrc = scAudioFiles[scAudioIndex].url;
-  player.play().then(() => {
-    // Aggiorna icona → pausa
-    const iconPlay  = document.getElementById('sc-audio-icon-play');
-    const iconPause = document.getElementById('sc-audio-icon-pause');
-    if (iconPlay)  iconPlay.style.display  = 'none';
-    if (iconPause) iconPause.style.display = 'block';
-    if (btn) btn.classList.add('playing');
-    // Fade-in: porta il volume da 0 a 0.72 in 2 secondi
-    scAudioFadeTo(0.72, 2000);
-    // Avvia karaoke sincronizzato
-    scStartKaraoke(currentSrc);
-  }).catch(() => {
-    // Autoplay bloccato dal browser: rimane in standby, l'utente clicca il bottone
-  });
+  // Avvia il primo recording random
+  _scPlayIndex(_scPickNextIndex());
+  // Registra l'evento 'ended' per passare automaticamente al successivo
+  const player = document.getElementById('sc-audio-player');
+  if (player) {
+    // Rimuovi listener precedente per evitare duplicati
+    player.removeEventListener('ended', _scOnAudioEnded);
+    player.addEventListener('ended', _scOnAudioEnded);
+  }
+}
+
+// Chiamato automaticamente quando un recording termina
+function _scOnAudioEnded() {
+  scStopKaraoke();
+  // Breve pausa (1 secondo) poi parte il successivo con fade-in
+  setTimeout(() => {
+    const player = document.getElementById('sc-audio-player');
+    if (!player) return;
+    // Controlla che siamo ancora in Sculptures (il player è visibile)
+    const btn = document.getElementById('sc-audio-btn');
+    if (!btn || btn.style.display === 'none') return;
+    _scPlayIndex(_scPickNextIndex());
+  }, 1000);
 }
 
 // Utility: fade volume da valore attuale a target in ms
@@ -11273,7 +11323,7 @@ function scToggleAudio() {
       iconPlay.style.display  = 'none';
       iconPause.style.display = 'block';
       if (btn) btn.classList.add('playing');
-      // Riprendi karaoke dal punto corrente
+      // Riprendi karaoke dal punto corrente (se era stato fermato)
       if (_scKaraokeWords.length === 0 && scAudioFiles[scAudioIndex]) {
         scStartKaraoke(scAudioFiles[scAudioIndex].url);
       }
