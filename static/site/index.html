@@ -689,13 +689,17 @@
       -webkit-appearance: none;
       appearance: none;
       padding: 0;
-      /* Stessa posizione di ov-theme-toggle: allineato a sinistra nella navbar */
-      margin: 0 auto 0 calc(12px - 28px);
       cursor: none;
       color: #fff;
       transition: color .2s;
       display: none;  /* nascosto di default */
       border-radius: 0 !important;
+      /* position:fixed con left calcolato via JS = bordo sinistro di Archive */
+      position: fixed;
+      top: 0;
+      height: var(--nav-h);
+      line-height: var(--nav-h);
+      z-index: 9999;
     }
     #archive-theme-toggle:hover { color: rgba(255,255,255,0.5); }
     /* Visibilità gestita esclusivamente via JS in switchView */
@@ -7194,6 +7198,8 @@ function switchView(name) {
     const _isDark = document.documentElement.getAttribute('data-theme') === 'dark';
     if (name === 'archive' && _isDark) {
       _archBtn.style.display = 'inline-block';
+      requestAnimationFrame(positionArchiveToggle);
+      setTimeout(positionArchiveToggle, 150);
     } else {
       _archBtn.style.display = 'none';
     }
@@ -7595,7 +7601,19 @@ function archiveToggleTheme() {
   if (archBtn) archBtn.style.display = 'none';
 }
 
-// positionArchiveToggle rimossa: il bottone è ora inline nella header come ov-theme-toggle
+// Posiziona il toggle LIGHTMODE allineato al bordo sinistro di Archive nella pill-nav
+function positionArchiveToggle() {
+  const btn = document.getElementById('archive-theme-toggle');
+  const archiveNavBtn = document.querySelector('nav.pill-nav button[data-view="archive"]');
+  if (!btn || !archiveNavBtn) return;
+  const rect = archiveNavBtn.getBoundingClientRect();
+  // getBoundingClientRect restituisce coordinate già in pixel del viewport fisico.
+  // position:fixed usa le stesse coordinate del viewport, quindi nessuna divisione necessaria.
+  // Il bordo sinistro di LIGHTMODE coincide con il bordo sinistro della A di Archive.
+  btn.style.left = rect.left + 'px';
+}
+
+window.addEventListener('resize', positionArchiveToggle);
 
 function closeOverview() {
   const ov   = document.getElementById('overview-overlay');
