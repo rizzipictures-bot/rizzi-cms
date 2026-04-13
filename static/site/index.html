@@ -4494,12 +4494,13 @@
     }
     #sculptures-info-text > p {
       font-family: Helvetica, Arial, sans-serif;
-      font-size: 19px;
-      font-weight: 700;  /* bold come Corboz */
-      line-height: 1.35;
-      margin: 0 0 0 0;   /* nessun margine — testo continuo */
+      font-size: 17px;           /* -12% da 19px */
+      font-weight: 700;
+      line-height: 1.25;
+      letter-spacing: -0.03em;   /* lettere più ravvicinate */
+      margin: 0 0 0 0;
       color: rgb(34, 34, 34);
-      display: inline;   /* inline: i paragrafi si concatenano senza a capo */
+      display: inline;
     }
     #sculptures-info-text > p + p::before {
       content: ' ';      /* spazio tra i due paragrafi inline */
