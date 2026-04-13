@@ -551,7 +551,7 @@ def update_project(pid):
     if not p: return jsonify({'error': 'not found'}), 404
     data = request.json
     for k in ['title','year','place','publication','category_id','subtitle','description','order',
-             'technique','medium','prints','editions','keywords_manual','sections']:
+             'technique','medium','prints','editions','keywords_manual','sections','sc_section']:
         if k in data:
             p[k] = data[k]
     save_db(db)

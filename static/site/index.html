@@ -10725,13 +10725,15 @@ function scBuildGrid() {
   scCurrentImages = [];
 
   // Raccoglie tutte le immagini da tutti i progetti sculptures
+  // Ogni progetto può avere un campo sc_section che determina la sezione di destinazione
   const projects = PROJECTS.filter(p => p.category_id === 'sculptures');
   projects.forEach(p => {
     (p.images || []).forEach(img => {
       scCurrentImages.push({
         url: img.url,
         title: p.title || '',
-        desc: p.subtitle || p.place || ''
+        desc: p.subtitle || p.place || '',
+        sc_section: p.sc_section || null  // sezione di destinazione dal CMS
       });
     });
   });
@@ -10749,18 +10751,6 @@ function scBuildGrid() {
     return;
   }
 
-  // Mappatura posizione (0-based) → sezione del menu
-  const sectionMap = [
-    'images-book',  // thumb 1
-    'studies',      // thumb 2
-    'diary',        // thumb 3
-    'life',         // thumb 4
-    'video',        // thumb 5
-    'synopsis',     // thumb 6
-    'recordings',   // thumb 7
-    'experience'    // thumb 8
-  ];
-
   scCurrentImages.forEach((img, idx) => {
     const cell = document.createElement('div');
     cell.style.cursor = 'pointer';
@@ -10768,12 +10758,12 @@ function scBuildGrid() {
     imgEl.src = img.url;
     imgEl.alt = img.title;
     imgEl.loading = 'lazy';
-    const targetSection = sectionMap[idx];
+    // Usa il campo sc_section del progetto come destinazione;
+    // se non impostato, apre il lightbox
+    const targetSection = img.sc_section || null;
     if (targetSection) {
-      // Naviga alla sezione corrispondente
       cell.addEventListener('click', () => scSwitchSection(targetSection));
     } else {
-      // Oltre le 8 thumb: apre il lightbox
       cell.addEventListener('click', () => scOpenChild(idx));
     }
     const caption = document.createElement('div');
@@ -11696,6 +11686,7 @@ async function loadFromCMS() {
           editions:        p.editions || '',
           keywords_manual: p.keywords_manual || '',
           sections:        p.sections || ['archive', 'cities'],  // sezioni in cui appare
+          sc_section:      p.sc_section || null,  // sezione Sculptures di destinazione
           texts:           p.texts || [],
           // File audio e video (caricati via CMS)
           audio_files: (p.audio_files || []).map(af => ({

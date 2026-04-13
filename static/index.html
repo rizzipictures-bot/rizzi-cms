@@ -1447,6 +1447,27 @@
             <input type="text" id="f-keywords" placeholder="architettura, bianco e nero, Istanbul" oninput="livePreview()">
           </div>
         </div>
+        <!-- Sezione Sculptures (dropdown, visibile solo per categoria sculptures) -->
+        <div class="field-group full" id="f-sc-section-group" style="margin-top:8px;display:none">
+          <div class="field">
+            <label style="display:flex;align-items:center;gap:8px">
+              Sezione Sculptures
+              <span style="font-size:9px;font-weight:400;color:#888;letter-spacing:.3px">(determina a quale pagina porta la thumbnail nell'Overview)</span>
+            </label>
+            <select id="f-sc-section" onchange="livePreview()" style="margin-top:6px">
+              <option value="">— Nessuna (apre lightbox) —</option>
+              <option value="images-book">Image Book Vol. I</option>
+              <option value="studies">Studies</option>
+              <option value="diary">Diary Witness</option>
+              <option value="life">A Life Beside</option>
+              <option value="video">Video Book</option>
+              <option value="synopsis">Synopsis</option>
+              <option value="recordings">Recordings</option>
+              <option value="experience">Experience</option>
+            </select>
+          </div>
+        </div>
+
         <!-- Visibilità per sezione -->
         <div class="field-group full" style="margin-top:8px">
           <div class="field">
@@ -2137,6 +2158,15 @@ function renderEditor() {
     if (cb) cb.checked = secs.includes(s);
   });
 
+  // Mostra/nasconde il dropdown Sezione Sculptures
+  const scGroup = document.getElementById('f-sc-section-group');
+  const scSel   = document.getElementById('f-sc-section');
+  if (scGroup && scSel) {
+    const isSculptures = (p.category_id === 'sculptures');
+    scGroup.style.display = isSculptures ? 'block' : 'none';
+    scSel.value = p.sc_section || '';
+  }
+
   renderImageGrid();
   renderTextBlocks();
   renderMediaList();
@@ -2168,6 +2198,7 @@ async function saveProjectInfo() {
       const cb = document.getElementById('f-sec-' + s);
       return cb && cb.checked;
     }),
+    sc_section: document.getElementById('f-sc-section')?.value || null,
   };
   await fetch(`${API}/projects/${currentProject.id}`, {
     method: 'PUT',
