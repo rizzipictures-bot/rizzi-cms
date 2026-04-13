@@ -4433,17 +4433,17 @@
       position: fixed;
       left: 10px;
       top: 10px;
-      bottom: 10px;           /* si estende quasi a tutta la viewport */
       width: calc(58.3vw + 10px);
       height: auto;
+      max-height: calc(100vh - 20px);  /* copre quasi tutta la viewport */
       overflow-y: auto;
-      background-color: #d9d9d9;
+      background-color: #fff;  /* bianco come Corboz */
       color: #222;
-      padding: 20px 20px 60px; /* 60px in basso per lasciare spazio al bottone × */
+      padding: 15px 15px 60px;
       box-shadow: 0 2px 15px 3px rgba(0,0,0,.15);
       z-index: 1400;
       font-family: 'Times New Roman', Times, serif;
-      font-size: 14px;         /* font più grande come Corboz */
+      font-size: 13px;
       display: none;
       opacity: 0;
       transition: opacity 0.3s ease;
@@ -4461,8 +4461,8 @@
       bottom: 10px;
       width: 40px;
       height: 40px;
-      background: #4c00fc;  /* cerchio viola */
-      border-radius: 50%;   /* pallino rotondo */
+      background: #111;  /* cerchio nero come Corboz */
+      border-radius: 50%;
       border: none;
       cursor: pointer;
       display: flex;
@@ -4478,7 +4478,7 @@
     }
     #sculptures-info-text > p {
       font-family: 'Times New Roman', Times, serif;
-      font-size: 14px;
+      font-size: 13px;
       line-height: 1.6;
       margin-bottom: 0;
       color: #222;
@@ -4486,7 +4486,7 @@
     /* Titolo sezione (Impressum, Terms of use) in viola #4c00fc come Corboz */
     .sc-info-title {
       font-family: Helvetica, sans-serif;
-      font-size: 14px;
+      font-size: 13px;
       color: #4c00fc;
       margin: 10px 0 0 0;
       display: block;
@@ -4503,7 +4503,7 @@
     }
     .sc-impressum-row p {
       font-family: 'Times New Roman', Times, serif;
-      font-size: 14px;
+      font-size: 13px;
       margin: 0;
       line-height: 1.6;
       color: #222;
