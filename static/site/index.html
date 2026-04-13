@@ -4313,7 +4313,7 @@
       position: fixed;
       left: 0; right: 0; bottom: 0;
       height: calc(60vh + 80px);  /* pannello parziale +80px */
-      background-color: #222;
+      background-color: #000;
       z-index: 1300;  /* sopra view-sculptures (1100) e nav (1200) */
       display: none;
       overflow: hidden;
@@ -4388,12 +4388,29 @@
       justify-content: center;
       position: relative;
       overflow: hidden;
+      background: #000;
+    }
+    /* Sfondo blurrato: stessa foto a tutto schermo */
+    #sc-child-bg {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      object-position: center;
+      filter: blur(18px) brightness(0.7);
+      transform: scale(1.08);
+      z-index: 0;
+      pointer-events: none;
+      transition: opacity .4s ease;
     }
     #sculptures-carousel-img {
       max-width: 90vw;
       max-height: calc(60vh - 80px);
       object-fit: contain;
       display: block;
+      position: relative;
+      z-index: 2;
       transition: opacity .25s ease, max-height .35s cubic-bezier(.77,0,.175,1);
     }
     #sculptures-child.sc-fullscreen #sculptures-carousel-img {
@@ -4413,6 +4430,8 @@
       z-index: 10;
       pointer-events: none;
     }
+    /* Sfondo grigio rimosso: ora usa effetto blur */
+    #sculptures-child { background: #000; }
     #sculptures-carousel-caption p {
       font-family: 'Times New Roman', Times, serif;
       font-size: 1.3rem;
@@ -6315,6 +6334,7 @@
       <button id="sculptures-prev" onclick="scCarouselNav(-1)">PREV</button>
       <button id="sculptures-next" onclick="scCarouselNav(1)">NEXT</button>
       <div id="sculptures-carousel">
+        <img id="sc-child-bg" src="" alt="" aria-hidden="true">
         <img id="sculptures-carousel-img" src="" alt="">
         <div id="sculptures-carousel-caption">
           <p id="sculptures-carousel-title"></p>
@@ -11034,14 +11054,17 @@ function scCarouselNav(dir) {
 
 // Aggiorna l'immagine nel carousel
 function scUpdateCarousel() {
-  const img = document.getElementById('sculptures-carousel-img');
+  const img   = document.getElementById('sculptures-carousel-img');
+  const bgImg = document.getElementById('sc-child-bg');
   const titleEl = document.getElementById('sculptures-carousel-title');
   const descEl  = document.getElementById('sculptures-carousel-desc');
   if (!img || !scCurrentImages[scCurrentIndex]) return;
   const item = scCurrentImages[scCurrentIndex];
   img.style.opacity = '0';
+  if (bgImg) { bgImg.style.opacity = '0'; }
   setTimeout(() => {
     img.src = item.url;
+    if (bgImg) { bgImg.src = item.url; bgImg.style.opacity = '1'; }
     img.onload = () => { img.style.opacity = '1'; };
     if (img.complete) img.style.opacity = '1';
   }, 200);
