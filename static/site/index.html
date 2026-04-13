@@ -4753,6 +4753,30 @@
       to   { opacity: 0; }
     }
 
+    /* ── Karaoke dentro il popup zoom Archive/Images ── */
+    #sc-karaoke-zoom {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      z-index: 10;
+      pointer-events: none;
+      overflow: hidden;
+      height: 48px;
+      display: none;
+      align-items: flex-end;
+      padding: 0 50px 10px 50px;
+    }
+    #sc-karaoke-zoom.active { display: flex; }
+    #sc-karaoke-zoom-line {
+      display: flex;
+      flex-wrap: nowrap;
+      gap: 0.35em;
+      align-items: baseline;
+      overflow: hidden;
+      max-width: 100%;
+    }
+
     /* ── Karaoke dentro il viewer Sculptures ── */
     #sc-karaoke-viewer {
       position: absolute;
@@ -6705,6 +6729,8 @@
   <div id="ae-zoom-popup-inner">
     <img id="ae-zoom-popup-img" src="" alt="">
   </div>
+  <!-- Karaoke typewriter dentro il popup zoom -->
+  <div id="sc-karaoke-zoom"><div id="sc-karaoke-zoom-line"></div></div>
 </div>
 
 <script>
@@ -11518,7 +11544,8 @@ let _scKaraokeTimer = null;
 let _scKaraokeWords = [];  // array { word, start, end } del file corrente
 let _scKaraokeIdx = 0;     // indice della prossima parola da mostrare
 let _scKaraokeLineWords = []; // parole attualmente visibili nella riga (overview)
-let _scKaraokeViewerWords = []; // parole attualmente visibili nel viewer
+let _scKaraokeViewerWords = []; // parole attualmente visibili nel viewer Sculptures
+let _scKaraokeZoomWords = []; // parole attualmente visibili nel popup zoom
 const SC_KARAOKE_MAX_WORDS = 10; // max parole visibili contemporaneamente
 
 // Carica subtitles.json una sola volta
@@ -11549,6 +11576,12 @@ function scStartKaraoke(filename) {
     if (vbox) vbox.classList.add('active');
     if (vline) vline.innerHTML = '';
     _scKaraokeViewerWords = [];
+    // Attiva anche il karaoke nel popup zoom se è aperto
+    const zbox = document.getElementById('sc-karaoke-zoom');
+    const zline = document.getElementById('sc-karaoke-zoom-line');
+    if (zbox) zbox.classList.add('active');
+    if (zline) zline.innerHTML = '';
+    _scKaraokeZoomWords = [];
     _scKaraokeTimer = setInterval(_scKaraokeStep, 80);
   });
 }
@@ -11572,7 +11605,8 @@ function _scKaraokeStep() {
 function _scKaraokeShowWord(word) {
   const targets = [
     { lineId: 'sc-karaoke-line', wordsArr: _scKaraokeLineWords },
-    { lineId: 'sc-karaoke-viewer-line', wordsArr: _scKaraokeViewerWords }
+    { lineId: 'sc-karaoke-viewer-line', wordsArr: _scKaraokeViewerWords },
+    { lineId: 'sc-karaoke-zoom-line', wordsArr: _scKaraokeZoomWords }
   ];
 
   targets.forEach(({ lineId, wordsArr }) => {
@@ -11618,6 +11652,7 @@ function scStopKaraoke() {
   _scKaraokeIdx = 0;
   _scKaraokeLineWords = [];
   _scKaraokeViewerWords = [];
+  _scKaraokeZoomWords = [];
   const box = document.getElementById('sc-karaoke');
   const line = document.getElementById('sc-karaoke-line');
   if (box) box.classList.remove('active');
@@ -11626,6 +11661,10 @@ function scStopKaraoke() {
   const vline = document.getElementById('sc-karaoke-viewer-line');
   if (vbox) vbox.classList.remove('active');
   if (vline) vline.innerHTML = '';
+  const zbox = document.getElementById('sc-karaoke-zoom');
+  const zline = document.getElementById('sc-karaoke-zoom-line');
+  if (zbox) zbox.classList.remove('active');
+  if (zline) zline.innerHTML = '';
 }
 
 // Toggle play/pause
