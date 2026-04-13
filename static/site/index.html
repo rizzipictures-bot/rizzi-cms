@@ -4436,7 +4436,7 @@
       top: 25px;
       width: calc(58.3vw + 10px);
       height: auto;
-      background-color: #fff;
+      background-color: #d9d9d9;  /* grigio 15% */
       color: #222;
       padding: 10px;
       box-shadow: 0 2px 15px 3px rgba(0,0,0,.15);
@@ -4461,7 +4461,8 @@
       bottom: 10px;
       width: 40px;
       height: 40px;
-      background: #000;
+      background: #4c00fc;  /* cerchio viola */
+      border-radius: 50%;   /* pallino rotondo */
       border: none;
       cursor: pointer;
       display: flex;
@@ -6134,9 +6135,9 @@
       <div id="sculptures-info">
         <!-- X di chiusura: quadrato nero 40×40 in basso a destra, X bianca SVG 37×37 (identico a Corboz USI) -->
         <button id="sculptures-info-close" onclick="scCloseInfo()">
-          <svg width="37" height="37" viewBox="0 0 37 37" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path d="M36.1073 36.1054L0.398438 0.396484" stroke="white" stroke-width="0.75" stroke-miterlimit="10"/>
-            <path d="M0.398438 36.1035L36.1073 0.394621" stroke="white" stroke-width="0.75" stroke-miterlimit="10"/>
+          <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M15 15L5 5" stroke="white" stroke-width="1.5" stroke-linecap="round"/>
+            <path d="M5 15L15 5" stroke="white" stroke-width="1.5" stroke-linecap="round"/>
           </svg>
         </button>
         <!-- Testo principale -->
@@ -6203,9 +6204,9 @@
     <div id="sculptures-child">
       <!-- Bottone × chiudi (SVG Corboz: stroke 0.75, 37×37) -->
       <button id="sculptures-child-close" onclick="scCloseChild()" title="Chiudi">
-        <svg width="37" height="37" viewBox="0 0 37 37" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <path d="M36.1073 36.1054L0.398438 0.396484" stroke="white" stroke-width="0.75" stroke-miterlimit="10"/>
-          <path d="M0.398438 36.1035L36.1073 0.394621" stroke="white" stroke-width="0.75" stroke-miterlimit="10"/>
+        <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M15 15L5 5" stroke="white" stroke-width="1.5" stroke-linecap="round"/>
+          <path d="M5 15L15 5" stroke="white" stroke-width="1.5" stroke-linecap="round"/>
         </svg>
       </button>
       <!-- Bottone + / − espandi (pallino bianco, + nera) -->
