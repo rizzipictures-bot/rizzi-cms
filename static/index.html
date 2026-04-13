@@ -412,6 +412,32 @@
     gap: 10px;
     margin-bottom: 24px;
   }
+  /* Wrapper che contiene thumbnail + campo caption */
+  .image-cell-wrap {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+  .image-cell-caption-input {
+    width: 100%;
+    box-sizing: border-box;
+    background: transparent;
+    border: none;
+    border-bottom: 1px solid var(--border);
+    color: var(--fg);
+    font-family: var(--font);
+    font-size: 10px;
+    padding: 2px 2px 3px;
+    outline: none;
+    transition: border-color .2s;
+  }
+  .image-cell-caption-input:focus {
+    border-bottom-color: #9b6fd4;
+  }
+  .image-cell-caption-input::placeholder {
+    color: var(--gray);
+    opacity: .5;
+  }
   .image-cell {
     position: relative;
     aspect-ratio: 1;
@@ -2570,6 +2596,11 @@ function renderImageGrid() {
   const grid = document.getElementById('image-grid');
   grid.innerHTML = '';
   (currentProject.images || []).forEach((img, idx) => {
+    // Wrapper esterno (thumbnail + campo caption)
+    const wrap = document.createElement('div');
+    wrap.className = 'image-cell-wrap';
+    wrap.dataset.imgId = img.id;
+
     const cell = document.createElement('div');
     const inOv = img.in_overview ? 'in-overview' : '';
     const isSelected = _selectedImgIds.has(img.id);
@@ -2611,6 +2642,38 @@ function renderImageGrid() {
       </div>
       ${img.caption ? `<div class="img-caption">${img.caption}</div>` : ''}
     `;
+
+    // ── Campo caption editabile sotto la thumbnail ──
+    const capInput = document.createElement('input');
+    capInput.type = 'text';
+    capInput.className = 'image-cell-caption-input';
+    capInput.placeholder = 'Testo sotto foto...';
+    capInput.value = img.caption || '';
+    capInput.addEventListener('blur', async () => {
+      const newCaption = capInput.value.trim();
+      if (newCaption === (img.caption || '').trim()) return; // nessuna modifica
+      await fetch(`${API}/projects/${currentProject.id}/images/${img.id}/caption`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ caption: newCaption })
+      });
+      img.caption = newCaption;
+      // Aggiorna anche la caption overlay nella cella
+      const capDiv = cell.querySelector('.img-caption');
+      if (newCaption) {
+        if (capDiv) { capDiv.textContent = newCaption; }
+        else {
+          const d = document.createElement('div');
+          d.className = 'img-caption';
+          d.textContent = newCaption;
+          cell.appendChild(d);
+        }
+      } else if (capDiv) {
+        capDiv.remove();
+      }
+    });
+    capInput.addEventListener('keydown', e => { if (e.key === 'Enter') capInput.blur(); });
+
     // ── Drag & Drop handlers ──
     cell.addEventListener('dragstart', e => {
       _dragSrcId = img.id;
@@ -2646,7 +2709,10 @@ function renderImageGrid() {
       // Salva il nuovo ordine sul backend
       _saveImageOrder();
     });
-    grid.appendChild(cell);
+    // Assembla wrapper: thumbnail + campo caption
+    wrap.appendChild(cell);
+    wrap.appendChild(capInput);
+    grid.appendChild(wrap);
   });
   updateIptcStatusBar();
 }

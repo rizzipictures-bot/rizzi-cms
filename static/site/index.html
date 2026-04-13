@@ -4260,6 +4260,16 @@
       transition: opacity .3s;
     }
     #sculptures-section-content .sc-section-images > div:hover .sc-img-wrap img { opacity: 0.85; }
+    #sculptures-section-content .sc-section-images .sc-img-caption {
+      padding: 5px 2px 0;
+      font-family: 'Arial Black', 'Helvetica Neue', Arial, sans-serif;
+      font-size: 0.75rem;
+      font-weight: 900;
+      color: #fff;
+      line-height: 1.2;
+      text-transform: uppercase;
+      letter-spacing: 0.02em;
+    }
     #sculptures-section-content .sc-section-images .sc-caption {
       padding: 5px 4px 10px;
       background: #000;
@@ -10802,7 +10812,7 @@ function scBuildSectionContent(section) {
   projects.forEach(p => {
     if (p.sc_section === section) {
       (p.images || []).forEach(img => {
-        sectionImages.push({ url: img.url, title: p.title || '', desc: p.subtitle || '' });
+        sectionImages.push({ url: img.url, title: p.title || '', desc: p.subtitle || '', caption: img.caption || '' });
       });
     }
   });
@@ -10822,9 +10832,11 @@ function scBuildSectionContent(section) {
   if (sectionImages.length > 0) {
     html += '<div class="sc-section-images">';
     sectionImages.forEach((img, idx) => {
+      const capHtml = img.caption ? `<div class="sc-img-caption">${img.caption}</div>` : '';
       html += `
         <div onclick="scOpenChild(${idx})">
           <div class="sc-img-wrap"><img src="${img.url}" alt="${img.title}" loading="lazy"></div>
+          ${capHtml}
         </div>
       `;
     });
@@ -11670,6 +11682,7 @@ async function loadFromCMS() {
               thumb:      thumbUrl,
               ar:         img.ar || 1.33,
               title:      img.caption || fname,
+              caption:    img.caption || '',    /* testo bold bianco sotto thumbnail */
               year:       p.year || '',
               keywords:   img.keywords || '',   /* IPTC + AI + manuali */
               in_overview: img.in_overview || false
