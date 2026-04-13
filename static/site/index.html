@@ -4398,6 +4398,75 @@
       text-decoration: none;
     }
 
+    /* ── Bottone audio Sculptures ── */
+    #sc-audio-btn {
+      position: fixed;
+      bottom: 18px;
+      left: 18px;
+      z-index: 1300;
+      width: 28px;
+      height: 28px;
+      background: transparent;
+      border: 1px solid rgba(255,255,255,0.5);
+      cursor: pointer;
+      display: none;               /* mostrato solo in Sculptures */
+      align-items: center;
+      justify-content: center;
+      padding: 0;
+      outline: none;
+      transition: border-color 0.2s ease, opacity 0.2s ease;
+    }
+    #sc-audio-btn:hover { border-color: #fff; opacity: 0.8; }
+    #sc-audio-btn.playing { border-color: #fff; }
+
+    /* ── Box video overlay Sculptures (identico a Information) ── */
+    #sc-video-box {
+      position: fixed;
+      left: 10px;
+      top: 25px;
+      width: calc(58.3vw + 10px);
+      background-color: #fff;
+      color: #222;
+      padding: 10px;
+      box-shadow: 0 2px 15px 3px rgba(0,0,0,.15);
+      z-index: 1400;
+      display: none;
+      opacity: 0;
+      transition: opacity 0.3s ease;
+    }
+    #sc-video-box.open  { display: block; }
+    #sc-video-box.active { opacity: 1; }
+    #sc-video-close {
+      position: absolute;
+      right: 10px;
+      bottom: 10px;
+      width: 40px;
+      height: 40px;
+      background: #000;
+      border: none;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 5;
+      outline: none;
+      padding: 0;
+    }
+    #sc-video-close:hover { opacity: 0.7; }
+    #sc-video-player {
+      width: 100%;
+      height: auto;
+      display: block;
+      margin-bottom: 8px;
+      background: #000;
+    }
+    #sc-video-caption {
+      font-family: 'Times New Roman', Times, serif;
+      font-size: 10px;
+      color: #222;
+      margin: 0 0 50px 0;
+    }
+
     /* ════════════════════════════════════════════════════════════════
        BIOGRAPHY
     ════════════════════════════════════════════════════════════════ */
@@ -5984,6 +6053,34 @@
         </div>
         <!-- Spazio per non sovrapporre la X -->
         <div style="height:60px;"></div>
+      </div>
+
+      <!-- Bottone audio play/pause (fisso in basso a sinistra) -->
+      <button id="sc-audio-btn" onclick="scToggleAudio()" title="Play / Pause audio">
+        <!-- Icona play (default) -->
+        <svg id="sc-audio-icon-play" width="10" height="12" viewBox="0 0 10 12" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M1 1L9 6L1 11V1Z" fill="white" stroke="white" stroke-width="0.5" stroke-linejoin="round"/>
+        </svg>
+        <!-- Icona pause (nascosta) -->
+        <svg id="sc-audio-icon-pause" width="10" height="12" viewBox="0 0 10 12" fill="none" xmlns="http://www.w3.org/2000/svg" style="display:none">
+          <rect x="1" y="1" width="3" height="10" fill="white"/>
+          <rect x="6" y="1" width="3" height="10" fill="white"/>
+        </svg>
+      </button>
+
+      <!-- Elemento audio (nascosto) -->
+      <audio id="sc-audio-player" preload="none"></audio>
+
+      <!-- Box video overlay (stile Information) -->
+      <div id="sc-video-box">
+        <button id="sc-video-close" onclick="scCloseVideo()">
+          <svg width="37" height="37" viewBox="0 0 37 37" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M36.1073 36.1054L0.398438 0.396484" stroke="white" stroke-width="0.75" stroke-miterlimit="10"/>
+            <path d="M0.398438 36.1035L36.1073 0.394621" stroke="white" stroke-width="0.75" stroke-miterlimit="10"/>
+          </svg>
+        </button>
+        <video id="sc-video-player" controls></video>
+        <p id="sc-video-caption"></p>
       </div>
 
     </div>
@@ -7680,6 +7777,8 @@ function switchView(name) {
     scBuildGrid();
     // Avvia l'animazione reveal del menu
     scRevealMenu();
+    // Prepara un file audio random (in standby — parte solo al click)
+    scPrepareRandomAudio();
   } else {
     // Chiudi popup lightbox Sculptures se aperto
     const scChild = document.getElementById('sculptures-child');
@@ -7687,6 +7786,10 @@ function switchView(name) {
     // Chiudi info panel Sculptures se aperto
     const scInfo = document.getElementById('sculptures-info');
     if (scInfo) { scInfo.classList.remove('active'); scInfo.classList.remove('open'); }
+    // Chiudi box video se aperto
+    scCloseVideo();
+    // Ferma l'audio
+    scStopAudio();
     // Resetta le voci del menu (nascondile di nuovo per la prossima apertura)
     document.querySelectorAll('#sculptures-nav [data-sc-section], #sculptures-back')
       .forEach(el => el.classList.remove('sc-revealed'));
@@ -10717,6 +10820,106 @@ function scRevealMenu() {
 }
 
 // ════════════════════════════════════════════════════════════════
+// SCULPTURES — AUDIO PLAYER
+// ════════════════════════════════════════════════════════════════
+
+// Stato audio
+let scAudioFiles  = [];   // array di URL audio caricati dal CMS
+let scAudioIndex  = -1;   // indice del file corrente
+let scAudioReady  = false; // true dopo la prima interazione utente
+
+// Carica i file audio dal progetto sculptures (campo audio_files)
+function scLoadAudioFiles() {
+  scAudioFiles = [];
+  const projects = PROJECTS.filter(p => p.category_id === 'sculptures');
+  projects.forEach(p => {
+    if (p.audio_files && Array.isArray(p.audio_files)) {
+      p.audio_files.forEach(af => {
+        if (af.url) scAudioFiles.push({ url: af.url, caption: af.caption || '' });
+      });
+    }
+  });
+}
+
+// Prepara un file audio random e lo mette in standby (non parte finché l'utente non clicca)
+function scPrepareRandomAudio() {
+  scLoadAudioFiles();
+  if (scAudioFiles.length === 0) return;
+  // Sceglie un indice random
+  scAudioIndex = Math.floor(Math.random() * scAudioFiles.length);
+  const player = document.getElementById('sc-audio-player');
+  if (!player) return;
+  player.src = scAudioFiles[scAudioIndex].url;
+  player.load();
+  // Mostra il bottone
+  const btn = document.getElementById('sc-audio-btn');
+  if (btn) btn.style.display = 'flex';
+}
+
+// Toggle play/pause
+function scToggleAudio() {
+  const player = document.getElementById('sc-audio-player');
+  const iconPlay  = document.getElementById('sc-audio-icon-play');
+  const iconPause = document.getElementById('sc-audio-icon-pause');
+  const btn = document.getElementById('sc-audio-btn');
+  if (!player) return;
+
+  if (player.paused) {
+    player.play().then(() => {
+      iconPlay.style.display  = 'none';
+      iconPause.style.display = 'block';
+      if (btn) btn.classList.add('playing');
+    }).catch(() => {});
+  } else {
+    player.pause();
+    iconPlay.style.display  = 'block';
+    iconPause.style.display = 'none';
+    if (btn) btn.classList.remove('playing');
+  }
+}
+
+// Ferma e resetta l'audio quando si esce da Sculptures
+function scStopAudio() {
+  const player = document.getElementById('sc-audio-player');
+  if (player) { player.pause(); player.currentTime = 0; }
+  const iconPlay  = document.getElementById('sc-audio-icon-play');
+  const iconPause = document.getElementById('sc-audio-icon-pause');
+  const btn = document.getElementById('sc-audio-btn');
+  if (iconPlay)  iconPlay.style.display  = 'block';
+  if (iconPause) iconPause.style.display = 'none';
+  if (btn) { btn.classList.remove('playing'); btn.style.display = 'none'; }
+}
+
+// ════════════════════════════════════════════════════════════════
+// SCULPTURES — VIDEO BOX
+// ════════════════════════════════════════════════════════════════
+
+// Apre il box video con un URL e una didascalia opzionale
+function scOpenVideo(url, caption) {
+  const box     = document.getElementById('sc-video-box');
+  const player  = document.getElementById('sc-video-player');
+  const capEl   = document.getElementById('sc-video-caption');
+  if (!box || !player) return;
+  player.src = url;
+  player.load();
+  if (capEl) capEl.textContent = caption || '';
+  box.classList.add('open');
+  requestAnimationFrame(() => box.classList.add('active'));
+}
+
+// Chiude il box video
+function scCloseVideo() {
+  const box    = document.getElementById('sc-video-box');
+  const player = document.getElementById('sc-video-player');
+  if (!box) return;
+  box.classList.remove('active');
+  setTimeout(() => {
+    box.classList.remove('open');
+    if (player) { player.pause(); player.src = ''; }
+  }, 300);
+}
+
+// ════════════════════════════════════════════════════════════════
 // MISCELLANEA
 // ════════════════════════════════════════════════════════════════
 function buildMiscellaneaIndex() {
@@ -11337,7 +11540,20 @@ async function loadFromCMS() {
           editions:        p.editions || '',
           keywords_manual: p.keywords_manual || '',
           sections:        p.sections || ['archive', 'cities'],  // sezioni in cui appare
-          texts: p.texts || []
+          texts:           p.texts || [],
+          // File audio e video (caricati via CMS)
+          audio_files: (p.audio_files || []).map(af => ({
+            id:      af.id,
+            url:     af.url ? (af.url.startsWith('http') ? af.url : CMS_API.replace('/api','') + af.url) : '',
+            caption: af.caption || '',
+            type:    'audio'
+          })),
+          video_files: (p.video_files || []).map(vf => ({
+            id:      vf.id,
+            url:     vf.url ? (vf.url.startsWith('http') ? vf.url : CMS_API.replace('/api','') + vf.url) : '',
+            caption: vf.caption || '',
+            type:    'video'
+          }))
         };
         PROJECTS.push(proj);
       });

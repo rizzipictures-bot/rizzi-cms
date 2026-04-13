@@ -1350,6 +1350,7 @@
         <button class="tab-btn active" onclick="switchTab('info',this)">Info</button>
         <button class="tab-btn" onclick="switchTab('images',this)">Foto</button>
         <button class="tab-btn" onclick="switchTab('texts',this)">Testi</button>
+        <button class="tab-btn" onclick="switchTab('media',this)">Media</button>
         <button class="tab-btn" onclick="switchTab('social',this);loadCorpus()">&#9670; Social</button>
       </div>
 
@@ -1666,6 +1667,25 @@
             </div>
           </div>
         </div>
+      </div>
+
+      <!-- TAB: MEDIA (audio / video) -->
+      <div class="tab-panel" id="tab-media">
+        <div style="padding:12px 0 8px;font-size:11px;color:var(--gray);letter-spacing:.5px;text-transform:uppercase">Audio &amp; Video</div>
+
+        <!-- Upload area -->
+        <div class="upload-zone" id="media-upload-zone"
+             onclick="document.getElementById('media-file-input').click()"
+             ondragover="dragOver(event)" ondragleave="dragLeave(event)" ondrop="dropMediaFiles(event)">
+          <p>Trascina file audio o video qui</p>
+          <small>MP3 · WAV · OGG · AAC · MP4 · WEBM · MOV</small>
+        </div>
+        <input type="file" id="media-file-input" multiple
+               accept=".mp3,.wav,.ogg,.aac,.flac,.m4a,.mp4,.webm,.mov,.avi,.mkv"
+               style="display:none" onchange="uploadMediaFiles(this.files)">
+
+        <!-- Lista file caricati -->
+        <div id="media-list" style="margin-top:12px"></div>
       </div>
 
       <!-- TAB: SOCIAL -->
@@ -2119,6 +2139,7 @@ function renderEditor() {
 
   renderImageGrid();
   renderTextBlocks();
+  renderMediaList();
   updateIptcStatusBar();
 }
 
@@ -2702,6 +2723,92 @@ async function uploadFiles(files) {
     xhr.send(fd);
   });
 }
+
+// ── TAB MEDIA: AUDIO / VIDEO ──────────────────────────────────────────────────────────
+
+function renderMediaList() {
+  const p = currentProject;
+  const list = document.getElementById('media-list');
+  if (!list) return;
+  const allMedia = [
+    ...(p.audio_files || []).map(f => ({...f, type:'audio'})),
+    ...(p.video_files || []).map(f => ({...f, type:'video'}))
+  ];
+  if (allMedia.length === 0) {
+    list.innerHTML = '<div style="color:var(--gray);font-size:12px;padding:8px 0">Nessun file caricato</div>';
+    return;
+  }
+  list.innerHTML = allMedia.map(f => `
+    <div class="media-item" id="media-item-${f.id}" style="display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid var(--border)">
+      <span style="font-size:18px">${f.type === 'audio' ? '\uD83C\uDFB5' : '\uD83C\uDFAC'}</span>
+      <div style="flex:1;min-width:0">
+        <div style="font-size:12px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${f.file || f.url}</div>
+        <input type="text" value="${f.caption || ''}" placeholder="Didascalia..."
+               style="width:100%;font-size:11px;border:none;border-bottom:1px solid var(--border);background:transparent;padding:2px 0;margin-top:2px"
+               onblur="updateMediaCaption('${f.id}', this.value)">
+      </div>
+      <button onclick="deleteMedia('${f.id}')" style="background:none;border:none;cursor:pointer;color:#c0392b;font-size:14px;padding:0 4px" title="Elimina">×</button>
+    </div>
+  `).join('');
+}
+
+async function uploadMediaFiles(files) {
+  if (!currentProject || !files.length) return;
+  const fd = new FormData();
+  for (const f of files) fd.append('files', f);
+  toast('Caricamento media in corso...');
+  try {
+    const res = await fetch(`${API}/projects/${currentProject.id}/media`, { method: 'POST', body: fd });
+    const data = await res.json();
+    if (!Array.isArray(data)) throw new Error();
+    // Aggiorna currentProject
+    currentProject.audio_files = currentProject.audio_files || [];
+    currentProject.video_files = currentProject.video_files || [];
+    data.forEach(f => {
+      if (f.type === 'audio') currentProject.audio_files.push(f);
+      else currentProject.video_files.push(f);
+    });
+    renderMediaList();
+    toast(`${data.length} file caricati \u2713`);
+  } catch(e) {
+    toast('Errore upload media');
+  }
+  // Reset input
+  const inp = document.getElementById('media-file-input');
+  if (inp) inp.value = '';
+}
+
+function dropMediaFiles(e) {
+  e.preventDefault();
+  document.getElementById('media-upload-zone').classList.remove('drag-over');
+  const files = e.dataTransfer.files;
+  if (files.length) uploadMediaFiles(files);
+}
+
+async function deleteMedia(mid) {
+  if (!confirm('Eliminare questo file?')) return;
+  await fetch(`${API}/projects/${currentProject.id}/media/${mid}`, { method: 'DELETE' });
+  currentProject.audio_files = (currentProject.audio_files || []).filter(f => f.id !== mid);
+  currentProject.video_files = (currentProject.video_files || []).filter(f => f.id !== mid);
+  renderMediaList();
+  toast('File eliminato');
+}
+
+async function updateMediaCaption(mid, caption) {
+  if (!currentProject) return;
+  await fetch(`${API}/projects/${currentProject.id}/media/${mid}/caption`, {
+    method: 'PUT',
+    headers: {'Content-Type':'application/json'},
+    body: JSON.stringify({ caption })
+  });
+  // Aggiorna in memoria
+  for (const field of ['audio_files','video_files']) {
+    const entry = (currentProject[field] || []).find(f => f.id === mid);
+    if (entry) { entry.caption = caption; break; }
+  }
+}
+
+// ── END TAB MEDIA ────────────────────────────────────────────────────────────────
 
 async function deleteImage(iid) {
   if (!confirm('Eliminare questa foto?')) return;

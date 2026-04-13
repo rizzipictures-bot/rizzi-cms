@@ -688,6 +688,85 @@ def delete_image(pid, iid):
     save_db(db)
     return jsonify({'ok': True})
 
+# ── AUDIO / VIDEO ──────────────────────────────────────────────────────────
+
+@app.route('/api/projects/<pid>/media', methods=['POST'])
+def upload_media(pid):
+    """Carica file audio o video (mp3, mp4, wav, ogg, webm, mov) per un progetto."""
+    db = load_db()
+    p = next((pp for pp in db['projects'] if pp['id'] == pid), None)
+    if not p: return jsonify({'error': 'not found'}), 404
+
+    ALLOWED_AUDIO = {'.mp3', '.wav', '.ogg', '.aac', '.flac', '.m4a'}
+    ALLOWED_VIDEO = {'.mp4', '.webm', '.mov', '.avi', '.mkv'}
+    ALLOWED_MEDIA = ALLOWED_AUDIO | ALLOWED_VIDEO
+
+    results = []
+    p.setdefault('audio_files', [])
+    p.setdefault('video_files', [])
+
+    for file in request.files.getlist('files'):
+        ext = Path(file.filename).suffix.lower()
+        if ext not in ALLOWED_MEDIA:
+            continue
+        fname = str(uuid.uuid4())[:12] + ext
+        fpath = UPLOAD / fname
+        file.save(str(fpath))
+        media_type = 'audio' if ext in ALLOWED_AUDIO else 'video'
+        entry = {
+            'id':      str(uuid.uuid4())[:8],
+            'file':    fname,
+            'url':     '/uploads/' + fname,
+            'caption': request.form.get('caption', ''),
+            'type':    media_type,
+        }
+        if media_type == 'audio':
+            p['audio_files'].append(entry)
+        else:
+            p['video_files'].append(entry)
+        results.append(entry)
+
+    save_db(db)
+    return jsonify(results), 201
+
+
+@app.route('/api/projects/<pid>/media/<mid>', methods=['DELETE'])
+def delete_media(pid, mid):
+    """Elimina un file audio o video da un progetto."""
+    db = load_db()
+    p = next((pp for pp in db['projects'] if pp['id'] == pid), None)
+    if not p: return jsonify({'error': 'not found'}), 404
+
+    for field in ('audio_files', 'video_files'):
+        lst = p.get(field, [])
+        entry = next((e for e in lst if e['id'] == mid), None)
+        if entry:
+            try: (UPLOAD / entry['file']).unlink(missing_ok=True)
+            except: pass
+            p[field] = [e for e in lst if e['id'] != mid]
+            save_db(db)
+            return jsonify({'ok': True})
+
+    return jsonify({'error': 'not found'}), 404
+
+
+@app.route('/api/projects/<pid>/media/<mid>/caption', methods=['PUT'])
+def update_media_caption(pid, mid):
+    """Aggiorna la didascalia di un file audio/video."""
+    db = load_db()
+    p = next((pp for pp in db['projects'] if pp['id'] == pid), None)
+    if not p: return jsonify({'error': 'not found'}), 404
+    data = request.get_json(force=True)
+    for field in ('audio_files', 'video_files'):
+        entry = next((e for e in p.get(field, []) if e['id'] == mid), None)
+        if entry:
+            entry['caption'] = data.get('caption', '')
+            save_db(db)
+            return jsonify({'ok': True})
+    return jsonify({'error': 'not found'}), 404
+
+# ── END AUDIO / VIDEO ────────────────────────────────────────────────────────
+
 @app.route('/api/tag-all', methods=['POST'])
 def tag_all_images():
     """Avvia il tagging AI per tutte le foto che non hanno ancora keyword."""
