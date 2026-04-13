@@ -4204,14 +4204,18 @@
     #sculptures-section-content::-webkit-scrollbar { display: none; }
     #sculptures-section-content h2 {
       font-family: 'Arial Black', 'Helvetica Neue', Arial, sans-serif;
-      font-size: clamp(60px, 8vw, 110px);
+      font-size: clamp(50px, 6vw, 80px);
       font-weight: 900;
-      letter-spacing: -3px;
-      line-height: 0.75;
-      margin: -5px 0 0 0;
-      padding-bottom: 30px;
+      letter-spacing: -2px;
+      line-height: 1;
+      margin: 0;
+      padding: 12px 0 14px;
       color: #fff;
       text-transform: uppercase;
+      text-align: center;
+      background: #000;
+      display: block;
+      width: 100%;
     }
     #sculptures-section-content p {
       font-family: 'Times New Roman', Times, serif;
@@ -4226,35 +4230,29 @@
     #sculptures-section-content .sc-section-images {
       display: grid;
       grid-template-columns: repeat(4, 1fr);
-      gap: 6px;
+      gap: 3px;
       margin-top: 0;
-      padding: 6px;
+      padding: 0;
       background: #000;
     }
     #sculptures-section-content .sc-section-images > div {
       cursor: pointer;
       position: relative;
     }
-    /* Contenitore con aspect ratio verticale 3:4 */
     #sculptures-section-content .sc-section-images > div .sc-img-wrap {
       width: 100%;
-      padding-top: 133.33%;
       position: relative;
       overflow: hidden;
     }
     #sculptures-section-content .sc-section-images > div .sc-img-wrap img {
-      position: absolute;
-      top: 0; left: 0;
       width: 100%;
-      height: 100%;
-      object-fit: cover;
-      object-position: center;
+      height: auto;
       display: block;
       transition: opacity .3s;
     }
     #sculptures-section-content .sc-section-images > div:hover .sc-img-wrap img { opacity: 0.85; }
     #sculptures-section-content .sc-section-images .sc-caption {
-      padding: 6px 4px 10px;
+      padding: 5px 4px 10px;
       background: #000;
     }
     #sculptures-section-content .sc-section-images .sc-caption p {
