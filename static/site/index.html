@@ -689,17 +689,13 @@
       -webkit-appearance: none;
       appearance: none;
       padding: 0;
+      /* Stessa posizione di ov-theme-toggle: allineato a sinistra nella navbar */
+      margin: 0 auto 0 calc(12px - 28px);
       cursor: none;
       color: #fff;
       transition: color .2s;
       display: none;  /* nascosto di default */
       border-radius: 0 !important;
-      /* Posizionato sopra la A di Archive nella navbar — bordo sx allineato alla A */
-      position: fixed;
-      top: 0;
-      height: var(--nav-h);
-      line-height: var(--nav-h);
-      z-index: 9999;
     }
     #archive-theme-toggle:hover { color: rgba(255,255,255,0.5); }
     /* Visibilità gestita esclusivamente via JS in switchView */
@@ -7197,10 +7193,7 @@ function switchView(name) {
     if (!_archBtn) return;
     const _isDark = document.documentElement.getAttribute('data-theme') === 'dark';
     if (name === 'archive' && _isDark) {
-      _archBtn.style.display = 'block';
-      // Primo tentativo immediato con rAF, secondo con delay per sicurezza
-      requestAnimationFrame(positionArchiveToggle);
-      setTimeout(positionArchiveToggle, 150);
+      _archBtn.style.display = 'inline-block';
     } else {
       _archBtn.style.display = 'none';
     }
@@ -7602,22 +7595,7 @@ function archiveToggleTheme() {
   if (archBtn) archBtn.style.display = 'none';
 }
 
-// Posiziona il toggle LIGHTMODE sopra la A di Archive nella pill-nav
-function positionArchiveToggle() {
-  const btn = document.getElementById('archive-theme-toggle');
-  const archiveNavBtn = document.querySelector('nav.pill-nav button[data-view="archive"]');
-  if (!btn || !archiveNavBtn) return;
-  const rect = archiveNavBtn.getBoundingClientRect();
-  // Compensa il zoom CSS su html (zoom: calc(100vw/1440))
-  // getBoundingClientRect restituisce coordinate in pixel fisici scalati,
-  // ma position:fixed è relativo al viewport CSS non scalato.
-  // Dividiamo per il fattore di zoom per ottenere coordinate CSS corrette.
-  const zoomFactor = parseFloat(getComputedStyle(document.documentElement).zoom) || 1;
-  // Bordo sinistro allineato alla A di Archive nella navbar
-  btn.style.left = (rect.left / zoomFactor) + 'px';
-}
-
-window.addEventListener('resize', positionArchiveToggle);
+// positionArchiveToggle rimossa: il bottone è ora inline nella header come ov-theme-toggle
 
 function closeOverview() {
   const ov   = document.getElementById('overview-overlay');
