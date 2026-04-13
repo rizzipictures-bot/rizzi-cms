@@ -7607,10 +7607,12 @@ function positionArchiveToggle() {
   const archiveNavBtn = document.querySelector('nav.pill-nav button[data-view="archive"]');
   if (!btn || !archiveNavBtn) return;
   const rect = archiveNavBtn.getBoundingClientRect();
-  // getBoundingClientRect restituisce coordinate già in pixel del viewport fisico.
-  // position:fixed usa le stesse coordinate del viewport, quindi nessuna divisione necessaria.
-  // Il bordo sinistro di LIGHTMODE coincide con il bordo sinistro della A di Archive.
-  btn.style.left = rect.left + 'px';
+  // Il sito usa zoom: calc(100vw/1440) su html.
+  // getBoundingClientRect() restituisce coordinate in pixel fisici del viewport (già scalate dallo zoom).
+  // position:fixed usa pixel CSS del viewport NON scalato (= pixel fisici / zoom).
+  // Quindi: left_css = rect.left / zoom, dove zoom = window.innerWidth / 1440.
+  const zoom = window.innerWidth / 1440;
+  btn.style.left = (rect.left / zoom) + 'px';
 }
 
 window.addEventListener('resize', positionArchiveToggle);
