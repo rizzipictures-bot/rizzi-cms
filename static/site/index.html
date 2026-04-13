@@ -703,11 +703,7 @@
       z-index: 9999;
     }
     #archive-theme-toggle:hover { color: rgba(255,255,255,0.5); }
-    /* Visibile solo in Archive darkmode */
-    [data-theme="dark"] body.view-archive #archive-theme-toggle,
-    body.view-archive[data-theme="dark"] #archive-theme-toggle { display: block; }
-    /* Nascosto in lightmode anche se in Archive */
-    body.view-archive:not([data-theme="dark"]) #archive-theme-toggle { display: none !important; }
+    /* Visibilità gestita esclusivamente via JS in switchView */
     /* Navbar nascosta durante la landing — appare solo dopo */
     body.landing-active header {
       visibility: hidden;
