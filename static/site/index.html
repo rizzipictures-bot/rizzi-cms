@@ -4190,32 +4190,36 @@
     /* ── Sezioni non-Overview (testo/contenuto) ── */
     #sculptures-section-content {
       position: absolute;
-      top: 25px;
+      top: 0;
       left: 0;
       right: 0;
       bottom: 0;
       overflow-y: auto;
-      padding: 80px 20px 60px;
+      padding: 0 0 60px;
       color: #fff;
       font-family: 'Times New Roman', Times, serif;
       display: none;
+      background: #000;
     }
     #sculptures-section-content.active { display: block; }
     #sculptures-section-content::-webkit-scrollbar { display: none; }
     #sculptures-section-content h2 {
       font-family: 'Arial Black', 'Helvetica Neue', Arial, sans-serif;
-      font-size: clamp(50px, 6vw, 80px);
+      font-size: clamp(40px, 5vw, 70px);
       font-weight: 900;
       letter-spacing: -2px;
       line-height: 1;
       margin: 0;
-      padding: 12px 0 14px;
+      padding: 6px 0 6px;
       color: #fff;
       text-transform: uppercase;
       text-align: center;
       background: #000;
       display: block;
       width: 100%;
+      position: sticky;
+      top: 0;
+      z-index: 10;
     }
     #sculptures-section-content p {
       font-family: 'Times New Roman', Times, serif;
@@ -4243,10 +4247,15 @@
       width: 100%;
       position: relative;
       overflow: hidden;
+      padding-top: 133.33%;  /* proporzione 3:4 verticale */
     }
     #sculptures-section-content .sc-section-images > div .sc-img-wrap img {
+      position: absolute;
+      top: 0; left: 0;
       width: 100%;
-      height: auto;
+      height: 100%;
+      object-fit: cover;
+      object-position: center;
       display: block;
       transition: opacity .3s;
     }
@@ -4273,7 +4282,7 @@
       left: 0; right: 0; bottom: 0;
       height: 60vh;          /* pannello parziale */
       background-color: #222;
-      z-index: 300;
+      z-index: 1300;  /* sopra view-sculptures (1100) e nav (1200) */
       display: none;
       overflow: hidden;
       transition: height .35s cubic-bezier(.77,0,.175,1), top .35s cubic-bezier(.77,0,.175,1);
@@ -10816,7 +10825,6 @@ function scBuildSectionContent(section) {
       html += `
         <div onclick="scOpenChild(${idx})">
           <div class="sc-img-wrap"><img src="${img.url}" alt="${img.title}" loading="lazy"></div>
-          <div class="sc-caption"><p>${img.title}</p>${img.desc ? `<p class="sc-desc">${img.desc}</p>` : ''}</div>
         </div>
       `;
     });
