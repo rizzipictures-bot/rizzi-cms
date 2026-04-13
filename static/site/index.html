@@ -5,16 +5,16 @@
   <script>(function(){if(new URLSearchParams(window.location.search).get('dark')==='1'){document.documentElement.setAttribute('data-theme','dark');window._devDarkMode=true;}})()</script>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Alessandro Rizzi — Fotografo</title>
+  <title>Alessandro Rizzi Fotografia | Portfolio di Città e Persone</title>
   <!-- SEO:START -->
-  <meta name="description" content="Alessandro Rizzi — fotografo documentarista. Archivio di progetti fotografici internazionali." />
-  <meta name="keywords" content="Alessandro Rizzi, fotografia, documentario, archivio fotografico" />
-  <meta property="og:title" content="Alessandro Rizzi — Fotografo" />
-  <meta property="og:description" content="Alessandro Rizzi — fotografo documentarista. Archivio di progetti fotografici internazionali." />
+  <meta name="description" content="Esplora le immagini evocative di Alessandro Rizzi tra Napoli, New York e oltre. Street, architettura e vita urbana catturate con maestria." />
+  <meta name="keywords" content="fotografia, Alessandro Rizzi, street photography, Napoli, New York, Havana, Istanbul, Milano, Cuba, città, architettura, outdoor, people, building exterior, sidewalk, walking, city, photography portfolio, 35mm, capital cities" />
+  <meta property="og:title" content="Alessandro Rizzi Fotografia | Portfolio di Città e Persone" />
+  <meta property="og:description" content="Esplora le immagini evocative di Alessandro Rizzi tra Napoli, New York e oltre. Street, architettura e vita urbana catturate con maestria." />
   <meta property="og:type" content="website" />
   <meta name="twitter:card" content="summary_large_image" />
-  <meta name="twitter:title" content="Alessandro Rizzi — Fotografo" />
-  <meta name="twitter:description" content="Alessandro Rizzi — fotografo documentarista. Archivio di progetti fotografici internazionali." />
+  <meta name="twitter:title" content="Alessandro Rizzi Fotografia | Portfolio di Città e Persone" />
+  <meta name="twitter:description" content="Esplora le immagini evocative di Alessandro Rizzi tra Napoli, New York e oltre. Street, architettura e vita urbana catturate con maestria." />
   <!-- SEO:END -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -10791,25 +10791,16 @@ function scBuildSectionContent(section) {
     'experience': 'Experience'
   };
   const title = titles[section] || section;
-  // Raccoglie immagini dei progetti con tag/section corrispondente
+  // Raccoglie immagini dei progetti con sc_section corrispondente
   const projects = PROJECTS.filter(p => p.category_id === 'sculptures');
   let sectionImages = [];
   projects.forEach(p => {
-    if ((p.section || p.subtitle || '').toLowerCase().includes(section.replace('-', ' ')) ||
-        (p.title || '').toLowerCase().includes(section.replace('-', ' '))) {
+    if (p.sc_section === section) {
       (p.images || []).forEach(img => {
         sectionImages.push({ url: img.url, title: p.title || '', desc: p.subtitle || '' });
       });
     }
   });
-  // Fallback: mostra tutte le immagini se non ci sono match
-  if (sectionImages.length === 0) {
-    projects.forEach(p => {
-      (p.images || []).forEach(img => {
-        sectionImages.push({ url: img.url, title: p.title || '', desc: p.subtitle || '' });
-      });
-    });
-  }
   scCurrentImages = sectionImages;
   // Per images-book usa titolo "IMAGES" e sfondo nero
   const isImagesBook = (section === 'images-book');
