@@ -4545,13 +4545,13 @@
     /* ── Bottone audio Sculptures ── */
     #sc-audio-btn {
       position: fixed;
-      bottom: 18px;
+      bottom: 14px;          /* allineato al karaoke */
       left: 18px;
       z-index: 1300;
       width: 28px;
       height: 28px;
       background: transparent;
-      border: 1px solid rgba(255,255,255,0.5);
+      border: none;
       cursor: pointer;
       display: none;               /* mostrato solo in Sculptures */
       align-items: center;
@@ -4560,8 +4560,8 @@
       outline: none;
       transition: border-color 0.2s ease, opacity 0.2s ease;
     }
-    #sc-audio-btn:hover { border-color: #fff; opacity: 0.8; }
-    #sc-audio-btn.playing { border-color: #fff; }
+    #sc-audio-btn:hover { opacity: 0.8; }
+    #sc-audio-btn.playing { opacity: 1; }
 
     /* ── Karaoke / sottotitoli sincronizzati (stile macchina da scrivere) ── */
     #sc-karaoke {
