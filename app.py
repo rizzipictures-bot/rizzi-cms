@@ -367,7 +367,7 @@ def load_db():
         {'id': 'archive',      'name': 'Archive',             'order': 2, 'visible': True},
         {'id': 'interview',    'name': 'Interview',           'order': 3, 'visible': True},
         {'id': 'books',        'name': 'Books',               'order': 4, 'visible': True},
-        {'id': 'sculptures',   'name': 'Sculptures Project',  'order': 5, 'visible': True},
+        {'id': 'sculptures',   'name': 'Sculptures',          'order': 5, 'visible': True},
         {'id': 'biography',    'name': 'Biography',           'order': 6, 'visible': True},
         {'id': 'contact',      'name': 'Contact',             'order': 7, 'visible': True},
         {'id': 'index',        'name': 'Index (foto laterale)', 'order': 8, 'visible': True},
