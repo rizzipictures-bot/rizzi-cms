@@ -4021,12 +4021,11 @@
       position: fixed !important;
       top: 0 !important; left: 0 !important; right: 0 !important; bottom: 0 !important;
       background-color: #000;
-      overflow: hidden;
+      overflow: hidden;  /* il contenitore esterno non scrolla — scrolla solo il wrapper interno */
       z-index: 100;
       font-family: 'Times New Roman', Times, serif;
       font-size: 10px;
       color: #fff;
-      /* Sovrascrive il sistema .view: usa transform per nascondere invece di opacity */
       transform: translateY(0) !important;
     }
     #view-sculptures:not(.active) {
@@ -4040,51 +4039,55 @@
 
     /* ── Nav Sculptures (stile Corboz) ── */
     #sculptures-nav {
-      position: fixed;
+      position: absolute;
       top: 0;
       left: 0;
       width: 100%;
+      height: 25px;
       z-index: 200;
       display: flex;
       flex-direction: row;
-      align-items: flex-end;
-      padding-bottom: 5px;
+      align-items: center;
+      padding: 0;
       user-select: none;
       pointer-events: auto;
+      background: #000;  /* sfondo nero per coprire le immagini durante lo scroll */
     }
-    #sculptures-nav p,
-    #sculptures-nav a,
-    #sculptures-nav span {
-      margin-left: 10px;
-      padding-top: 5px;
+    #sculptures-nav [data-sc-section] {
+      margin: 0;
+      padding: 4px 0 4px 10px;
       cursor: pointer;
       font-family: 'Times New Roman', Times, serif;
       font-size: 10px;
+      line-height: 1;
       color: #fff;
       text-decoration: none;
       letter-spacing: 0.4px;
       font-weight: 400;
       white-space: nowrap;
+      background: none;
+      border: none;
+      outline: none;
     }
-    #sculptures-nav p:hover,
-    #sculptures-nav a:hover,
-    #sculptures-nav span:hover,
-    #sculptures-nav p.active,
-    #sculptures-nav a.active,
-    #sculptures-nav span.active {
+    #sculptures-nav [data-sc-section]:hover,
+    #sculptures-nav [data-sc-section].active {
       color: #4c00fc;
     }
     #sculptures-back {
       margin-left: auto !important;
       margin-right: 10px;
-      padding-top: 5px;
+      padding: 4px 0;
       cursor: pointer;
       font-family: 'Times New Roman', Times, serif;
       font-size: 10px;
+      line-height: 1;
       color: #fff;
       text-decoration: none;
       letter-spacing: 0.4px;
       white-space: nowrap;
+      background: none;
+      border: none;
+      outline: none;
     }
     #sculptures-back:hover { color: #4c00fc; }
 
@@ -4099,13 +4102,14 @@
     }
     #sculptures-page-title h1 {
       font-family: 'Times New Roman', Times, serif;
-      font-size: 110px;
+      font-size: 110px;   /* identico a Corboz */
       letter-spacing: -3px;
-      line-height: 75%;
-      margin-top: -5px;
+      line-height: 0.75;
+      margin: 0;
+      padding: 17px 0 0 0;  /* top: 17px come Corboz (sotto il nav di 25px) */
       color: #fff;
       text-transform: uppercase;
-      padding-left: 5px;
+      text-align: center;   /* centrato come Corboz */
     }
 
     /* ── Wrapper scrollabile (stile Corboz #images) ── */
@@ -4116,9 +4120,10 @@
       right: 0;
       bottom: 0;
       background-color: #000;
-      padding: 105px 5px 5px;
-      min-height: 100vh;
-      overflow-y: auto;
+      /* padding-top: nav(25px) + titolo h1(~82px) + gap(8px) = 115px — identico a Corboz */
+      padding: 115px 5px 40px;
+      overflow-y: scroll;
+      -webkit-overflow-scrolling: touch;
     }
     #sculptures-images-wrapper::-webkit-scrollbar { display: none; }
 
@@ -4134,11 +4139,13 @@
       width: 25%;
       padding: 5px;
       position: relative;
+      /* Nessun aspect-ratio fisso: le celle si adattano all'altezza naturale dell'immagine */
     }
     #sculptures-grid img {
       width: 100%;
+      height: auto;        /* aspect ratio naturale — identico a Corboz */
       cursor: pointer;
-      transition: all .4s cubic-bezier(.77,0,.175,1) 0ms;
+      transition: opacity .4s cubic-bezier(.77,0,.175,1);
       margin-bottom: 5px;
       display: block;
     }
