@@ -4232,6 +4232,7 @@
     }
     #sculptures-section-content p:first-of-type { text-indent: 0; }
     /* ── Viewer Sculptures — griglia images-book ── */
+    /* ── Griglia mista Corboz: pattern H-V-H-V / V-H-V-V ── */
     #sculptures-section-content .sc-section-images {
       display: grid;
       grid-template-columns: repeat(4, 1fr);
@@ -4239,16 +4240,24 @@
       margin-top: 0;
       padding: 0 21px 50px;
       background: #000;
+      /* Le righe alternano altezze: riga-H (orizzontale) e riga-V (verticale) */
+      --h-height: 220px;   /* altezza celle orizzontali */
+      --v-height: 360px;   /* altezza celle verticali */
     }
     #sculptures-section-content .sc-section-images > div {
       cursor: pointer;
       position: relative;
     }
+    /* Celle verticali (default) */
     #sculptures-section-content .sc-section-images > div .sc-img-wrap {
       width: 100%;
       position: relative;
       overflow: hidden;
-      padding-top: 133.33%;  /* proporzione 3:4 verticale */
+      height: var(--v-height);
+    }
+    /* Celle orizzontali */
+    #sculptures-section-content .sc-section-images > div.sc-cell-h .sc-img-wrap {
+      height: var(--h-height);
     }
     #sculptures-section-content .sc-section-images > div .sc-img-wrap img {
       position: absolute;
@@ -10856,10 +10865,16 @@ function scBuildSectionContent(section) {
   }
   if (sectionImages.length > 0) {
     html += '<div class="sc-section-images">';
+    // Pattern misto Corboz: H-V-H-V (riga 1), V-H-V-V (riga 2), poi si ripete
+    // Posizioni 0-based nel gruppo di 8: 0=H,1=V,2=H,3=V,4=V,5=H,6=V,7=V
+    const corbozPattern = ['h','v','h','v','v','h','v','v'];
     sectionImages.forEach((img, idx) => {
+      const posInPattern = idx % 8;
+      const cellType = corbozPattern[posInPattern]; // 'h' o 'v'
+      const cellClass = cellType === 'h' ? 'sc-cell-h' : 'sc-cell-v';
       const capHtml = img.caption ? `<div class="sc-img-caption">${img.caption}</div>` : '';
       html += `
-        <div onclick="scOpenChild(${idx})">
+        <div class="${cellClass}" onclick="scOpenChild(${idx})">
           <div class="sc-img-wrap"><img src="${img.url}" alt="${img.title}" loading="lazy"></div>
           ${capHtml}
         </div>
