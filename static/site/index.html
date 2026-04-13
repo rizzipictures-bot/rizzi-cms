@@ -4430,20 +4430,20 @@
 
     /* ── Info panel Sculptures — identico a andrecorboz.usi.ch/images ── */
     #sculptures-info {
-      /* Box bianco fisso, identico al pannello Corboz USI */
       position: fixed;
       left: 10px;
-      top: 25px;
+      top: 10px;
+      bottom: 10px;           /* si estende quasi a tutta la viewport */
       width: calc(58.3vw + 10px);
       height: auto;
-      background-color: #d9d9d9;  /* grigio 15% */
+      overflow-y: auto;
+      background-color: #d9d9d9;
       color: #222;
-      padding: 10px;
+      padding: 20px 20px 60px; /* 60px in basso per lasciare spazio al bottone × */
       box-shadow: 0 2px 15px 3px rgba(0,0,0,.15);
       z-index: 1400;
       font-family: 'Times New Roman', Times, serif;
-      font-size: 10px;
-      /* Nascosto di default */
+      font-size: 14px;         /* font più grande come Corboz */
       display: none;
       opacity: 0;
       transition: opacity 0.3s ease;
@@ -4478,7 +4478,7 @@
     }
     #sculptures-info-text > p {
       font-family: 'Times New Roman', Times, serif;
-      font-size: 10px;
+      font-size: 14px;
       line-height: 1.6;
       margin-bottom: 0;
       color: #222;
@@ -4486,7 +4486,7 @@
     /* Titolo sezione (Impressum, Terms of use) in viola #4c00fc come Corboz */
     .sc-info-title {
       font-family: Helvetica, sans-serif;
-      font-size: 12px;
+      font-size: 14px;
       color: #4c00fc;
       margin: 10px 0 0 0;
       display: block;
@@ -4503,7 +4503,7 @@
     }
     .sc-impressum-row p {
       font-family: 'Times New Roman', Times, serif;
-      font-size: 10px;
+      font-size: 14px;
       margin: 0;
       line-height: 1.6;
       color: #222;
@@ -6135,9 +6135,9 @@
       <div id="sculptures-info">
         <!-- X di chiusura: quadrato nero 40×40 in basso a destra, X bianca SVG 37×37 (identico a Corboz USI) -->
         <button id="sculptures-info-close" onclick="scCloseInfo()">
-          <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path d="M15 15L5 5" stroke="white" stroke-width="1.5" stroke-linecap="round"/>
-            <path d="M5 15L15 5" stroke="white" stroke-width="1.5" stroke-linecap="round"/>
+          <svg width="22" height="22" viewBox="0 0 22 22" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M3 3L19 19" stroke="white" stroke-width="1.8" stroke-linecap="round"/>
+            <path d="M19 3L3 19" stroke="white" stroke-width="1.8" stroke-linecap="round"/>
           </svg>
         </button>
         <!-- Testo principale -->
@@ -6204,9 +6204,9 @@
     <div id="sculptures-child">
       <!-- Bottone × chiudi (SVG Corboz: stroke 0.75, 37×37) -->
       <button id="sculptures-child-close" onclick="scCloseChild()" title="Chiudi">
-        <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <path d="M15 15L5 5" stroke="white" stroke-width="1.5" stroke-linecap="round"/>
-          <path d="M5 15L15 5" stroke="white" stroke-width="1.5" stroke-linecap="round"/>
+        <svg width="22" height="22" viewBox="0 0 22 22" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M3 3L19 19" stroke="white" stroke-width="1.8" stroke-linecap="round"/>
+          <path d="M19 3L3 19" stroke="white" stroke-width="1.8" stroke-linecap="round"/>
         </svg>
       </button>
       <!-- Bottone + / − espandi (pallino bianco, + nera) -->
