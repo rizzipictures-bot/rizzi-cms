@@ -4137,26 +4137,32 @@
     }
     #sculptures-images-wrapper::-webkit-scrollbar { display: none; }
 
-    /* ── Grid immagini (stile Corboz) ── */
+    /* ── Grid immagini Overview (pattern misto Corboz — identico a Images Book) ── */
     #sculptures-grid {
-      display: flex;
-      flex-wrap: wrap;
-      width: 100%;
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 15px;
+      padding: 15px 21px 50px;
+      background: #000;
       animation: scFadeIn 1s;
+      --h-height: 220px;
+      --v-height: 430px;
     }
     @keyframes scFadeIn { from { opacity: 0; } to { opacity: 1; } }
     #sculptures-grid > div {
-      width: 25%;
-      padding: 5px;
+      cursor: pointer;
       position: relative;
     }
-    /* Contenitore immagine con proporzione verticale 3:4 */
+    /* Celle verticali (default) */
     #sculptures-grid > div .sc-thumb-wrap {
       width: 100%;
-      padding-top: 133.33%;  /* proporzione 3:4 verticale */
       position: relative;
       overflow: hidden;
-      margin-bottom: 5px;
+      height: var(--v-height);
+    }
+    /* Celle orizzontali */
+    #sculptures-grid > div.sc-cell-h .sc-thumb-wrap {
+      height: var(--h-height);
     }
     #sculptures-grid img {
       position: absolute;
@@ -10790,9 +10796,13 @@ function scBuildGrid() {
     return;
   }
 
+  // Pattern misto Corboz: H-V-H-V (riga1) / V-H-V-V (riga2) — identico a Images Book
+  const PATTERN = [true, false, true, false, false, true, false, false]; // true = orizzontale
   scCurrentImages.forEach((img, idx) => {
     const cell = document.createElement('div');
     cell.style.cursor = 'pointer';
+    // Assegna classe orizzontale secondo il pattern (si ripete ogni 8)
+    if (PATTERN[idx % 8]) cell.classList.add('sc-cell-h');
     // Usa il campo sc_section del progetto come destinazione;
     // se non impostato, apre il lightbox
     const targetSection = img.sc_section || null;
