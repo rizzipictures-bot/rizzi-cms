@@ -4314,74 +4314,88 @@
     #sculptures-prev { left: 10px; }
     #sculptures-next { right: 10px; }
 
-    /* ── Info panel Sculptures (stile Corboz) ── */
+    /* ── Info panel Sculptures — identico a andrecorboz.usi.ch/images ── */
     #sculptures-info {
+      /* Box bianco fisso, identico al pannello Corboz USI */
+      position: fixed;
+      left: 10px;
+      top: 25px;
       width: calc(58.3vw + 10px);
       height: auto;
       background-color: #fff;
       color: #222;
-      position: fixed;
-      left: 10px;
-      top: 25px;
-      z-index: 400;
       padding: 10px;
       box-shadow: 0 2px 15px 3px rgba(0,0,0,.15);
-      border-radius: 5px;
-      transform-origin: top center;
-      transform: scaleY(0);
-      transition: all .5s cubic-bezier(.77,0,.175,1);
-      overflow: hidden;
+      z-index: 1400;
+      font-family: 'Times New Roman', Times, serif;
+      font-size: 10px;
+      /* Nascosto di default */
       display: none;
+      opacity: 0;
+      transition: opacity 0.3s ease;
     }
     #sculptures-info.open {
       display: block;
     }
     #sculptures-info.active {
-      transform: scale(1);
+      opacity: 1;
     }
+    /* Pulsante chiusura: quadrato nero 40×40 in basso a destra, X bianca SVG 37×37 */
     #sculptures-info-close {
       position: absolute;
       right: 10px;
-      top: 10px;
-      cursor: pointer;
-      background: none;
+      bottom: 10px;
+      width: 40px;
+      height: 40px;
+      background: #000;
       border: none;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
       z-index: 5;
       outline: none;
+      padding: 0;
     }
-    #sculptures-info-close:hover svg path { stroke: #aaa; }
+    #sculptures-info-close:hover { opacity: 0.7; }
     #sculptures-info-text {
-      opacity: 0;
-      transition: all .4s cubic-bezier(.77,0,.175,1) .7s;
+      /* Testo visibile subito, nessuna animazione extra */
     }
-    #sculptures-info.active #sculptures-info-text { opacity: 1; }
-    #sculptures-info-text p {
+    #sculptures-info-text > p {
       font-family: 'Times New Roman', Times, serif;
-      font-size: 1.9rem;
+      font-size: 10px;
       line-height: 1.6;
-      text-indent: 30px;
-      margin-bottom: 8px;
+      margin-bottom: 0;
       color: #222;
     }
-    #sculptures-info-text p:first-child { text-indent: 0; }
+    /* Titolo sezione (Impressum, Terms of use) in viola #4c00fc come Corboz */
     .sc-info-title {
-      font-family: 'Times New Roman', Times, serif;
-      font-size: 1.2rem;
-      text-transform: uppercase;
+      font-family: Helvetica, sans-serif;
+      font-size: 12px;
       color: #4c00fc;
-      margin-top: 10px;
-      letter-spacing: 0.4px;
+      margin: 10px 0 0 0;
+      display: block;
     }
-    #sculptures-info-impressum {
+    /* Righe impressum: flex con label a sinistra e valore a destra */
+    .sc-impressum-row {
       display: flex;
       flex-wrap: nowrap;
-      margin-top: 8px;
+      margin-top: 0;
     }
-    #sculptures-info-impressum > div:first-child { width: 180px; }
-    #sculptures-info-impressum p {
+    .sc-impressum-row > div:first-child {
+      min-width: 160px;
+      width: 160px;
+    }
+    .sc-impressum-row p {
       font-family: 'Times New Roman', Times, serif;
-      font-size: 1.2rem;
-      text-indent: 0;
+      font-size: 10px;
+      margin: 0;
+      line-height: 1.6;
+      color: #222;
+    }
+    .sc-impressum-row a {
+      color: #4c00fc;
+      text-decoration: none;
     }
 
     /* ════════════════════════════════════════════════════════════════
@@ -5935,27 +5949,41 @@
 
       <!-- Info panel (stile Corboz) -->
       <div id="sculptures-info">
+        <!-- X di chiusura: quadrato nero 40×40 in basso a destra, X bianca SVG 37×37 (identico a Corboz USI) -->
         <button id="sculptures-info-close" onclick="scCloseInfo()">
-          <svg viewBox="0 0 20 20" width="14" height="14" fill="none" stroke="#222" stroke-width="1.5" stroke-linecap="round">
-            <line x1="2.5" y1="2.5" x2="17.5" y2="17.5"/>
-            <line x1="17.5" y1="2.5" x2="2.5" y2="17.5"/>
+          <svg width="37" height="37" viewBox="0 0 37 37" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M36.1073 36.1054L0.398438 0.396484" stroke="white" stroke-width="0.75" stroke-miterlimit="10"/>
+            <path d="M0.398438 36.1035L36.1073 0.394621" stroke="white" stroke-width="0.75" stroke-miterlimit="10"/>
           </svg>
         </button>
+        <!-- Testo principale -->
         <div id="sculptures-info-text">
-          <p class="sc-info-title">Sculptures Project</p>
-          <p>Alessandro Rizzi — Sculptures Project is a long-term photographic investigation into the relationship between the human body, space, and sculptural form.</p>
-          <p>The project spans multiple series and formats, from documentary photography to artist books, video works, and immersive installations.</p>
-          <div id="sculptures-info-impressum">
-            <div>
-              <p class="sc-info-title">Author</p>
-              <p>Alessandro Rizzi</p>
-            </div>
-            <div>
-              <p class="sc-info-title">Website</p>
-              <p><a href="https://www.alessandrorizzi.co" style="color:#4c00fc">alessandrorizzi.co</a></p>
-            </div>
+          <p>Alessandro Rizzi — Sculptures Project is a long-term photographic investigation into the relationship between the human body, space, and sculptural form. The project spans multiple series and formats, from documentary photography to artist books, video works, and immersive installations.</p>
+
+          <span class="sc-info-title">Impressum</span>
+
+          <div class="sc-impressum-row">
+            <div><p>Author</p></div>
+            <div><p>Alessandro Rizzi</p></div>
+          </div>
+          <div class="sc-impressum-row">
+            <div><p>Photography</p></div>
+            <div><p>Alessandro Rizzi</p></div>
+          </div>
+          <div class="sc-impressum-row">
+            <div><p>Contact</p></div>
+            <div><p><a href="mailto:info@alessandrorizzi.co">info@alessandrorizzi.co</a></p></div>
+          </div>
+
+          <span class="sc-info-title">Website</span>
+
+          <div class="sc-impressum-row">
+            <div><p>Website</p></div>
+            <div><p><a href="https://www.alessandrorizzi.co" target="_blank">alessandrorizzi.co</a></p></div>
           </div>
         </div>
+        <!-- Spazio per non sovrapporre la X -->
+        <div style="height:60px;"></div>
       </div>
 
     </div>
@@ -10655,7 +10683,7 @@ function scCloseInfo() {
     info.classList.remove('open');
     // Riporta la nav su Overview
     scSwitchSection('overview');
-  }, 500);
+  }, 300); // 300ms = durata transition opacity
 }
 
 // Inizializza la pagina Sculptures (chiamata da buildSculpturesIndex per compatibilità)
