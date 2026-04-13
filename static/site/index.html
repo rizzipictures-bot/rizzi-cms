@@ -10717,24 +10717,25 @@ function scSwitchSection(section) {
   }
 }
 
-// Costruisce la griglia Overview con tutte le immagini dei progetti sculptures
+// Costruisce la griglia Overview: una thumbnail per ogni progetto sculptures
+// (una per sezione — cliccando si naviga alla sezione corrispondente)
 function scBuildGrid() {
   const grid = document.getElementById('sculptures-grid');
   if (!grid) return;
   grid.innerHTML = '';
   scCurrentImages = [];
 
-  // Raccoglie tutte le immagini da tutti i progetti sculptures
-  // Ogni progetto può avere un campo sc_section che determina la sezione di destinazione
+  // Raccoglie UN'immagine (la prima) per ogni progetto sculptures
+  // Ogni progetto rappresenta una sezione: la thumbnail porta alla sezione
   const projects = PROJECTS.filter(p => p.category_id === 'sculptures');
   projects.forEach(p => {
-    (p.images || []).forEach(img => {
-      scCurrentImages.push({
-        url: img.url,
-        title: p.title || '',
-        desc: p.subtitle || p.place || '',
-        sc_section: p.sc_section || null  // sezione di destinazione dal CMS
-      });
+    // Usa la prima immagine come thumbnail di navigazione
+    const firstImg = (p.images && p.images.length > 0) ? p.images[0] : null;
+    scCurrentImages.push({
+      url: firstImg ? firstImg.url : null,
+      title: p.title || '',
+      desc: p.subtitle || p.place || '',
+      sc_section: p.sc_section || null  // sezione di destinazione dal CMS
     });
   });
 
@@ -10754,10 +10755,6 @@ function scBuildGrid() {
   scCurrentImages.forEach((img, idx) => {
     const cell = document.createElement('div');
     cell.style.cursor = 'pointer';
-    const imgEl = document.createElement('img');
-    imgEl.src = img.url;
-    imgEl.alt = img.title;
-    imgEl.loading = 'lazy';
     // Usa il campo sc_section del progetto come destinazione;
     // se non impostato, apre il lightbox
     const targetSection = img.sc_section || null;
@@ -10766,10 +10763,21 @@ function scBuildGrid() {
     } else {
       cell.addEventListener('click', () => scOpenChild(idx));
     }
+    if (img.url) {
+      const imgEl = document.createElement('img');
+      imgEl.src = img.url;
+      imgEl.alt = img.title;
+      imgEl.loading = 'lazy';
+      cell.appendChild(imgEl);
+    } else {
+      // Placeholder grigio se il progetto non ha ancora immagini
+      const ph = document.createElement('div');
+      ph.style.cssText = 'background:#111;width:100%;padding-top:133%;margin-bottom:5px;';
+      cell.appendChild(ph);
+    }
     const caption = document.createElement('div');
     caption.className = 'sc-caption';
     caption.innerHTML = `<p>${img.title}</p>${img.desc ? `<p class="sc-desc">${img.desc}</p>` : ''}`;
-    cell.appendChild(imgEl);
     cell.appendChild(caption);
     grid.appendChild(cell);
   });
