@@ -4554,7 +4554,7 @@
     #sc-audio-btn:hover { border-color: #fff; opacity: 0.8; }
     #sc-audio-btn.playing { border-color: #fff; }
 
-    /* ── Karaoke / sottotitoli sincronizzati ── */
+    /* ── Karaoke / sottotitoli sincronizzati (stile macchina da scrivere) ── */
     #sc-karaoke {
       position: fixed;
       bottom: 14px;
@@ -4564,39 +4564,43 @@
       pointer-events: none;
       overflow: hidden;
       height: 52px;
-      display: none;           /* visibile solo durante la riproduzione */
+      display: none;
       align-items: flex-end;
-      padding: 0 60px 0 60px;  /* spazio per il bottone play a sinistra */
+      padding: 0 60px 0 60px;
     }
     #sc-karaoke.active { display: flex; }
     #sc-karaoke-line {
       display: flex;
       flex-wrap: nowrap;
-      gap: 0.28em;
+      gap: 0.35em;
       align-items: baseline;
       overflow: hidden;
       max-width: 100%;
     }
+    /* Ogni parola è un contenitore che rivela i caratteri uno alla volta */
     .sc-kword {
-      font-family: Helvetica, Arial, sans-serif;
+      font-family: 'Courier New', Courier, 'Lucida Console', monospace;
       font-size: clamp(13px, 1.6vw, 20px);
       font-weight: 700;
       color: #fff;
       white-space: nowrap;
-      opacity: 0;
-      transform: translateX(-18px);
-      transition: none;
       line-height: 1.2;
+      display: inline-block;
+      overflow: hidden;
+      max-width: 0;           /* parte a larghezza 0, si espande con l'animazione */
+      opacity: 1;
+      /* L'animazione espande la parola da 0 alla sua larghezza naturale */
+      transition: none;
     }
-    .sc-kword.visible {
-      animation: scKaraokeSlide 0.22s cubic-bezier(.22,1,.36,1) forwards;
+    .sc-kword.typing {
+      animation: scTypeReveal var(--tw-dur, 0.18s) steps(var(--tw-steps, 4), end) forwards;
     }
     .sc-kword.fade-out {
-      animation: scKaraokeFade 0.5s ease forwards;
+      animation: scKaraokeFade 0.4s ease forwards;
     }
-    @keyframes scKaraokeSlide {
-      from { opacity: 0; transform: translateX(-18px); }
-      to   { opacity: 1; transform: translateX(0); }
+    @keyframes scTypeReveal {
+      from { max-width: 0; }
+      to   { max-width: var(--tw-width, 200px); }
     }
     @keyframes scKaraokeFade {
       from { opacity: 1; }
@@ -11162,7 +11166,7 @@ let _scKaraokeTimer = null;
 let _scKaraokeWords = [];  // array { word, start, end } del file corrente
 let _scKaraokeIdx = 0;     // indice della prossima parola da mostrare
 let _scKaraokeLineWords = []; // parole attualmente visibili nella riga
-const SC_KARAOKE_MAX_WORDS = 7; // max parole visibili contemporaneamente
+const SC_KARAOKE_MAX_WORDS = 10; // max parole visibili contemporaneamente
 
 // Carica subtitles.json una sola volta
 function scLoadSubtitles(callback) {
@@ -11204,18 +11208,17 @@ function _scKaraokeStep() {
   }
 }
 
-// Aggiunge una parola alla riga con animazione slide-in da sinistra
+// Aggiunge una parola con effetto macchina da scrivere (lettera per lettera)
 function _scKaraokeShowWord(word) {
   const line = document.getElementById('sc-karaoke-line');
   if (!line) return;
 
-  // Se la riga è troppo piena, rimuovi le parole più vecchie con fade-out
+  // Se la riga è troppo piena, rimuovi la parola più vecchia con fade-out
   if (_scKaraokeLineWords.length >= SC_KARAOKE_MAX_WORDS) {
     const oldest = _scKaraokeLineWords.shift();
     if (oldest) {
-      oldest.classList.remove('visible');
       oldest.classList.add('fade-out');
-      setTimeout(() => { if (oldest.parentNode) oldest.parentNode.removeChild(oldest); }, 500);
+      setTimeout(() => { if (oldest.parentNode) oldest.parentNode.removeChild(oldest); }, 400);
     }
   }
 
@@ -11225,9 +11228,23 @@ function _scKaraokeShowWord(word) {
   line.appendChild(span);
   _scKaraokeLineWords.push(span);
 
-  // Forza reflow poi aggiungi classe .visible per triggerare l'animazione
+  // Misura la larghezza reale della parola (con font monospace)
+  // Forza reflow per ottenere la larghezza naturale
   void span.offsetWidth;
-  span.classList.add('visible');
+  const naturalWidth = span.scrollWidth;
+  const letters = word.length;
+
+  // Velocità typewriter: ~55ms per carattere, minimo 80ms totali
+  const msPerChar = 55;
+  const totalMs = Math.max(80, letters * msPerChar);
+
+  // Imposta le CSS custom properties per l'animazione
+  span.style.setProperty('--tw-width', naturalWidth + 'px');
+  span.style.setProperty('--tw-steps', letters);
+  span.style.setProperty('--tw-dur', totalMs + 'ms');
+
+  // Avvia l'animazione typewriter
+  span.classList.add('typing');
 }
 
 // Ferma il karaoke e pulisce la riga
