@@ -4098,8 +4098,7 @@
       margin-top: 6px;
     }
     #sculptures-back:hover { color: #4c00fc; }
-    /* Pulsante Back separato in alto a destra */
-    #sculptures-back-btn:hover { color: #4c00fc; }
+
 
     /* ── Titolo grande (stile Corboz) ── */
     #sculptures-page-title {
@@ -5917,14 +5916,6 @@
         <span id="sculptures-back" onclick="scGoBack()">&#8592; Back</span>
       </nav>
 
-      <!-- Pulsante Back fisso in alto a destra -->
-      <span id="sculptures-back-btn" onclick="scGoBack()" style="
-        position:fixed; top:18px; right:18px; z-index:1300;
-        font-family:'Times New Roman',Times,serif; font-size:10px;
-        color:#fff; cursor:pointer; letter-spacing:0.4px;
-        opacity:0; transition:opacity 0.3s ease;
-      ">&#8592; Back</span>
-
       <!-- Titolo grande (visibile solo in Overview, stile Corboz) -->
       <div id="sculptures-page-title">
         <h1>Sculptures</h1>
@@ -7671,8 +7662,6 @@ function switchView(name) {
     // Resetta le voci del menu (nascondile di nuovo per la prossima apertura)
     document.querySelectorAll('#sculptures-nav [data-sc-section], #sculptures-back')
       .forEach(el => el.classList.remove('sc-revealed'));
-    // Nasconde il pulsante Back
-    scHideBackBtn();
   }
 }
 
@@ -10697,18 +10686,6 @@ function scRevealMenu() {
     }, 120 + i * 80); // prima voce dopo 120ms, poi +80ms per ciascuna
   });
 
-  // Mostra il pulsante Back in alto a destra con fade-in
-  const backBtn = document.getElementById('sculptures-back-btn');
-  if (backBtn) {
-    backBtn.style.opacity = '0';
-    setTimeout(() => { backBtn.style.opacity = '1'; }, 400);
-  }
-}
-
-// Nasconde il pulsante Back quando si esce da Sculptures
-function scHideBackBtn() {
-  const backBtn = document.getElementById('sculptures-back-btn');
-  if (backBtn) backBtn.style.opacity = '0';
 }
 
 // ════════════════════════════════════════════════════════════════
