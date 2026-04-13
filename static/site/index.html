@@ -4304,6 +4304,20 @@
       font-style: italic;
     }
 
+    /* Testo descrittivo sezione Recordings */
+    .sc-recordings-note {
+      width: 100%;
+      padding: 48px 40px 80px;
+      background: #000;
+      color: #fff;
+      font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+      font-size: clamp(15px, 1.5vw, 20px);
+      font-weight: 400;
+      line-height: 1.55;
+      letter-spacing: -0.01em;
+      box-sizing: border-box;
+    }
+
     /* Pannello viewer in basso — STATO 2 */
     @keyframes sc-child-slide-up {
       from { transform: translateY(100%); opacity: 0; }
@@ -11014,6 +11028,14 @@ function scBuildSectionContent(section) {
     html += '</div>';
   } else {
     html += `<p style="opacity:.5;font-style:italic;color:${isImagesBook?'#fff':'inherit'};padding:20px">Contenuto in preparazione.</p>`;
+  }
+  // Testo descrittivo speciale per la sezione Recordings
+  if (section === 'recordings') {
+    html += `
+      <div class="sc-recordings-note">
+        These tracks have been recorded in a cold Saturday in Washington DC and precisely on December 13. 2014. These records are part of my long term project Sculptures and a primary part of a exhibition concept. After many sessions listening this material, I decided to leave the tracks as originally taken. Tracks have been not changed in their sequences order, showing as an initial calm is the introduction for emotional and accalorate speeches. Testimonies of those moments are collected in a Notes Diary also part of the Sculptures project.
+      </div>
+    `;
   }
   el.innerHTML = html;
 }
