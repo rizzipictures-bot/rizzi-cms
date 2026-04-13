@@ -4440,15 +4440,15 @@
     /* ── Info panel Sculptures — identico a andrecorboz.usi.ch/images ── */
     #sculptures-info {
       position: fixed;
-      left: 10px;
-      top: 10px;
-      width: calc(58.3vw + 10px);
+      left: 0;
+      top: 0;
+      width: 60vw;
       height: auto;
-      max-height: calc(100vh - 20px + 80px);  /* +80px rispetto alla viewport */
+      max-height: 62vh;  /* altezza come Corboz: ~60% della viewport */
       overflow-y: auto;
       background-color: #fff;
       color: #222;
-      padding: 10px 10px 60px;
+      padding: 20px 20px 60px;
       box-shadow: 0 2px 15px 3px rgba(0,0,0,.15);
       z-index: 1400;
       font-family: Helvetica, Arial, sans-serif;  /* font Corboz */
@@ -4489,18 +4489,20 @@
     #sculptures-info-text > p {
       font-family: Helvetica, Arial, sans-serif;
       font-size: 19px;
-      font-weight: 400;
-      line-height: 1.0;
-      margin-bottom: 0;
+      font-weight: 700;  /* bold come Corboz */
+      line-height: 1.35;
+      margin-bottom: 12px;
       color: rgb(34, 34, 34);
     }
     /* Titolo sezione (Impressum, Terms of use) in viola #4c00fc come Corboz */
     .sc-info-title {
       font-family: Helvetica, Arial, sans-serif;
       font-size: 12px;
-      color: rgb(128, 128, 128);  /* grigio come Corboz */
-      margin: 10px 0 0 0;
+      font-weight: 700;
+      color: #4c00fc;  /* viola come Corboz */
+      margin: 16px 0 4px 0;
       display: block;
+      letter-spacing: 0.05em;
     }
     /* Righe impressum: flex con label a sinistra e valore a destra */
     .sc-impressum-row {
@@ -4514,9 +4516,9 @@
     }
     .sc-impressum-row p {
       font-family: Helvetica, Arial, sans-serif;
-      font-size: 19px;
+      font-size: 14px;
       margin: 0;
-      line-height: 1.0;
+      line-height: 1.5;
       color: rgb(34, 34, 34);
     }
     .sc-impressum-row a {
