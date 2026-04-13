@@ -4206,12 +4206,12 @@
     #sculptures-section-content::-webkit-scrollbar { display: none; }
     #sculptures-section-content h2 {
       font-family: 'Arial Black', 'Helvetica Neue', Arial, sans-serif;
-      font-size: clamp(40px, 5vw, 70px);
+      font-size: clamp(60px, 8vw, 110px);  /* grande come nel riferimento */
       font-weight: 900;
-      letter-spacing: -2px;
+      letter-spacing: -3px;               /* leggermente negativo come nel riferimento */
       line-height: 1;
       margin: 0;
-      padding: 6px 0 6px;
+      padding: 4px 0 10px;                /* 4px sopra, 10px sotto (distanza dalle foto) */
       color: #fff;
       text-transform: uppercase;
       text-align: center;
@@ -4221,8 +4221,6 @@
       position: sticky;
       top: 0;
       z-index: 10;
-      transform: scaleX(0.8) scaleY(1.2);  /* -20% larghezza, +20% altezza */
-      transform-origin: center center;
     }
     #sculptures-section-content p {
       font-family: 'Times New Roman', Times, serif;
@@ -4239,7 +4237,7 @@
       grid-template-columns: repeat(4, 1fr);
       gap: 15px;
       margin-top: 0;
-      padding: 15px 21px 50px;
+      padding: 0 21px 50px;
       background: #000;
     }
     #sculptures-section-content .sc-section-images > div {
