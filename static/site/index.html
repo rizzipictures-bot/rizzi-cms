@@ -4148,14 +4148,24 @@
       width: 25%;
       padding: 5px;
       position: relative;
-      /* Nessun aspect-ratio fisso: le celle si adattano all'altezza naturale dell'immagine */
+    }
+    /* Contenitore immagine con proporzione verticale 3:4 */
+    #sculptures-grid > div .sc-thumb-wrap {
+      width: 100%;
+      padding-top: 133.33%;  /* proporzione 3:4 verticale */
+      position: relative;
+      overflow: hidden;
+      margin-bottom: 5px;
     }
     #sculptures-grid img {
+      position: absolute;
+      top: 0; left: 0;
       width: 100%;
-      height: auto;        /* aspect ratio naturale — identico a Corboz */
+      height: 100%;
+      object-fit: cover;
+      object-position: center;
       cursor: pointer;
       transition: opacity .4s cubic-bezier(.77,0,.175,1);
-      margin-bottom: 5px;
       display: block;
     }
     #sculptures-grid img:hover { opacity: 0.85; }
@@ -10763,18 +10773,21 @@ function scBuildGrid() {
     } else {
       cell.addEventListener('click', () => scOpenChild(idx));
     }
+    const wrap = document.createElement('div');
+    wrap.className = 'sc-thumb-wrap';
     if (img.url) {
       const imgEl = document.createElement('img');
       imgEl.src = img.url;
       imgEl.alt = img.title;
       imgEl.loading = 'lazy';
-      cell.appendChild(imgEl);
+      wrap.appendChild(imgEl);
     } else {
       // Placeholder grigio se il progetto non ha ancora immagini
       const ph = document.createElement('div');
-      ph.style.cssText = 'background:#111;width:100%;padding-top:133%;margin-bottom:5px;';
-      cell.appendChild(ph);
+      ph.style.cssText = 'position:absolute;top:0;left:0;width:100%;height:100%;background:#111;';
+      wrap.appendChild(ph);
     }
+    cell.appendChild(wrap);
     const caption = document.createElement('div');
     caption.className = 'sc-caption';
     caption.innerHTML = `<p>${img.title}</p>${img.desc ? `<p class="sc-desc">${img.desc}</p>` : ''}`;
