@@ -6145,45 +6145,6 @@
         <!-- Generata via JS -->
       </div>
 
-      <!-- Info panel (stile Corboz) -->
-      <div id="sculptures-info">
-        <!-- X di chiusura: quadrato nero 40×40 in basso a destra, X bianca SVG 37×37 (identico a Corboz USI) -->
-        <button id="sculptures-info-close" onclick="scCloseInfo()">
-          <svg width="22" height="22" viewBox="0 0 22 22" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path d="M3 3L19 19" stroke="white" stroke-width="1.8" stroke-linecap="round"/>
-            <path d="M19 3L3 19" stroke="white" stroke-width="1.8" stroke-linecap="round"/>
-          </svg>
-        </button>
-        <!-- Testo principale -->
-        <div id="sculptures-info-text">
-          <p>Alessandro Rizzi — Sculptures Project is a long-term photographic investigation into the relationship between the human body, space, and sculptural form. The project spans multiple series and formats, from documentary photography to artist books, video works, and immersive installations.</p>
-
-          <span class="sc-info-title">Impressum</span>
-
-          <div class="sc-impressum-row">
-            <div><p>Author</p></div>
-            <div><p>Alessandro Rizzi</p></div>
-          </div>
-          <div class="sc-impressum-row">
-            <div><p>Photography</p></div>
-            <div><p>Alessandro Rizzi</p></div>
-          </div>
-          <div class="sc-impressum-row">
-            <div><p>Contact</p></div>
-            <div><p><a href="mailto:info@alessandrorizzi.co">info@alessandrorizzi.co</a></p></div>
-          </div>
-
-          <span class="sc-info-title">Website</span>
-
-          <div class="sc-impressum-row">
-            <div><p>Website</p></div>
-            <div><p><a href="https://www.alessandrorizzi.co" target="_blank">alessandrorizzi.co</a></p></div>
-          </div>
-        </div>
-        <!-- Spazio per non sovrapporre la X -->
-        <div style="height:60px;"></div>
-      </div>
-
       <!-- Bottone audio play/pause (fisso in basso a sinistra) -->
       <button id="sc-audio-btn" onclick="scToggleAudio()" title="Play / Pause audio">
         <!-- Icona play (default) -->
@@ -6212,6 +6173,42 @@
         <p id="sc-video-caption"></p>
       </div>
 
+    </div>
+
+    <!-- Info panel Sculptures — FUORI da view-sculptures per z-index corretto -->
+    <div id="sculptures-info">
+      <button id="sculptures-info-close" onclick="scCloseInfo()">
+        <svg width="22" height="22" viewBox="0 0 22 22" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M3 3L19 19" stroke="white" stroke-width="1.8" stroke-linecap="round"/>
+          <path d="M19 3L3 19" stroke="white" stroke-width="1.8" stroke-linecap="round"/>
+        </svg>
+      </button>
+      <div id="sculptures-info-text">
+        <p>Alessandro Rizzi — Sculptures Project is a long-term photographic investigation into the relationship between the human body, space, and sculptural form. The project spans multiple series and formats, from documentary photography to artist books, video works, and immersive installations.</p>
+
+        <span class="sc-info-title">Impressum</span>
+
+        <div class="sc-impressum-row">
+          <div><p>Author</p></div>
+          <div><p>Alessandro Rizzi</p></div>
+        </div>
+        <div class="sc-impressum-row">
+          <div><p>Photography</p></div>
+          <div><p>Alessandro Rizzi</p></div>
+        </div>
+        <div class="sc-impressum-row">
+          <div><p>Contact</p></div>
+          <div><p><a href="mailto:info@alessandrorizzi.co">info@alessandrorizzi.co</a></p></div>
+        </div>
+
+        <span class="sc-info-title">Website</span>
+
+        <div class="sc-impressum-row">
+          <div><p>Website</p></div>
+          <div><p><a href="https://www.alessandrorizzi.co" target="_blank">alessandrorizzi.co</a></p></div>
+        </div>
+      </div>
+      <div style="height:60px;"></div>
     </div>
 
     <!-- Popup lightbox Sculptures (stile Corboz) -->
