@@ -4032,10 +4032,10 @@
       transform: translateY(0) !important;
     }
     #view-sculptures:not(.active) {
-      pointer-events: none !important;
-      opacity: 0 !important;
+      display: none !important;  /* display:none garantisce che non blocchi click sulla navbar */
     }
     #view-sculptures.active {
+      display: block !important;
       opacity: 1 !important;
       pointer-events: all !important;
     }
