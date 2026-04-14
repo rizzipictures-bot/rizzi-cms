@@ -5212,7 +5212,7 @@
     #sc-vb-video-frame {
       position: relative;
       background: transparent;
-      padding: 0 0 116px 0; /* spazio in basso: 80px strip + 26px bottom + 10px margine */
+      padding: 0 0 80px 0; /* spazio in basso: 80px per la strip (quasi attaccata) */
       display: block;
       margin: 0 auto;
       width: min(82.8vw, 943px);
@@ -5232,7 +5232,7 @@
       position: absolute;
       left: 0;
       right: 0;
-      bottom: 26px;
+      bottom: 0;            /* quasi attaccata al bordo inferiore del pannello */
       height: 80px;         /* altezza massima = frame espanso al 400% */
       cursor: crosshair;
       display: flex;
@@ -5274,14 +5274,9 @@
     /* Vecchi elementi non più usati */
     #sc-vb-strip { display: none; }
     #sc-vb-strip-thumb { display: none; }
-    /* Barra comandi PLAY / STOP in basso a sinistra, allineata al bordo del video */
+    /* Barra comandi PLAY / STOP del Video Book: nascosta (usa i controlli globali #sc-audio-controls) */
     #sc-vb-controls {
-      position: absolute;
-      bottom: 4px;
-      left: 0;
-      display: flex;
-      align-items: center;
-      gap: 28px;
+      display: none;
     }
     #sc-vb-play {
       background: none;
@@ -5321,6 +5316,10 @@
     }
     /* Grain più intenso in video mode */
     #sculptures-child.sc-video-mode #sc-child-grain { opacity: 0.55 !important; }
+    /* In video mode i controlli globali play/stop rimangono visibili e controllano il video Vimeo */
+    #sculptures-child.sc-video-mode ~ #sc-audio-controls.visible {
+      display: flex !important;
+    }
     /* Carousel centrato in video mode: flex centrato su entrambi gli assi */
     #sculptures-child.sc-video-mode #sculptures-carousel {
       display: flex !important;
@@ -12372,6 +12371,9 @@ function scBuildSectionContent(section) {
       const collapseIcon = document.getElementById('sc-collapse-icon');
       if (expandIcon)   expandIcon.style.display   = 'none';
       if (collapseIcon) collapseIcon.style.display = 'block';
+      // Mostra i controlli audio globali (play/stop) per controllare il video Vimeo
+      const ctrl = document.getElementById('sc-audio-controls');
+      if (ctrl) ctrl.classList.add('visible');
       // Keyboard: Escape chiude
       document._scKeyHandler = function(e) {
         if (e.key === 'Escape') scCloseVideoBook();
@@ -13614,6 +13616,12 @@ function _scDiaryKaraokeShowWord(word) {
 // Toggle play/pause
 // Riprende l'audio (se in pausa) o avvia dall'inizio (se fermo)
 function scAudioPlay() {
+  // In video-mode: controlla il video Vimeo
+  const child = document.getElementById('sculptures-child');
+  if (child && child.classList.contains('sc-video-mode')) {
+    scVbPlay();
+    return;
+  }
   const player = document.getElementById('sc-audio-player');
   if (!player) return;
   if (!player.paused) return; // già in play
@@ -13633,6 +13641,12 @@ function scAudioPlay() {
 
 // Ferma completamente audio e karaoke (bottone Stop)
 function scAudioStop() {
+  // In video-mode: ferma il video Vimeo
+  const child = document.getElementById('sculptures-child');
+  if (child && child.classList.contains('sc-video-mode')) {
+    scVbStop();
+    return;
+  }
   const player = document.getElementById('sc-audio-player');
   if (!player || player.paused) {
     scStopKaraoke();
