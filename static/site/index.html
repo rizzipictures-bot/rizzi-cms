@@ -4454,6 +4454,10 @@
     .sc-section-recordings .sc-section-images > div:hover .sc-img-wrap img {
       opacity: 0.75 !important;  /* 85% base − 10% = 75% */
     }
+    /* Recordings: thumbs abbassate di 20px verso il testo */
+    .sc-section-recordings.sc-section-images {
+      padding-top: 20px !important;
+    }
 
     /* Recordings: celle verticali alte fino al crocino (quasi tutta la viewport meno header e testo) */
     .sc-section-recordings {
@@ -4592,12 +4596,13 @@
     .sc-pl-track.playing .sc-pl-track-title { color: #a78bfa; }
     .sc-pl-track.playing .sc-pl-btn.play-btn { opacity: 0.3; pointer-events: none; }
 
-    /* Testo descrittivo sezione Recordings: larghezza piena pagina */
+    /* Testo descrittivo sezione Recordings: larghezza piena pagina, giustificato */
     .sc-recordings-note {
       width: 100vw;
       margin-left: calc(-21px);
       margin-right: calc(-21px);
       padding: 26px 40px 120px;
+      text-align: justify;
       background: #000;
       color: #fff;
       font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
@@ -5230,6 +5235,41 @@
     #sc-vb-strip-wrap {
       display: none !important;
     }
+    /* ── Progress bar Video Book: linea sottile con pallino seek ── */
+    #sc-vb-progress-wrap {
+      display: none;
+      position: relative;
+      width: 100%;
+      height: 20px;          /* spazio cliccabile attorno alla linea */
+      align-items: center;
+      cursor: none;          /* nasconde il cursore di default */
+      margin-top: 0;
+    }
+    #sculptures-child.sc-video-mode #sc-vb-progress-wrap {
+      display: flex;
+    }
+    #sc-vb-progress-line {
+      position: absolute;
+      left: 0;
+      right: 0;
+      top: 50%;
+      height: 1px;
+      background: #000;
+      transform: translateY(-50%);
+      pointer-events: none;
+    }
+    #sc-vb-progress-dot {
+      position: absolute;
+      top: 50%;
+      width: 7px;
+      height: 7px;
+      background: #000;
+      border-radius: 50%;
+      transform: translate(-50%, -50%);
+      pointer-events: none;
+      transition: left 0.1s linear;
+      left: 0%;
+    }
     /* Ogni frame è un div generato via JS con background-image individuale */
     .sc-vb-frame {
       flex: 1 1 0;           /* base uguale per tutti */
@@ -5691,8 +5731,8 @@
       background: rgba(0,0,0,0.0);
     }
     #sc-diary-text-panel::-webkit-scrollbar { display: none; }
-    #sc-diary-text-panel.dp-left  { left: 0; }
-    #sc-diary-text-panel.dp-right { right: 0; }
+    #sc-diary-text-panel.dp-left  { left: 40px; }   /* +40px verso centro */
+    #sc-diary-text-panel.dp-right { right: 40px; }  /* +40px verso centro */
     .sc-diary-testimony {
       border-bottom: 1px solid rgba(255,255,255,0.15);
       padding: 10px 0;
@@ -7412,6 +7452,11 @@
         <div id="sc-vb-iframe-wrap" style="display:none;">
           <div id="sc-vb-video-frame">
             <iframe id="sc-vb-iframe" src="" allow="autoplay; fullscreen; picture-in-picture" allowfullscreen></iframe>
+            <!-- Progress bar con pallino seek -->
+            <div id="sc-vb-progress-wrap">
+              <div id="sc-vb-progress-line"></div>
+              <div id="sc-vb-progress-dot"></div>
+            </div>
             <!-- Strip thumbnails con pallino hover e click-to-seek -->
             <div id="sc-vb-strip-wrap">
               <div id="sc-vb-strip">
@@ -11989,6 +12034,18 @@ function scSwitchSection(section) {
     // Rimuovi modalità diary (menu torna bianco)
     document.body.classList.remove('sc-diary-nav-mode');
     scBuildGrid();
+    // Auto-show box information: esce da sx dopo 2.5s, rientra dopo 6s
+    if (window._scInfoAutoTimer) { clearTimeout(window._scInfoAutoTimer); window._scInfoAutoTimer = null; }
+    if (window._scInfoAutoClose) { clearTimeout(window._scInfoAutoClose); window._scInfoAutoClose = null; }
+    window._scInfoAutoTimer = setTimeout(function() {
+      const _info = document.getElementById('sculptures-info');
+      if (_info && !_info.classList.contains('active')) {
+        requestAnimationFrame(() => _info.classList.add('active'));
+        window._scInfoAutoClose = setTimeout(function() {
+          if (_info.classList.contains('active')) _info.classList.remove('active');
+        }, 6000);
+      }
+    }, 2500);
   } else if (section === 'information') {
     // Apri info panel
     scOpenInfo();
@@ -12867,6 +12924,70 @@ function scCloseVideoBook() {
   // Torna all'Overview
   scSwitchSection('overview');
 }
+
+// ── Progress bar Video Book: linea nera con pallino seek ──
+(function() {
+  const SC_VB_DUR = 195; // durata video in secondi
+  let _vbCurrentTime = 0;
+
+  function _initProgress() {
+    const wrap = document.getElementById('sc-vb-progress-wrap');
+    const dot  = document.getElementById('sc-vb-progress-dot');
+    if (!wrap || !dot) return;
+
+    // Pallino segue il mouse orizzontalmente
+    wrap.addEventListener('mousemove', function(e) {
+      const r = wrap.getBoundingClientRect();
+      const pct = Math.max(0, Math.min(1, (e.clientX - r.left) / r.width));
+      dot.style.left = (pct * 100) + '%';
+    });
+
+    // Click: seek al momento corrispondente
+    wrap.addEventListener('click', function(e) {
+      const r = wrap.getBoundingClientRect();
+      const pct = Math.max(0, Math.min(1, (e.clientX - r.left) / r.width));
+      const t = pct * SC_VB_DUR;
+      const iframe = document.getElementById('sc-vb-iframe');
+      if (!iframe || !iframe.contentWindow) return;
+      iframe.contentWindow.postMessage(JSON.stringify({ method: 'setCurrentTime', value: t }), 'https://player.vimeo.com');
+      setTimeout(function() {
+        iframe.contentWindow.postMessage(JSON.stringify({ method: 'play' }), 'https://player.vimeo.com');
+      }, 200);
+    });
+
+    // Quando il mouse esce dal wrap, riporta il pallino alla posizione corrente del video
+    wrap.addEventListener('mouseleave', function() {
+      const pct = SC_VB_DUR > 0 ? _vbCurrentTime / SC_VB_DUR : 0;
+      dot.style.left = (pct * 100) + '%';
+    });
+  }
+
+  // Ascolta i messaggi Vimeo per aggiornare la posizione del pallino
+  window.addEventListener('message', function(e) {
+    if (e.origin !== 'https://player.vimeo.com') return;
+    try {
+      const data = JSON.parse(e.data);
+      if (data.event === 'timeupdate' && typeof data.data === 'object' && data.data.seconds !== undefined) {
+        _vbCurrentTime = data.data.seconds;
+        const dot = document.getElementById('sc-vb-progress-dot');
+        if (dot) {
+          const wrap = document.getElementById('sc-vb-progress-wrap');
+          // Aggiorna solo se il mouse non è sopra il wrap
+          if (!wrap || !wrap.matches(':hover')) {
+            const pct = SC_VB_DUR > 0 ? _vbCurrentTime / SC_VB_DUR : 0;
+            dot.style.left = (pct * 100) + '%';
+          }
+        }
+      }
+    } catch(ex) {}
+  });
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', _initProgress);
+  } else {
+    _initProgress();
+  }
+})();
 
 // ── Filmstrip Video Book: ~30 frame separati, ognuno con immagine diversa, click-to-seek ──
 (function() {
