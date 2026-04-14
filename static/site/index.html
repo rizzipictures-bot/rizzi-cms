@@ -5174,13 +5174,23 @@
     ════════════════════════════════════════════════════════════════ */
 
     /* Sezione diary: sfondo bianco, testo nero */
+    /* ═══════════════════════════════════════════════════════════════
+       TESTIMONIAL DIARY — Hero full-page + cascade thumbs
+    ═══════════════════════════════════════════════════════════════ */
     #sculptures-section-content.sc-diary-mode {
-      background: #fff;
-      color: #000;
+      background: #000;
+      color: #fff;
+      overflow: hidden; /* no scroll finché le thumbs non sono visibili */
     }
+    #sculptures-section-content.sc-diary-mode.diary-thumbs-visible {
+      overflow-y: auto;
+    }
+    /* Titolo: rimane bianco su sfondo trasparente sopra la hero */
     #sculptures-section-content.sc-diary-mode h2 {
-      background: #fff;
-      color: #000;
+      background: transparent;
+      color: #fff;
+      position: relative;
+      z-index: 20;
     }
     /* Menu laterale: testo nero in modalità diary */
     .sc-diary-nav-mode #sculptures-nav [data-sc-section],
@@ -5191,21 +5201,65 @@
     .sc-diary-nav-mode #sculptures-nav [data-sc-section].active {
       color: #4c00fc !important;
     }
-    /* Griglia collage diary: 3 colonne su sfondo bianco */
-    .sc-section-diary-grid {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      grid-auto-rows: 280px;
-      gap: 0;
-      padding: 0;
-      background: #fff;
+
+    /* ── Hero: immagine diario aperto che copre tutta la pagina ── */
+    .sc-diary-hero {
+      position: sticky;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100vh;
+      z-index: 1;
+      overflow: hidden;
+      margin-bottom: -100vh; /* la griglia si sovrappone sopra */
     }
+    .sc-diary-hero img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      object-position: center;
+      display: block;
+    }
+    /* Overlay grigio 40% sulla hero — appare quando le thumbs iniziano */
+    .sc-diary-hero::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: rgba(60,60,60,0.40);
+      opacity: 0;
+      transition: opacity 0.8s ease;
+      pointer-events: none;
+    }
+    .sc-diary-hero.hero-dimmed::after {
+      opacity: 1;
+    }
+
+    /* ── Griglia thumbs: sopra la hero ── */
+    .sc-section-diary-grid {
+      position: relative;
+      z-index: 10;
+      display: grid;
+      grid-template-columns: repeat(6, 1fr);
+      grid-auto-rows: 160px;
+      gap: 3px;
+      padding: 0;
+      background: transparent;
+      min-height: 0;
+    }
+    /* Ogni cella thumb: parte nascosta in alto-sx, poi cade in posizione */
     .sc-diary-cell {
       cursor: pointer;
       position: relative;
       overflow: hidden;
+      opacity: 0;
+      transform: translateY(-120px) translateX(-40px);
+      /* la transizione viene attivata via JS aggiungendo .diary-cell-in */
     }
-    /* Tutte le celle: altezza uniforme, riempie la cella della griglia */
+    .sc-diary-cell.diary-cell-in {
+      opacity: 1;
+      transform: translateY(0) translateX(0);
+      transition: opacity 0.35s ease, transform 0.45s cubic-bezier(0.22, 1, 0.36, 1);
+    }
     .sc-diary-cell .sc-diary-img-wrap {
       width: 100%;
       height: 100%;
@@ -5218,7 +5272,7 @@
       width: 100%;
       height: 100%;
       object-fit: cover;
-      object-position: center;
+      object-position: center top;
       display: block;
       transition: opacity .3s;
     }
@@ -11821,7 +11875,7 @@ function scBuildSectionContent(section) {
 
   // ── Pagina speciale: Testimonial Diary ──
   if (section === 'diary') {
-    el.style.background = '#fff';
+    el.style.background = '#000';
     el.style.minHeight  = '100vh';
     el.classList.add('sc-diary-mode');
     document.body.classList.add('sc-diary-nav-mode');
@@ -11835,21 +11889,43 @@ function scBuildSectionContent(section) {
       testimonies: d.testimonies || null,
       intro: d.intro || null
     }));
-    let html = '<h2>Testimonial Diary</h2>';
-    html += '<div class="sc-section-diary-grid">';
+
+    // ── Hero full-page: diario aperto (diary-01.jpg) ──
+    const heroImg = 'images/diary/diary-01.jpg';
+    let html = '<div class="sc-diary-hero" id="sc-diary-hero"><img src="' + heroImg + '" alt="Testimonial Diary"></div>';
+    html += '<h2>Testimonial Diary</h2>';
+    // Griglia thumbs (tutte le immagini, inclusa diary-01)
+    html += '<div class="sc-section-diary-grid" id="sc-diary-grid">';
     SC_DIARY_IMAGES.forEach((d, idx) => {
-      html += `
-        <div class="sc-diary-cell" onclick="scOpenChild(${idx}, 'diary')">
-          <div class="sc-diary-img-wrap"><img src="${d.file}" alt="${d.title || 'Diary'}" loading="lazy"></div>
-        </div>
-      `;
+      html += `<div class="sc-diary-cell" data-idx="${idx}" onclick="scOpenChild(${idx}, 'diary')">
+        <div class="sc-diary-img-wrap"><img src="${d.file}" alt="${d.title || 'Diary'}" loading="lazy"></div>
+      </div>`;
     });
     html += '</div>';
     el.innerHTML = html;
+
+    // ── Animazione cascade: dopo 2s, le thumbs cadono una alla volta ──
+    window._scDiaryCascadeTimer = setTimeout(() => {
+      window._scDiaryCascadeTimer = null;
+      const hero = document.getElementById('sc-diary-hero');
+      if (hero) hero.classList.add('hero-dimmed');
+      el.classList.add('diary-thumbs-visible');
+      const cells = el.querySelectorAll('.sc-diary-cell');
+      cells.forEach((cell, i) => {
+        setTimeout(() => {
+          cell.classList.add('diary-cell-in');
+        }, i * 80); // 80ms tra una thumb e l'altra
+      });
+    }, 2000);
+
     return;
   }
   // Rimuovi la classe diary-mode se eravamo in diary
-  el.classList.remove('sc-diary-mode');
+  if (window._scDiaryCascadeTimer) {
+    clearTimeout(window._scDiaryCascadeTimer);
+    window._scDiaryCascadeTimer = null;
+  }
+  el.classList.remove('sc-diary-mode', 'diary-thumbs-visible');
   document.body.classList.remove('sc-diary-nav-mode');
 
   // Mappa sezione -> titolo
