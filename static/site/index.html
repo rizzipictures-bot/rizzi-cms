@@ -5152,7 +5152,11 @@
       border: none;
     }
     /* ── Filmstrip: ~30 frame separati da gap, click-to-seek ── */
+    /* Visibile SOLO in sc-video-mode; nascosta di default */
     #sc-vb-strip-wrap {
+      display: none;
+    }
+    #sculptures-child.sc-video-mode #sc-vb-strip-wrap {
       position: absolute;
       left: 0;
       right: 0;
@@ -12521,23 +12525,22 @@ function scBuildSectionContent(section) {
     const sectionClass = section === 'recordings' ? 'sc-section-images sc-section-recordings' : 'sc-section-images';
     html += `<div class="${sectionClass}">`;
     // Pattern misto Corboz: H-V-H-V (riga 1), V-H-V-V (riga 2), poi si ripete
-    // Posizioni 0-based nel gruppo di 8: 0=H,1=V,2=H,3=V,4=V,5=H,6=V,7=V
     const corbozPattern = ['h','v','h','v','v','h','v','v'];
-    sectionImages.forEach((img, idx) => {
-      const posInPattern = idx % 8;
-      const cellType = corbozPattern[posInPattern]; // 'h' o 'v'
-      const cellClass = cellType === 'h' ? 'sc-cell-h' : 'sc-cell-v';
-      const capHtml = img.caption ? `<div class="sc-img-caption">${img.caption}</div>` : '';
-      const onclickFn = section === 'recordings'
-        ? `scOpenChild(${idx}, 'recordings')`
-        : `scOpenChild(${idx})`;
-      html += `
-        <div class="${cellClass}" onclick="${onclickFn}">
-          <div class="sc-img-wrap"><img src="${img.url}" alt="${img.title}" loading="lazy"></div>
-          ${capHtml}
-        </div>
-      `;
-    });
+    if (section !== 'recordings') {
+      // Sezioni normali: genera via innerHTML
+      sectionImages.forEach((img, idx) => {
+        const posInPattern = idx % 8;
+        const cellType = corbozPattern[posInPattern];
+        const cellClass = cellType === 'h' ? 'sc-cell-h' : 'sc-cell-v';
+        const capHtml = img.caption ? `<div class="sc-img-caption">${img.caption}</div>` : '';
+        html += `
+          <div class="${cellClass}" onclick="scOpenChild(${idx})">
+            <div class="sc-img-wrap"><img src="${img.url}" alt="${img.title}" loading="lazy"></div>
+            ${capHtml}
+          </div>
+        `;
+      });
+    }
     html += '</div>';
   } else {
     html += `<p style="opacity:.5;font-style:italic;color:${isImagesBook?'#fff':'inherit'};padding:20px">Contenuto in preparazione.</p>`;
@@ -12551,6 +12554,45 @@ function scBuildSectionContent(section) {
     `;
   }
   el.innerHTML = html;
+
+  // Recordings: genera le thumb con animazione scroll via DOM (non innerHTML)
+  if (section === 'recordings' && sectionImages.length > 0) {
+    const corbozPattern2 = ['h','v','h','v','v','h','v','v'];
+    const gridEl = el.querySelector('.sc-section-recordings');
+    if (gridEl) {
+      sectionImages.forEach((img, idx) => {
+        const posInPattern = idx % 8;
+        const cellType = corbozPattern2[posInPattern];
+        const cell = document.createElement('div');
+        cell.className = cellType === 'h' ? 'sc-cell-h' : 'sc-cell-v';
+        cell.style.cursor = 'pointer';
+        cell.addEventListener('click', function() { scOpenChild(idx, 'recordings'); });
+        const wrap = document.createElement('div');
+        wrap.className = 'sc-img-wrap sc-recordings-scroll-wrap';
+        // Direzione alternata: celle pari scendono, dispari salgono
+        if (idx % 2 === 1) wrap.classList.add('sc-scroll-up');
+        const inner = document.createElement('div');
+        inner.className = 'sc-recordings-scroll-inner';
+        // Prima copia
+        const img1 = document.createElement('img');
+        img1.src = img.url; img1.alt = img.title; img1.loading = 'lazy';
+        inner.appendChild(img1);
+        // Seconda copia per loop seamless
+        const img2 = document.createElement('img');
+        img2.src = img.url; img2.alt = img.title; img2.loading = 'lazy';
+        inner.appendChild(img2);
+        wrap.appendChild(inner);
+        cell.appendChild(wrap);
+        if (img.caption) {
+          const cap = document.createElement('div');
+          cap.className = 'sc-img-caption';
+          cap.textContent = img.caption;
+          cell.appendChild(cap);
+        }
+        gridEl.appendChild(cell);
+      });
+    }
+  }
 }
 
 // Apre il pannello viewer in basso (Stato 2)
