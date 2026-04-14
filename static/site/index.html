@@ -12006,41 +12006,86 @@ function scBuildSectionContent(section) {
     // ── Griglia stile Jack Davison: 26 thumbs hardcoded, mix portrait+landscape, righe irregolari ──
     // Ogni thumb ha: file (nome file), idx (indice in SC_DIARY_IMAGES per il viewer), w (larghezza in px), h (altezza in px)
     const DIARY_THUMBS = [
-      // Riga 1: 4 portrait + 1 landscape + 1 vuota
+      // Riga 1
       { file: 'diary-09-thumb.jpg',   idx: 8,  w: 130, h: 195 },
       { file: 'diary-03-thumb.jpg',   idx: 2,  w: 115, h: 195 },
       { file: 'diary-07-thumb-h.jpg', idx: 6,  w: 220, h: 130 },
       { file: 'diary-01-thumb.jpg',   idx: 0,  w: 105, h: 195 },
       { file: 'diary-12-thumb.jpg',   idx: 11, w: 120, h: 195 },
-      { file: null, w: 60, h: 195 }, // vuota
-      // Riga 2: 3 portrait + 2 landscape
+      { file: null, w: 60, h: 195 },
+      // Riga 2
       { file: 'diary-04-thumb.jpg',   idx: 3,  w: 125, h: 185 },
       { file: 'diary-06-thumb-h.jpg', idx: 5,  w: 210, h: 125 },
       { file: 'diary-11-thumb.jpg',   idx: 10, w: 110, h: 185 },
       { file: 'diary-02-thumb.jpg',   idx: 1,  w: 120, h: 185 },
       { file: 'diary-10-thumb-h.jpg', idx: 9,  w: 200, h: 125 },
-      // Riga 3: 1 vuota + 4 portrait + 1 landscape
-      { file: null, w: 80, h: 200 }, // vuota
+      // Riga 3
+      { file: null, w: 80, h: 200 },
       { file: 'diary-05-thumb.jpg',   idx: 4,  w: 115, h: 200 },
       { file: 'diary-08-thumb.jpg',   idx: 7,  w: 120, h: 200 },
       { file: 'diary-03-thumb-h.jpg', idx: 2,  w: 215, h: 135 },
       { file: 'diary-07-thumb.jpg',   idx: 6,  w: 110, h: 200 },
       { file: 'diary-04-thumb-h.jpg', idx: 3,  w: 205, h: 135 },
-      // Riga 4: 3 portrait + 1 vuota + 2 portrait
+      // Riga 4
       { file: 'diary-01-thumb-b.jpg', idx: 0,  w: 120, h: 175 },
       { file: 'diary-12-thumb-h.jpg', idx: 11, w: 210, h: 120 },
       { file: 'diary-09-thumb.jpg',   idx: 8,  w: 115, h: 175 },
-      { file: null, w: 70, h: 175 }, // vuota
+      { file: null, w: 70, h: 175 },
       { file: 'diary-06-thumb.jpg',   idx: 5,  w: 125, h: 175 },
       { file: 'diary-02-thumb-b.jpg', idx: 1,  w: 115, h: 175 },
-      // Riga 5: 2 portrait + 1 landscape + 2 portrait + 1 vuota
+      // Riga 5
       { file: 'diary-10-thumb.jpg',   idx: 9,  w: 120, h: 190 },
       { file: 'diary-05-thumb-b.jpg', idx: 4,  w: 115, h: 190 },
       { file: 'diary-11-thumb-b.jpg', idx: 10, w: 115, h: 190 },
       { file: 'diary-08-thumb-b.jpg', idx: 7,  w: 120, h: 190 },
+      // Riga 6 (ripetizione con variazioni)
+      { file: 'diary-05-thumb.jpg',   idx: 4,  w: 110, h: 185 },
+      { file: 'diary-10-thumb-h.jpg', idx: 9,  w: 205, h: 125 },
+      { file: 'diary-02-thumb.jpg',   idx: 1,  w: 115, h: 185 },
+      { file: null, w: 55, h: 185 },
+      { file: 'diary-08-thumb.jpg',   idx: 7,  w: 125, h: 185 },
+      { file: 'diary-11-thumb.jpg',   idx: 10, w: 115, h: 185 },
+      // Riga 7
+      { file: 'diary-04-thumb.jpg',   idx: 3,  w: 120, h: 200 },
+      { file: 'diary-09-thumb.jpg',   idx: 8,  w: 115, h: 200 },
+      { file: 'diary-06-thumb-h.jpg', idx: 5,  w: 215, h: 135 },
+      { file: 'diary-12-thumb.jpg',   idx: 11, w: 120, h: 200 },
+      { file: 'diary-03-thumb-h.jpg', idx: 2,  w: 210, h: 135 },
+      // Riga 8
+      { file: null, w: 75, h: 180 },
+      { file: 'diary-01-thumb.jpg',   idx: 0,  w: 115, h: 180 },
+      { file: 'diary-07-thumb-h.jpg', idx: 6,  w: 215, h: 120 },
+      { file: 'diary-05-thumb-b.jpg', idx: 4,  w: 115, h: 180 },
+      { file: 'diary-02-thumb-b.jpg', idx: 1,  w: 120, h: 180 },
+      { file: 'diary-11-thumb-b.jpg', idx: 10, w: 115, h: 180 },
+      // Riga 9
+      { file: 'diary-08-thumb-b.jpg', idx: 7,  w: 125, h: 195 },
+      { file: 'diary-12-thumb-h.jpg', idx: 11, w: 205, h: 130 },
+      { file: 'diary-06-thumb.jpg',   idx: 5,  w: 115, h: 195 },
+      { file: null, w: 65, h: 195 },
+      { file: 'diary-03-thumb.jpg',   idx: 2,  w: 115, h: 195 },
+      // Riga 10
+      { file: 'diary-10-thumb.jpg',   idx: 9,  w: 120, h: 185 },
+      { file: 'diary-04-thumb-h.jpg', idx: 3,  w: 210, h: 125 },
+      { file: 'diary-09-thumb.jpg',   idx: 8,  w: 115, h: 185 },
+      { file: 'diary-01-thumb-b.jpg', idx: 0,  w: 120, h: 185 },
+      { file: 'diary-07-thumb.jpg',   idx: 6,  w: 110, h: 185 },
+      // Riga 11
+      { file: null, w: 85, h: 190 },
+      { file: 'diary-05-thumb.jpg',   idx: 4,  w: 115, h: 190 },
+      { file: 'diary-02-thumb.jpg',   idx: 1,  w: 120, h: 190 },
+      { file: 'diary-12-thumb.jpg',   idx: 11, w: 115, h: 190 },
+      { file: 'diary-10-thumb-h.jpg', idx: 9,  w: 200, h: 130 },
+      { file: 'diary-08-thumb.jpg',   idx: 7,  w: 115, h: 190 },
+      // Riga 12
+      { file: 'diary-11-thumb.jpg',   idx: 10, w: 120, h: 180 },
+      { file: 'diary-06-thumb-h.jpg', idx: 5,  w: 210, h: 120 },
+      { file: 'diary-04-thumb.jpg',   idx: 3,  w: 115, h: 180 },
+      { file: null, w: 60, h: 180 },
+      { file: 'diary-03-thumb-h.jpg', idx: 2,  w: 210, h: 120 },
     ];
     // Definizione righe: quante thumbs per riga
-    const DIARY_ROW_SIZES = [6, 5, 6, 6, 4];
+    const DIARY_ROW_SIZES = [6, 5, 6, 6, 4, 6, 5, 6, 5, 5, 6, 5];
     let html = '<h2>Testimonial Diary</h2>';
     html += '<div class="sc-section-diary-grid" id="sc-diary-grid">';
     let tIdx = 0;
