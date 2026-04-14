@@ -4455,9 +4455,9 @@
       opacity: 0.75 !important;  /* 85% base − 10% = 75% */
     }
 
-    /* Recordings: celle verticali leggermente più alte del default (460px) per avvicinarsi al testo */
+    /* Recordings: celle verticali alte fino al crocino (quasi tutta la viewport meno header e testo) */
     .sc-section-recordings {
-      --v-height: 535px;
+      --v-height: calc(100vh - 220px);
     }
     /* Le immagini duplicate nello scroll-inner devono essere alte --v-height */
     .sc-section-recordings .sc-recordings-scroll-wrap {
@@ -5366,6 +5366,13 @@
       font-size: clamp(11px, 1.2vw, 16px);
       font-weight: 400;
       color: #fff;
+    }
+    /* In Testimony (diary mode) il karaoke è grigio medio-scuro per leggibilità su sfondo chiaro */
+    .sc-diary-nav-mode .sc-kword {
+      color: #555 !important;
+    }
+    /* Dummy per reset (non rimuovere) */
+    .sc-kword-reset {
       white-space: nowrap;
       line-height: 1.2;
       display: inline-block;
