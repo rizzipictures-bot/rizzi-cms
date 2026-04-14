@@ -4888,10 +4888,11 @@
     }
 
     /* ── Bottone audio Sculptures ── */
-    /* ── Controlli audio Play/Stop fissi in basso a sinistra — allineati al karaoke ── */
+    /* ── Controlli audio Play/Stop fissi in basso a sinistra — centrati verticalmente al karaoke ── */
+    /* karaoke: bottom=14px, height=52px → centro = 14 + 26 = 40px dal basso */
     #sc-audio-controls {
       position: fixed;
-      bottom: 14px;
+      bottom: 40px;
       left: 18px;
       z-index: 1400;
       display: none;               /* mostrato solo in Sculptures */
