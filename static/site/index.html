@@ -5177,27 +5177,20 @@
     /* ═══════════════════════════════════════════════════════════════
        TESTIMONIAL DIARY — Hero full-page + cascade thumbs
     ═══════════════════════════════════════════════════════════════ */
+    /* In modalità diary: view-sculptures mostra la foto come sfondo */
+    #view-sculptures.sc-diary-bg-mode {
+      background-size: cover !important;
+      background-position: center center !important;
+      background-repeat: no-repeat !important;
+    }
     #sculptures-section-content.sc-diary-mode {
-      /* Rendi il container trasparente: la hero sta sotto come elemento separato */
+      /* Rendi il container trasparente: la hero sta su view-sculptures */
       background: transparent !important;
       color: #fff;
       overflow: hidden;
     }
-    /* Hero background: elemento fisso dentro #view-sculptures, sotto il container */
-    #sc-diary-hero-bg {
-      position: absolute;
-      inset: 0;
-      z-index: 0;
-      background-size: cover;
-      background-position: center center;
-      background-repeat: no-repeat;
-      pointer-events: none;
-    }
-    #sculptures-section-content.sc-diary-mode.diary-thumbs-visible {
-      overflow-y: auto;
-    }
-    /* Overlay grigio sull'elemento hero: attivato quando le thumbs appaiono */
-    #sc-diary-hero-bg::after {
+    /* Overlay grigio su view-sculptures quando le thumbs appaiono */
+    #view-sculptures.sc-diary-bg-mode::before {
       content: '';
       position: absolute;
       inset: 0;
@@ -5205,10 +5198,15 @@
       opacity: 0;
       transition: opacity 0.8s ease;
       pointer-events: none;
+      z-index: 1;
     }
-    #sc-diary-hero-bg.hero-dimmed::after {
+    #view-sculptures.sc-diary-bg-mode.hero-dimmed::before {
       opacity: 1;
     }
+    #sculptures-section-content.sc-diary-mode.diary-thumbs-visible {
+      overflow-y: auto;
+    }
+    /* (overlay gestito su #view-sculptures.sc-diary-bg-mode::before) */
     /* Titolo: rimane bianco su sfondo trasparente sopra la hero */
     #sculptures-section-content.sc-diary-mode h2 {
       background: transparent;
@@ -11886,16 +11884,12 @@ function scBuildSectionContent(section) {
       intro: d.intro || null
     }));
 
-    // ── Hero full-page: elemento separato dentro #view-sculptures, sotto il container ──
-    // Rimuovi eventuale hero precedente
-    const oldHero = document.getElementById('sc-diary-hero-bg');
-    if (oldHero) oldHero.remove();
-    // Crea il nuovo elemento hero
-    const heroBg = document.createElement('div');
-    heroBg.id = 'sc-diary-hero-bg';
-    heroBg.style.backgroundImage = 'url(images/diary/diary-02.jpg)';
+    // ── Hero full-page: background-image su #view-sculptures direttamente ──
     const viewEl = document.getElementById('view-sculptures');
-    if (viewEl) viewEl.insertBefore(heroBg, viewEl.firstChild);
+    if (viewEl) {
+      viewEl.style.backgroundImage = 'url(images/diary/diary-02.jpg)';
+      viewEl.classList.add('sc-diary-bg-mode');
+    }
 
     // Griglia thumbs (tutte le immagini)
     let html = '<h2>Testimonial Diary</h2>';
@@ -11911,8 +11905,8 @@ function scBuildSectionContent(section) {
     // ── Animazione cascade: dopo 2.5s, le thumbs cadono una alla volta con 150ms di ritardo ──
     window._scDiaryCascadeTimer = setTimeout(() => {
       window._scDiaryCascadeTimer = null;
-      const heroBgEl = document.getElementById('sc-diary-hero-bg');
-      if (heroBgEl) heroBgEl.classList.add('hero-dimmed');  // attiva overlay sull'elemento hero
+      const viewDimEl = document.getElementById('view-sculptures');
+      if (viewDimEl) viewDimEl.classList.add('hero-dimmed');  // attiva overlay su view-sculptures
       el.classList.add('diary-thumbs-visible');
       const cells = el.querySelectorAll('.sc-diary-cell');
       cells.forEach((cell, i) => {
@@ -11929,7 +11923,13 @@ function scBuildSectionContent(section) {
     clearTimeout(window._scDiaryCascadeTimer);
     window._scDiaryCascadeTimer = null;
   }
-  // Rimuovi l'elemento hero e le classi diary
+  // Rimuovi background e classi diary da view-sculptures e dal container
+  const viewCleanEl = document.getElementById('view-sculptures');
+  if (viewCleanEl) {
+    viewCleanEl.style.backgroundImage = '';
+    viewCleanEl.classList.remove('sc-diary-bg-mode', 'hero-dimmed');
+  }
+  // Rimuovi eventuale elemento hero separato residuo
   const diaryHero = document.getElementById('sc-diary-hero-bg');
   if (diaryHero) diaryHero.remove();
   el.classList.remove('sc-diary-mode', 'diary-thumbs-visible', 'hero-dimmed');
