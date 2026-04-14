@@ -5188,6 +5188,10 @@
       display: flex;
       pointer-events: none;
       overflow: hidden;
+      transition: filter 1.2s ease;
+    }
+    #sc-diary-bg-img.diary-bg-blurred {
+      filter: blur(8px);
     }
     #sc-diary-bg-img img {
       flex: 1;
@@ -5197,20 +5201,44 @@
       object-position: top center;
       display: block;
     }
-    /* Overlay scuro 40% sopra la hero img */
+    /* Overlay grigio 7% sopra la hero img — attivo quando le thumbs sono disposte */
     #sc-diary-bg-overlay {
       position: fixed;
       top: 0; left: 0;
       width: 100vw;
       height: 100vh;
-      background: rgba(0,0,0,0.15);
-      z-index: 1099;  /* stesso livello della hero, dopo di essa nel DOM */
+      background: rgba(128,128,128,0.07);
+      z-index: 1099;
       opacity: 0;
       transition: opacity 0.8s ease;
       pointer-events: none;
     }
     #sc-diary-bg-overlay.active {
       opacity: 1;
+    }
+    /* Effetto grana: pseudo-elemento SVG noise sopra il background */
+    #sc-diary-bg-grain {
+      position: fixed;
+      top: -50%; left: -50%;
+      width: 200%; height: 200%;
+      z-index: 1099;
+      pointer-events: none;
+      opacity: 0;
+      transition: opacity 1s ease;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='grain'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23grain)' opacity='0.12'/%3E%3C/svg%3E");
+      background-repeat: repeat;
+      background-size: 300px 300px;
+      animation: grainShift 0.5s steps(2) infinite;
+    }
+    #sc-diary-bg-grain.active {
+      opacity: 1;
+    }
+    @keyframes grainShift {
+      0%   { transform: translate(0, 0); }
+      25%  { transform: translate(-3%, -4%); }
+      50%  { transform: translate(4%, 2%); }
+      75%  { transform: translate(-2%, 5%); }
+      100% { transform: translate(3%, -3%); }
     }
     /* view-sculptures trasparente in modalità diary */
     #view-sculptures.sc-diary-mode {
@@ -11925,6 +11953,12 @@ function scBuildSectionContent(section) {
     const heroOv = document.createElement('div');
     heroOv.id = 'sc-diary-bg-overlay';
     document.body.appendChild(heroOv);
+    // Crea il layer grana (inizialmente trasparente)
+    const oldGrain = document.getElementById('sc-diary-bg-grain');
+    if (oldGrain) oldGrain.remove();
+    const heroGrain = document.createElement('div');
+    heroGrain.id = 'sc-diary-bg-grain';
+    document.body.appendChild(heroGrain);
     // Rendi view-sculptures trasparente
     const viewEl = document.getElementById('view-sculptures');
     if (viewEl) viewEl.classList.add('sc-diary-mode');
@@ -11967,7 +12001,11 @@ function scBuildSectionContent(section) {
     window._scDiaryCascadeTimer = setTimeout(() => {
       window._scDiaryCascadeTimer = null;
       const ovEl = document.getElementById('sc-diary-bg-overlay');
-      if (ovEl) ovEl.classList.add('active');  // attiva overlay scuro 40% sulla hero
+      if (ovEl) ovEl.classList.add('active');  // attiva overlay grigio 7%
+      const bgImgEl = document.getElementById('sc-diary-bg-img');
+      if (bgImgEl) bgImgEl.classList.add('diary-bg-blurred');  // blur 8%
+      const grainEl = document.getElementById('sc-diary-bg-grain');
+      if (grainEl) grainEl.classList.add('active');  // attiva grana
       el.classList.add('diary-thumbs-visible');
       const cells = el.querySelectorAll('.sc-diary-cell');
       cells.forEach((cell, i) => {
@@ -11984,11 +12022,13 @@ function scBuildSectionContent(section) {
     clearTimeout(window._scDiaryCascadeTimer);
     window._scDiaryCascadeTimer = null;
   }
-  // Rimuovi elementi hero e overlay dal body
+  // Rimuovi elementi hero, overlay e grain dal body
   const bgImg = document.getElementById('sc-diary-bg-img');
   if (bgImg) bgImg.remove();
   const bgOv = document.getElementById('sc-diary-bg-overlay');
   if (bgOv) bgOv.remove();
+  const bgGrain = document.getElementById('sc-diary-bg-grain');
+  if (bgGrain) bgGrain.remove();
   // Rimuovi classe diary-mode da view-sculptures
   const viewCleanEl = document.getElementById('view-sculptures');
   if (viewCleanEl) viewCleanEl.classList.remove('sc-diary-mode');
