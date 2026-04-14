@@ -4628,12 +4628,12 @@
       z-index: 1500;  /* sopra il viewer (1300) e sopra tutto */
       font-family: Helvetica, Arial, sans-serif;  /* font Corboz */
       font-size: 19px;  /* dimensione esatta Corboz */
-      /* Animazione Corboz: scivola da sinistra */
-      transform: translateX(-100%);
-      transition: transform 0.5s cubic-bezier(0.77, 0, 0.175, 1);
+      /* Animazione da sinistra: clip-path non è bloccato dall'overflow:hidden del body */
+      clip-path: inset(0 100% 0 0);  /* nascosto: taglia tutto da destra */
+      transition: clip-path 0.5s cubic-bezier(0.77, 0, 0.175, 1);
     }
     #sculptures-info.active {
-      transform: translateX(0);  /* visibile — scivola da sinistra */
+      clip-path: inset(0 0% 0 0);  /* visibile: nessun clip */
     }
     /* Pulsante chiusura: gestito da .btn-circle-close.black */
     #sculptures-info-close {
