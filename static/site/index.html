@@ -4229,15 +4229,16 @@
     }
     #sculptures-section-content::-webkit-scrollbar { display: none; }
     #sculptures-section-content h2 {
-      font-family: 'Arial Black', 'Helvetica Neue', Arial, sans-serif;
-      font-size: clamp(60px, 8vw, 110px);  /* grande come nel riferimento */
-      font-weight: 900;
-      letter-spacing: -3px;               /* leggermente negativo come nel riferimento */
+      /* Stesso font e stile del titolo Sculptures in Overview */
+      font-family: 'Barlow Condensed', 'Arial Black', sans-serif;
+      font-size: clamp(60px, 8vw, 110px);
+      font-weight: 800;
+      letter-spacing: -1px;
       line-height: 1;
       margin: 0;
-      padding: 4px 0 10px;                /* 4px sopra, 10px sotto (distanza dalle foto) */
+      padding: 4px 0 10px;
       color: #fff;
-      text-transform: uppercase;
+      text-transform: none;  /* nessuna maiuscola forzata */
       text-align: center;
       background: #000;
       display: block;
