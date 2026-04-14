@@ -4838,8 +4838,8 @@
       cursor: pointer;  /* click = fullscreen */
       transition: opacity .25s ease, max-height .35s cubic-bezier(.77,0,.175,1);
     }
-    /* In modalità diary il click sulla foto non attiva il fullscreen */
-    body.sc-diary-viewer-active #sculptures-carousel-img { cursor: default; }
+    /* In modalità diary il click sulla foto attiva il fullscreen come le altre sezioni */
+    body.sc-diary-viewer-active #sculptures-carousel-img { cursor: pointer; }
     #sculptures-child.sc-fullscreen #sculptures-carousel-img {
       max-height: calc(100vh - 60px);
       max-width: 100vw;
@@ -5422,10 +5422,10 @@
       font-weight: 400;
       color: #fff;
     }
-    /* In Testimony (diary mode) il karaoke è nero su sfondo chiaro */
+    /* In Testimony (diary mode) il karaoke usa il colore dinamico rilevato dalla luminosità dell'immagine */
     .sc-diary-nav-mode .sc-kword,
     #sc-diary-karaoke .sc-kword {
-      color: #000 !important;
+      color: var(--diary-kword-color, #000) !important;
     }
     /* Dummy per reset (non rimuovere) */
     .sc-kword-reset {
@@ -12859,13 +12859,11 @@ function scOpenChild(idx, section) {
     document.body.classList.remove('sc-diary-viewer-active');
   }
   scUpdateCarousel();
-  // Click sulla foto = fullscreen (solo se non siamo in modalità diary)
+  // Click sulla foto = fullscreen (anche in modalità diary)
   const _img = document.getElementById('sculptures-carousel-img');
   if (_img) {
     _img._scClickHandler = function() {
-      if (!document.body.classList.contains('sc-diary-viewer-active')) {
-        scToggleFullscreen();
-      }
+      scToggleFullscreen();
     };
     _img.addEventListener('click', _img._scClickHandler);
   }
@@ -13193,6 +13191,19 @@ function scUpdateCarousel() {
   _scUpdateRecordingsPlaylist(posIdx);
   // Aggiorna il pannello testo se siamo in sezione diary
   _scUpdateDiaryPanel(posIdx);
+  // Rilevamento luminosità per il colore del karaoke diary
+  if (_scCurrentSection === 'diary') {
+    // Aspetta che l'immagine sia caricata prima di campionare i pixel
+    const _diaryImg = document.getElementById('sculptures-carousel-img');
+    if (_diaryImg) {
+      const _doDetect = function() { _scDiaryDetectBrightness(_diaryImg); };
+      if (_diaryImg.complete && _diaryImg.naturalWidth > 0) {
+        _doDetect();
+      } else {
+        _diaryImg.addEventListener('load', _doDetect, { once: true });
+      }
+    }
+  }
   // Mostra il pannello testo per tutte le foto di images-book (non in fullscreen)
   const coverPanel = document.getElementById('sc-cover-text-panel');
   if (coverPanel) {
@@ -13339,6 +13350,42 @@ function _scUpdateDiaryPanel(posIdx) {
     return;
   }
   dp.innerHTML = html;
+}
+
+// Rileva la luminosità della zona inferiore dell'immagine diary e adatta il colore del karaoke
+function _scDiaryDetectBrightness(imgEl) {
+  try {
+    const canvas = document.createElement('canvas');
+    // Campiona una striscia orizzontale nella fascia inferiore (ultimi 15% dell'immagine)
+    const sampleH = Math.max(1, Math.round(imgEl.naturalHeight * 0.15));
+    const sampleY = imgEl.naturalHeight - sampleH;
+    canvas.width  = imgEl.naturalWidth;
+    canvas.height = sampleH;
+    const ctx = canvas.getContext('2d');
+    ctx.drawImage(imgEl, 0, sampleY, imgEl.naturalWidth, sampleH, 0, 0, imgEl.naturalWidth, sampleH);
+    const data = ctx.getImageData(0, 0, canvas.width, canvas.height).data;
+    let total = 0, count = 0;
+    // Calcola luminosità media (formula percettiva)
+    for (let i = 0; i < data.length; i += 4) {
+      const r = data[i], g = data[i+1], b = data[i+2];
+      total += 0.299 * r + 0.587 * g + 0.114 * b;
+      count++;
+    }
+    const avgLum = count > 0 ? total / count : 0;
+    // Se la zona è chiara (luminosità > 180/255) usa grigio scuro, altrimenti nero
+    const kbox = document.getElementById('sc-diary-karaoke');
+    if (kbox) {
+      if (avgLum > 180) {
+        // Zona bianca/chiara: testo grigio scuro per visibilità
+        kbox.style.setProperty('--diary-kword-color', '#555');
+      } else {
+        // Zona scura: testo nero (già impostato dal CSS)
+        kbox.style.setProperty('--diary-kword-color', '#000');
+      }
+    }
+  } catch(e) {
+    // Fallback silenzioso in caso di errore CORS o canvas
+  }
 }
 
 // Apre il pannello Information (animazione Corboz: scivola da sinistra)
