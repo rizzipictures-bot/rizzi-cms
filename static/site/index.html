@@ -5051,11 +5051,11 @@
       overflow: visible !important;
       position: relative;
     }
-    /* Cornice nera: padding attorno all'iframe */
+    /* Cornice nera: padding attorno all'iframe (ridotto del 40%: 52→31px, 80→48px) */
     #sc-vb-video-frame {
       position: relative;
       background: #000;
-      padding: 52px 52px 80px 52px; /* top right bottom(più alto per i controlli) left */
+      padding: 31px 31px 80px 31px; /* top right bottom(spazio per strip+controlli) left */
       display: inline-block;
     }
     #sc-vb-video-frame iframe {
@@ -5064,11 +5064,57 @@
       aspect-ratio: 16/9;
       border: none;
     }
+    /* Strip thumbnails + linea bianca + pallino hover */
+    #sc-vb-strip-wrap {
+      position: absolute;
+      left: 31px;
+      right: 31px;
+      bottom: 44px;
+      height: 22px;
+      cursor: none;
+    }
+    #sc-vb-strip {
+      width: 100%;
+      height: 18px;
+      display: flex;
+      overflow: hidden;
+      position: relative;
+    }
+    #sc-vb-strip-thumb {
+      width: 100%;
+      height: 100%;
+      background-image: url('https://i.vimeocdn.com/video/781880474-5cac69be57b3c33b58617414bcf1cd296df1c758dd17be51609ae95f7735ce2c-d_640?region=us');
+      background-size: cover;
+      background-position: center;
+      display: block;
+      opacity: 0.75;
+    }
+    #sc-vb-strip-line {
+      position: absolute;
+      bottom: -3px;
+      left: 0;
+      right: 0;
+      height: 1px;
+      background: rgba(255,255,255,0.6);
+    }
+    #sc-vb-strip-dot {
+      position: absolute;
+      top: 50%;
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: #fff;
+      transform: translate(-50%, -50%);
+      pointer-events: none;
+      display: none;
+      transition: left 0.05s linear;
+      z-index: 2;
+    }
     /* Barra comandi PLAY / STOP in basso a sinistra dentro la cornice */
     #sc-vb-controls {
       position: absolute;
-      bottom: 20px;
-      left: 52px;
+      bottom: 14px;
+      left: 31px;
       display: flex;
       align-items: center;
       gap: 28px;
@@ -5112,11 +5158,18 @@
     }
     /* Grain più intenso in video mode */
     #sculptures-child.sc-video-mode #sc-child-grain { opacity: 0.55 !important; }
-    /* Carousel centrato in video mode */
+    /* Carousel centrato in video mode: flex centrato su entrambi gli assi */
     #sculptures-child.sc-video-mode #sculptures-carousel {
+      display: flex !important;
+      flex-direction: column;
       align-items: center;
       justify-content: center;
       padding-top: 0;
+      height: 100%;
+    }
+    /* Il wrapper iframe occupa solo lo spazio necessario (non si espande) */
+    #sculptures-child.sc-video-mode #sc-vb-iframe-wrap {
+      flex: 0 0 auto;
     }
 
     /* ── Karaoke / sottotitoli sincronizzati (stile macchina da scrivere) ── */
@@ -7197,6 +7250,14 @@
         <div id="sc-vb-iframe-wrap" style="display:none;">
           <div id="sc-vb-video-frame">
             <iframe id="sc-vb-iframe" src="" allow="autoplay; fullscreen; picture-in-picture" allowfullscreen></iframe>
+            <!-- Strip thumbnails con pallino hover e click-to-seek -->
+            <div id="sc-vb-strip-wrap">
+              <div id="sc-vb-strip">
+                <div id="sc-vb-strip-thumb"></div>
+                <div id="sc-vb-strip-dot"></div>
+              </div>
+              <div id="sc-vb-strip-line"></div>
+            </div>
             <!-- Comandi PLAY / STOP -->
             <div id="sc-vb-controls">
               <button id="sc-vb-play" onclick="scVbPlay()">&#9654;&nbsp; Play</button>
@@ -12551,6 +12612,68 @@ function scCloseVideoBook() {
   // Torna all'Overview
   scSwitchSection('overview');
 }
+
+// ── Strip thumbnails Video Book: pallino hover + click-to-seek ──
+(function() {
+  const SC_VB_DURATION = 195; // durata video in secondi
+  let _dotMoveTimer = null;
+
+  function _initStrip() {
+    const strip = document.getElementById('sc-vb-strip-wrap');
+    const dot   = document.getElementById('sc-vb-strip-dot');
+    if (!strip || !dot) return;
+
+    // Mostra il pallino e lo posiziona al mouse
+    strip.addEventListener('mousemove', function(e) {
+      const rect = strip.getBoundingClientRect();
+      const x = e.clientX - rect.left;
+      const pct = Math.max(0, Math.min(1, x / rect.width));
+      dot.style.display = 'block';
+      dot.style.left = (pct * 100) + '%';
+      // Reset timer fermo
+      if (_dotMoveTimer) clearTimeout(_dotMoveTimer);
+      // Il pallino si ferma dopo 1.5s senza movimento
+      _dotMoveTimer = setTimeout(function() {
+        // Pallino rimane visibile ma smette di seguire (già fermo)
+      }, 1500);
+    });
+
+    // Nasconde il pallino quando il mouse esce dalla strip
+    strip.addEventListener('mouseleave', function() {
+      dot.style.display = 'none';
+      if (_dotMoveTimer) clearTimeout(_dotMoveTimer);
+    });
+
+    // Click: seek al momento corrispondente
+    strip.addEventListener('click', function(e) {
+      const rect = strip.getBoundingClientRect();
+      const x = e.clientX - rect.left;
+      const pct = Math.max(0, Math.min(1, x / rect.width));
+      const seekTime = Math.round(pct * SC_VB_DURATION);
+      const iframe = document.getElementById('sc-vb-iframe');
+      if (iframe && iframe.contentWindow) {
+        iframe.contentWindow.postMessage(
+          JSON.stringify({ method: 'setCurrentTime', value: seekTime }),
+          'https://player.vimeo.com'
+        );
+        // Avvia il play dopo il seek
+        setTimeout(function() {
+          iframe.contentWindow.postMessage(
+            JSON.stringify({ method: 'play' }),
+            'https://player.vimeo.com'
+          );
+        }, 200);
+      }
+    });
+  }
+
+  // Inizializza la strip quando il DOM è pronto
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', _initStrip);
+  } else {
+    _initStrip();
+  }
+})();
 
 // Comandi Play / Stop per il Video Book (API Vimeo via postMessage)
 function scVbPlay() {
