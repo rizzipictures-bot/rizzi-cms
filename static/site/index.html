@@ -4726,6 +4726,96 @@
     #sc-audio-btn:hover { opacity: 0.8; }
     #sc-audio-btn.playing { opacity: 1; }
 
+    /* ══════════════════════════════════════════════════════════════
+       BOX TOPICS — popup bianco dal basso (stile Corboz) — solo in images-book
+    ══════════════════════════════════════════════════════════════ */
+    @keyframes sc-topics-slidin {
+      0%   { transform: translate(-50%, 200px); }
+      100% { transform: translate(-50%, 0); }
+    }
+    #sc-topics-box {
+      background: #fff;
+      border-radius: 10px;
+      position: fixed;
+      bottom: 3.5vw;
+      left: 50%;
+      z-index: 1295;
+      width: 300px;
+      box-shadow: rgba(0,0,0,0.08) 0px 2px 15px 3px;
+      padding: 20px 10px;
+      text-align: center;
+      overflow: hidden;
+      height: 60px;
+      /* Stato nascosto: fuori viewport in basso */
+      transform: translate(-50%, 200px);
+      opacity: 0;
+      pointer-events: none;
+      transition: transform 0.7s cubic-bezier(0.77, 0, 0.175, 1),
+                  opacity 0.4s cubic-bezier(0.77, 0, 0.175, 1),
+                  height 0.7s cubic-bezier(0.77, 0, 0.175, 1);
+    }
+    #sc-topics-box.sc-topics-visible {
+      transform: translate(-50%, 0);
+      opacity: 1;
+      pointer-events: auto;
+    }
+    #sc-topics-box.sc-topics-open {
+      height: auto;
+      max-height: 70vh;
+      overflow-y: auto;
+    }
+    /* Barra di trascinamento in cima */
+    #sc-topics-drag {
+      position: absolute;
+      top: 10px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 60px;
+      height: 3px;
+      background: rgb(230,230,230);
+      border-radius: 5px;
+      cursor: pointer;
+      transition: 0.3s;
+    }
+    #sc-topics-drag:hover { width: 50px; background: rgb(200,200,200); }
+    /* Voce selezionata (sempre visibile) */
+    #sc-topics-selected {
+      position: relative;
+      cursor: pointer;
+      font-family: 'Arial Black', Arial, sans-serif;
+      font-size: 16px;
+      font-weight: 900;
+      color: #000;
+      line-height: 1;
+      user-select: none;
+      padding-top: 2px;
+    }
+    /* Lista voci (nascosta finché chiuso) */
+    #sc-topics-list {
+      text-align: center;
+      padding: 10px 0 10px;
+      opacity: 0;
+      transition: opacity 0.3s cubic-bezier(0.77, 0, 0.175, 1);
+      pointer-events: none;
+    }
+    #sc-topics-box.sc-topics-open #sc-topics-list {
+      opacity: 1;
+      pointer-events: auto;
+    }
+    #sc-topics-list li {
+      list-style: none;
+      padding: 3px 0;
+      cursor: pointer;
+      font-family: 'Arial Black', Arial, sans-serif;
+      font-size: 15px;
+      font-weight: 900;
+      color: #000;
+      line-height: 1.1;
+      user-select: none;
+    }
+    #sc-topics-list li:hover { color: #4c00fc; }
+    #sc-topics-list li.sc-topics-active { color: #4c00fc; }
+
     /* ── Karaoke / sottotitoli sincronizzati (stile macchina da scrivere) ── */
     #sc-karaoke {
       position: fixed;
@@ -6443,6 +6533,23 @@
       <!-- Karaoke: sottotitoli sincronizzati in basso -->
       <div id="sc-karaoke">
         <div id="sc-karaoke-line"></div>
+      </div>
+
+      <!-- Box Topics (stile Corboz) — visibile solo in images-book -->
+      <div id="sc-topics-box">
+        <div id="sc-topics-drag" onclick="scToggleTopics()"></div>
+        <div id="sc-topics-selected" onclick="scToggleTopics()">All</div>
+        <ul id="sc-topics-list">
+          <li onclick="scTopicsNavigate('images-book')" class="sc-topics-active">All</li>
+          <li onclick="scTopicsNavigate('video')">Video Book</li>
+          <li onclick="scTopicsNavigate('diary')">Diary Witness</li>
+          <li onclick="scTopicsNavigate('life')">A Life Beside</li>
+          <li onclick="scTopicsNavigate('studies')">Studies</li>
+          <li onclick="scTopicsNavigate('synopsis')">Synopsis</li>
+          <li onclick="scTopicsNavigate('recordings')">Recordings</li>
+          <li onclick="scTopicsNavigate('experience')">Experience</li>
+          <li onclick="scTopicsNavigate('information')">Information</li>
+        </ul>
       </div>
 
       <!-- Box video overlay (stile Information) -->
@@ -11041,6 +11148,8 @@ function scSwitchSection(section) {
   const wrapper = document.getElementById('sculptures-images-wrapper');
   const sectionContent = document.getElementById('sculptures-section-content');
   const pageTitle = document.getElementById('sculptures-page-title');
+  // Mostra/nascondi box Topics (solo in images-book)
+  _scTopicsSetVisible(section === 'images-book');
   if (section === 'overview') {
     // Mostra griglia immagini + titolo grande
     if (wrapper) wrapper.style.display = 'block';
@@ -11059,6 +11168,56 @@ function scSwitchSection(section) {
       scBuildSectionContent(section);
     }
   }
+}
+
+// ── Box Topics: mostra/nascondi ──
+function _scTopicsSetVisible(visible) {
+  const box = document.getElementById('sc-topics-box');
+  if (!box) return;
+  if (visible) {
+    box.classList.remove('sc-topics-open');
+    // Forza reflow per garantire la transizione da transform: translate(-50%, 200px)
+    box.offsetHeight;
+    requestAnimationFrame(() => {
+      box.classList.add('sc-topics-visible');
+    });
+  } else {
+    box.classList.remove('sc-topics-visible', 'sc-topics-open');
+  }
+}
+
+// Apre/chiude il box Topics
+function scToggleTopics() {
+  const box = document.getElementById('sc-topics-box');
+  if (!box) return;
+  box.classList.toggle('sc-topics-open');
+}
+
+// Naviga a una sezione dal box Topics
+function scTopicsNavigate(section) {
+  // Aggiorna voce attiva nella lista
+  document.querySelectorAll('#sc-topics-list li').forEach(li => {
+    li.classList.toggle('sc-topics-active', li.getAttribute('onclick') && li.getAttribute('onclick').includes("'" + section + "'"));
+  });
+  // Aggiorna il testo della voce selezionata
+  const sel = document.getElementById('sc-topics-selected');
+  const titles = {
+    'images-book': 'All',
+    'video': 'Video Book',
+    'diary': 'Diary Witness',
+    'life': 'A Life Beside',
+    'studies': 'Studies',
+    'synopsis': 'Synopsis',
+    'recordings': 'Recordings',
+    'experience': 'Experience',
+    'information': 'Information'
+  };
+  if (sel) sel.textContent = titles[section] || section;
+  // Chiudi il box
+  const box = document.getElementById('sc-topics-box');
+  if (box) box.classList.remove('sc-topics-open');
+  // Naviga alla sezione
+  scSwitchSection(section);
 }
 
 // Costruisce la griglia Overview: una thumbnail per ogni progetto sculptures
