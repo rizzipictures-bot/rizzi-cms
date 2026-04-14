@@ -5021,32 +5021,63 @@
       justify-content: flex-start;
       align-items: flex-end;
     }
-    /* Overlay per nascondere la barra Vimeo in basso e le icone verticali a destra */
+    /* Cornice nera su tutti e 4 i lati attorno all'iframe Vimeo */
     #sc-vb-iframe-wrap {
-      overflow: hidden !important;
+      overflow: visible !important;
+      position: relative;
     }
-    #sc-vb-iframe-wrap::after {
-      content: '';
-      position: absolute;
-      bottom: 0;
-      left: 0;
-      right: 0;
-      height: 54px;
+    /* Cornice nera: padding attorno all'iframe */
+    #sc-vb-video-frame {
+      position: relative;
       background: #000;
-      z-index: 10;
-      pointer-events: none;
+      padding: 52px 52px 80px 52px; /* top right bottom(più alto per i controlli) left */
+      display: inline-block;
     }
-    #sc-vb-iframe-wrap::before {
-      content: '';
+    #sc-vb-video-frame iframe {
+      display: block;
+      width: min(72vw, 820px);
+      aspect-ratio: 16/9;
+      border: none;
+    }
+    /* Barra comandi PLAY / STOP in basso a sinistra dentro la cornice */
+    #sc-vb-controls {
       position: absolute;
-      top: 0;
-      right: 0;
-      width: 54px;
-      height: 100%;
-      background: #000;
-      z-index: 10;
-      pointer-events: none;
+      bottom: 20px;
+      left: 52px;
+      display: flex;
+      align-items: center;
+      gap: 28px;
     }
+    #sc-vb-play {
+      background: none;
+      border: none;
+      cursor: pointer;
+      color: #fff;
+      font-family: 'Courier New', Courier, monospace;
+      font-size: 13px;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      padding: 0;
+      outline: none;
+      opacity: 0.9;
+      transition: opacity 0.2s;
+    }
+    #sc-vb-play:hover { opacity: 1; }
+    #sc-vb-stop {
+      background: none;
+      border: none;
+      cursor: pointer;
+      color: #4c00fc;
+      font-family: 'Courier New', Courier, monospace;
+      font-size: 13px;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      padding: 0;
+      outline: none;
+      opacity: 0.9;
+      transition: opacity 0.2s;
+    }
+    #sc-vb-stop:hover { opacity: 1; }
     #sculptures-child.sc-video-mode #sc-vb-iframe-wrap {
       display: flex !important;
       align-items: center;
@@ -7138,9 +7169,15 @@
         <!-- Pannello testo Testimonial Diary (visibile solo in sezione diary) -->
         <div id="sc-diary-text-panel" style="display:none"></div>
         <!-- Iframe Vimeo Video Book (visibile solo in sezione video) -->
-        <div id="sc-vb-iframe-wrap" style="display:none;position:relative;z-index:3;width:min(80vw,900px);aspect-ratio:16/9;overflow:hidden;">
-          <iframe id="sc-vb-iframe" src="" allow="autoplay; fullscreen; picture-in-picture" allowfullscreen
-                  style="position:absolute;top:0;left:0;width:100%;height:100%;border:none;"></iframe>
+        <div id="sc-vb-iframe-wrap" style="display:none;">
+          <div id="sc-vb-video-frame">
+            <iframe id="sc-vb-iframe" src="" allow="autoplay; fullscreen; picture-in-picture" allowfullscreen></iframe>
+            <!-- Comandi PLAY / STOP -->
+            <div id="sc-vb-controls">
+              <button id="sc-vb-play" onclick="scVbPlay()">&#9654;&nbsp; Play</button>
+              <button id="sc-vb-stop" onclick="scVbStop()">&#9632;&nbsp; Stop</button>
+            </div>
+          </div>
         </div>
         <img id="sculptures-carousel-img" src="" alt="">
         <!-- Karaoke typewriter dentro il viewer -->
@@ -11997,8 +12034,11 @@ function scBuildSectionContent(section) {
       // Imposta l'iframe Vimeo (sempre, per riavviarlo se era stato fermato)
       const iframe = document.getElementById('sc-vb-iframe');
       if (iframe) {
-        iframe.src = 'https://player.vimeo.com/video/326170622?color=ffffff&title=0&byline=0&portrait=0&badge=0&share=0&like=0&watchlater=0&transparent=0';
+        iframe.src = 'https://player.vimeo.com/video/326170622?api=1&color=ffffff&title=0&byline=0&portrait=0&badge=0&share=0&like=0&watchlater=0&transparent=0';
       }
+      // Mostra il wrapper iframe
+      const iframeWrap = document.getElementById('sc-vb-iframe-wrap');
+      if (iframeWrap) iframeWrap.style.display = 'flex';
       // Mostra il box Text
       const textBox = document.getElementById('sc-vb-text-box');
       if (textBox) {
@@ -12413,9 +12453,11 @@ function scCloseVideoBook() {
   // Nasconde il box Text
   const textBox = document.getElementById('sc-vb-text-box');
   if (textBox) textBox.classList.remove('sc-vb-text-visible', 'sc-vb-text-open');
-  // Ferma il video (svuota src)
+  // Ferma il video (svuota src) e nasconde il wrapper
   const iframe = document.getElementById('sc-vb-iframe');
   if (iframe) iframe.src = '';
+  const iframeWrap = document.getElementById('sc-vb-iframe-wrap');
+  if (iframeWrap) iframeWrap.style.display = 'none';
   document.body.classList.remove('sc-viewer-active');
   _scResetExpandIcon();
   if (document._scKeyHandler) {
@@ -12424,6 +12466,20 @@ function scCloseVideoBook() {
   }
   // Torna all'Overview
   scSwitchSection('overview');
+}
+
+// Comandi Play / Stop per il Video Book (API Vimeo via postMessage)
+function scVbPlay() {
+  const iframe = document.getElementById('sc-vb-iframe');
+  if (!iframe || !iframe.contentWindow) return;
+  iframe.contentWindow.postMessage(JSON.stringify({ method: 'play' }), 'https://player.vimeo.com');
+}
+function scVbStop() {
+  const iframe = document.getElementById('sc-vb-iframe');
+  if (!iframe || !iframe.contentWindow) return;
+  iframe.contentWindow.postMessage(JSON.stringify({ method: 'pause' }), 'https://player.vimeo.com');
+  // Riporta al secondo 0
+  iframe.contentWindow.postMessage(JSON.stringify({ method: 'setCurrentTime', value: 0 }), 'https://player.vimeo.com');
 }
 
 // Naviga nel carousel del popup
