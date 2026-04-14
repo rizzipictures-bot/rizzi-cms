@@ -5177,37 +5177,47 @@
     /* ═══════════════════════════════════════════════════════════════
        TESTIMONIAL DIARY — Hero full-page + cascade thumbs
     ═══════════════════════════════════════════════════════════════ */
-    /* In modalità diary: view-sculptures mostra la foto come sfondo */
-    #view-sculptures.sc-diary-bg-mode {
-      background-size: cover !important;
-      background-position: center center !important;
-      background-repeat: no-repeat !important;
+
+    /* Elemento hero: img fixed nel body, z-index appena sotto view-sculptures */
+    #sc-diary-bg-img {
+      position: fixed;
+      top: 0; left: 0;
+      width: 100vw;
+      height: 100vh;
+      object-fit: cover;
+      object-position: center center;
+      z-index: 1099;  /* view-sculptures è 1100 */
+      display: block;
+      pointer-events: none;
+    }
+    /* Overlay scuro 40% sopra la hero img */
+    #sc-diary-bg-overlay {
+      position: fixed;
+      top: 0; left: 0;
+      width: 100vw;
+      height: 100vh;
+      background: rgba(0,0,0,0.40);
+      z-index: 1099;  /* stesso livello della hero, dopo di essa nel DOM */
+      opacity: 0;
+      transition: opacity 0.8s ease;
+      pointer-events: none;
+    }
+    #sc-diary-bg-overlay.active {
+      opacity: 1;
+    }
+    /* view-sculptures trasparente in modalità diary */
+    #view-sculptures.sc-diary-mode {
+      background-color: transparent !important;
     }
     #sculptures-section-content.sc-diary-mode {
-      /* Rendi il container trasparente: la hero sta su view-sculptures */
       background: transparent !important;
       color: #fff;
       overflow: hidden;
     }
-    /* Overlay grigio su view-sculptures quando le thumbs appaiono */
-    #view-sculptures.sc-diary-bg-mode::before {
-      content: '';
-      position: absolute;
-      inset: 0;
-      background: rgba(30,30,30,0.55);
-      opacity: 0;
-      transition: opacity 0.8s ease;
-      pointer-events: none;
-      z-index: 1;
-    }
-    #view-sculptures.sc-diary-bg-mode.hero-dimmed::before {
-      opacity: 1;
-    }
     #sculptures-section-content.sc-diary-mode.diary-thumbs-visible {
       overflow-y: auto;
     }
-    /* (overlay gestito su #view-sculptures.sc-diary-bg-mode::before) */
-    /* Titolo: rimane bianco su sfondo trasparente sopra la hero */
+    /* Titolo: bianco sopra la hero */
     #sculptures-section-content.sc-diary-mode h2 {
       background: transparent;
       color: #fff;
@@ -5223,8 +5233,6 @@
     .sc-diary-nav-mode #sculptures-nav [data-sc-section].active {
       color: #4c00fc !important;
     }
-
-    /* (hero gestita come background-image del container via JS) */
 
     /* ── Griglia thumbs: sopra la hero ── */
     .sc-section-diary-grid {
@@ -11884,12 +11892,25 @@ function scBuildSectionContent(section) {
       intro: d.intro || null
     }));
 
-    // ── Hero full-page: background-image su #view-sculptures direttamente ──
+    // ── Hero full-page: elemento <img> fixed nel body, z-index 1099 (sotto view-sculptures 1100) ──
+    // Rimuovi eventuali elementi residui
+    const oldBg = document.getElementById('sc-diary-bg-img');
+    if (oldBg) oldBg.remove();
+    const oldOv = document.getElementById('sc-diary-bg-overlay');
+    if (oldOv) oldOv.remove();
+    // Crea l'immagine hero
+    const heroImg = document.createElement('img');
+    heroImg.id = 'sc-diary-bg-img';
+    heroImg.src = '/static/site/images/diary/diary-02.jpg';
+    heroImg.alt = '';
+    document.body.appendChild(heroImg);
+    // Crea l'overlay scuro (inizialmente trasparente)
+    const heroOv = document.createElement('div');
+    heroOv.id = 'sc-diary-bg-overlay';
+    document.body.appendChild(heroOv);
+    // Rendi view-sculptures trasparente
     const viewEl = document.getElementById('view-sculptures');
-    if (viewEl) {
-      viewEl.style.backgroundImage = 'url(images/diary/diary-02.jpg)';
-      viewEl.classList.add('sc-diary-bg-mode');
-    }
+    if (viewEl) viewEl.classList.add('sc-diary-mode');
 
     // Griglia thumbs (tutte le immagini)
     let html = '<h2>Testimonial Diary</h2>';
@@ -11905,8 +11926,8 @@ function scBuildSectionContent(section) {
     // ── Animazione cascade: dopo 2.5s, le thumbs cadono una alla volta con 150ms di ritardo ──
     window._scDiaryCascadeTimer = setTimeout(() => {
       window._scDiaryCascadeTimer = null;
-      const viewDimEl = document.getElementById('view-sculptures');
-      if (viewDimEl) viewDimEl.classList.add('hero-dimmed');  // attiva overlay su view-sculptures
+      const ovEl = document.getElementById('sc-diary-bg-overlay');
+      if (ovEl) ovEl.classList.add('active');  // attiva overlay scuro 40% sulla hero
       el.classList.add('diary-thumbs-visible');
       const cells = el.querySelectorAll('.sc-diary-cell');
       cells.forEach((cell, i) => {
@@ -11923,16 +11944,15 @@ function scBuildSectionContent(section) {
     clearTimeout(window._scDiaryCascadeTimer);
     window._scDiaryCascadeTimer = null;
   }
-  // Rimuovi background e classi diary da view-sculptures e dal container
+  // Rimuovi elementi hero e overlay dal body
+  const bgImg = document.getElementById('sc-diary-bg-img');
+  if (bgImg) bgImg.remove();
+  const bgOv = document.getElementById('sc-diary-bg-overlay');
+  if (bgOv) bgOv.remove();
+  // Rimuovi classe diary-mode da view-sculptures
   const viewCleanEl = document.getElementById('view-sculptures');
-  if (viewCleanEl) {
-    viewCleanEl.style.backgroundImage = '';
-    viewCleanEl.classList.remove('sc-diary-bg-mode', 'hero-dimmed');
-  }
-  // Rimuovi eventuale elemento hero separato residuo
-  const diaryHero = document.getElementById('sc-diary-hero-bg');
-  if (diaryHero) diaryHero.remove();
-  el.classList.remove('sc-diary-mode', 'diary-thumbs-visible', 'hero-dimmed');
+  if (viewCleanEl) viewCleanEl.classList.remove('sc-diary-mode');
+  el.classList.remove('sc-diary-mode', 'diary-thumbs-visible');
   document.body.classList.remove('sc-diary-nav-mode');
 
   // Mappa sezione -> titolo
