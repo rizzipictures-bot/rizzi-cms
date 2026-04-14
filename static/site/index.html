@@ -5126,16 +5126,18 @@
       overflow: visible !important;
       position: relative;
     }
-    /* Nessuna cornice nera: il video occupa tutto lo spazio senza padding/background */
+    /* Nessuna cornice nera: il video centrato orizzontalmente */
     #sc-vb-video-frame {
       position: relative;
       background: transparent;
       padding: 0 0 48px 0; /* solo spazio in basso per strip+controlli */
-      display: inline-block;
+      display: block;
+      margin: 0 auto;
+      width: min(82.8vw, 943px);
     }
     #sc-vb-video-frame iframe {
       display: block;
-      width: min(82.8vw, 943px); /* +15% rispetto a min(72vw,820px) */
+      width: 100%;
       aspect-ratio: 16/9;
       border: none;
     }
@@ -5217,9 +5219,8 @@
     }
     #sc-vb-stop:hover { opacity: 1; }
     #sculptures-child.sc-video-mode #sc-vb-iframe-wrap {
-      display: flex !important;
-      align-items: center;
-      justify-content: center;
+      display: block !important;
+      width: 100%;
       position: relative;
       z-index: 3;
     }
