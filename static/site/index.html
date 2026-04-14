@@ -5180,14 +5180,24 @@
     }
     #sculptures-section-content.sc-diary-mode h2 {
       background: #fff;
-      color: #000;
+      color: #999;
+    }
+    /* Menu laterale: testo nero in modalità diary */
+    .sc-diary-nav-mode #sculptures-nav [data-sc-section],
+    .sc-diary-nav-mode #sculptures-back {
+      color: #000 !important;
+    }
+    .sc-diary-nav-mode #sculptures-nav [data-sc-section]:hover,
+    .sc-diary-nav-mode #sculptures-nav [data-sc-section].active {
+      color: #4c00fc !important;
     }
     /* Griglia collage diary: 3 colonne su sfondo bianco */
     .sc-section-diary-grid {
       display: grid;
       grid-template-columns: repeat(3, 1fr);
-      gap: 12px;
-      padding: 0 24px 60px;
+      grid-auto-rows: 280px;
+      gap: 0;
+      padding: 0;
       background: #fff;
     }
     .sc-diary-cell {
@@ -5195,23 +5205,17 @@
       position: relative;
       overflow: hidden;
     }
-    /* Celle verticali (default) */
+    /* Tutte le celle: altezza uniforme, riempie la cella della griglia */
     .sc-diary-cell .sc-diary-img-wrap {
       width: 100%;
+      height: 100%;
       position: relative;
       overflow: hidden;
-      height: 320px;
     }
-    /* Celle orizzontali */
-    .sc-diary-cell.sc-cell-h .sc-diary-img-wrap {
-      height: 200px;
-    }
-    /* Cover: larghezza piena, altezza maggiore */
+    /* Cover: larghezza piena, altezza doppia */
     .sc-diary-cell.sc-diary-cover {
       grid-column: 1 / -1;
-    }
-    .sc-diary-cell.sc-diary-cover .sc-diary-img-wrap {
-      height: 420px;
+      grid-row: span 2;
     }
     .sc-diary-cell .sc-diary-img-wrap img {
       position: absolute;
@@ -5224,6 +5228,15 @@
       transition: opacity .3s;
     }
     .sc-diary-cell:hover .sc-diary-img-wrap img { opacity: 0.85; }
+    /* Overlay scuro 40% sulla cover */
+    .sc-diary-cell.sc-diary-cover::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: rgba(0,0,0,0.40);
+      pointer-events: none;
+      z-index: 1;
+    }
 
     /* Pannello testo diary nel viewer (laterale, stile playlist) */
     #sc-diary-text-panel {
@@ -11825,6 +11838,7 @@ function scBuildSectionContent(section) {
     el.style.background = '#fff';
     el.style.minHeight  = '100vh';
     el.classList.add('sc-diary-mode');
+    document.body.classList.add('sc-diary-nav-mode');
     // Ferma il karaoke se era in corso (es. arrivando da Recordings)
     scStopKaraoke();
     // Prepara scCurrentImages con i dati hardcoded del diary
@@ -11852,6 +11866,7 @@ function scBuildSectionContent(section) {
   }
   // Rimuovi la classe diary-mode se eravamo in diary
   el.classList.remove('sc-diary-mode');
+  document.body.classList.remove('sc-diary-nav-mode');
 
   // Mappa sezione -> titolo
   const titles = {
