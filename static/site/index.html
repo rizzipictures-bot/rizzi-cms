@@ -12660,20 +12660,14 @@ function scCloseVideoBook() {
     const wrap = document.getElementById('sc-vb-strip-wrap');
     if (!wrap) return;
 
-    // Usa le immagini reali del progetto (REAL_IMAGES, definita globalmente)
-    // Se non disponibile, fallback su thumbnail Vimeo
-    const imgs = (typeof REAL_IMAGES !== 'undefined' && REAL_IMAGES.length > 0)
-      ? REAL_IMAGES.map(function(r) { return '/static/site/' + r.file; })
-      : [];
-    const fallback = 'https://i.vimeocdn.com/video/781880474-5cac69be57b3c33b58617414bcf1cd296df1c758dd17be51609ae95f7735ce2c-d_640?region=us';
-
     // Svuota il wrapper e genera i frame
     wrap.innerHTML = '';
     for (let i = 0; i < SC_VB_FRAMES; i++) {
       const frame = document.createElement('div');
       frame.className = 'sc-vb-frame';
-      // Assegna un'immagine diversa a ogni frame, ciclando sulle immagini disponibili
-      const imgUrl = imgs.length > 0 ? imgs[i % imgs.length] : fallback;
+      // Frame reale del video estratto a timecode distribuiti uniformemente
+      const idx = String(i).padStart(2, '0');
+      const imgUrl = '/static/site/images/vb-frames/frame_' + idx + '.jpg';
       frame.style.backgroundImage = 'url("' + imgUrl + '")';
       frame.style.backgroundPosition = 'center center';
       // Tooltip con il tempo corrispondente
