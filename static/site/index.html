@@ -4116,7 +4116,7 @@
     }
     #sculptures-nav [data-sc-section]:hover,
     #sculptures-back:hover {
-      color: #4c00fc !important;
+      color: rgba(255,255,255,0.75);
       transform: translateX(5px) scale(2);
       transform-origin: left center;
     }
@@ -12677,6 +12677,26 @@ function scCloseChild() {
   if (iframe) iframe.src = '';
   document.body.classList.remove('sc-viewer-active');  // ripristina cursore normale
   document.body.classList.remove('sc-diary-viewer-active');  // rimuovi marker diary
+  // Se si chiude il viewer diary, riprendi audio e karaoke se il player era in play
+  if (_scCurrentSection === 'diary') {
+    const mainPlayer = document.getElementById('sc-audio-player');
+    if (mainPlayer && mainPlayer.src && mainPlayer.src !== window.location.href) {
+      if (mainPlayer.paused) {
+        mainPlayer.play().then(() => {
+          // Riprendi il karaoke dal punto corrente
+          if (scAudioFiles[scAudioIndex]) {
+            scStartKaraokeFrom(scAudioFiles[scAudioIndex].url, mainPlayer.currentTime);
+          }
+        }).catch(() => {});
+      } else {
+        // Era già in play (es. TTS finito e audio ripreso da _scStopDiaryAudio)
+        // Assicura che il karaoke sia attivo
+        if (_scKaraokeWords.length === 0 && scAudioFiles[scAudioIndex]) {
+          scStartKaraokeFrom(scAudioFiles[scAudioIndex].url, mainPlayer.currentTime);
+        }
+      }
+    }
+  }
   // Rimuovi click handler sull'immagine
   const _img = document.getElementById('sculptures-carousel-img');
   if (_img && _img._scClickHandler) {
