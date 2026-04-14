@@ -12098,9 +12098,9 @@ function scSwitchSection(section) {
           window._scInfoShownThisSession = true;  // segna come mostrato
           window._scInfoAutoClose = setTimeout(function() {
             if (_info.classList.contains('active')) _info.classList.remove('active');
-          }, 6000);
+          }, 8000);  /* visibile per 8 secondi */
         }
-      }, 2500);
+      }, 2700);  /* appare dopo 2.7 secondi */
     }
   } else if (section === 'information') {
     // Apri info panel
