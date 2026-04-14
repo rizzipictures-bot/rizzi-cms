@@ -12715,6 +12715,20 @@ function scBuildSectionContent(section) {
         }
         gridEl.appendChild(cell);
       });
+
+      // Calcola l'altezza precisa: dalla cima della griglia fino a 15px sopra il testo descrittivo
+      requestAnimationFrame(() => {
+        const noteEl = el.querySelector('.sc-recordings-note');
+        const gridRect = gridEl.getBoundingClientRect();
+        if (noteEl && gridRect) {
+          const noteRect = noteEl.getBoundingClientRect();
+          // Altezza disponibile = distanza tra top griglia e top testo - 15px margine
+          const availH = noteRect.top - gridRect.top - 15;
+          if (availH > 100) {
+            gridEl.style.setProperty('--v-height', availH + 'px');
+          }
+        }
+      });
     }
   }
 }
