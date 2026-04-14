@@ -4279,11 +4279,17 @@
     }
 
     /* ── Animazione scroll continuo cella Recordings ── */
-    /* Keyframes: scorre da 0 a -50% (metà del contenuto duplicato), poi pausa breve */
+    /* Keyframes scroll GIÙ: scorre da 0 a -50% (metà del contenuto duplicato), poi pausa breve */
     @keyframes scRecordingsScrollDown {
       0%   { transform: translateY(0); }
       80%  { transform: translateY(-50%); }
       100% { transform: translateY(-50%); }
+    }
+    /* Keyframes scroll SU: scorre da -50% a 0 (direzione opposta) */
+    @keyframes scRecordingsScrollUp {
+      0%   { transform: translateY(-50%); }
+      80%  { transform: translateY(0); }
+      100% { transform: translateY(0); }
     }
     /* Il wrapper sovrascrive il posizionamento assoluto della .sc-thumb-wrap */
     .sc-recordings-scroll-wrap {
@@ -4297,6 +4303,10 @@
       width: 100%;
       height: 200%;
       animation: scRecordingsScrollDown 8s ease-in-out infinite;
+    }
+    /* Direzione opposta (celle pari): sale invece di scendere */
+    .sc-recordings-scroll-wrap.sc-scroll-up .sc-recordings-scroll-inner {
+      animation-name: scRecordingsScrollUp;
     }
     /* Pausa hover */
     .sc-recordings-scroll-wrap:hover .sc-recordings-scroll-inner {
@@ -12041,6 +12051,8 @@ function scBuildGrid() {
         // Rimuovi l'immagine appena aggiunta e ricrea con struttura scroll
         wrap.removeChild(imgEl);
         wrap.classList.add('sc-recordings-scroll-wrap');
+        // Direzione alternata: celle pari (0,2,4...) scendono, dispari (1,3,5...) salgono
+        if (idx % 2 === 1) wrap.classList.add('sc-scroll-up');
         const inner = document.createElement('div');
         inner.className = 'sc-recordings-scroll-inner';
         // Prima copia
