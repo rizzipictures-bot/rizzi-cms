@@ -12892,7 +12892,7 @@ function _scUpdateRecordingsPlaylist(posIdx) {
   pl.innerHTML = html;
 }
 
-// Avvia una traccia dalla playlist laterale
+// Avvia una traccia dalla playlist laterale (interrompe l'autoplay e avvia la scelta)
 function _scPlaylistPlay(idx) {
   if (!scAudioFiles[idx]) return;
   // Rimuovi 'playing' da tutte le righe
@@ -12900,8 +12900,14 @@ function _scPlaylistPlay(idx) {
   // Aggiungi 'playing' alla riga corrente
   const row = document.getElementById(`sc-pl-track-${idx}`);
   if (row) row.classList.add('playing');
-  // Avvia la traccia (usa la stessa funzione del player globale)
+  // Avvia la traccia come nuova corrente (sovrascrive l'autoplay)
   _scPlayIndex(idx);
+  // Assicura che l'evento ended sia registrato per continuare l'autoplay dopo questa traccia
+  const player = document.getElementById('sc-audio-player');
+  if (player) {
+    player.removeEventListener('ended', _scOnAudioEnded);
+    player.addEventListener('ended', _scOnAudioEnded);
+  }
 }
 
 // Ferma la traccia dalla playlist laterale
@@ -13094,6 +13100,8 @@ function scPrepareRandomAudio() {
 // Chiamato automaticamente quando un recording termina
 function _scOnAudioEnded() {
   scStopKaraoke();
+  // In sezione Testimonial Diary NON fare autoplay automatico
+  if (_scCurrentSection === 'diary') return;
   // Breve pausa (1 secondo) poi parte il successivo con fade-in
   setTimeout(() => {
     const player = document.getElementById('sc-audio-player');
@@ -13149,15 +13157,24 @@ function scLoadSubtitles(callback) {
 
 // Avvia il karaoke per il file corrente
 function scStartKaraoke(filename) {
+  scStartKaraokeFrom(filename, 0);
+}
+
+// Avvia il karaoke dal punto currentTimeSec (per riprendere dopo pausa)
+function scStartKaraokeFrom(filename, currentTimeSec) {
   scStopKaraoke();
   scLoadSubtitles(() => {
-    const fname = filename.split('/').pop(); // estrae solo il nome file
+    const fname = filename.split('/').pop();
     _scKaraokeWords = (SC_SUBTITLES && SC_SUBTITLES[fname]) || [];
-    if (_scKaraokeWords.length === 0) return; // nessun testo
-    // In sezione Testimonial Diary il karaoke è disabilitato SOLO quando una foto è aperta (TTS attivo)
-    // Durante background e thumbs il karaoke delle tracce rimane attivo
+    if (_scKaraokeWords.length === 0) return;
     if (_scCurrentSection === 'diary' && document.getElementById('sculptures-child')?.classList.contains('active')) return;
+    // Salta le parole già passate (per riprendere dopo pausa)
     _scKaraokeIdx = 0;
+    if (currentTimeSec > 0) {
+      while (_scKaraokeIdx < _scKaraokeWords.length && _scKaraokeWords[_scKaraokeIdx].end <= currentTimeSec) {
+        _scKaraokeIdx++;
+      }
+    }
     _scKaraokeLineWords = [];
     const box = document.getElementById('sc-karaoke');
     const line = document.getElementById('sc-karaoke-line');
@@ -13443,8 +13460,9 @@ function scAudioPlay() {
   if (player.src && player.src !== window.location.href) {
     // Riprendi da dove era
     player.play().then(() => {
-      if (_scKaraokeWords.length === 0 && scAudioFiles[scAudioIndex]) {
-        scStartKaraoke(scAudioFiles[scAudioIndex].url);
+      // Fix: riavvia sempre il karaoke dal currentTime corretto
+      if (scAudioFiles[scAudioIndex]) {
+        scStartKaraokeFrom(scAudioFiles[scAudioIndex].url, player.currentTime);
       }
     }).catch(() => {});
   } else if (scAudioFiles.length > 0) {
