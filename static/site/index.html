@@ -4234,12 +4234,13 @@
     .sc-recordings-scroll-wrap:hover .sc-recordings-scroll-inner {
       animation-play-state: paused;
     }
-    /* Le immagini nel contenitore scroll occupano ciascuna il 50% del contenitore (= 100% del wrap) */
+    /* Le immagini nel contenitore scroll: ciascuna alta quanto il wrap (460px) per coprire tutto il frame */
+    /* Il contenitore inner è alto 200% del wrap (920px), le immagini sono 50% dell'inner = 460px */
     .sc-recordings-scroll-wrap .sc-recordings-scroll-inner img {
       position: relative !important;
       top: auto !important; left: auto !important;
       width: 100% !important;
-      height: 50% !important;
+      height: var(--v-height, 460px) !important;
       object-fit: cover;
       object-position: center center;
       display: block !important;
