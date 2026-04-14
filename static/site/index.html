@@ -5170,6 +5170,118 @@
     }
 
     /* ════════════════════════════════════════════════════════════════
+       TESTIMONIAL DIARY — griglia collage su sfondo bianco
+    ════════════════════════════════════════════════════════════════ */
+
+    /* Sezione diary: sfondo bianco, testo nero */
+    #sculptures-section-content.sc-diary-mode {
+      background: #fff;
+      color: #000;
+    }
+    #sculptures-section-content.sc-diary-mode h2 {
+      background: #fff;
+      color: #000;
+    }
+    /* Griglia collage diary: 3 colonne su sfondo bianco */
+    .sc-section-diary-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+      padding: 0 24px 60px;
+      background: #fff;
+    }
+    .sc-diary-cell {
+      cursor: pointer;
+      position: relative;
+      overflow: hidden;
+    }
+    /* Celle verticali (default) */
+    .sc-diary-cell .sc-diary-img-wrap {
+      width: 100%;
+      position: relative;
+      overflow: hidden;
+      height: 320px;
+    }
+    /* Celle orizzontali */
+    .sc-diary-cell.sc-cell-h .sc-diary-img-wrap {
+      height: 200px;
+    }
+    /* Cover: larghezza piena, altezza maggiore */
+    .sc-diary-cell.sc-diary-cover {
+      grid-column: 1 / -1;
+    }
+    .sc-diary-cell.sc-diary-cover .sc-diary-img-wrap {
+      height: 420px;
+    }
+    .sc-diary-cell .sc-diary-img-wrap img {
+      position: absolute;
+      top: 0; left: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      object-position: center;
+      display: block;
+      transition: opacity .3s;
+    }
+    .sc-diary-cell:hover .sc-diary-img-wrap img { opacity: 0.85; }
+
+    /* Pannello testo diary nel viewer (laterale, stile playlist) */
+    #sc-diary-text-panel {
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      width: 420px;
+      z-index: 5;
+      display: none;
+      flex-direction: column;
+      justify-content: center;
+      padding: 24px 20px;
+      box-sizing: border-box;
+      overflow-y: auto;
+      scrollbar-width: none;
+      background: rgba(0,0,0,0.0);
+    }
+    #sc-diary-text-panel::-webkit-scrollbar { display: none; }
+    #sc-diary-text-panel.dp-left  { left: 0; }
+    #sc-diary-text-panel.dp-right { right: 0; }
+    .sc-diary-testimony {
+      border-bottom: 1px solid rgba(255,255,255,0.15);
+      padding: 10px 0;
+    }
+    .sc-diary-testimony:first-child { border-top: 1px solid rgba(255,255,255,0.15); }
+    .sc-diary-testimony-author {
+      font-family: 'Courier New', Courier, monospace;
+      font-size: 10px;
+      font-weight: 700;
+      color: #fff;
+      letter-spacing: 0.02em;
+      margin-bottom: 4px;
+      line-height: 1.3;
+    }
+    .sc-diary-testimony-text {
+      font-family: 'Times New Roman', Times, serif;
+      font-size: 12px;
+      color: rgba(255,255,255,0.85);
+      line-height: 1.5;
+      font-style: italic;
+    }
+    .sc-diary-testimony-intro {
+      font-family: 'Times New Roman', Times, serif;
+      font-size: 12px;
+      color: rgba(255,255,255,0.85);
+      line-height: 1.6;
+    }
+    .sc-diary-date-label {
+      font-family: 'Courier New', Courier, monospace;
+      font-size: 9px;
+      font-weight: 700;
+      color: rgba(255,255,255,0.45);
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      margin-bottom: 10px;
+    }
+
+    /* ════════════════════════════════════════════════════════════════
        BIOGRAPHY
     ════════════════════════════════════════════════════════════════ */
     #view-biography {
@@ -6847,6 +6959,8 @@
         <canvas id="sc-child-grain"></canvas>
         <!-- Playlist laterale Recordings (visibile solo in sezione recordings) -->
         <div id="sc-recordings-playlist" style="display:none"></div>
+        <!-- Pannello testo Testimonial Diary (visibile solo in sezione diary) -->
+        <div id="sc-diary-text-panel" style="display:none"></div>
         <!-- Iframe Vimeo Video Book (visibile solo in sezione video) -->
         <div id="sc-vb-iframe-wrap" style="display:none;position:relative;z-index:3;width:min(80vw,900px);aspect-ratio:16/9;overflow:hidden;">
           <iframe id="sc-vb-iframe" src="" allow="autoplay; fullscreen; picture-in-picture" allowfullscreen
@@ -11528,6 +11642,142 @@ function scBuildGrid() {
   });
 }
 
+// ── Dati hardcoded Testimonial Diary ──
+const SC_DIARY_IMAGES = [
+  {
+    file: '/static/site/images/diary/diary-cover.jpg',
+    cover: true,
+    title: 'Testimonial Diary',
+    testimonies: null,
+    intro: 'The black diary is a Notebook that I decided to buy in Washington D.C on December 12th 2014, the day before the march for all Justice that took place in the capital after the fatal shooting and civil unrest originating in Ferguson. I asked to the people arrived in Washington to leave a personal witness of their presence to collect a sign of their physical and emotional presence in these specific topic moment of the American Histories.'
+  },
+  {
+    file: '/static/site/images/diary/diary-01.jpg',
+    cellClass: 'sc-cell-v',
+    title: 'Washington, 13-12-2014',
+    testimonies: [
+      { author: 'Jeffrey Johnson · Baltimore, MD', text: '\u201cNo Justice, No Peace\u201d' },
+      { author: 'Amefika Browk · Houston St. Suitland, MD', text: '\u201cAll the world is searching for Truth\u201d' },
+      { author: 'Sheik Alex Prather-El', text: '\u201cLove instead of Hate\u201d' },
+      { author: 'Grand Shiek · Darrel Johnson-Bey · Balt. MD', text: '\u201cUplifting\u201d' }
+    ]
+  },
+  {
+    file: '/static/site/images/diary/diary-02.jpg',
+    cellClass: 'sc-cell-h',
+    title: 'Washington, 13-12-2014',
+    testimonies: [
+      { author: 'Andre Williams · San Diego, CA', text: '\u201cI am Here for Action\u201d' },
+      { author: 'Theodora Lomax · Red Bank, NJ', text: '\u201cNO Justice NO Peace Only RIGHT Prevail \u2014 we will march on to victory\u201d' },
+      { author: 'Elliott Lomax · Bowie, MD', text: '\u201cI came because I fear for my life, and my son\u2019s life and my father\u2019s life and my brother\u2019s life at the hands of the public servants who are sworn to serve and protect us.\u201d' },
+      { author: 'Rachel Bards · Washington DC', text: '\u201cI came out of fear for my brothers and future sons.\u201d' },
+      { author: 'Greg Booker Jr.', text: '\u201cThis day as other days are significant to our tomorrows. Always stand for what is right in your heart.\u201d' }
+    ]
+  },
+  {
+    file: '/static/site/images/diary/diary-03.jpg',
+    cellClass: 'sc-cell-v',
+    title: 'Washington, 13-12-2014',
+    testimonies: [
+      { author: 'Andre Williams · San Diego, CA', text: '\u201cI am Here for Action\u201d' },
+      { author: 'Theodora Lomax · Red Bank, NJ', text: '\u201cNO Justice NO Peace Only RIGHT Prevail \u2014 we will march on to victory\u201d' },
+      { author: 'Elliott Lomax · Bowie, MD', text: '\u201cI came because I fear for my life, and my son\u2019s life and my father\u2019s life and my brother\u2019s life at the hands of the public servants who are sworn to serve and protect us.\u201d' },
+      { author: 'Rachel Bards · Washington DC', text: '\u201cI came out of fear for my brothers and future sons.\u201d' },
+      { author: 'Greg Booker Jr.', text: '\u201cThis day as other days are significant to our tomorrows. Always stand for what is right in your heart.\u201d' }
+    ]
+  },
+  {
+    file: '/static/site/images/diary/diary-04.jpg',
+    cellClass: 'sc-cell-v',
+    title: 'Washington, 13-12-2014',
+    testimonies: [
+      { author: 'Andre Williams · San Diego, CA', text: '\u201cI am Here for Action\u201d' },
+      { author: 'Theodora Lomax · Red Bank, NJ', text: '\u201cNO Justice NO Peace Only RIGHT Prevail \u2014 we will march on to victory\u201d' },
+      { author: 'Elliott Lomax · Bowie, MD', text: '\u201cI came because I fear for my life, and my son\u2019s life and my father\u2019s life and my brother\u2019s life at the hands of the public servants who are sworn to serve and protect us.\u201d' },
+      { author: 'Rachel Bards · Washington DC', text: '\u201cI came out of fear for my brothers and future sons.\u201d' },
+      { author: 'Greg Booker Jr.', text: '\u201cThis day as other days are significant to our tomorrows. Always stand for what is right in your heart.\u201d' }
+    ]
+  },
+  {
+    file: '/static/site/images/diary/diary-05.jpg',
+    cellClass: 'sc-cell-h',
+    title: 'Washington, 13-12-2014',
+    testimonies: [
+      { author: 'Paul Braham · Washington DC', text: '\u201cAs a black man I had to be here bc I\u2019ve been harassed and stopped by police. I love the crowd energy. I hope this will lead to widespread and long lasting change.\u201d' },
+      { author: 'Saba Ahmed & Allegra O\u2019Donoghue · Oakland, CA', text: '\u201c#blacklivesmatter. We\u2019re standing in solidarity as allies.\u201d' },
+      { author: 'Beverly Carter · Luke 17', text: '\u201cWrong doers will be accountable. Christians Rebuke wrong in Love hoping for God\u2019s will to be done, we will forgive. Have Faith in God!\u201d' },
+      { author: 'Cedric Lamar · NYC', text: '\u201cToday, I saw people of ALL colors standing up for the Red, White, & Blue. It\u2019s time to join the fight. How about you?\u201d' }
+    ]
+  },
+  {
+    file: '/static/site/images/diary/diary-06.jpg',
+    cellClass: 'sc-cell-v',
+    title: 'Washington, 13-12-2014',
+    testimonies: [
+      { author: 'Paul Braham · Washington DC', text: '\u201cAs a black man I had to be here bc I\u2019ve been harassed and stopped by police. I love the crowd energy. I hope this will lead to widespread and long lasting change.\u201d' },
+      { author: 'Saba Ahmed & Allegra O\u2019Donoghue · Oakland, CA', text: '\u201c#blacklivesmatter. We\u2019re standing in solidarity as allies.\u201d' },
+      { author: 'Beverly Carter · Luke 17', text: '\u201cWrong doers will be accountable. Christians Rebuke wrong in Love hoping for God\u2019s will to be done, we will forgive. Have Faith in God!\u201d' },
+      { author: 'Cedric Lamar · NYC', text: '\u201cToday, I saw people of ALL colors standing up for the Red, White, & Blue. It\u2019s time to join the fight. How about you?\u201d' }
+    ]
+  },
+  {
+    file: '/static/site/images/diary/diary-07.jpg',
+    cellClass: 'sc-cell-v',
+    title: 'Washington, 13-12-2014',
+    testimonies: [
+      { author: 'Paul Braham · Washington DC', text: '\u201cAs a black man I had to be here bc I\u2019ve been harassed and stopped by police. I love the crowd energy. I hope this will lead to widespread and long lasting change.\u201d' },
+      { author: 'Saba Ahmed & Allegra O\u2019Donoghue · Oakland, CA', text: '\u201c#blacklivesmatter. We\u2019re standing in solidarity as allies.\u201d' },
+      { author: 'Beverly Carter · Luke 17', text: '\u201cWrong doers will be accountable. Christians Rebuke wrong in Love hoping for God\u2019s will to be done, we will forgive. Have Faith in God!\u201d' },
+      { author: 'Cedric Lamar · NYC', text: '\u201cToday, I saw people of ALL colors standing up for the Red, White, & Blue. It\u2019s time to join the fight. How about you?\u201d' }
+    ]
+  },
+  {
+    file: '/static/site/images/diary/diary-08.jpg',
+    cellClass: 'sc-cell-h',
+    title: 'Washington, 13-12-2014',
+    testimonies: [
+      { author: 'Ann Robinson · Port Washington, MD', text: '\u201cWE THE PEOPLE \u2014 All the people, not just some of the people!!\u201d' },
+      { author: 'Dree · New York', text: '\u201cInternational solidarity and justice. Power.\u201d \u2014 \u201cMy feeling is that of both hope and despair. I will continue the fight until justice is served!\u201d' }
+    ]
+  },
+  {
+    file: '/static/site/images/diary/diary-09.jpg',
+    cellClass: 'sc-cell-v',
+    title: 'Washington, 13-12-2014',
+    testimonies: [
+      { author: 'Ann Robinson · Port Washington, MD', text: '\u201cWE THE PEOPLE \u2014 All the people, not just some of the people!!\u201d' },
+      { author: 'Dree · New York', text: '\u201cInternational solidarity and justice. Power.\u201d \u2014 \u201cMy feeling is that of both hope and despair. I will continue the fight until justice is served!\u201d' }
+    ]
+  },
+  {
+    file: '/static/site/images/diary/diary-10.jpg',
+    cellClass: 'sc-cell-v',
+    title: 'Washington, 13-12-2014',
+    testimonies: [
+      { author: 'Ann Robinson · Port Washington, MD', text: '\u201cWE THE PEOPLE \u2014 All the people, not just some of the people!!\u201d' },
+      { author: 'Dree · New York', text: '\u201cInternational solidarity and justice. Power.\u201d \u2014 \u201cMy feeling is that of both hope and despair. I will continue the fight until justice is served!\u201d' }
+    ]
+  },
+  {
+    file: '/static/site/images/diary/diary-11.jpg',
+    cellClass: 'sc-cell-h',
+    title: 'Washington, 13-12-2014',
+    testimonies: [
+      { author: 'Carlos Wilkins · Alexandria, VA', text: '\u201cToday the comradery and sense of unity was very empowering. The support from people of all colors was uplifting and we will use it to propel ourselves to higher heights as a people. God was here today.\u201d' },
+      { author: 'Debbie Allen · Englewood, NJ', text: '\u201cToday gives Me a feeling of Hope. Particularly I\u2019m seeing the faces of people from all Races and Ethnic groups. This is not a problem for Black People. This is a problem for all People and It is Clearly Seen in the group standing here today.\u201d' }
+    ]
+  },
+  {
+    file: '/static/site/images/diary/diary-12.jpg',
+    cellClass: 'sc-cell-v',
+    title: 'Washington, 13-12-2014',
+    testimonies: [
+      { author: 'Carlos Wilkins · Alexandria, VA', text: '\u201cToday the comradery and sense of unity was very empowering. The support from people of all colors was uplifting and we will use it to propel ourselves to higher heights as a people. God was here today.\u201d' },
+      { author: 'Debbie Allen · Englewood, NJ', text: '\u201cToday gives Me a feeling of Hope. Particularly I\u2019m seeing the faces of people from all Races and Ethnic groups. This is not a problem for Black People. This is a problem for all People and It is Clearly Seen in the group standing here today.\u201d' }
+    ]
+  }
+];
+
 // Costruisce il contenuto di una sezione non-Overview
 function scBuildSectionContent(section) {
   const el = document.getElementById('sculptures-section-content');
@@ -11569,6 +11819,37 @@ function scBuildSectionContent(section) {
     }
     return;
   }
+
+  // ── Pagina speciale: Testimonial Diary ──
+  if (section === 'diary') {
+    el.style.background = '#fff';
+    el.style.minHeight  = '100vh';
+    el.classList.add('sc-diary-mode');
+    // Prepara scCurrentImages con i dati hardcoded del diary
+    scCurrentImages = SC_DIARY_IMAGES.map(d => ({
+      url: d.file,
+      title: d.title || 'Testimonial Diary',
+      desc: '',
+      testimonies: d.testimonies || null,
+      intro: d.intro || null
+    }));
+    let html = '<h2>Testimonial Diary</h2>';
+    html += '<div class="sc-section-diary-grid">';
+    SC_DIARY_IMAGES.forEach((d, idx) => {
+      const coverClass = d.cover ? ' sc-diary-cover' : '';
+      const cellClass = d.cover ? '' : (d.cellClass || 'sc-cell-v');
+      html += `
+        <div class="sc-diary-cell${coverClass} ${cellClass}" onclick="scOpenChild(${idx}, 'diary')">
+          <div class="sc-diary-img-wrap"><img src="${d.file}" alt="${d.title || 'Diary'}" loading="lazy"></div>
+        </div>
+      `;
+    });
+    html += '</div>';
+    el.innerHTML = html;
+    return;
+  }
+  // Rimuovi la classe diary-mode se eravamo in diary
+  el.classList.remove('sc-diary-mode');
 
   // Mappa sezione -> titolo
   const titles = {
@@ -11672,6 +11953,9 @@ function scCloseChild() {
   // Nasconde il box Text se aperto
   const textBox = document.getElementById('sc-vb-text-box');
   if (textBox) textBox.classList.remove('sc-vb-text-visible', 'sc-vb-text-open');
+  // Nasconde il pannello diary
+  const diaryPanel = document.getElementById('sc-diary-text-panel');
+  if (diaryPanel) diaryPanel.style.display = 'none';
   // Ferma il video
   const iframe = document.getElementById('sc-vb-iframe');
   if (iframe) iframe.src = '';
@@ -11786,6 +12070,8 @@ function scUpdateCarousel() {
   if (descEl)  descEl.textContent  = item.desc  || '';
   // Aggiorna la playlist laterale se siamo in sezione recordings
   _scUpdateRecordingsPlaylist(posIdx);
+  // Aggiorna il pannello testo se siamo in sezione diary
+  _scUpdateDiaryPanel(posIdx);
 }
 
 // Costruisce/aggiorna la playlist laterale nel viewer Recordings
@@ -11853,6 +12139,44 @@ function _scPlaylistPlay(idx) {
 function _scPlaylistStop() {
   document.querySelectorAll('.sc-pl-track').forEach(el => el.classList.remove('playing'));
   scStopAudio();
+}
+
+// Costruisce/aggiorna il pannello testo laterale nel viewer Diary
+const _scDiaryPanelSide = ['dp-left', 'dp-right', 'dp-left'];
+function _scUpdateDiaryPanel(posIdx) {
+  const dp = document.getElementById('sc-diary-text-panel');
+  if (!dp) return;
+  if (_scCurrentSection !== 'diary') {
+    dp.style.display = 'none';
+    return;
+  }
+  const item = scCurrentImages[scCurrentIndex];
+  if (!item) { dp.style.display = 'none'; return; }
+  // Posizione: opposta alla foto
+  dp.className = '';
+  const side = _scDiaryPanelSide[posIdx];
+  dp.classList.add(side);
+  dp.style.display = 'flex';
+  let html = '';
+  if (item.intro) {
+    // Cover: mostra testo introduttivo
+    html += `<p class="sc-diary-testimony-intro">${item.intro}</p>`;
+  } else if (item.testimonies && item.testimonies.length > 0) {
+    // Pagina con testimonianze
+    html += `<div class="sc-diary-date-label">Washington D.C. — December 13, 2014</div>`;
+    item.testimonies.forEach(t => {
+      html += `
+        <div class="sc-diary-testimony">
+          <div class="sc-diary-testimony-author">${t.author}</div>
+          <div class="sc-diary-testimony-text">${t.text}</div>
+        </div>
+      `;
+    });
+  } else {
+    dp.style.display = 'none';
+    return;
+  }
+  dp.innerHTML = html;
 }
 
 // Apre il pannello Information (animazione Corboz: scivola da sinistra)
