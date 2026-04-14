@@ -4962,7 +4962,20 @@
     #sculptures-child.sc-video-mode #sculptures-next { display: none !important; }
     #sculptures-child.sc-video-mode #sculptures-carousel-caption { display: none !important; }
     #sculptures-child.sc-video-mode #sc-recordings-playlist { display: none !important; }
-    #sculptures-child.sc-video-mode #sc-karaoke-viewer { display: none !important; }
+    /* In video mode il karaoke è visibile a sinistra, sopra il box Text */
+    #sculptures-child.sc-video-mode #sc-karaoke-viewer {
+      display: flex !important;
+      position: absolute;
+      left: 2vw;
+      bottom: 90px;
+      right: auto;
+      width: 40vw;
+      padding: 0 0 10px 0;
+      text-align: left;
+      z-index: 5;
+      justify-content: flex-start;
+      align-items: flex-end;
+    }
     #sculptures-child.sc-video-mode #sc-vb-iframe-wrap {
       display: flex !important;
       align-items: center;
@@ -6824,9 +6837,9 @@
         <div id="sc-vb-text-drag" onclick="scToggleVbText()"></div>
         <div id="sc-vb-text-label" onclick="scToggleVbText()">Text</div>
         <div id="sc-vb-text-content">
-          <p style="font-style:italic;opacity:0.5;margin-bottom:0.6em;">Editor&rsquo;s Note</p>
+          <p style="color:#4c00fc;font-style:italic;margin-bottom:0.6em;">Editor&rsquo;s Note</p>
           <p>Sculptures by Alessandro Rizzi is a book whose photographs were shot over the timespan of a few hours in Washington D.C. on December 13, 2014, and more precisely, during the civil rights protests that took place in the capital after the fatal shooting and civil unrest originating in Ferguson. Rizzi gives back a sharp and paradigmatic work on American society as a whole, and on the importance of a political demonstration that is a sign of the times and is coherent to its prescribed script, he plays with the fragments and cracks of what could be a historic moment for the struggle of the black community but that does not appear to be so: the sculptures at play in this event are part of a larger scenario that provides for their presence and contribution as actors both united and alone. This kind of structural weakness of the human element does not manifest in what is portrayed in the photographs which always appears to be plastic and structured, but instead lives within this visual paradox, as testimony to the distance in the union, and a fragility, despite the solidity, structure, and plasticity within each one of us.</p>
-          <p style="color:#4c00fc;font-style:italic;margin-top:0.8em;">Sculptures is collected by M.o.M.A, Metropolitan Museum of Art, Oslo National Academy of Arts Library, Chicago SAIC J. Flasch Artists&rsquo; Book Collection, Lafayette Art Books Collection, Swarthmore Art Books Collections.</p>
+          <p style="opacity:0.6;margin-top:0.8em;">Sculptures is collected by M.o.M.A, Metropolitan Museum of Art, Oslo National Academy of Arts Library, Chicago SAIC J. Flasch Artists&rsquo; Book Collection, Lafayette Art Books Collection, Swarthmore Art Books Collections.</p>
         </div>
       </div>
     </div>
