@@ -5317,6 +5317,7 @@
       background: transparent !important;
       color: #fff;
       overflow: hidden;
+      margin-top: -15px;  /* porta su tutta la pagina diary (titolo + griglia) di 15px */
     }
     #sculptures-section-content.sc-diary-mode.diary-thumbs-visible {
       overflow-y: auto;
@@ -12457,6 +12458,11 @@ const _scPlaylistSide = ['pl-left', 'pl-right', 'pl-left'];
 
 // Aggiorna l'immagine nel carousel
 function scUpdateCarousel() {
+  // Reset karaoke viewer: nasconde e svuota il testo per evitare sovrapposizioni al cambio foto
+  const _kv = document.getElementById('sc-karaoke-viewer');
+  const _kvLine = document.getElementById('sc-karaoke-viewer-line');
+  if (_kv)  { _kv.classList.remove('active'); }
+  if (_kvLine) { _kvLine.innerHTML = ''; }
   const img      = document.getElementById('sculptures-carousel-img');
   const bgImg    = document.getElementById('sc-child-bg');
   const carousel = document.getElementById('sculptures-carousel');
