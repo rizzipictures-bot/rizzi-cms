@@ -4659,7 +4659,10 @@
     }
     /* hover gestito da .btn-circle-close */
 
-    /* Bottone + / − espandi — pallino bianco con + nera, a sinistra della × */
+    /* Bottone + espandi — pallino bianco con + nera, a sinistra della × */
+    /* Override: nasconde i pseudo-elementi ::before/::after ereditati da .btn-circle-close */
+    #sculptures-child-expand::before,
+    #sculptures-child-expand::after { display: none !important; }
     #sculptures-child-expand {
       position: absolute;
       right: 78px;  /* era 48px, spostato -30px */
@@ -5129,52 +5132,45 @@
       aspect-ratio: 16/9;
       border: none;
     }
-    /* Strip thumbnails + linea bianca + pallino hover */
+    /* ── Filmstrip: ~30 frame separati da gap, click-to-seek ── */
     #sc-vb-strip-wrap {
       position: absolute;
       left: 0;
       right: 0;
       bottom: 26px;
-      height: 22px;
-      cursor: none;
-    }
-    #sc-vb-strip {
-      width: 100%;
-      height: 18px;
+      height: 28px;
+      cursor: crosshair;
       display: flex;
-      overflow: hidden;
-      position: relative;
+      align-items: center;
+      gap: 2px;             /* gap tra i frame */
+      padding: 0;
     }
-    #sc-vb-strip-thumb {
-      width: 100%;
-      height: 100%;
+    /* Ogni frame è un div generato via JS */
+    .sc-vb-frame {
+      flex: 1;
+      height: 20px;
       background-image: url('https://i.vimeocdn.com/video/781880474-5cac69be57b3c33b58617414bcf1cd296df1c758dd17be51609ae95f7735ce2c-d_640?region=us');
       background-size: cover;
       background-position: center;
-      display: block;
-      opacity: 0.75;
+      opacity: 0.65;
+      transition: opacity 0.15s, transform 0.15s;
+      border-radius: 1px;
+      position: relative;
+      overflow: hidden;
     }
+    .sc-vb-frame:hover {
+      opacity: 1;
+      transform: scaleY(1.25);
+    }
+    /* Linea bianca sotto la filmstrip */
     #sc-vb-strip-line {
-      position: absolute;
-      bottom: -3px;
-      left: 0;
-      right: 0;
-      height: 1px;
-      background: rgba(255,255,255,0.6);
+      display: none; /* non più necessaria: i frame parlano da soli */
     }
-    #sc-vb-strip-dot {
-      position: absolute;
-      top: 50%;
-      width: 7px;
-      height: 7px;
-      border-radius: 50%;
-      background: #fff;
-      transform: translate(-50%, -50%);
-      pointer-events: none;
-      display: none;
-      transition: left 0.05s linear;
-      z-index: 2;
-    }
+    /* Pallino hover (ora dentro ogni frame via JS) */
+    #sc-vb-strip-dot { display: none; }
+    /* Vecchi elementi non più usati */
+    #sc-vb-strip { display: none; }
+    #sc-vb-strip-thumb { display: none; }
     /* Barra comandi PLAY / STOP in basso a sinistra, allineata al bordo del video */
     #sc-vb-controls {
       position: absolute;
@@ -12649,58 +12645,46 @@ function scCloseVideoBook() {
   scSwitchSection('overview');
 }
 
-// ── Strip thumbnails Video Book: pallino hover + click-to-seek ──
+// ── Filmstrip Video Book: ~30 frame separati, click-to-seek ──
 (function() {
   const SC_VB_DURATION = 195; // durata video in secondi
-  let _dotMoveTimer = null;
+  const SC_VB_FRAMES   = 30;  // numero di frame nella filmstrip
 
   function _initStrip() {
-    const strip = document.getElementById('sc-vb-strip-wrap');
-    const dot   = document.getElementById('sc-vb-strip-dot');
-    if (!strip || !dot) return;
+    const wrap = document.getElementById('sc-vb-strip-wrap');
+    if (!wrap) return;
 
-    // Mostra il pallino e lo posiziona al mouse
-    strip.addEventListener('mousemove', function(e) {
-      const rect = strip.getBoundingClientRect();
-      const x = e.clientX - rect.left;
-      const pct = Math.max(0, Math.min(1, x / rect.width));
-      dot.style.display = 'block';
-      dot.style.left = (pct * 100) + '%';
-      // Reset timer fermo
-      if (_dotMoveTimer) clearTimeout(_dotMoveTimer);
-      // Il pallino si ferma dopo 1.5s senza movimento
-      _dotMoveTimer = setTimeout(function() {
-        // Pallino rimane visibile ma smette di seguire (già fermo)
-      }, 1500);
-    });
-
-    // Nasconde il pallino quando il mouse esce dalla strip
-    strip.addEventListener('mouseleave', function() {
-      dot.style.display = 'none';
-      if (_dotMoveTimer) clearTimeout(_dotMoveTimer);
-    });
-
-    // Click: seek al momento corrispondente
-    strip.addEventListener('click', function(e) {
-      const rect = strip.getBoundingClientRect();
-      const x = e.clientX - rect.left;
-      const pct = Math.max(0, Math.min(1, x / rect.width));
-      const seekTime = Math.round(pct * SC_VB_DURATION);
-      const iframe = document.getElementById('sc-vb-iframe');
-      if (iframe && iframe.contentWindow) {
+    // Svuota il wrapper e genera i frame
+    wrap.innerHTML = '';
+    for (let i = 0; i < SC_VB_FRAMES; i++) {
+      const frame = document.createElement('div');
+      frame.className = 'sc-vb-frame';
+      // Ogni frame mostra una porzione diversa dell'immagine thumbnail
+      // background-position varia da 0% a 100% lungo l'asse X
+      const pct = (i / (SC_VB_FRAMES - 1)) * 100;
+      frame.style.backgroundPosition = pct + '% center';
+      // Tooltip con il tempo corrispondente
+      const t = Math.round((i / (SC_VB_FRAMES - 1)) * SC_VB_DURATION);
+      const mm = String(Math.floor(t / 60)).padStart(2, '0');
+      const ss = String(t % 60).padStart(2, '0');
+      frame.title = mm + ':' + ss;
+      // Click: seek al momento corrispondente
+      frame.addEventListener('click', function() {
+        const iframe = document.getElementById('sc-vb-iframe');
+        if (!iframe || !iframe.contentWindow) return;
         iframe.contentWindow.postMessage(
-          JSON.stringify({ method: 'setCurrentTime', value: seekTime }),
+          JSON.stringify({ method: 'setCurrentTime', value: t }),
           'https://player.vimeo.com'
         );
-        // Avvia il play dopo il seek
         setTimeout(function() {
           iframe.contentWindow.postMessage(
             JSON.stringify({ method: 'play' }),
             'https://player.vimeo.com'
           );
         }, 200);
-      }
-    });
+      });
+      wrap.appendChild(frame);
+    }
   }
 
   // Inizializza la strip quando il DOM è pronto
