@@ -4463,7 +4463,7 @@
 
     /* Recordings: celle verticali alte fino al crocino (quasi tutta la viewport meno header e testo) */
     .sc-section-recordings {
-      --v-height: calc(100vh - 220px);
+      --v-height: calc(100vh - 235px);  /* -15px per compensare il padding-top del testo */
     }
     /* Le immagini duplicate nello scroll-inner devono essere alte --v-height */
     .sc-section-recordings .sc-recordings-scroll-wrap {
@@ -4603,7 +4603,7 @@
       width: 100vw;
       margin-left: calc(-21px);
       margin-right: calc(-21px);
-      padding: 0 40px 120px;  /* padding-top zero: testo a ridosso delle thumbs */
+      padding: 15px 40px 120px;  /* abbassato di 15px rispetto alle thumbs */
       text-align: justify;
       background: #000;
       color: #fff;
