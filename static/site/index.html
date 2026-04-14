@@ -4467,40 +4467,48 @@
       height: var(--v-height) !important;
     }
 
-    /* Pannello testo cover Images Book — visibile solo nel viewer intermedio (non fullscreen) */
+    /* Pannello trascrizione audio — visibile nel viewer intermedio Images Book (non fullscreen) */
     #sc-cover-text-panel {
       position: absolute;
       top: 0;
       bottom: 0;
       left: 0;
-      width: 300px;
+      width: 280px;
       z-index: 5;
       display: flex;
       flex-direction: column;
       justify-content: center;
-      padding: 30px 28px;
+      padding: 30px 24px;
       box-sizing: border-box;
       pointer-events: none;
+      transition: opacity 0.4s ease;
+    }
+    /* Posizione destra quando il carousel è a sinistra */
+    #sc-cover-text-panel.sc-panel-right {
+      left: auto;
+      right: 0;
     }
     #sc-cover-text-panel p {
       font-family: 'Times New Roman', Times, serif;
-      font-size: 0.88rem;
-      color: rgba(255,255,255,0.82);
-      line-height: 1.55;
-      margin: 0 0 0.9em 0;
+      font-size: 0.82rem;
+      color: rgba(255,255,255,0.72);
+      line-height: 1.65;
+      margin: 0;
+      letter-spacing: 0.01em;
     }
     #sc-cover-text-panel .sc-cover-text-link {
       font-family: 'Courier New', Courier, monospace;
-      font-size: 0.78rem;
-      color: rgba(255,255,255,0.5);
-      letter-spacing: 0.04em;
+      font-size: 0.72rem;
+      color: rgba(255,255,255,0.45);
+      letter-spacing: 0.06em;
       text-transform: uppercase;
-      margin-top: 0.4em;
+      margin-top: 1em;
       pointer-events: auto;
       cursor: pointer;
+      display: none;
     }
     #sc-cover-text-panel .sc-cover-text-link:hover {
-      color: rgba(255,255,255,0.9);
+      color: rgba(255,255,255,0.85);
     }
     /* Nasconde il pannello in fullscreen */
     #sculptures-child.sc-fullscreen #sc-cover-text-panel {
@@ -7805,6 +7813,41 @@ const PROJECTS_STATIC = [
       { url: REAL_IMAGES[6].file,  ar: REAL_IMAGES[6].ar,  keywords: 'study, landscape, nature, light' },
     ]
   },
+];
+
+// Blocchi di trascrizione audio per il viewer Images Book (35 blocchi ~55 parole ciascuno)
+// Generati da subtitles.json — distribuiti ciclicamente sulle foto
+const SC_TRANSCRIPT_BLOCKS = [
+  'Sing Happy changes His glory in old to new Where the smart ones go That\'s why we live in prayer Where the law\'s fragile is Yes I\'m gonna wait on you wait on you wait on you In the name of Jesus name of the Lord Hey man Hey man Sorry Bless you Good to',
+  'be Good to be a man Next week 10 15 If you don\'t want to praise him don\'t hinder me My Lord if you don\'t want to praise him don\'t hinder me I\'m going to praise him in the morning praise him all day long Well I feel like praising praising him I gotta tell',
+  'you well well well I\'m going to praise him while I got a chance My Lord I\'m going to praise him while I got a chance I\'m going to just praise him in the morning praise him all day long Well I feel like praising praising him Well well well well I feel like praising',
+  'praising him My Lord I feel like praising praising him I\'m going to just praise him in the morning praise him all day long Well I feel like praising praising him I feel like praising praising him Well I feel like praising praising him I\'m going to praise him in the morning praise him all',
+  'day long Well I feel like praising praising him I think they said they were giving out those posters at those tents We ready for y all Don\'t be sitting there Don\'t do nothing We\'re big people We\'re targeted We ready Say what Say what We ready Dedication For y all For more UN videos',
+  'go to youtube.com No police No racists Police Hands up Don\'t shoot John Crawford These are just a few of the names of our fallen brothers There are too many to list We are gathered here today to say enough is enough We are gathered here today to say no more We are gathered',
+  'here today to say that black lives matter We are gathered here today to say that we are tired of seeing our brothers and sisters gunned down in the streets We are gathered here today to say that we will not rest until there is justice for all American Jews it\'s time to',
+  'listen to these brave young leaders Listen to your hearts Listen to these young people who are fighting for justice and equality in America We stand with you We stand with the movement We stand with Black Lives Matter We stand with the families of the fallen We stand with the people of Ferguson',
+  'I see life differently nowadays I look into his eyes and wonder what type of future is he going to have I look into his eyes and wonder if he\'s going to be safe I look into his eyes and wonder if the world is going to be a better place for him',
+  'I look into his eyes and wonder if he\'s going to be treated fairly I look into his eyes and wonder if he\'s going to be respected I look into his eyes and wonder if he\'s going to be loved I look into his eyes and wonder if he\'s going to be free',
+  'When I say him you say hi him him him hi My name is TC and I\'m with the Hip Hop Caucus and we are here today to say that we are not going to stop until there is justice for all We are not going to stop until there is accountability',
+  'We are not going to stop until there is change We are not going to stop until there is equality We are not going to stop until there is justice It\'s Ferguson people that want to speak and we need to let them speak We need to let them speak We need to let',
+  'them speak We need to let them speak We need to let them speak We need to let them speak We need to let these families Let them speak Let them speak Let them speak Let them speak Let them speak Let them speak Hands up Don\'t shoot Hands up Don\'t shoot We all respect',
+  'have been out here in Ferguson and D C and New York and we started this uprising So we need to let the people from Ferguson that have been out there for a hundred and something days to let them speak Let them speak Hi my name is Janetta Eldy and I\'m from St Louis',
+  'Missouri I\'ve been in Ferguson for 127 days I got shot one time with a rubber bullet standing on my neighborhood street I\'ve been tear gassed nine times in a neighborhood where I pay taxes Because I decided to exercise my First Amendment right and go protest for the death of Mike Brown on campfields',
+  'on August 9th I love Mike Brown\'s parents I love Mike Brown I\'ve never met him and I protest for him every day This movement was started by the young people We started this It should be young people all over this stage It should be young people all up here Started by us What',
+  'I want y all to do right now put your hands up please Hands up Hands up Hands up Don\'t shoot Hands up Don\'t shoot Hands up Don\'t shoot Hands up Don\'t shoot Ain\'t gonna be no stuff like that I got a feeling I got a feeling oh I got a feeling That somebody\'s',
+  'trying to hold us back and it ain\'t gonna be no stuff like that I got a feeling I got a feeling oh I got a feeling That somebody\'s trying to hold us back and it ain\'t gonna be no stuff like that I got a feeling oh I got a feeling that somebody\'s trying',
+  'to hold us back And it ain\'t gonna be no stuff like that show me what democracy looks like this is what democracy looks like Don\'t shoot hand up don\'t shoot hand up don\'t shoot hand up don\'t shoot don\'t shoot don\'t shoot hand up don\'t shoot hand up don\'t shoot hand up don\'t shoot',
+  'raise your rights up don\'t shoot raise your rights up shoot don\'t shoot don\'t shoot don\'t shoot don\'t shoot don\'t shoot don\'t shoot don\'t shoot no peace no peace no peace no peace no peace don\'t shoot don\'t shoot don\'t shoot don\'t shoot don\'t shoot don\'t shoot they\'re talking shit then they remove guns then',
+  'they remove guns then they remove guns to go Oh we ain\'t got to go Oh we ain\'t taking this no more Oh we ain\'t taking this no more So what do we want What do we want Justice What do we want Justice What do we want They try to make me and everything',
+  'They try to make me and everything Haha How do we want What do we want What do we want Justice Yeah I can see grab the hands of their game Hold those hands up Everybody put your hands up Do you see this is interesting The cameras are still focused here They ought to',
+  'be focused out there Look at the hands Black white brown Look at our nation It\'s a calm media Wake up Hey everybody\'s doing everything right That\'s right We don\'t need to look today Congress may be on vacation but we\'re never going to take a vacation Ladies and gentlemen I\'m proud to announce that',
+  'this person is now the mayor of Newark New Jersey Laura Baraka Hands up Hands up Don\'t shoot Hands up Don\'t shoot I can\'t breathe I can\'t hear you I can\'t breathe I can\'t breathe I can\'t breathe I can\'t breathe I can\'t breathe Not just because Eric Garner lost his life senselessly in the',
+  'streets of New York from a chokehold an illegal chokehold We say I can\'t breathe because we have been suffocated by a system of general justice in America That\'s right That\'s right A system that allows a police officer to go free and a young black woman to be dead on the street That allows',
+  'the murder of Trayvon Martin to go free We say we can\'t breathe because we are tired of general justice in America And we are not ashamed to say that we grew up like that We grew up like that In 1911 In 1911 Ms Nelson and her son in law took a breath in',
+  '1911 They say we\'ve come far in America I say it\'s not far enough In 1955 Emmett Till was murdered trying to harm his home He dumped it in the Tallahatchie River They say we\'ve come far in America I say not far enough They say that Jim Crow is dead in America And I',
+  'say Eric Garner is dead in America And Mike Brown is dead in America And there is no justice for people of color and poor people in this country And until there is justice for all there will be justice for none As it may stand the mother of Eric Garner Ms Gwynne Cobb the',
+  'wife of Eric Garner he saw Garner and her children Andrew Eric and Junior the mother of Tamir Race a 12 year old young boy shot down in Cleveland Ohio His mother Samaria is here Ms Race\'s sister Robin and daughter\'s here We\'re standing with you The family of John Crawford also shot with a',
+  'toy gun in Ohio Father three sons is here Father John Crawford is here Family of Ellie Hall and Junior is here Family Family Family Family Family Family Family A little bit softer',
 ];
 
 // PROJECTS: inizialmente vuoto, popolato dal CMS
@@ -12931,16 +12974,31 @@ function scUpdateCarousel() {
   _scUpdateRecordingsPlaylist(posIdx);
   // Aggiorna il pannello testo se siamo in sezione diary
   _scUpdateDiaryPanel(posIdx);
-  // Mostra il pannello testo cover solo per la prima immagine di images-book (la copertina)
+  // Mostra il pannello trascrizione per tutte le foto di images-book (non in fullscreen)
   const coverPanel = document.getElementById('sc-cover-text-panel');
   if (coverPanel) {
-    const isCover = (_scCurrentSection === 'images-book' && scCurrentIndex === 0);
-    coverPanel.style.display = isCover ? 'flex' : 'none';
-    // "View Images." porta alla sezione images-book (già siamo qui, scorre alla griglia)
-    const viewLink = coverPanel.querySelector('.sc-cover-text-link');
-    if (viewLink && !viewLink._bound) {
-      viewLink._bound = true;
-      viewLink.addEventListener('click', () => scCarouselNav(1));
+    if (_scCurrentSection === 'images-book') {
+      // Scegli il blocco di trascrizione ciclicamente in base all'indice foto
+      const blockIdx = scCurrentIndex % SC_TRANSCRIPT_BLOCKS.length;
+      const block = SC_TRANSCRIPT_BLOCKS[blockIdx];
+      // Aggiorna il contenuto del pannello
+      const pEls = coverPanel.querySelectorAll('p:not(.sc-cover-text-link)');
+      if (pEls.length > 0) pEls[0].textContent = block;
+      // Mostra/nascondi il link "View Images." solo sulla copertina (indice 0)
+      const viewLink = coverPanel.querySelector('.sc-cover-text-link');
+      if (viewLink) viewLink.style.display = scCurrentIndex === 0 ? 'block' : 'none';
+      if (viewLink && !viewLink._bound) {
+        viewLink._bound = true;
+        viewLink.addEventListener('click', () => scCarouselNav(1));
+      }
+      // Posiziona il pannello nel lato opposto alla foto
+      if (posIdx !== undefined) {
+        // sc-pos-left (posIdx=1) = foto a sinistra = testo a destra
+        coverPanel.classList.toggle('sc-panel-right', posIdx === 1);
+      }
+      coverPanel.style.display = 'flex';
+    } else {
+      coverPanel.style.display = 'none';
     }
   }
 }
