@@ -5125,6 +5125,84 @@
     #sc-topics-list li:hover { color: #4c00fc; }
     #sc-topics-list li.sc-topics-active { color: #4c00fc; }
 
+    /* ── Box Photographer's Note nel viewer Testimonial Diary ── */
+    #sc-diary-note-box {
+      background: #fff;
+      border-radius: 10px;
+      position: fixed;
+      bottom: 3.5vw;
+      left: 50%;
+      z-index: 1296;
+      width: 240px;
+      max-height: 56px;
+      overflow: hidden;
+      box-shadow: rgba(0,0,0,0.12) 0px 2px 15px 3px;
+      padding: 18px 0;
+      text-align: center;
+      cursor: pointer;
+      transform: translate(-50%, 200px);
+      opacity: 0;
+      pointer-events: none;
+      transition: transform 0.7s cubic-bezier(0.77, 0, 0.175, 1),
+                  opacity 0.4s cubic-bezier(0.77, 0, 0.175, 1),
+                  width 0.7s cubic-bezier(0.77, 0, 0.175, 1),
+                  max-height 0.7s cubic-bezier(0.77, 0, 0.175, 1);
+    }
+    #sc-diary-note-box.sc-diary-note-visible {
+      transform: translate(-50%, 0);
+      opacity: 1;
+      pointer-events: auto;
+    }
+    #sc-diary-note-box.sc-diary-note-open {
+      width: min(80vw, 700px);
+      max-height: 70vh;
+      overflow-y: auto;
+      text-align: left;
+      padding: 14px 18px;
+    }
+    #sc-diary-note-drag {
+      position: absolute;
+      top: 8px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 40px;
+      height: 3px;
+      background: rgb(220,220,220);
+      border-radius: 5px;
+      cursor: pointer;
+      transition: 0.3s;
+    }
+    #sc-diary-note-drag:hover { background: rgb(180,180,180); }
+    #sc-diary-note-label {
+      cursor: pointer;
+      font-family: Arial, sans-serif;
+      font-size: 11px;
+      font-weight: bold;
+      color: #000;
+      line-height: 1;
+      user-select: none;
+      display: block;
+      width: 100%;
+      text-align: center;
+      padding: 0 20px;
+      margin-top: 0;
+      letter-spacing: 0.08em;
+    }
+    #sc-diary-note-content {
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.4s cubic-bezier(0.77, 0, 0.175, 1);
+      font-family: Arial, sans-serif;
+      font-size: 11px;
+      line-height: 1.6;
+      color: #000;
+      margin-top: 12px;
+    }
+    #sc-diary-note-box.sc-diary-note-open #sc-diary-note-content {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
     /* ── Box Text (Editor's Note) nel viewer Video Book ── */
     #sc-vb-text-box {
       background: #fff;
@@ -7509,6 +7587,16 @@
           <p id="sculptures-carousel-desc" class="sc-desc"></p>
         </div>
       </div>
+      <!-- Box Photographer's Note — visibile solo nel viewer Testimonial Diary -->
+      <div id="sc-diary-note-box" onclick="scToggleDiaryNote()">
+        <div id="sc-diary-note-drag"></div>
+        <div id="sc-diary-note-label">Note</div>
+        <div id="sc-diary-note-content">
+          <p style="color:#4c00fc;font-style:normal;font-weight:600;margin-bottom:0.6em;">Photographer&rsquo;s note</p>
+          <p>The Black Diary is a notebook I chose to purchase in Washington, D.C. on December 12, 2014, the day before the &ldquo;March for Justice&rdquo; held in the capital following the fatal shooting and the civil unrest that began in Ferguson. I invited people who had come to Washington to leave a personal testimony&mdash;an inscription of their presence&mdash;so as to gather traces of their physical and emotional involvement in that specific moment of American history. Images of the demonstration are collected and transformed into sculptures.</p>
+        </div>
+      </div>
+
       <!-- Box Text (Editor's Note) — visibile solo in sezione video, stile box Topics -->
       <div id="sc-vb-text-box" onclick="scToggleVbText()">
         <div id="sc-vb-text-drag"></div>
@@ -12872,8 +12960,18 @@ function scOpenChild(idx, section) {
   // Marca il body se siamo nel viewer diary (per nascondere il karaoke tracce)
   if (section === 'diary') {
     document.body.classList.add('sc-diary-viewer-active');
+    // Mostra il box Photographer's Note
+    const _noteBox = document.getElementById('sc-diary-note-box');
+    if (_noteBox) {
+      _noteBox.classList.remove('sc-diary-note-open');
+      _noteBox.offsetHeight;
+      requestAnimationFrame(() => _noteBox.classList.add('sc-diary-note-visible'));
+    }
   } else {
     document.body.classList.remove('sc-diary-viewer-active');
+    // Nasconde il box Note se era visibile
+    const _noteBox = document.getElementById('sc-diary-note-box');
+    if (_noteBox) _noteBox.classList.remove('sc-diary-note-visible', 'sc-diary-note-open');
   }
   scUpdateCarousel();
   // Click sulla foto = fullscreen (anche in modalità diary)
@@ -12903,6 +13001,9 @@ function scCloseChild() {
   // Nasconde il box Text se aperto
   const textBox = document.getElementById('sc-vb-text-box');
   if (textBox) textBox.classList.remove('sc-vb-text-visible', 'sc-vb-text-open');
+  // Nasconde il box Photographer's Note se aperto
+  const noteBox = document.getElementById('sc-diary-note-box');
+  if (noteBox) noteBox.classList.remove('sc-diary-note-visible', 'sc-diary-note-open');
   // Nasconde il pannello diary e ferma il TTS
   const diaryPanel = document.getElementById('sc-diary-text-panel');
   if (diaryPanel) diaryPanel.style.display = 'none';
@@ -12966,6 +13067,12 @@ function _scResetExpandIcon() {
 }
 
 // Apre/chiude il box Text nel viewer Video Book
+function scToggleDiaryNote() {
+  const box = document.getElementById('sc-diary-note-box');
+  if (!box) return;
+  box.classList.toggle('sc-diary-note-open');
+}
+
 function scToggleVbText() {
   const box = document.getElementById('sc-vb-text-box');
   if (!box) return;
