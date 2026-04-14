@@ -9226,6 +9226,10 @@ function switchView(name) {
     // Resetta le voci del menu (nascondile di nuovo per la prossima apertura)
     document.querySelectorAll('#sculptures-nav [data-sc-section], #sculptures-back')
       .forEach(el => el.classList.remove('sc-revealed'));
+    // Reset flag sessione info box: alla prossima visita a Sculptures il box riappare
+    window._scInfoShownThisSession = false;
+    if (window._scInfoAutoTimer) { clearTimeout(window._scInfoAutoTimer); window._scInfoAutoTimer = null; }
+    if (window._scInfoAutoClose) { clearTimeout(window._scInfoAutoClose); window._scInfoAutoClose = null; }
   }
 }
 
@@ -12040,18 +12044,21 @@ function scSwitchSection(section) {
     // Rimuovi modalità diary (menu torna bianco)
     document.body.classList.remove('sc-diary-nav-mode');
     scBuildGrid();
-    // Auto-show box information: esce da sx dopo 2.5s, rientra dopo 6s
+    // Auto-show box information: solo la prima volta per sessione Sculptures
     if (window._scInfoAutoTimer) { clearTimeout(window._scInfoAutoTimer); window._scInfoAutoTimer = null; }
     if (window._scInfoAutoClose) { clearTimeout(window._scInfoAutoClose); window._scInfoAutoClose = null; }
-    window._scInfoAutoTimer = setTimeout(function() {
-      const _info = document.getElementById('sculptures-info');
-      if (_info && !_info.classList.contains('active')) {
-        requestAnimationFrame(() => _info.classList.add('active'));
-        window._scInfoAutoClose = setTimeout(function() {
-          if (_info.classList.contains('active')) _info.classList.remove('active');
-        }, 6000);
-      }
-    }, 2500);
+    if (!window._scInfoShownThisSession) {
+      window._scInfoAutoTimer = setTimeout(function() {
+        const _info = document.getElementById('sculptures-info');
+        if (_info && !_info.classList.contains('active')) {
+          requestAnimationFrame(() => _info.classList.add('active'));
+          window._scInfoShownThisSession = true;  // segna come mostrato
+          window._scInfoAutoClose = setTimeout(function() {
+            if (_info.classList.contains('active')) _info.classList.remove('active');
+          }, 6000);
+        }
+      }, 2500);
+    }
   } else if (section === 'information') {
     // Apri info panel
     scOpenInfo();
