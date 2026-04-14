@@ -4570,6 +4570,7 @@
     }
     body.sc-viewer-active #sc-top-overlay {
       display: block;
+      pointer-events: auto;  /* blocca i click sulla griglia diary quando il viewer è aperto */
     }
 
     /* Bottone × chiudi — pallino viola, spostato -30px a sinistra */
@@ -5072,6 +5073,8 @@
       padding: 0 60px 0 60px;
     }
     #sc-karaoke.active { display: flex; }
+    /* Nascondi il karaoke tracce quando il viewer diary è aperto (evita sovrapposizione con diary karaoke) */
+    body.sc-viewer-active.sc-diary-viewer-active #sc-karaoke.active { display: none; }
     #sc-karaoke-line {
       display: flex;
       flex-wrap: nowrap;
@@ -12314,6 +12317,12 @@ function scOpenChild(idx, section) {
   _scResetExpandIcon();
   child.classList.add('active');
   document.body.classList.add('sc-viewer-active');  // cursore rosso +30%
+  // Marca il body se siamo nel viewer diary (per nascondere il karaoke tracce)
+  if (section === 'diary') {
+    document.body.classList.add('sc-diary-viewer-active');
+  } else {
+    document.body.classList.remove('sc-diary-viewer-active');
+  }
   scUpdateCarousel();
   // Keyboard nav
   document._scKeyHandler = function(e) {
@@ -12342,6 +12351,7 @@ function scCloseChild() {
   const iframe = document.getElementById('sc-vb-iframe');
   if (iframe) iframe.src = '';
   document.body.classList.remove('sc-viewer-active');  // ripristina cursore normale
+  document.body.classList.remove('sc-diary-viewer-active');  // rimuovi marker diary
   _scResetExpandIcon();
   if (document._scKeyHandler) {
     document.removeEventListener('keydown', document._scKeyHandler);
