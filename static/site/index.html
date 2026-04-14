@@ -4882,6 +4882,89 @@
     #sc-topics-list li:hover { color: #4c00fc; }
     #sc-topics-list li.sc-topics-active { color: #4c00fc; }
 
+    /* ── Box Text (Editor's Note) nel viewer Video Book ── */
+    #sc-vb-text-box {
+      background: #fff;
+      border-radius: 10px;
+      position: absolute;
+      bottom: 3.5vw;
+      left: 50%;
+      z-index: 10;
+      /* Stato nascosto: fuori viewport */
+      transform: translate(-50%, 200px);
+      opacity: 0;
+      pointer-events: none;
+      /* Stato chiuso: larghezza compatta */
+      width: 160px;
+      max-height: 46px;
+      overflow: hidden;
+      box-shadow: rgba(0,0,0,0.12) 0px 2px 15px 3px;
+      padding: 14px 18px;
+      text-align: center;
+      transition: transform 0.7s cubic-bezier(0.77, 0, 0.175, 1),
+                  opacity 0.4s cubic-bezier(0.77, 0, 0.175, 1),
+                  width 0.7s cubic-bezier(0.77, 0, 0.175, 1),
+                  max-height 0.7s cubic-bezier(0.77, 0, 0.175, 1);
+    }
+    #sc-vb-text-box.sc-vb-text-visible {
+      transform: translate(-50%, 0);
+      opacity: 1;
+      pointer-events: auto;
+    }
+    #sc-vb-text-box.sc-vb-text-open {
+      width: min(80vw, 700px);
+      max-height: 70vh;
+      overflow-y: auto;
+      text-align: left;
+    }
+    #sc-vb-text-drag {
+      position: absolute;
+      top: 8px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 40px;
+      height: 3px;
+      background: rgb(220,220,220);
+      border-radius: 5px;
+      cursor: pointer;
+      transition: 0.3s;
+    }
+    #sc-vb-text-drag:hover { background: rgb(180,180,180); }
+    #sc-vb-text-label {
+      cursor: pointer;
+      font-family: Arial, sans-serif;
+      font-size: 11px;
+      font-weight: bold;
+      color: #000;
+      line-height: 1;
+      user-select: none;
+      padding-top: 2px;
+      text-align: center;
+    }
+    #sc-vb-text-content {
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.4s cubic-bezier(0.77, 0, 0.175, 1);
+      font-family: Arial, sans-serif;
+      font-size: 11px;
+      line-height: 1.6;
+      color: #000;
+      margin-top: 12px;
+    }
+    #sc-vb-text-box.sc-vb-text-open #sc-vb-text-content {
+      opacity: 1;
+      pointer-events: auto;
+    }
+    /* Viewer Video Book: nasconde img e nav, mostra iframe */
+    #sculptures-child.sc-video-mode #sculptures-carousel-img { display: none; }
+    #sculptures-child.sc-video-mode #sc-child-bg { opacity: 0; }
+    #sculptures-child.sc-video-mode #sculptures-prev,
+    #sculptures-child.sc-video-mode #sculptures-next { display: none; }
+    #sculptures-child.sc-video-mode #sculptures-carousel-caption { display: none; }
+    #sculptures-child.sc-video-mode #sc-vb-iframe-wrap { display: flex !important; align-items: center; justify-content: center; }
+    /* Grain più intenso in video mode */
+    #sculptures-child.sc-video-mode #sc-child-grain { opacity: 0.55; }
+
     /* ── Karaoke / sottotitoli sincronizzati (stile macchina da scrivere) ── */
     #sc-karaoke {
       position: fixed;
@@ -6709,12 +6792,27 @@
         <canvas id="sc-child-grain"></canvas>
         <!-- Playlist laterale Recordings (visibile solo in sezione recordings) -->
         <div id="sc-recordings-playlist" style="display:none"></div>
+        <!-- Iframe Vimeo Video Book (visibile solo in sezione video) -->
+        <div id="sc-vb-iframe-wrap" style="display:none;position:relative;z-index:3;width:min(80vw,900px);aspect-ratio:16/9;">
+          <iframe id="sc-vb-iframe" src="" allow="autoplay; fullscreen; picture-in-picture" allowfullscreen
+                  style="position:absolute;top:0;left:0;width:100%;height:100%;border:none;"></iframe>
+        </div>
         <img id="sculptures-carousel-img" src="" alt="">
         <!-- Karaoke typewriter dentro il viewer -->
         <div id="sc-karaoke-viewer"><div id="sc-karaoke-viewer-line"></div></div>
         <div id="sculptures-carousel-caption">
           <p id="sculptures-carousel-title"></p>
           <p id="sculptures-carousel-desc" class="sc-desc"></p>
+        </div>
+      </div>
+      <!-- Box Text (Editor's Note) — visibile solo in sezione video, stile box Topics -->
+      <div id="sc-vb-text-box">
+        <div id="sc-vb-text-drag" onclick="scToggleVbText()"></div>
+        <div id="sc-vb-text-label" onclick="scToggleVbText()">Text</div>
+        <div id="sc-vb-text-content">
+          <p style="font-style:italic;opacity:0.5;margin-bottom:0.6em;">Editor&rsquo;s Note</p>
+          <p>Sculptures by Alessandro Rizzi is a book whose photographs were shot over the timespan of a few hours in Washington D.C. on December 13, 2014, and more precisely, during the civil rights protests that took place in the capital after the fatal shooting and civil unrest originating in Ferguson. Rizzi gives back a sharp and paradigmatic work on American society as a whole, and on the importance of a political demonstration that is a sign of the times and is coherent to its prescribed script, he plays with the fragments and cracks of what could be a historic moment for the struggle of the black community but that does not appear to be so: the sculptures at play in this event are part of a larger scenario that provides for their presence and contribution as actors both united and alone. This kind of structural weakness of the human element does not manifest in what is portrayed in the photographs which always appears to be plastic and structured, but instead lives within this visual paradox, as testimony to the distance in the union, and a fragility, despite the solidity, structure, and plasticity within each one of us.</p>
+          <p style="opacity:0.5;font-style:italic;margin-top:0.8em;">Sculptures is collected by M.o.M.A, Metropolitan Museum of Art, Oslo National Academy of Arts Library, Chicago SAIC J. Flasch Artists&rsquo; Book Collection, Lafayette Art Books Collection, Swarthmore Art Books Collections.</p>
         </div>
       </div>
     </div>
@@ -11366,38 +11464,38 @@ function scBuildSectionContent(section) {
 
   // ── Pagina speciale: Video Book ──
   if (section === 'video') {
+    // Sezione content: sfondo nero, titolo
     el.style.background = '#000';
     el.style.minHeight  = '100vh';
-    el.innerHTML = `
-      <h2>Video Book</h2>
-      <div class="sc-video-book-wrap">
-        <div class="sc-video-book-embed" id="sc-vb-embed" onclick="_scVideoBookPlay()">
-          <img class="sc-video-book-thumb" id="sc-vb-thumb"
-               src="https://i.vimeocdn.com/video/781880474-5cac69be57b3c33b58617414bcf1cd296df1c758dd17be51609ae95f7735ce2c-d_640?region=us"
-               alt="Sculptures — Video Book" />
-          <div class="sc-video-book-play">
-            <svg width="22" height="26" viewBox="0 0 22 26" fill="none">
-              <path d="M2 2L20 13L2 24V2Z" fill="#000" stroke="#000" stroke-width="1" stroke-linejoin="round"/>
-            </svg>
-          </div>
-        </div>
-        <div class="sc-video-book-text">
-          <p style="font-style:italic;font-size:1.4rem;opacity:0.55;margin-bottom:0.5em;">Editor&rsquo;s Note</p>
-          <p>Sculptures by Alessandro Rizzi is a book whose photographs were shot over the timespan of a few hours in Washington D.C. on December 13, 2014, and more precisely, during the civil rights protests that took place in the capital after the fatal shooting and civil unrest originating in Ferguson. Rizzi gives back a sharp and paradigmatic work on American society as a whole, and on the importance of a political demonstration that is a sign of the times and is coherent to its prescribed script, he plays with the fragments and cracks of what could be a historic moment for the struggle of the black community but that does not appear to be so: the sculptures at play in this event are part of a larger scenario that provides for their presence and contribution as actors both united and alone. This kind of structural weakness of the human element does not manifest in what is portrayed in the photographs which always appears to be plastic and structured, but instead lives within this visual paradox, as testimony to the distance in the union, and a fragility, despite the solidity, structure, and plasticity within each one of us.</p>
-          <p class="sc-video-book-collections">Sculptures is collected by M.o.M.A, Metropolitan Museum of Art, Oslo National Academy of Arts Library, Chicago SAIC J. Flasch Artists&rsquo; Book Collection, Lafayette Art Books Collection, Swarthmore Art Books Collections.</p>
-        </div>
-      </div>
-    `;
-    window._scVideoBookPlay = function() {
-      const embed = document.getElementById('sc-vb-embed');
-      if (!embed || embed.classList.contains('playing')) return;
-      embed.classList.add('playing');
-      const iframe = document.createElement('iframe');
-      iframe.src = 'https://player.vimeo.com/video/326170622?autoplay=1&color=ffffff&title=0&byline=0&portrait=0';
-      iframe.allow = 'autoplay; fullscreen; picture-in-picture';
-      iframe.allowFullscreen = true;
-      embed.appendChild(iframe);
-    };
+    el.innerHTML = '<h2>Video Book</h2>';
+    // Apri il viewer in modalità fullscreen + video mode
+    const child = document.getElementById('sculptures-child');
+    if (child) {
+      child.classList.add('active', 'sc-fullscreen', 'sc-video-mode');
+      document.body.classList.add('sc-viewer-active');
+      // Imposta l'iframe Vimeo
+      const iframe = document.getElementById('sc-vb-iframe');
+      if (iframe && !iframe.src) {
+        iframe.src = 'https://player.vimeo.com/video/326170622?color=ffffff&title=0&byline=0&portrait=0';
+      }
+      // Mostra il box Text
+      const textBox = document.getElementById('sc-vb-text-box');
+      if (textBox) {
+        textBox.classList.remove('sc-vb-text-open');
+        textBox.offsetHeight; // reflow
+        requestAnimationFrame(() => textBox.classList.add('sc-vb-text-visible'));
+      }
+      // Aggiorna icona expand
+      const expandIcon   = document.getElementById('sc-expand-icon');
+      const collapseIcon = document.getElementById('sc-collapse-icon');
+      if (expandIcon)   expandIcon.style.display   = 'none';
+      if (collapseIcon) collapseIcon.style.display = 'block';
+      // Keyboard: Escape chiude
+      document._scKeyHandler = function(e) {
+        if (e.key === 'Escape') scCloseVideoBook();
+      };
+      document.addEventListener('keydown', document._scKeyHandler);
+    }
     return;
   }
 
@@ -11497,9 +11595,14 @@ function scOpenChild(idx, section) {
 function scCloseChild() {
   const child = document.getElementById('sculptures-child');
   if (child) {
-    child.classList.remove('active');
-    child.classList.remove('sc-fullscreen');
+    child.classList.remove('active', 'sc-fullscreen', 'sc-video-mode');
   }
+  // Nasconde il box Text se aperto
+  const textBox = document.getElementById('sc-vb-text-box');
+  if (textBox) textBox.classList.remove('sc-vb-text-visible', 'sc-vb-text-open');
+  // Ferma il video
+  const iframe = document.getElementById('sc-vb-iframe');
+  if (iframe) iframe.src = '';
   document.body.classList.remove('sc-viewer-active');  // ripristina cursore normale
   _scResetExpandIcon();
   if (document._scKeyHandler) {
@@ -11524,6 +11627,33 @@ function _scResetExpandIcon() {
   const collapseIcon = document.getElementById('sc-collapse-icon');
   if (expandIcon)   expandIcon.style.display   = 'block';
   if (collapseIcon) collapseIcon.style.display = 'none';
+}
+
+// Apre/chiude il box Text nel viewer Video Book
+function scToggleVbText() {
+  const box = document.getElementById('sc-vb-text-box');
+  if (!box) return;
+  box.classList.toggle('sc-vb-text-open');
+}
+
+// Chiude il viewer Video Book e ripristina lo stato
+function scCloseVideoBook() {
+  const child = document.getElementById('sculptures-child');
+  if (child) {
+    child.classList.remove('active', 'sc-fullscreen', 'sc-video-mode');
+  }
+  // Nasconde il box Text
+  const textBox = document.getElementById('sc-vb-text-box');
+  if (textBox) textBox.classList.remove('sc-vb-text-visible', 'sc-vb-text-open');
+  // Ferma il video (svuota src)
+  const iframe = document.getElementById('sc-vb-iframe');
+  if (iframe) iframe.src = '';
+  document.body.classList.remove('sc-viewer-active');
+  _scResetExpandIcon();
+  if (document._scKeyHandler) {
+    document.removeEventListener('keydown', document._scKeyHandler);
+    document._scKeyHandler = null;
+  }
 }
 
 // Naviga nel carousel del popup
