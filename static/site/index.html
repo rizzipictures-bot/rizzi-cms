@@ -4893,8 +4893,10 @@
       z-index: 1400;
       display: none;               /* mostrato solo in Sculptures */
       align-items: center;
-      gap: 10px;
+      gap: 4px;                    /* pulsanti molto vicini tra loro */
       pointer-events: auto;
+      /* Larghezza massima: rimane a sinistra del karaoke (che parte a 60px dal bordo) */
+      max-width: 36px;
     }
     #sc-audio-controls.visible { display: flex; }
     #sc-audio-btn-play,
@@ -5247,7 +5249,8 @@
       height: 52px;
       display: none;
       align-items: flex-end;
-      padding: 0 60px 0 60px;
+      /* padding-left abbastanza ampio da non sovrapporsi ai controlli play/stop (left:18px + ~36px) */
+      padding: 0 60px 0 70px;
     }
     #sc-karaoke.active { display: flex; }
     /* Nascondi il karaoke tracce quando il viewer è aperto (evita sovrapposizione con caption e karaoke viewer) */
