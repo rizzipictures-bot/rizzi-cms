@@ -11825,6 +11825,8 @@ function scBuildSectionContent(section) {
     el.style.background = '#fff';
     el.style.minHeight  = '100vh';
     el.classList.add('sc-diary-mode');
+    // Ferma il karaoke se era in corso (es. arrivando da Recordings)
+    scStopKaraoke();
     // Prepara scCurrentImages con i dati hardcoded del diary
     scCurrentImages = SC_DIARY_IMAGES.map(d => ({
       url: d.file,
@@ -12386,6 +12388,8 @@ function scStartKaraoke(filename) {
     const fname = filename.split('/').pop(); // estrae solo il nome file
     _scKaraokeWords = (SC_SUBTITLES && SC_SUBTITLES[fname]) || [];
     if (_scKaraokeWords.length === 0) return; // nessun testo
+    // In sezione Testimonial Diary il karaoke è disabilitato
+    if (_scCurrentSection === 'diary') return;
     _scKaraokeIdx = 0;
     _scKaraokeLineWords = [];
     const box = document.getElementById('sc-karaoke');
