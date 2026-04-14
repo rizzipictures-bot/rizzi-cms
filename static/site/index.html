@@ -4978,6 +4978,32 @@
       justify-content: flex-start;
       align-items: flex-end;
     }
+    /* Overlay per nascondere la barra Vimeo in basso e le icone verticali a destra */
+    #sc-vb-iframe-wrap {
+      overflow: hidden !important;
+    }
+    #sc-vb-iframe-wrap::after {
+      content: '';
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      height: 54px;
+      background: #000;
+      z-index: 10;
+      pointer-events: none;
+    }
+    #sc-vb-iframe-wrap::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      right: 0;
+      width: 54px;
+      height: 100%;
+      background: #000;
+      z-index: 10;
+      pointer-events: none;
+    }
     #sculptures-child.sc-video-mode #sc-vb-iframe-wrap {
       display: flex !important;
       align-items: center;
@@ -6822,7 +6848,7 @@
         <!-- Playlist laterale Recordings (visibile solo in sezione recordings) -->
         <div id="sc-recordings-playlist" style="display:none"></div>
         <!-- Iframe Vimeo Video Book (visibile solo in sezione video) -->
-        <div id="sc-vb-iframe-wrap" style="display:none;position:relative;z-index:3;width:min(80vw,900px);aspect-ratio:16/9;">
+        <div id="sc-vb-iframe-wrap" style="display:none;position:relative;z-index:3;width:min(80vw,900px);aspect-ratio:16/9;overflow:hidden;">
           <iframe id="sc-vb-iframe" src="" allow="autoplay; fullscreen; picture-in-picture" allowfullscreen
                   style="position:absolute;top:0;left:0;width:100%;height:100%;border:none;"></iframe>
         </div>
@@ -11521,7 +11547,7 @@ function scBuildSectionContent(section) {
       // Imposta l'iframe Vimeo (sempre, per riavviarlo se era stato fermato)
       const iframe = document.getElementById('sc-vb-iframe');
       if (iframe) {
-        iframe.src = 'https://player.vimeo.com/video/326170622?color=ffffff&title=0&byline=0&portrait=0';
+        iframe.src = 'https://player.vimeo.com/video/326170622?color=ffffff&title=0&byline=0&portrait=0&badge=0&share=0&like=0&watchlater=0&transparent=0';
       }
       // Mostra il box Text
       const textBox = document.getElementById('sc-vb-text-box');
