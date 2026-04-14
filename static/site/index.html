@@ -12986,12 +12986,16 @@ function scCloseVideoBook() {
   const SC_VB_DUR = 195; // durata video in secondi
   let _vbCurrentTime = 0;
 
+  // Flag: dopo un click-to-seek blocca il mouseleave dal riportare il pallino indietro
+  let _vbSeeking = false;
+  let _vbSeekTarget = 0;  // posizione % del click (0-1)
+
   function _initProgress() {
     const wrap = document.getElementById('sc-vb-progress-wrap');
     const dot  = document.getElementById('sc-vb-progress-dot');
     if (!wrap || !dot) return;
 
-    // Pallino segue il mouse orizzontalmente
+    // Pallino segue il mouse orizzontalmente (solo se non in seeking)
     wrap.addEventListener('mousemove', function(e) {
       const r = wrap.getBoundingClientRect();
       const pct = Math.max(0, Math.min(1, (e.clientX - r.left) / r.width));
@@ -13003,6 +13007,10 @@ function scCloseVideoBook() {
       const r = wrap.getBoundingClientRect();
       const pct = Math.max(0, Math.min(1, (e.clientX - r.left) / r.width));
       const t = pct * SC_VB_DUR;
+      _vbSeeking = true;    // blocca mouseleave
+      _vbSeekTarget = pct;  // salva la posizione del click
+      // Aggiorna subito il pallino alla posizione cliccata
+      dot.style.left = (pct * 100) + '%';
       const iframe = document.getElementById('sc-vb-iframe');
       if (!iframe || !iframe.contentWindow) return;
       iframe.contentWindow.postMessage(JSON.stringify({ method: 'setCurrentTime', value: t }), 'https://player.vimeo.com');
@@ -13011,8 +13019,10 @@ function scCloseVideoBook() {
       }, 200);
     });
 
-    // Quando il mouse esce dal wrap, riporta il pallino alla posizione corrente del video
+    // Quando il mouse esce dal wrap: riporta il pallino alla posizione corrente
+    // MA solo se non siamo in seeking (altrimenti il pallino resterebbe alla posizione del click)
     wrap.addEventListener('mouseleave', function() {
+      if (_vbSeeking) return;  // aspetta il primo timeupdate post-seek
       const pct = SC_VB_DUR > 0 ? _vbCurrentTime / SC_VB_DUR : 0;
       dot.style.left = (pct * 100) + '%';
     });
@@ -13028,10 +13038,22 @@ function scCloseVideoBook() {
         const dot = document.getElementById('sc-vb-progress-dot');
         if (dot) {
           const wrap = document.getElementById('sc-vb-progress-wrap');
-          // Aggiorna solo se il mouse non è sopra il wrap
-          if (!wrap || !wrap.matches(':hover')) {
-            const pct = SC_VB_DUR > 0 ? _vbCurrentTime / SC_VB_DUR : 0;
-            dot.style.left = (pct * 100) + '%';
+          const currentPct = SC_VB_DUR > 0 ? _vbCurrentTime / SC_VB_DUR : 0;
+          // Se siamo in seeking: sblocca solo quando il video ha raggiunto la posizione del click
+          // (tolleranza 2% per evitare rimbalzi)
+          if (_vbSeeking) {
+            if (Math.abs(currentPct - _vbSeekTarget) < 0.02) {
+              _vbSeeking = false;
+            }
+            // Aggiorna comunque il pallino con la posizione reale del video
+            if (!wrap || !wrap.matches(':hover')) {
+              dot.style.left = (currentPct * 100) + '%';
+            }
+          } else {
+            // Comportamento normale: aggiorna se il mouse non è sopra il wrap
+            if (!wrap || !wrap.matches(':hover')) {
+              dot.style.left = (currentPct * 100) + '%';
+            }
           }
         }
       }
