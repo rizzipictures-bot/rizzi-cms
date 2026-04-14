@@ -5156,19 +5156,28 @@
     }
     /* Ogni frame è un div generato via JS con background-image individuale */
     .sc-vb-frame {
-      flex: 1;
+      flex: 1 1 0;           /* base uguale per tutti */
+      min-width: 0;
       height: 20px;
       background-size: cover;
       background-position: center;
       opacity: 0.65;
-      transition: opacity 0.15s, transform 0.15s;
+      /* Transizione elegante su flex-grow, height e opacity */
+      transition:
+        flex-grow 0.35s cubic-bezier(0.34, 1.56, 0.64, 1),
+        height    0.35s cubic-bezier(0.34, 1.56, 0.64, 1),
+        opacity   0.25s ease,
+        border-radius 0.35s ease;
       border-radius: 1px;
       position: relative;
       overflow: hidden;
     }
     .sc-vb-frame:hover {
+      flex-grow: 1.5;        /* +50% larghezza rispetto agli altri */
+      height: 30px;          /* +50% altezza (da 20px a 30px) */
       opacity: 1;
-      transform: scaleY(1.25);
+      border-radius: 2px;
+      z-index: 2;
     }
     /* Linea bianca sotto la filmstrip */
     #sc-vb-strip-line {
