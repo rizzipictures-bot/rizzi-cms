@@ -4198,10 +4198,12 @@
     }
     #sculptures-grid .sc-caption p {
       font-family: 'Times New Roman', Times, serif;
-      font-size: 1.3rem;
+      font-size: 10px;
+      font-weight: 400;
+      letter-spacing: 0.4px;
       padding: 0;
       margin: 0;
-      line-height: 1.4;
+      line-height: 1.5;
     }
     #sculptures-grid .sc-caption p.sc-desc {
       color: #aaa;
@@ -11469,7 +11471,7 @@ function scBuildGrid() {
       imgEl.src = '/static/site/images/video-book-thumb.png';
       imgEl.alt = img.title;
       imgEl.loading = 'lazy';
-      imgEl.style.cssText = 'position:absolute;top:0;left:0;width:100%;height:100%;object-fit:cover;';
+      imgEl.style.cssText = 'position:absolute;top:0;left:0;width:100%;height:100%;object-fit:cover;object-position:center center;';
       wrap.appendChild(imgEl);
       // Icona play sovrapposta
       const playIcon = document.createElement('div');
