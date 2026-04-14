@@ -4472,7 +4472,7 @@
       position: absolute;
       top: 0;
       bottom: 0;
-      left: 0;
+      left: 30px;
       width: 280px;
       z-index: 5;
       display: flex;
@@ -4490,7 +4490,7 @@
     }
     #sc-cover-text-panel p {
       font-family: 'Times New Roman', Times, serif;
-      font-size: 0.82rem;
+      font-size: 0.945rem;
       color: rgba(255,255,255,0.72);
       line-height: 1.65;
       margin: 0;
@@ -5212,10 +5212,10 @@
     #sc-vb-video-frame {
       position: relative;
       background: transparent;
-      padding: 0 0 80px 0; /* spazio in basso: 80px per la strip (quasi attaccata) */
+      padding: 0 0 0 0;
       display: block;
       margin: 0 auto;
-      width: min(82.8vw, 943px);
+      width: 100%;
     }
     #sc-vb-video-frame iframe {
       display: block;
@@ -5229,16 +5229,18 @@
       display: none;
     }
     #sculptures-child.sc-video-mode #sc-vb-strip-wrap {
-      position: absolute;
-      left: 0;
-      right: 0;
-      bottom: 0;            /* quasi attaccata al bordo inferiore del pannello */
+      position: relative;   /* sotto il video, non assoluta */
+      left: auto;
+      right: auto;
+      bottom: auto;
+      width: 100%;
       height: 80px;         /* altezza massima = frame espanso al 400% */
       cursor: crosshair;
       display: flex;
       align-items: center;
       gap: 0.5px;           /* gap tra i frame */
       padding: 0;
+      margin-top: 2px;      /* quasi attaccata al video */
     }
     /* Ogni frame è un div generato via JS con background-image individuale */
     .sc-vb-frame {
@@ -5310,14 +5312,16 @@
     #sc-vb-stop:hover { opacity: 1; }
     #sculptures-child.sc-video-mode #sc-vb-iframe-wrap {
       display: block !important;
-      width: 100%;
+      width: min(82.8vw, 943px);
       position: relative;
       z-index: 3;
+      margin: 0 auto;
     }
     /* Grain più intenso in video mode */
     #sculptures-child.sc-video-mode #sc-child-grain { opacity: 0.55 !important; }
     /* In video mode i controlli globali play/stop rimangono visibili e controllano il video Vimeo */
-    #sculptures-child.sc-video-mode ~ #sc-audio-controls.visible {
+    #sculptures-child.sc-video-mode ~ #sc-audio-controls.visible,
+    #sc-audio-controls.visible {
       display: flex !important;
     }
     /* Carousel centrato in video mode: flex centrato su entrambi gli assi */
@@ -5327,6 +5331,8 @@
       align-items: center;
       justify-content: center;
       padding-top: 0;
+      padding-left: 0 !important;
+      padding-right: 0 !important;
       height: 100%;
     }
     /* Il wrapper iframe occupa solo lo spazio necessario (non si espande) */
