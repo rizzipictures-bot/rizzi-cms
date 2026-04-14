@@ -4601,7 +4601,7 @@
       width: 100vw;
       margin-left: calc(-21px);
       margin-right: calc(-21px);
-      padding: 26px 40px 120px;
+      padding: 6px 40px 120px;  /* alzato di 20px: era 26px */
       text-align: justify;
       background: #000;
       color: #fff;
@@ -5215,12 +5215,13 @@
       overflow: visible !important;
       position: relative;
     }
-    /* Nessuna cornice nera: il video centrato orizzontalmente */
+    /* Video frame: flex column per contenere iframe + striscia progress bar */
     #sc-vb-video-frame {
       position: relative;
       background: transparent;
-      padding: 0 0 0 0;
-      display: block;
+      padding: 0;
+      display: flex;
+      flex-direction: column;
       margin: 0 auto;
       width: 100%;
     }
@@ -5235,20 +5236,17 @@
     #sc-vb-strip-wrap {
       display: none !important;
     }
-    /* ── Progress bar Video Book: linea nera 1px con pallino seek 7px ── */
+    /* ── Progress bar Video Book: striscia bianca con linea nera 1px e pallino seek 7px ── */
     #sc-vb-progress-wrap {
       display: none;          /* nascosta di default */
-      position: absolute;
-      /* Centrata orizzontalmente sopra il box testo bianco */
-      left: 50%;
-      transform: translateX(-50%);
-      /* Posizionata nel bordo bianco: appena sopra il box Text (bottom: 3.5vw, altezza ~46px) */
-      bottom: calc(3.5vw + 23px);  /* metà dello spazio tra video e box Text */
-      width: min(82.8vw, 943px);  /* stessa larghezza del video */
-      height: 20px;           /* spazio cliccabile */
+      position: relative;     /* nel flusso del video frame, subito sotto l'iframe */
+      width: 100%;
+      height: 18px;           /* altezza della striscia bianca */
+      background: #fff;       /* sfondo bianco: il bordo bianco sotto il video */
       align-items: center;
       cursor: crosshair;
-      z-index: 11;            /* sopra il box Text (z-index: 10) */
+      flex-shrink: 0;
+      z-index: 5;
     }
     /* Visibile solo in video mode */
     #sculptures-child.sc-video-mode #sc-vb-progress-wrap {
@@ -7458,6 +7456,11 @@
         <div id="sc-vb-iframe-wrap" style="display:none;">
           <div id="sc-vb-video-frame">
             <iframe id="sc-vb-iframe" src="" allow="autoplay; fullscreen; picture-in-picture" allowfullscreen></iframe>
+            <!-- Progress bar con pallino seek: striscia bianca subito sotto il video -->
+            <div id="sc-vb-progress-wrap">
+              <div id="sc-vb-progress-line"></div>
+              <div id="sc-vb-progress-dot"></div>
+            </div>
             <!-- Strip thumbnails con pallino hover e click-to-seek -->
             <div id="sc-vb-strip-wrap">
               <div id="sc-vb-strip">
@@ -7472,11 +7475,6 @@
               <button id="sc-vb-stop" onclick="scVbStop()">&#9632;</button>
             </div>
           </div>
-        </div>
-        <!-- Progress bar con pallino seek: nel bordo bianco sopra il box Text -->
-        <div id="sc-vb-progress-wrap">
-          <div id="sc-vb-progress-line"></div>
-          <div id="sc-vb-progress-dot"></div>
         </div>
         <img id="sculptures-carousel-img" src="" alt="">
         <!-- Karaoke typewriter dentro il viewer -->
