@@ -4455,15 +4455,19 @@
     .sc-section-recordings .sc-section-images > div:hover .sc-img-wrap img {
       opacity: 0.75 !important;  /* 85% base − 10% = 75% */
     }
-    /* Recordings: thumbs abbassate di 20px verso il testo, padding-bottom 0 per evitare scroll */
+    /* Recordings: griglia senza padding extra, no scroll */
     .sc-section-recordings.sc-section-images {
-      padding-top: 20px !important;
-      padding-bottom: 0 !important;  /* elimina spazio extra sotto le thumbs */
+      padding-top: 0 !important;
+      padding-bottom: 0 !important;
+    }
+    /* Blocca scroll in modalità recordings */
+    #sculptures-section-content.sc-recordings-mode {
+      overflow: hidden !important;
     }
 
-    /* Recordings: celle verticali alte fino al crocino (quasi tutta la viewport meno header e testo) */
+    /* Recordings: --v-height calcolato via JS per padding uguale sopra e sotto */
     .sc-section-recordings {
-      --v-height: calc(100vh - 235px);  /* -15px per compensare il padding-top del testo */
+      --v-height: calc(100vh - 300px);  /* fallback CSS */
     }
     /* Le immagini duplicate nello scroll-inner devono essere alte --v-height */
     .sc-section-recordings .sc-recordings-scroll-wrap {
@@ -4598,17 +4602,19 @@
     .sc-pl-track.playing .sc-pl-track-title { color: #a78bfa; }
     .sc-pl-track.playing .sc-pl-btn.play-btn { opacity: 0.3; pointer-events: none; }
 
-    /* Testo descrittivo sezione Recordings: larghezza piena pagina, giustificato */
+    /* Testo descrittivo sezione Recordings: fisso appena sopra il karaoke */
     .sc-recordings-note {
-      width: 100vw;
-      margin-left: calc(-21px);
-      margin-right: calc(-21px);
-      padding: 15px 40px 120px;  /* abbassato di 15px rispetto alle thumbs */
+      position: fixed;
+      bottom: 66px;  /* karaoke: bottom:14px + height:52px = 66px */
+      left: 0;
+      right: 0;
+      z-index: 20;
+      padding: 10px 40px;
       text-align: justify;
       background: #000;
       color: #fff;
       font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
-      font-size: clamp(9px, 0.9vw, 12px); /* -40% rispetto a clamp(15px,1.5vw,20px) */
+      font-size: clamp(9px, 0.9vw, 12px);
       font-weight: 400;
       line-height: 1.6;
       letter-spacing: -0.01em;
@@ -5755,15 +5761,15 @@
     #sc-diary-text-panel.dp-left  { left: 40px; }   /* +40px verso centro */
     #sc-diary-text-panel.dp-right { right: 40px; }  /* +40px verso centro */
     .sc-diary-testimony {
-      border-bottom: 1px solid rgba(255,255,255,0.15);
+      border-bottom: 1px solid var(--diary-panel-border, rgba(255,255,255,0.15));
       padding: 10px 0;
     }
-    .sc-diary-testimony:first-child { border-top: 1px solid rgba(255,255,255,0.15); }
+    .sc-diary-testimony:first-child { border-top: 1px solid var(--diary-panel-border, rgba(255,255,255,0.15)); }
     .sc-diary-testimony-author {
       font-family: 'Courier New', Courier, monospace;
       font-size: 10px;
       font-weight: 700;
-      color: #fff;
+      color: var(--diary-panel-author, #fff);
       letter-spacing: 0.02em;
       margin-bottom: 4px;
       line-height: 1.3;
@@ -5771,7 +5777,7 @@
     .sc-diary-testimony-text {
       font-family: 'Times New Roman', Times, serif;
       font-size: 12px;
-      color: rgba(255,255,255,0.85);
+      color: var(--diary-panel-color, rgba(255,255,255,0.85));
       line-height: 1.5;
       font-style: italic;
     }
@@ -9239,6 +9245,9 @@ function switchView(name) {
 
   // ── Sculptures: reset sezione e chiusura popup quando si entra/esce ──
   if (name === 'sculptures') {
+    // Segna che siamo entrati in Sculptures dall'esterno (prima volta in questa sessione)
+    const _comingFromOutside = !window._scIsInsideSculptures;
+    window._scIsInsideSculptures = true;
     // Reset alla sezione Overview quando si entra
     scCurrentSection = 'overview';
     document.querySelectorAll('#sculptures-nav [data-sc-section]').forEach(el => {
@@ -9255,6 +9264,21 @@ function switchView(name) {
     scRevealMenu();
     // Prepara un file audio random (in standby — parte solo al click)
     scPrepareRandomAudio();
+    // Auto-show info box: solo se si arriva dall'esterno (non da navigazione interna)
+    if (_comingFromOutside && !window._scInfoShownThisSession) {
+      if (window._scInfoAutoTimer) { clearTimeout(window._scInfoAutoTimer); window._scInfoAutoTimer = null; }
+      if (window._scInfoAutoClose) { clearTimeout(window._scInfoAutoClose); window._scInfoAutoClose = null; }
+      window._scInfoAutoTimer = setTimeout(function() {
+        const _info = document.getElementById('sculptures-info');
+        if (_info && !_info.classList.contains('active')) {
+          requestAnimationFrame(() => _info.classList.add('active'));
+          window._scInfoShownThisSession = true;
+          window._scInfoAutoClose = setTimeout(function() {
+            if (_info.classList.contains('active')) _info.classList.remove('active');
+          }, 8000);
+        }
+      }, 2700);
+    }
   } else {
     // Chiudi popup lightbox Sculptures se aperto
     const scChild = document.getElementById('sculptures-child');
@@ -9269,7 +9293,8 @@ function switchView(name) {
     // Resetta le voci del menu (nascondile di nuovo per la prossima apertura)
     document.querySelectorAll('#sculptures-nav [data-sc-section], #sculptures-back')
       .forEach(el => el.classList.remove('sc-revealed'));
-    // Reset flag sessione info box: alla prossima visita a Sculptures il box riappare
+    // Reset flag sessione: alla prossima visita da esterno il box riappare
+    window._scIsInsideSculptures = false;
     window._scInfoShownThisSession = false;
     if (window._scInfoAutoTimer) { clearTimeout(window._scInfoAutoTimer); window._scInfoAutoTimer = null; }
     if (window._scInfoAutoClose) { clearTimeout(window._scInfoAutoClose); window._scInfoAutoClose = null; }
@@ -12087,20 +12112,7 @@ function scSwitchSection(section) {
     // Rimuovi modalità diary (menu torna bianco)
     document.body.classList.remove('sc-diary-nav-mode');
     scBuildGrid();
-    // Auto-show box information: solo la prima volta per sessione Sculptures
-    if (window._scInfoAutoTimer) { clearTimeout(window._scInfoAutoTimer); window._scInfoAutoTimer = null; }
-    if (window._scInfoAutoClose) { clearTimeout(window._scInfoAutoClose); window._scInfoAutoClose = null; }
-    if (!window._scInfoShownThisSession) {
-      window._scInfoAutoTimer = setTimeout(function() {
-        const _info = document.getElementById('sculptures-info');
-        if (_info && !_info.classList.contains('active')) {
-          requestAnimationFrame(() => _info.classList.add('active'));
-          window._scInfoShownThisSession = true;  // segna come mostrato
-          window._scInfoAutoClose = setTimeout(function() {
-            if (_info.classList.contains('active')) _info.classList.remove('active');
-          }, 8000);  /* visibile per 8 secondi */
-        }
-      }, 2700);  /* appare dopo 2.7 secondi */
+    // Auto-show box information: gestito nell'entrata a Sculptures (showView), non qui
     }
   } else if (section === 'information') {
     // Apri info panel
@@ -12824,17 +12836,22 @@ function scBuildSectionContent(section) {
         gridEl.appendChild(cell);
       });
 
-      // Calcola l'altezza precisa: dalla cima della griglia fino a 15px sopra il testo descrittivo
+      // Calcola --v-height con padding uguale sopra e sotto le thumbs
+      // Blocca scroll in modalità recordings
+      el.classList.add('sc-recordings-mode');
       requestAnimationFrame(() => {
-        const noteEl = el.querySelector('.sc-recordings-note');
-        const gridRect = gridEl.getBoundingClientRect();
-        if (noteEl && gridRect) {
-          const noteRect = noteEl.getBoundingClientRect();
-          // Altezza disponibile = distanza tra top griglia e top testo - 15px margine
-          const availH = noteRect.top - gridRect.top - 15;
-          if (availH > 100) {
-            gridEl.style.setProperty('--v-height', availH + 'px');
-          }
+        const h2El = el.querySelector('h2');
+        const h2H = h2El ? h2El.getBoundingClientRect().height : 120;
+        // Spazio disponibile per thumbs + padding sopra + padding sotto
+        // Testo fisso: bottom:66px + altezza testo (~40px) = 106px dal basso
+        const noteH = 40;  // altezza stimata del testo (1 riga ~40px)
+        const available = window.innerHeight - h2H - noteH - 66;  // 66 = bottom karaoke
+        // Padding uguale sopra e sotto = available - thumbHeight
+        // Usiamo 20px di padding per lato (simmetrico)
+        const padding = 20;
+        const thumbH = available - padding * 2;
+        if (thumbH > 100) {
+          gridEl.style.setProperty('--v-height', thumbH + 'px');
         }
       });
     }
@@ -13352,39 +13369,51 @@ function _scUpdateDiaryPanel(posIdx) {
   dp.innerHTML = html;
 }
 
-// Rileva la luminosità della zona inferiore dell'immagine diary e adatta il colore del karaoke
-function _scDiaryDetectBrightness(imgEl) {
+// Rileva la luminosità di una zona dell'immagine diary e restituisce il valore medio (0-255)
+function _scSampleBrightness(imgEl, yStart, yEnd) {
   try {
     const canvas = document.createElement('canvas');
-    // Campiona una striscia orizzontale nella fascia inferiore (ultimi 15% dell'immagine)
-    const sampleH = Math.max(1, Math.round(imgEl.naturalHeight * 0.15));
-    const sampleY = imgEl.naturalHeight - sampleH;
+    const sampleY = Math.round(imgEl.naturalHeight * yStart);
+    const sampleH = Math.max(1, Math.round(imgEl.naturalHeight * (yEnd - yStart)));
     canvas.width  = imgEl.naturalWidth;
     canvas.height = sampleH;
     const ctx = canvas.getContext('2d');
     ctx.drawImage(imgEl, 0, sampleY, imgEl.naturalWidth, sampleH, 0, 0, imgEl.naturalWidth, sampleH);
     const data = ctx.getImageData(0, 0, canvas.width, canvas.height).data;
     let total = 0, count = 0;
-    // Calcola luminosità media (formula percettiva)
     for (let i = 0; i < data.length; i += 4) {
-      const r = data[i], g = data[i+1], b = data[i+2];
-      total += 0.299 * r + 0.587 * g + 0.114 * b;
+      total += 0.299 * data[i] + 0.587 * data[i+1] + 0.114 * data[i+2];
       count++;
     }
-    const avgLum = count > 0 ? total / count : 0;
-    // Se la zona è chiara (luminosità > 180/255) usa grigio scuro, altrimenti nero
-    const kbox = document.getElementById('sc-diary-karaoke');
-    if (kbox) {
-      if (avgLum > 180) {
-        // Zona bianca/chiara: testo grigio scuro per visibilità
-        kbox.style.setProperty('--diary-kword-color', '#555');
-      } else {
-        // Zona scura: testo nero (già impostato dal CSS)
-        kbox.style.setProperty('--diary-kword-color', '#000');
-      }
+    return count > 0 ? total / count : 0;
+  } catch(e) { return 0; }
+}
+
+// Rileva la luminosità della zona inferiore dell'immagine diary e adatta il colore del karaoke
+function _scDiaryDetectBrightness(imgEl) {
+  // 1. Karaoke: campiona fascia inferiore (ultimi 15%)
+  const lumBottom = _scSampleBrightness(imgEl, 0.85, 1.0);
+  const kbox = document.getElementById('sc-diary-karaoke');
+  if (kbox) {
+    kbox.style.setProperty('--diary-kword-color', lumBottom > 180 ? '#555' : '#000');
+  }
+
+  // 2. Pannello testo laterale (dp-left/dp-right): campiona la metà verticale dell'immagine
+  // dove si trova il pannello (zona centrale, 20%-80%)
+  const lumMid = _scSampleBrightness(imgEl, 0.2, 0.8);
+  const dp = document.getElementById('sc-diary-text-panel');
+  if (dp) {
+    if (lumMid > 160) {
+      // Sfondo chiaro (pagina bianca del diario): testo scuro
+      dp.style.setProperty('--diary-panel-color', '#222');
+      dp.style.setProperty('--diary-panel-author', '#000');
+      dp.style.setProperty('--diary-panel-border', 'rgba(0,0,0,0.2)');
+    } else {
+      // Sfondo scuro: testo bianco
+      dp.style.setProperty('--diary-panel-color', 'rgba(255,255,255,0.85)');
+      dp.style.setProperty('--diary-panel-author', '#fff');
+      dp.style.setProperty('--diary-panel-border', 'rgba(255,255,255,0.15)');
     }
-  } catch(e) {
-    // Fallback silenzioso in caso di errore CORS o canvas
   }
 }
 
