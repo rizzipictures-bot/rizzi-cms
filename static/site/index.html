@@ -4744,9 +4744,12 @@
       cursor: pointer;
       border: none;
       outline: none;
-      transition: transform .15s, opacity .15s;
+      /* Rotazione stile Archive: 0.7s cubic-bezier Corboz */
+      transition: transform 0.7s cubic-bezier(0.77, 0, 0.175, 1), opacity .15s;
     }
-    /* hover gestito da .btn-circle-close */
+    /* Rotazione 180° su hover o proximity (sc-pre-hover) */
+    #sculptures-child-close:hover,
+    #sculptures-child-close.sc-pre-hover { transform: rotate(180deg); }
 
     /* Bottone + espandi — pallino bianco con + nera, a sinistra della × */
     /* Override: nasconde i pseudo-elementi ::before/::after ereditati da .btn-circle-close */
@@ -4767,9 +4770,12 @@
       cursor: pointer;
       border: none;
       outline: none;
-      transition: transform .15s, opacity .15s;
+      /* Rotazione stile Archive: 0.7s cubic-bezier Corboz */
+      transition: transform 0.7s cubic-bezier(0.77, 0, 0.175, 1), opacity .15s;
     }
-    #sculptures-child-expand:hover { opacity: .8; transform: scale(1.08); }
+    /* Rotazione 180° su hover o proximity (sc-pre-hover) */
+    #sculptures-child-expand:hover,
+    #sculptures-child-expand.sc-pre-hover { opacity: .8; transform: rotate(180deg); }
 
     /* Carousel centrale */
     #sculptures-carousel {
@@ -4906,7 +4912,7 @@
     #sculptures-info.active {
       clip-path: inset(0 0% 0 0);  /* visibile: nessun clip */
     }
-    /* Pulsante chiusura: gestito da .btn-circle-close.black */
+    /* Pulsante chiusura: rotazione 180° stile Archive */
     #sculptures-info-close {
       position: absolute;
       right: 10px;
@@ -4919,9 +4925,10 @@
       z-index: 5;
       outline: none;
       padding: 0;
-      transition: transform .15s, opacity .15s;
+      transition: transform 0.7s cubic-bezier(0.77, 0, 0.175, 1), opacity .15s;
     }
-    /* hover gestito da .btn-circle-close */
+    #sculptures-info-close:hover,
+    #sculptures-info-close.sc-pre-hover { transform: rotate(180deg); }
     #sculptures-info-text {
       /* Testo visibile subito, nessuna animazione extra */
     }
@@ -5225,6 +5232,11 @@
       margin: 0 auto;
       width: 100%;
     }
+    /* In video mode: aggiunge il bordo bianco inferiore di 25px per la progress bar */
+    #sculptures-child.sc-video-mode #sc-vb-video-frame {
+      padding-bottom: 25px;
+      background: #fff;  /* sfondo bianco visibile solo nel padding-bottom */
+    }
     #sc-vb-video-frame iframe {
       display: block;
       width: 100%;
@@ -5239,13 +5251,14 @@
     /* ── Progress bar Video Book: striscia bianca con linea nera 1px e pallino seek 7px ── */
     #sc-vb-progress-wrap {
       display: none;          /* nascosta di default */
-      position: relative;     /* nel flusso del video frame, subito sotto l'iframe */
-      width: 100%;
-      height: 18px;           /* altezza della striscia bianca */
-      background: #fff;       /* sfondo bianco: il bordo bianco sotto il video */
+      position: absolute;     /* assoluta dentro sc-vb-video-frame */
+      bottom: 0;
+      left: 0;
+      right: 0;
+      height: 25px;           /* occupa tutto il padding-bottom bianco */
+      background: transparent;
       align-items: center;
       cursor: crosshair;
-      flex-shrink: 0;
       z-index: 5;
     }
     /* Visibile solo in video mode */
@@ -8257,6 +8270,34 @@ document.addEventListener('mousemove', e => {
           const dist2 = Math.sqrt((mx - cx2) ** 2 + (my - cy2) ** 2);
           const radius2 = r2.width / 2;
           btn.classList.toggle('btn-pre-hover', dist2 < radius2 + 20);
+        });
+      }
+
+      // ── SCULPTURES: proximity hover per × e + (rotazione 180° stile Archive) ──
+      if (currentView === 'sculptures') {
+        const _scBtns = [
+          document.getElementById('sculptures-child-close'),
+          document.getElementById('sculptures-child-expand'),
+          document.getElementById('sculptures-info-close')
+        ];
+        _scBtns.forEach(btn => {
+          if (!btn) return;
+          const r = btn.getBoundingClientRect();
+          if (r.width === 0 || r.height === 0) { btn.classList.remove('sc-pre-hover'); return; }
+          // Salta se il parent non è visibile
+          const parent = btn.closest('#sculptures-child, #sculptures-info');
+          if (parent) {
+            const style = window.getComputedStyle(parent);
+            if (style.display === 'none' || style.opacity === '0') { btn.classList.remove('sc-pre-hover'); return; }
+            // sculptures-child: visibile solo se ha classe 'active'
+            if (parent.id === 'sculptures-child' && !parent.classList.contains('active')) { btn.classList.remove('sc-pre-hover'); return; }
+            // sculptures-info: visibile solo se ha classe 'active'
+            if (parent.id === 'sculptures-info' && !parent.classList.contains('active')) { btn.classList.remove('sc-pre-hover'); return; }
+          }
+          const cx = r.left + r.width / 2;
+          const cy = r.top  + r.height / 2;
+          const dist = Math.sqrt((mx - cx) ** 2 + (my - cy) ** 2);
+          btn.classList.toggle('sc-pre-hover', dist < r.width / 2 + 10);
         });
       }
 
