@@ -2642,13 +2642,20 @@
       position: fixed;
       inset: 0;
       z-index: 3000;
-      display: none;
+      display: flex;
       align-items: center;
       justify-content: center;
       background: #fff;
       cursor: pointer;
+      /* Animazione Corboz: fade-in */
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.4s cubic-bezier(0.77, 0, 0.175, 1);
     }
-    #ae-zoom-white-popup.open { display: flex; }
+    #ae-zoom-white-popup.open {
+      opacity: 1;
+      pointer-events: auto;
+    }
     /* Pallino viola X chiusura — angolo alto destra del lightbox bianco */
     #ae-zoom-white-close {
       position: fixed;
@@ -2722,13 +2729,18 @@
       position: fixed;
       inset: 0;
       z-index: 3000;
-      display: none;
+      display: flex;
       align-items: center;
       justify-content: center;
       overflow: hidden;
+      /* Animazione Corboz: fade-in */
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.4s cubic-bezier(0.77, 0, 0.175, 1);
     }
     #ae-zoom-popup.open {
-      display: flex;
+      opacity: 1;
+      pointer-events: auto;
     }
     /* Sfondo: stessa foto a tutto schermo */
     #ae-zoom-popup-bg {
@@ -4207,10 +4219,14 @@
       padding: 0 0 60px;
       color: #fff;
       font-family: 'Times New Roman', Times, serif;
-      display: none;
       background: #000;
+      /* Animazione Corboz: scivola dall'alto */
+      transform: translateY(-100%);
+      transition: transform 0.7s cubic-bezier(0.77, 0, 0.175, 1);
     }
-    #sculptures-section-content.active { display: block; }
+    #sculptures-section-content.active {
+      transform: translateY(0);  /* visibile — scivola dall'alto */
+    }
     #sculptures-section-content::-webkit-scrollbar { display: none; }
     #sculptures-section-content h2 {
       font-family: 'Arial Black', 'Helvetica Neue', Arial, sans-serif;
@@ -4400,21 +4416,19 @@
       box-sizing: border-box;
     }
 
-    /* Pannello viewer in basso — STATO 2 */
-    @keyframes sc-child-slide-up {
-      from { transform: translateY(100%); opacity: 0; }
-      to   { transform: translateY(0);   opacity: 1; }
-    }
+    /* Pannello viewer in basso — STATO 2 — animazione Corboz */
     #sculptures-child {
       position: fixed;
       left: 0; right: 0; bottom: 0;
       height: calc(60vh + 80px);  /* pannello parziale +80px */
       background-color: #000;
       z-index: 1300;  /* sopra view-sculptures (1100) e nav (1200) */
-      display: none;
+      display: flex;
+      flex-direction: column;
       overflow: hidden;
-      transform: translateY(0);
-      transition: height .35s cubic-bezier(.77,0,.175,1), top .35s cubic-bezier(.77,0,.175,1);
+      transform: translateY(100%);  /* nascosto sotto il viewport */
+      transition: transform 0.7s cubic-bezier(0.77, 0, 0.175, 1),
+                  height 0.7s cubic-bezier(0.77, 0, 0.175, 1);
     }
     /* Cursore rosso +30% nel viewer sculptures */
     body.sc-viewer-active #cursor-dot {
@@ -4427,15 +4441,12 @@
       background: rgba(255,255,255,0.9) !important;
     }
     #sculptures-child.active {
-      display: flex;
-      flex-direction: column;
-      animation: sc-child-slide-up .4s cubic-bezier(.23,1,.32,1) both;
+      transform: translateY(0);  /* visibile — animazione Corboz dal basso */
     }
     /* STATO 3: fullscreen */
     #sculptures-child.sc-fullscreen {
       top: 0;
       height: 100vh;
-      animation: none;  /* no animazione in fullscreen */
     }
 
     /* Overlay grigio scuro sulla strip superiore (thumbnail) quando il viewer è aperto */
@@ -4617,15 +4628,12 @@
       z-index: 1500;  /* sopra il viewer (1300) e sopra tutto */
       font-family: Helvetica, Arial, sans-serif;  /* font Corboz */
       font-size: 19px;  /* dimensione esatta Corboz */
-      display: none;
-      opacity: 0;
-      transition: opacity 0.3s ease;
-    }
-    #sculptures-info.open {
-      display: block;
+      /* Animazione Corboz: scivola da sinistra */
+      transform: translateX(-100%);
+      transition: transform 0.5s cubic-bezier(0.77, 0, 0.175, 1);
     }
     #sculptures-info.active {
-      opacity: 1;
+      transform: translateX(0);  /* visibile — scivola da sinistra */
     }
     /* Pulsante chiusura: gestito da .btn-circle-close.black */
     #sculptures-info-close {
@@ -4830,12 +4838,12 @@
       padding: 10px;
       box-shadow: 0 2px 15px 3px rgba(0,0,0,.15);
       z-index: 1400;
-      display: none;
-      opacity: 0;
-      transition: opacity 0.3s ease;
+      /* Animazione Corboz: scaleY dal top */
+      transform-origin: center top;
+      transform: scaleY(0);
+      transition: transform 0.5s cubic-bezier(0.77, 0, 0.175, 1);
     }
-    #sc-video-box.open  { display: block; }
-    #sc-video-box.active { opacity: 1; }
+    #sc-video-box.active { transform: scaleY(1); }
     #sc-video-close {
       position: absolute;
       right: 10px;
@@ -8221,7 +8229,7 @@ function switchView(name) {
     if (scChild) scChild.classList.remove('active');
     // Chiudi info panel Sculptures se aperto
     const scInfo = document.getElementById('sculptures-info');
-    if (scInfo) { scInfo.classList.remove('active'); scInfo.classList.remove('open'); }
+    if (scInfo) { scInfo.classList.remove('active'); }  /* translateX(-100%) — animazione Corboz */
     // Chiudi box video se aperto
     scCloseVideo();
     // Ferma l'audio
@@ -11377,24 +11385,23 @@ function _scPlaylistStop() {
   scStopAudio();
 }
 
-// Apre il pannello Information
+// Apre il pannello Information (animazione Corboz: scivola da sinistra)
 function scOpenInfo() {
   const info = document.getElementById('sculptures-info');
   if (!info) return;
-  info.classList.add('open');
+  // La transition CSS gestisce tutto: aggiungere .active fa scorrere da sinistra
   requestAnimationFrame(() => info.classList.add('active'));
 }
 
-// Chiude il pannello Information
+// Chiude il pannello Information (animazione Corboz: scivola a sinistra)
 function scCloseInfo() {
   const info = document.getElementById('sculptures-info');
   if (!info) return;
   info.classList.remove('active');
   setTimeout(() => {
-    info.classList.remove('open');
-    // Riporta la nav su Overview
+    // Riporta la nav su Overview dopo la fine della transizione (500ms)
     scSwitchSection('overview');
-  }, 300); // 300ms = durata transition opacity
+  }, 500); // 500ms = durata transition Corboz
 }
 
 // Inizializza la pagina Sculptures (chiamata da buildSculpturesIndex per compatibilità)
@@ -11765,20 +11772,19 @@ function scOpenVideo(url, caption) {
   player.src = url;
   player.load();
   if (capEl) capEl.textContent = caption || '';
-  box.classList.add('open');
+  // Animazione Corboz: scaleY dal top
   requestAnimationFrame(() => box.classList.add('active'));
 }
 
-// Chiude il box video
+// Chiude il box video (animazione Corboz: scaleY al top)
 function scCloseVideo() {
   const box    = document.getElementById('sc-video-box');
   const player = document.getElementById('sc-video-player');
   if (!box) return;
   box.classList.remove('active');
   setTimeout(() => {
-    box.classList.remove('open');
     if (player) { player.pause(); player.src = ''; }
-  }, 300);
+  }, 500); // 500ms = durata transition Corboz
 }
 
 // ════════════════════════════════════════════════════════════════
