@@ -4955,15 +4955,29 @@
       opacity: 1;
       pointer-events: auto;
     }
-    /* Viewer Video Book: nasconde img e nav, mostra iframe */
-    #sculptures-child.sc-video-mode #sculptures-carousel-img { display: none; }
-    #sculptures-child.sc-video-mode #sc-child-bg { opacity: 0; }
+    /* Viewer Video Book: nasconde img, nav, playlist, karaoke; mostra iframe */
+    #sculptures-child.sc-video-mode #sculptures-carousel-img { display: none !important; }
+    #sculptures-child.sc-video-mode #sc-child-bg { opacity: 0 !important; }
     #sculptures-child.sc-video-mode #sculptures-prev,
-    #sculptures-child.sc-video-mode #sculptures-next { display: none; }
-    #sculptures-child.sc-video-mode #sculptures-carousel-caption { display: none; }
-    #sculptures-child.sc-video-mode #sc-vb-iframe-wrap { display: flex !important; align-items: center; justify-content: center; }
+    #sculptures-child.sc-video-mode #sculptures-next { display: none !important; }
+    #sculptures-child.sc-video-mode #sculptures-carousel-caption { display: none !important; }
+    #sculptures-child.sc-video-mode #sc-recordings-playlist { display: none !important; }
+    #sculptures-child.sc-video-mode #sc-karaoke-viewer { display: none !important; }
+    #sculptures-child.sc-video-mode #sc-vb-iframe-wrap {
+      display: flex !important;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      z-index: 3;
+    }
     /* Grain più intenso in video mode */
-    #sculptures-child.sc-video-mode #sc-child-grain { opacity: 0.55; }
+    #sculptures-child.sc-video-mode #sc-child-grain { opacity: 0.55 !important; }
+    /* Carousel centrato in video mode */
+    #sculptures-child.sc-video-mode #sculptures-carousel {
+      align-items: center;
+      justify-content: center;
+      padding-top: 0;
+    }
 
     /* ── Karaoke / sottotitoli sincronizzati (stile macchina da scrivere) ── */
     #sc-karaoke {
@@ -11473,9 +11487,9 @@ function scBuildSectionContent(section) {
     if (child) {
       child.classList.add('active', 'sc-fullscreen', 'sc-video-mode');
       document.body.classList.add('sc-viewer-active');
-      // Imposta l'iframe Vimeo
+      // Imposta l'iframe Vimeo (sempre, per riavviarlo se era stato fermato)
       const iframe = document.getElementById('sc-vb-iframe');
-      if (iframe && !iframe.src) {
+      if (iframe) {
         iframe.src = 'https://player.vimeo.com/video/326170622?color=ffffff&title=0&byline=0&portrait=0';
       }
       // Mostra il box Text
@@ -11594,6 +11608,7 @@ function scOpenChild(idx, section) {
 // Chiude il pannello viewer
 function scCloseChild() {
   const child = document.getElementById('sculptures-child');
+  const wasVideoMode = child && child.classList.contains('sc-video-mode');
   if (child) {
     child.classList.remove('active', 'sc-fullscreen', 'sc-video-mode');
   }
@@ -11609,6 +11624,8 @@ function scCloseChild() {
     document.removeEventListener('keydown', document._scKeyHandler);
     document._scKeyHandler = null;
   }
+  // Se era in video mode, torna all'Overview
+  if (wasVideoMode) scSwitchSection('overview');
 }
 
 // Toggle fullscreen (Stato 2 ↔ Stato 3)
@@ -11636,7 +11653,7 @@ function scToggleVbText() {
   box.classList.toggle('sc-vb-text-open');
 }
 
-// Chiude il viewer Video Book e ripristina lo stato
+// Chiude il viewer Video Book e torna all'Overview
 function scCloseVideoBook() {
   const child = document.getElementById('sculptures-child');
   if (child) {
@@ -11654,6 +11671,8 @@ function scCloseVideoBook() {
     document.removeEventListener('keydown', document._scKeyHandler);
     document._scKeyHandler = null;
   }
+  // Torna all'Overview
+  scSwitchSection('overview');
 }
 
 // Naviga nel carousel del popup
