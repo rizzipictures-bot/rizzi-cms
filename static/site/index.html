@@ -4217,22 +4217,61 @@
       z-index: 1;
       overflow: hidden;
       pointer-events: none;
-      background: #f5f2ec; /* carta leggermente ingiallita invece del bianco puro */
+      background: #f0ede6;
+      padding: 6px 5px;
+      /* Colonne di testo stile giornale */
+      column-count: 2;
+      column-gap: 6px;
+      column-rule: 0.5px solid rgba(0,0,0,0.15);
     }
-    .sc-diary-bg-text span {
-      position: absolute;
-      font-family: Georgia, 'Times New Roman', serif;
-      font-style: italic;
-      font-size: 9px;
-      line-height: 1.4;
-      color: #2a2a2a;
-      opacity: 0.55;
+    /* Titolo di testata (primo span) */
+    .sc-diary-bg-text .sc-diary-headline {
+      position: static;
+      display: block;
+      font-family: 'Times New Roman', Georgia, serif;
+      font-style: normal;
+      font-weight: bold;
+      font-size: 10px;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: #1a1a1a;
+      opacity: 1;
+      margin-bottom: 3px;
+      column-span: all;
+      border-bottom: 1px solid #1a1a1a;
+      padding-bottom: 2px;
       white-space: nowrap;
+      overflow: hidden;
     }
-    /* L'immagine del quaderno è sopra il layer di testo */
+    /* Testo corpo giornale */
+    .sc-diary-bg-text span {
+      position: static;
+      display: inline;
+      font-family: Georgia, 'Times New Roman', serif;
+      font-style: normal;
+      font-size: 7px;
+      line-height: 1.55;
+      color: #2a2a2a;
+      opacity: 0.82;
+      white-space: normal;
+      transform: none;
+    }
+    /* Cella Diary: sfondo giornale visibile, immagine quaderno centrata e ridotta */
+    #sculptures-grid [data-sc-section="diary"] .sc-thumb-wrap {
+      background: #f0ede6;
+      overflow: hidden;
+    }
+    /* Immagine quaderno: centrata, 60% larghezza, sopra il layer testo */
     #sculptures-grid [data-sc-section="diary"] .sc-thumb-wrap img {
-      z-index: 2;
       position: absolute;
+      z-index: 2;
+      width: 62% !important;
+      height: auto !important;
+      top: 50% !important;
+      left: 50% !important;
+      transform: translate(-50%, -50%) !important;
+      object-fit: contain !important;
+      box-shadow: 0 4px 18px rgba(0,0,0,0.22);
     }
 
     /* ── Animazione scroll continuo cella Recordings ── */
@@ -11789,6 +11828,8 @@ function scSwitchSection(section) {
     if (wrapper) wrapper.style.display = 'block';
     if (sectionContent) sectionContent.classList.remove('active');
     if (pageTitle) pageTitle.style.display = 'block';
+    // Rimuovi modalità diary (menu torna bianco)
+    document.body.classList.remove('sc-diary-nav-mode');
     scBuildGrid();
   } else if (section === 'information') {
     // Apri info panel
@@ -11929,61 +11970,31 @@ function scBuildGrid() {
       imgEl.alt = img.title;
       imgEl.loading = 'lazy';
       wrap.appendChild(imgEl);
-      // Per la cella Diary: aggiunge sfondo con scritte di testimonianze
+      // Per la cella Diary: aggiunge sfondo stile giornale con colonne di testo
       if (targetSection === 'diary') {
         const bgText = document.createElement('div');
         bgText.className = 'sc-diary-bg-text';
-        // Frammenti di testimonianze reali da Washington D.C. 13-12-2014
-        const _fragments = [
-          'I am Here for Action',
-          'No Justice, No Peace',
-          'All the world is searching for Truth',
-          'Love instead of Hate',
-          'I came because I fear for my life',
-          'We the people — All the people',
-          'International Solidarity',
-          'Justice NO Peace Only RIGHT Prevail',
-          'we will march on to victory',
-          'I love the crowd & energy',
-          'hope this will lead to undispread & lasting change',
-          '#BlackLivesMatter We\'re standing in solidarity as allies',
-          'Today the comradery and sense of Unity was very empowering',
-          'I feel a sense of belonging',
-          'Uplifting',
-          'Washington D.C. — December 13, 2014',
-          'San Diego CA',
-          'Baltimore, MD',
-          'Red Bank, NJ',
-          'Oakland, CA',
-          'I came out of fear for my brothers',
-          'Always stand for what is right in your heart',
+        // Testata del giornale
+        const headline = document.createElement('div');
+        headline.className = 'sc-diary-headline';
+        headline.textContent = 'THE WASHINGTON POST — December 13, 2014';
+        bgText.appendChild(headline);
+        // Corpo del testo: paragrafi stile articolo di giornale
+        const _body = [
+          'Tens of thousands of protesters marched through Washington D.C. on Saturday in one of the largest demonstrations against police brutality and racial injustice in recent memory. The march, organized by the National Action Network, drew participants from across the country.',
+          'Jeffrey Johnson, Baltimore, MD: \u201cNo Justice, No Peace.\u201d Theodora Lomax, Red Bank NJ: \u201cJustice No Peace. Only Right Prevail. We will march on to victory.\u201d',
+          'Amefika Brow, Houston St., Suitland MD: \u201cAll the world is searching for Truth.\u201d Sheik Alex Prather-El, Bowie MD: \u201cLove instead of Hate.\u201d',
+          'Grand Shiek, Darrel Johnson-Bey, Baltimore MD: \u201cUplifting.\u201d Carlos Wilkins, Alexandria VA: \u201cToday the comradery and sense of Unity was very empowering.\u201d',
+          'Saton Ahmed & Allegra O\u2019Donoghue, Oakland CA: \u201c#BlackLivesMatter. We\u2019re standing in solidarity as allies.\u201d',
+          'Paul Branham, Washington DC: \u201cI am a black man. I came because I have been harassed and stopped by police. I love the crowd & energy. I hope this will lead to undispread & lasting change.\u201d',
+          'Ann Boy, Washington DC: \u201cI feel a sense of belonging. I am here for the action.\u201d Ilea PanThree-El, Suitland MD: \u201cI came because I fear for my life, my son\u2019s life and my father\u2019s life.\u201d',
+          'Roberta Smith, Waldorf MD: \u201cI love all law to my brother and who are.\u201d Greg Booker Jr., Washington DC: \u201cToday I feel a sense of belonging.\u201d',
+          'International Solidarity. We the people — All the people, not just some of the people. Ann Robinson, Fort Washington.',
+          'Protesters carried handwritten signs and notebooks filled with personal testimonies, creating a living archive of the movement\u2019s voices.',
         ];
-        // Posizioni e angolazioni predefinite per distribuire le scritte in modo naturale
-        const _positions = [
-          { top: '4%',  left: '2%',  rotate: '-2deg',  opacity: 0.5 },
-          { top: '8%',  left: '55%', rotate: '1.5deg', opacity: 0.45 },
-          { top: '16%', left: '3%',  rotate: '-1deg',  opacity: 0.55 },
-          { top: '22%', left: '60%', rotate: '2deg',   opacity: 0.4 },
-          { top: '30%', left: '1%',  rotate: '-3deg',  opacity: 0.5 },
-          { top: '38%', left: '52%', rotate: '1deg',   opacity: 0.45 },
-          { top: '46%', left: '4%',  rotate: '-1.5deg',opacity: 0.55 },
-          { top: '54%', left: '58%', rotate: '2.5deg', opacity: 0.4 },
-          { top: '62%', left: '2%',  rotate: '-2deg',  opacity: 0.5 },
-          { top: '70%', left: '54%', rotate: '1deg',   opacity: 0.45 },
-          { top: '78%', left: '3%',  rotate: '-1deg',  opacity: 0.55 },
-          { top: '86%', left: '56%', rotate: '2deg',   opacity: 0.4 },
-          { top: '92%', left: '1%',  rotate: '-2.5deg',opacity: 0.5 },
-          { top: '12%', left: '30%', rotate: '3deg',   opacity: 0.35 },
-          { top: '50%', left: '28%', rotate: '-1.5deg',opacity: 0.4 },
-          { top: '74%', left: '32%', rotate: '2deg',   opacity: 0.35 },
-        ];
-        _positions.forEach((pos, i) => {
+        _body.forEach(para => {
           const span = document.createElement('span');
-          span.textContent = _fragments[i % _fragments.length];
-          span.style.top = pos.top;
-          span.style.left = pos.left;
-          span.style.transform = `rotate(${pos.rotate})`;
-          span.style.opacity = pos.opacity;
+          span.textContent = para + ' ';
           bgText.appendChild(span);
         });
         wrap.insertBefore(bgText, imgEl);
