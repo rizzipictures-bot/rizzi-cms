@@ -5238,15 +5238,19 @@
     /* ── Progress bar Video Book: linea nera 1px con pallino seek 7px ── */
     #sc-vb-progress-wrap {
       display: none;          /* nascosta di default */
-      position: relative;
+      position: absolute;
+      /* Centrata orizzontalmente sopra il box testo bianco */
+      left: 50%;
+      transform: translateX(-50%);
+      /* Posizionata nel bordo bianco: appena sopra il box Text (bottom: 3.5vw, altezza ~46px) */
+      bottom: calc(3.5vw + 23px);  /* metà dello spazio tra video e box Text */
       width: min(82.8vw, 943px);  /* stessa larghezza del video */
-      height: 30px;           /* spazio cliccabile: metà dello spazio bianco */
+      height: 20px;           /* spazio cliccabile */
       align-items: center;
       cursor: crosshair;
-      margin: 0 auto;         /* centrata orizzontalmente */
-      flex-shrink: 0;
+      z-index: 11;            /* sopra il box Text (z-index: 10) */
     }
-    /* Visibile solo in video mode (dentro sc-vb-iframe-wrap che è display:flex in video mode) */
+    /* Visibile solo in video mode */
     #sculptures-child.sc-video-mode #sc-vb-progress-wrap {
       display: flex !important;
     }
@@ -5341,8 +5345,7 @@
     }
     #sc-vb-stop:hover { opacity: 1; }
     #sculptures-child.sc-video-mode #sc-vb-iframe-wrap {
-      display: flex !important;
-      flex-direction: column;
+      display: block !important;
       width: min(82.8vw, 943px);
       position: relative;
       z-index: 3;
@@ -7469,11 +7472,11 @@
               <button id="sc-vb-stop" onclick="scVbStop()">&#9632;</button>
             </div>
           </div>
-          <!-- Progress bar con pallino seek: nello spazio bianco sotto il video -->
-          <div id="sc-vb-progress-wrap">
-            <div id="sc-vb-progress-line"></div>
-            <div id="sc-vb-progress-dot"></div>
-          </div>
+        </div>
+        <!-- Progress bar con pallino seek: nel bordo bianco sopra il box Text -->
+        <div id="sc-vb-progress-wrap">
+          <div id="sc-vb-progress-line"></div>
+          <div id="sc-vb-progress-dot"></div>
         </div>
         <img id="sculptures-carousel-img" src="" alt="">
         <!-- Karaoke typewriter dentro il viewer -->
