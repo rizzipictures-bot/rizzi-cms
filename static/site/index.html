@@ -11972,9 +11972,8 @@ function scBuildGrid() {
   scCurrentImages = [];
 
   // Raccoglie UN'immagine (la prima) per ogni progetto sculptures
-  // Mostra SOLO la thumb Images Book (copertina del libro) — le altre sezioni
-  // sono accessibili dal menu laterale sinistro
-  const projects = PROJECTS.filter(p => p.category_id === 'sculptures' && p.sc_section === 'images-book');
+  // Ogni progetto rappresenta una sezione: la thumbnail porta alla sezione
+  const projects = PROJECTS.filter(p => p.category_id === 'sculptures');
   projects.forEach(p => {
     // Usa la prima immagine come thumbnail di navigazione
     const firstImg = (p.images && p.images.length > 0) ? p.images[0] : null;
