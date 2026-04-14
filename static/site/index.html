@@ -12762,6 +12762,9 @@ let _scDiaryKaraokeWords = [];   // array di parole da mostrare
 let _scDiaryKaraokeIdx  = 0;     // prossima parola da mostrare
 let _scDiaryKaraokeLineWords = []; // span attualmente visibili
 
+// Flag: il player principale era in riproduzione quando è partito il TTS diary
+let _scDiaryMainWasPlaying = false;
+
 // Avvia il TTS diary e il karaoke sincronizzato
 function _scStartDiaryAudio(pageFile) {
   _scStopDiaryAudio();
@@ -12774,12 +12777,22 @@ function _scStartDiaryAudio(pageFile) {
   const player = document.getElementById('sc-diary-audio');
   if (!player) return;
 
+  // Metti in pausa il player principale se sta suonando
+  const mainPlayer = document.getElementById('sc-audio-player');
+  _scDiaryMainWasPlaying = mainPlayer && !mainPlayer.paused;
+  if (_scDiaryMainWasPlaying) {
+    mainPlayer.pause();
+    // Aggiorna il bottone play/pause del player principale
+    const btn = document.getElementById('sc-audio-btn');
+    if (btn) btn.classList.remove('playing');
+  }
+
   // Prepara le parole del karaoke
   _scDiaryKaraokeWords = text.split(/\s+/).filter(w => w.length > 0);
   _scDiaryKaraokeIdx = 0;
   _scDiaryKaraokeLineWords = [];
 
-  // Avvia l'audio
+  // Avvia l'audio TTS
   player.src = audioUrl;
   player.volume = 0.85;
   player.load();
@@ -12793,12 +12806,13 @@ function _scStartDiaryAudio(pageFile) {
     _scDiaryKaraokeTimer = setInterval(_scDiaryKaraokeStep, 80);
   }).catch(() => {});
 
-  // Quando finisce l'audio, ferma il karaoke
-  player.onended = () => _scStopDiaryAudio();
+  // Quando finisce l'audio TTS, ferma il karaoke e riprende il player principale
+  player.onended = () => _scStopDiaryAudio(true);
 }
 
 // Ferma il TTS diary e pulisce il karaoke
-function _scStopDiaryAudio() {
+// resumeMain=true: riprende il player principale se era in play prima del TTS
+function _scStopDiaryAudio(resumeMain) {
   clearInterval(_scDiaryKaraokeTimer);
   _scDiaryKaraokeTimer = null;
   _scDiaryKaraokeWords = [];
@@ -12810,6 +12824,17 @@ function _scStopDiaryAudio() {
   const kline = document.getElementById('sc-diary-karaoke-line');
   if (kbox)  kbox.classList.remove('active');
   if (kline) kline.innerHTML = '';
+  // Riprende il player principale solo se era in play e la lettura è finita naturalmente
+  if (resumeMain && _scDiaryMainWasPlaying) {
+    const mainPlayer = document.getElementById('sc-audio-player');
+    if (mainPlayer && mainPlayer.src) {
+      mainPlayer.play().then(() => {
+        const btn = document.getElementById('sc-audio-btn');
+        if (btn) btn.classList.add('playing');
+      }).catch(() => {});
+    }
+  }
+  _scDiaryMainWasPlaying = false;
 }
 
 // Tick del diary karaoke: distribuisce le parole uniformemente sulla durata dell'audio
