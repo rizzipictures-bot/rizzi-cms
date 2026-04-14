@@ -5215,7 +5215,7 @@
       transition: filter 1.2s ease;
     }
     #sc-diary-bg-img.diary-bg-blurred {
-      filter: blur(3px);
+      filter: blur(1px);
     }
     #sc-diary-bg-img img {
       flex: 1;
@@ -5238,6 +5238,7 @@
       pointer-events: none;
     }
     #sc-diary-bg-overlay.active {
+      background: rgba(128,128,128,0.13) !important;
       opacity: 1;
     }
     /* Effetto grana: pseudo-elemento SVG noise sopra il background */
@@ -5299,10 +5300,12 @@
       z-index: 25;
       display: grid;
       grid-template-columns: repeat(6, 1fr);
+      grid-auto-rows: auto;
       gap: 12px;
       padding: 12px;
       padding-top: 8px;
       background: transparent;
+      align-items: start;
     }
     /* Ogni cella thumb: verticale (portrait), parte nascosta in alto-sx */
     .sc-diary-cell {
@@ -5311,9 +5314,15 @@
       overflow: hidden;
       opacity: 0;
       transform: translateY(-200px) translateX(-60px);
-      aspect-ratio: 3 / 4;
       background: transparent;
     }
+    /* Altezze irregolari per ritmo visivo mosso */
+    .sc-diary-cell:nth-child(6n+1) { aspect-ratio: 3 / 5; }
+    .sc-diary-cell:nth-child(6n+2) { aspect-ratio: 3 / 4; }
+    .sc-diary-cell:nth-child(6n+3) { aspect-ratio: 3 / 3.2; }
+    .sc-diary-cell:nth-child(6n+4) { aspect-ratio: 3 / 4.5; }
+    .sc-diary-cell:nth-child(6n+5) { aspect-ratio: 3 / 3.5; }
+    .sc-diary-cell:nth-child(6n+6) { aspect-ratio: 3 / 5.2; }
     /* Celle vuote: trasparenti */
     .sc-diary-cell.sc-diary-empty {
       background: transparent !important;
