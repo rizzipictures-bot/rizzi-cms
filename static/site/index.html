@@ -5293,6 +5293,11 @@
     .sc-diary-nav-mode #sculptures-nav [data-sc-section].active {
       color: #4c00fc !important;
     }
+    /* Nascondi back e bottone audio in modalità diary (non necessari) */
+    .sc-diary-nav-mode #sculptures-back,
+    .sc-diary-nav-mode #sc-audio-btn {
+      display: none !important;
+    }
 
     /* ── Griglia thumbs: stile overview, sopra la hero ── */
     .sc-section-diary-grid {
@@ -12613,8 +12618,9 @@ function scStartKaraoke(filename) {
     const fname = filename.split('/').pop(); // estrae solo il nome file
     _scKaraokeWords = (SC_SUBTITLES && SC_SUBTITLES[fname]) || [];
     if (_scKaraokeWords.length === 0) return; // nessun testo
-    // In sezione Testimonial Diary il karaoke è disabilitato
-    if (_scCurrentSection === 'diary') return;
+    // In sezione Testimonial Diary il karaoke è disabilitato SOLO quando una foto è aperta (TTS attivo)
+    // Durante background e thumbs il karaoke delle tracce rimane attivo
+    if (_scCurrentSection === 'diary' && document.getElementById('sculptures-child')?.classList.contains('active')) return;
     _scKaraokeIdx = 0;
     _scKaraokeLineWords = [];
     const box = document.getElementById('sc-karaoke');
