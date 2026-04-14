@@ -6984,7 +6984,6 @@
         <span data-sc-section="video">Video Book</span>
         <span data-sc-section="synopsis">Synopsis</span>
         <span data-sc-section="recordings">Recordings</span>
-        <span data-sc-section="experience">Experience</span>
         <span data-sc-section="information">Information</span>
         <span id="sculptures-back" onclick="scGoBack()">&#8592; Back</span>
       </nav>
@@ -7041,7 +7040,6 @@
           <li onclick="scTopicsNavigate('studies')">Studies</li>
           <li onclick="scTopicsNavigate('synopsis')">Synopsis</li>
           <li onclick="scTopicsNavigate('recordings')">Recordings</li>
-          <li onclick="scTopicsNavigate('experience')">Experience</li>
           <li onclick="scTopicsNavigate('information')">Information</li>
         </ul>
       </div>
@@ -11722,7 +11720,6 @@ function scTopicsNavigate(section) {
     'studies': 'Studies',
     'synopsis': 'Synopsis',
     'recordings': 'Recordings',
-    'experience': 'Experience',
     'information': 'Information'
   };
   if (sel) sel.textContent = titles[section] || section;
@@ -12250,7 +12247,6 @@ function scBuildSectionContent(section) {
     'video': 'Video Book',
     'synopsis': 'Synopsis',
     'recordings': 'Recordings',
-    'experience': 'Experience'
   };
   const title = titles[section] || section;
   // Raccoglie immagini dei progetti con sc_section corrispondente
