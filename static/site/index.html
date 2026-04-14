@@ -5152,11 +5152,10 @@
       gap: 2px;             /* gap tra i frame */
       padding: 0;
     }
-    /* Ogni frame è un div generato via JS */
+    /* Ogni frame è un div generato via JS con background-image individuale */
     .sc-vb-frame {
       flex: 1;
       height: 20px;
-      background-image: url('https://i.vimeocdn.com/video/781880474-5cac69be57b3c33b58617414bcf1cd296df1c758dd17be51609ae95f7735ce2c-d_640?region=us');
       background-size: cover;
       background-position: center;
       opacity: 0.65;
@@ -12652,7 +12651,7 @@ function scCloseVideoBook() {
   scSwitchSection('overview');
 }
 
-// ── Filmstrip Video Book: ~30 frame separati, click-to-seek ──
+// ── Filmstrip Video Book: ~30 frame separati, ognuno con immagine diversa, click-to-seek ──
 (function() {
   const SC_VB_DURATION = 195; // durata video in secondi
   const SC_VB_FRAMES   = 30;  // numero di frame nella filmstrip
@@ -12661,15 +12660,22 @@ function scCloseVideoBook() {
     const wrap = document.getElementById('sc-vb-strip-wrap');
     if (!wrap) return;
 
+    // Usa le immagini reali del progetto (REAL_IMAGES, definita globalmente)
+    // Se non disponibile, fallback su thumbnail Vimeo
+    const imgs = (typeof REAL_IMAGES !== 'undefined' && REAL_IMAGES.length > 0)
+      ? REAL_IMAGES.map(function(r) { return '/static/site/' + r.file; })
+      : [];
+    const fallback = 'https://i.vimeocdn.com/video/781880474-5cac69be57b3c33b58617414bcf1cd296df1c758dd17be51609ae95f7735ce2c-d_640?region=us';
+
     // Svuota il wrapper e genera i frame
     wrap.innerHTML = '';
     for (let i = 0; i < SC_VB_FRAMES; i++) {
       const frame = document.createElement('div');
       frame.className = 'sc-vb-frame';
-      // Ogni frame mostra una porzione diversa dell'immagine thumbnail
-      // background-position varia da 0% a 100% lungo l'asse X
-      const pct = (i / (SC_VB_FRAMES - 1)) * 100;
-      frame.style.backgroundPosition = pct + '% center';
+      // Assegna un'immagine diversa a ogni frame, ciclando sulle immagini disponibili
+      const imgUrl = imgs.length > 0 ? imgs[i % imgs.length] : fallback;
+      frame.style.backgroundImage = 'url("' + imgUrl + '")';
+      frame.style.backgroundPosition = 'center center';
       // Tooltip con il tempo corrispondente
       const t = Math.round((i / (SC_VB_FRAMES - 1)) * SC_VB_DURATION);
       const mm = String(Math.floor(t / 60)).padStart(2, '0');
