@@ -5215,7 +5215,7 @@
       transition: filter 1.2s ease;
     }
     #sc-diary-bg-img.diary-bg-blurred {
-      filter: blur(8px);
+      filter: blur(3px);
     }
     #sc-diary-bg-img img {
       flex: 1;
@@ -12011,7 +12011,7 @@ function scBuildSectionContent(section) {
           if (imgIdx < SC_DIARY_IMAGES.length) {
             const d = SC_DIARY_IMAGES[imgIdx];
             html += `<div class="sc-diary-cell" data-idx="${imgIdx}" onclick="scOpenChild(${imgIdx}, 'diary')">
-        <div class="sc-diary-img-wrap"><img src="${d.file}" alt="${d.title || 'Diary'}" loading="lazy"></div>
+        <div class="sc-diary-img-wrap"><img src="${d.file.replace(/\.jpg$/, '-thumb.jpg')}" alt="${d.title || 'Diary'}" loading="lazy"></div>
       </div>`;
             imgIdx++;
           } else {
