@@ -4467,6 +4467,46 @@
       height: var(--v-height) !important;
     }
 
+    /* Pannello testo cover Images Book — visibile solo nel viewer intermedio (non fullscreen) */
+    #sc-cover-text-panel {
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      left: 0;
+      width: 300px;
+      z-index: 5;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      padding: 30px 28px;
+      box-sizing: border-box;
+      pointer-events: none;
+    }
+    #sc-cover-text-panel p {
+      font-family: 'Times New Roman', Times, serif;
+      font-size: 0.88rem;
+      color: rgba(255,255,255,0.82);
+      line-height: 1.55;
+      margin: 0 0 0.9em 0;
+    }
+    #sc-cover-text-panel .sc-cover-text-link {
+      font-family: 'Courier New', Courier, monospace;
+      font-size: 0.78rem;
+      color: rgba(255,255,255,0.5);
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      margin-top: 0.4em;
+      pointer-events: auto;
+      cursor: pointer;
+    }
+    #sc-cover-text-panel .sc-cover-text-link:hover {
+      color: rgba(255,255,255,0.9);
+    }
+    /* Nasconde il pannello in fullscreen */
+    #sculptures-child.sc-fullscreen #sc-cover-text-panel {
+      display: none !important;
+    }
+
     /* Playlist laterale nel viewer Recordings */
     #sc-recordings-playlist {
       position: absolute;
@@ -7352,6 +7392,11 @@
         <canvas id="sc-child-grain"></canvas>
         <!-- Playlist laterale Recordings (visibile solo in sezione recordings) -->
         <div id="sc-recordings-playlist" style="display:none"></div>
+        <!-- Pannello testo cover Images Book (visibile solo nel viewer intermedio, non in fullscreen) -->
+        <div id="sc-cover-text-panel" style="display:none">
+          <p>First of a trilogy of books devoted to the African Americans issue, <em>Sculptures Vol. I.</em> is an intimate and conceptual narrative of the greatest manifestation of African Americans from the Martin L. King times. Photographs taken at Washington December 13, 2014, more precisely during the protest on civil rights which took place in the capital after the clashes and deaths of Ferguson, combine the political motivation an intimate dimension of the project linked to the author&rsquo;s personal life.</p>
+          <p class="sc-cover-text-link">View Images.</p>
+        </div>
         <!-- Pannello testo Testimonial Diary (visibile solo in sezione diary) -->
         <div id="sc-diary-text-panel" style="display:none"></div>
         <!-- Iframe Vimeo Video Book (visibile solo in sezione video) -->
@@ -12886,6 +12931,18 @@ function scUpdateCarousel() {
   _scUpdateRecordingsPlaylist(posIdx);
   // Aggiorna il pannello testo se siamo in sezione diary
   _scUpdateDiaryPanel(posIdx);
+  // Mostra il pannello testo cover solo per la prima immagine di images-book (la copertina)
+  const coverPanel = document.getElementById('sc-cover-text-panel');
+  if (coverPanel) {
+    const isCover = (_scCurrentSection === 'images-book' && scCurrentIndex === 0);
+    coverPanel.style.display = isCover ? 'flex' : 'none';
+    // "View Images." porta alla sezione images-book (già siamo qui, scorre alla griglia)
+    const viewLink = coverPanel.querySelector('.sc-cover-text-link');
+    if (viewLink && !viewLink._bound) {
+      viewLink._bound = true;
+      viewLink.addEventListener('click', () => scCarouselNav(1));
+    }
+  }
 }
 
 // Costruisce/aggiorna la playlist laterale nel viewer Recordings
