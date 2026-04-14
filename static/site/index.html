@@ -4210,6 +4210,42 @@
       font-style: italic;
     }
 
+    /* ── Animazione scroll continuo cella Recordings ── */
+    /* Keyframes: scorre da 0 a -50% (metà del contenuto duplicato), poi pausa breve */
+    @keyframes scRecordingsScrollDown {
+      0%   { transform: translateY(0); }
+      80%  { transform: translateY(-50%); }
+      100% { transform: translateY(-50%); }
+    }
+    /* Il wrapper sovrascrive il posizionamento assoluto della .sc-thumb-wrap */
+    .sc-recordings-scroll-wrap {
+      overflow: hidden !important;
+      position: relative !important;
+    }
+    /* Contenitore interno flex: due immagini impilate = 200% altezza totale */
+    .sc-recordings-scroll-wrap .sc-recordings-scroll-inner {
+      display: flex;
+      flex-direction: column;
+      width: 100%;
+      height: 200%;
+      animation: scRecordingsScrollDown 8s ease-in-out infinite;
+    }
+    /* Pausa hover */
+    .sc-recordings-scroll-wrap:hover .sc-recordings-scroll-inner {
+      animation-play-state: paused;
+    }
+    /* Le immagini nel contenitore scroll occupano ciascuna il 50% del contenitore (= 100% del wrap) */
+    .sc-recordings-scroll-wrap .sc-recordings-scroll-inner img {
+      position: relative !important;
+      top: auto !important; left: auto !important;
+      width: 100% !important;
+      height: 50% !important;
+      object-fit: cover;
+      object-position: center center;
+      display: block !important;
+      flex-shrink: 0;
+    }
+
     /* ── Sezioni non-Overview (testo/contenuto) ── */
     #sculptures-section-content {
       position: absolute;
@@ -11732,6 +11768,8 @@ function scBuildGrid() {
     // Usa il campo sc_section del progetto come destinazione;
     // se non impostato, apre il lightbox
     const targetSection = img.sc_section || null;
+    // Aggiunge data-sc-section per identificare la cella nel CSS
+    if (targetSection) cell.dataset.scSection = targetSection;
     if (targetSection) {
       cell.addEventListener('click', () => scSwitchSection(targetSection));
     } else {
@@ -11761,6 +11799,27 @@ function scBuildGrid() {
       imgEl.alt = img.title;
       imgEl.loading = 'lazy';
       wrap.appendChild(imgEl);
+      // Per la cella Recordings: crea contenitore scroll con immagine duplicata per loop seamless
+      if (targetSection === 'recordings') {
+        // Rimuovi l'immagine appena aggiunta e ricrea con struttura scroll
+        wrap.removeChild(imgEl);
+        wrap.classList.add('sc-recordings-scroll-wrap');
+        const inner = document.createElement('div');
+        inner.className = 'sc-recordings-scroll-inner';
+        // Prima copia
+        const img1 = document.createElement('img');
+        img1.src = img.url;
+        img1.alt = img.title;
+        img1.loading = 'lazy';
+        inner.appendChild(img1);
+        // Seconda copia (clone per loop seamless)
+        const img2 = document.createElement('img');
+        img2.src = img.url;
+        img2.alt = img.title;
+        img2.loading = 'lazy';
+        inner.appendChild(img2);
+        wrap.appendChild(inner);
+      }
     } else {
       // Placeholder grigio se il progetto non ha ancora immagini
       const ph = document.createElement('div');
