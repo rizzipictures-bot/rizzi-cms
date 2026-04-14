@@ -4885,10 +4885,10 @@
     }
 
     /* ── Bottone audio Sculptures ── */
-    /* ── Controlli audio Play/Stop fissi in basso a sinistra ── */
+    /* ── Controlli audio Play/Stop fissi in basso a sinistra — allineati al karaoke ── */
     #sc-audio-controls {
       position: fixed;
-      bottom: 12px;
+      bottom: 14px;
       left: 18px;
       z-index: 1400;
       display: none;               /* mostrato solo in Sculptures */
@@ -7178,8 +7178,8 @@
 
       <!-- Controlli audio Play/Stop fissi in basso a sinistra -->
       <div id="sc-audio-controls">
-        <button id="sc-audio-btn-play" onclick="scAudioPlay()" title="Play audio">▶ play</button>
-        <button id="sc-audio-btn-stop" onclick="scAudioStop()" title="Stop audio">■ stop</button>
+        <button id="sc-audio-btn-play" onclick="scAudioPlay()" title="Play audio">&#9654;</button>
+        <button id="sc-audio-btn-stop" onclick="scAudioStop()" title="Stop audio">&#9632;</button>
       </div>
 
       <!-- Elemento audio (nascosto) -->
@@ -7315,8 +7315,8 @@
             </div>
             <!-- Comandi PLAY / STOP -->
             <div id="sc-vb-controls">
-              <button id="sc-vb-play" onclick="scVbPlay()">&#9654;&nbsp; Play</button>
-              <button id="sc-vb-stop" onclick="scVbStop()">&#9632;&nbsp; Stop</button>
+              <button id="sc-vb-play" onclick="scVbPlay()">&#9654;</button>
+              <button id="sc-vb-stop" onclick="scVbStop()">&#9632;</button>
             </div>
           </div>
         </div>
