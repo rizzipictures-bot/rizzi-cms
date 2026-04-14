@@ -4456,13 +4456,9 @@
       opacity: 0.75 !important;  /* 85% base − 10% = 75% */
     }
 
-    /* Recordings: thumb verticali si allungano fino a 15px dal testo descrittivo.
-       La sezione content è position:absolute top:0 bottom:0 (= 100vh).
-       Il titolo sticky h2 è ~110px, il padding-top della griglia è 0,
-       il testo ha padding-top 51px. Lasciamo 15px di margine.
-       Usiamo una variabile CSS calcolata via JS al mount. */
+    /* Recordings: celle verticali leggermente più alte del default (460px) per avvicinarsi al testo */
     .sc-section-recordings {
-      --v-height: calc(100vh - 110px - 51px - 15px - 60px);
+      --v-height: 520px;
     }
     /* Le immagini duplicate nello scroll-inner devono essere alte --v-height */
     .sc-section-recordings .sc-recordings-scroll-wrap {
@@ -12587,18 +12583,10 @@ function scBuildSectionContent(section) {
 
   // Recordings: genera le thumb con animazione scroll via DOM (non innerHTML)
   if (section === 'recordings' && sectionImages.length > 0) {
-    const corbozPattern2 = ['h','v','h','v','v','h','v','v'];
+    // Pattern alternato H-V-H-V (orizzontale, verticale, orizzontale, verticale...)
+    const corbozPattern2 = ['h','v','h','v','h','v','h','v'];
     const gridEl = el.querySelector('.sc-section-recordings');
     if (gridEl) {
-      // Calcola l'altezza disponibile: viewport - h2 sticky - padding-top testo - 15px margine - padding-bottom sezione
-      requestAnimationFrame(() => {
-        const h2El = el.querySelector('h2');
-        const noteEl = el.querySelector('.sc-recordings-note');
-        const h2H = h2El ? h2El.offsetHeight : 110;
-        const notePadTop = noteEl ? parseInt(getComputedStyle(noteEl).paddingTop) : 51;
-        const availH = window.innerHeight - h2H - notePadTop - 15 - 60;
-        if (gridEl) gridEl.style.setProperty('--v-height', availH + 'px');
-      });
       sectionImages.forEach((img, idx) => {
         const posInPattern = idx % 8;
         const cellType = corbozPattern2[posInPattern];
