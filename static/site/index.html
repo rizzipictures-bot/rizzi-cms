@@ -5180,7 +5180,7 @@
     }
     #sculptures-section-content.sc-diary-mode h2 {
       background: #fff;
-      color: #999;
+      color: #000;
     }
     /* Menu laterale: testo nero in modalità diary */
     .sc-diary-nav-mode #sculptures-nav [data-sc-section],
@@ -5212,11 +5212,6 @@
       position: relative;
       overflow: hidden;
     }
-    /* Cover: larghezza piena, altezza doppia */
-    .sc-diary-cell.sc-diary-cover {
-      grid-column: 1 / -1;
-      grid-row: span 2;
-    }
     .sc-diary-cell .sc-diary-img-wrap img {
       position: absolute;
       top: 0; left: 0;
@@ -5228,15 +5223,6 @@
       transition: opacity .3s;
     }
     .sc-diary-cell:hover .sc-diary-img-wrap img { opacity: 0.85; }
-    /* Overlay scuro 40% sulla cover */
-    .sc-diary-cell.sc-diary-cover::after {
-      content: '';
-      position: absolute;
-      inset: 0;
-      background: rgba(0,0,0,0.40);
-      pointer-events: none;
-      z-index: 1;
-    }
 
     /* Pannello testo diary nel viewer (laterale, stile playlist) */
     #sc-diary-text-panel {
@@ -11852,10 +11838,8 @@ function scBuildSectionContent(section) {
     let html = '<h2>Testimonial Diary</h2>';
     html += '<div class="sc-section-diary-grid">';
     SC_DIARY_IMAGES.forEach((d, idx) => {
-      const coverClass = d.cover ? ' sc-diary-cover' : '';
-      const cellClass = d.cover ? '' : (d.cellClass || 'sc-cell-v');
       html += `
-        <div class="sc-diary-cell${coverClass} ${cellClass}" onclick="scOpenChild(${idx}, 'diary')">
+        <div class="sc-diary-cell" onclick="scOpenChild(${idx}, 'diary')">
           <div class="sc-diary-img-wrap"><img src="${d.file}" alt="${d.title || 'Diary'}" loading="lazy"></div>
         </div>
       `;
