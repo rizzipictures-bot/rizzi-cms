@@ -4438,6 +4438,24 @@
       animation: none;  /* no animazione in fullscreen */
     }
 
+    /* Overlay grigio scuro sulla strip superiore (thumbnail) quando il viewer è aperto */
+    #sc-top-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      /* Copre la parte sopra il viewer: 100vh - (60vh + 80px) = 40vh - 80px */
+      height: calc(40vh - 80px);
+      background: rgba(40, 40, 40, 0.4);
+      z-index: 1299;  /* sotto il viewer (1300) ma sopra il contenuto (1100) */
+      pointer-events: none;
+      display: none;
+      transition: opacity .35s ease;
+    }
+    body.sc-viewer-active #sc-top-overlay {
+      display: block;
+    }
+
     /* Bottone × chiudi — pallino viola, spostato -30px a sinistra */
     #sculptures-child-close {
       position: absolute;
@@ -4555,7 +4573,7 @@
     #sculptures-child { background: #000; }
     #sculptures-carousel-caption p {
       font-family: 'Times New Roman', Times, serif;
-      font-size: 1.3rem;
+      font-size: 1.04rem;  /* -20% rispetto a 1.3rem */
       margin: 0;
       padding: 0;
     }
@@ -6479,6 +6497,9 @@
       </div>
       <div style="height:60px;"></div>
     </div>
+
+    <!-- Overlay grigio scuro sulla strip superiore quando il viewer è aperto -->
+    <div id="sc-top-overlay"></div>
 
     <!-- Popup lightbox Sculptures (stile Corboz) -->
     <div id="sculptures-child">
