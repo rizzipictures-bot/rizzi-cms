@@ -12065,7 +12065,7 @@ function scBuildSectionContent(section) {
 
     // ── Griglia stile Jack Davison: 26 thumbs hardcoded, mix portrait+landscape, righe irregolari ──
     // Prima le 12 originali (in sequenza), poi riempimento con duplicate
-    // Ogni riga ha ~9-10 thumbs per coprire tutta la larghezza del viewport (~1400px)
+    // Ogni riga ha 8 thumbs base + 1 thumb extra nell'ultima colonna a destra
     const DIARY_THUMBS = [
       // ── RIGA 1: verticale, orizzontale, verticale, vuota, orizzontale, verticale, orizzontale, verticale ──
       { file: 'diary-01-thumb.jpg',   idx: 0,  w: 115, h: 195 },
@@ -12113,12 +12113,51 @@ function scBuildSectionContent(section) {
       { file: 'diary-02-thumb-b.jpg', idx: 1,  w: 115, h: 185 },
       { file: 'diary-06-thumb.jpg',   idx: 5,  w: 120, h: 185 },
     ];
-    // Definizione righe: quante thumbs per riga
+
+    // ── Ultima colonna destra: 4 sequenze di orientamento (H=orizzontale, V=verticale) ──
+    // Ogni sequenza definisce l'orientamento per le 5 righe.
+    // Si alternano ciclicamente ad ogni apertura della sezione diary.
+    // Sequenza 0: H,V,H,V,H  (prima volta: orizzontale riga1, verticale riga2, ecc.)
+    // Sequenza 1: V,H,V,H,V  (invertita)
+    // Sequenza 2: H,H,V,V,H  (mix)
+    // Sequenza 3: V,V,H,H,V  (mix invertito)
+    const DIARY_LAST_COL_SEQUENCES = [
+      ['h','v','h','v','h'],
+      ['v','h','v','h','v'],
+      ['h','h','v','v','h'],
+      ['v','v','h','h','v'],
+    ];
+    // Pool di thumb per l'ultima colonna (file disponibili per V e H)
+    const DIARY_LAST_COL_POOL_V = [
+      { file: 'diary-09-thumb-b.jpg', idx: 8  },
+      { file: 'diary-08-thumb-b.jpg', idx: 7  },
+      { file: 'diary-05-thumb-b.jpg', idx: 4  },
+      { file: 'diary-11-thumb-b.jpg', idx: 10 },
+      { file: 'diary-01-thumb-b.jpg', idx: 0  },
+    ];
+    const DIARY_LAST_COL_POOL_H = [
+      { file: 'diary-10-thumb-h.jpg', idx: 9  },
+      { file: 'diary-06-thumb-h.jpg', idx: 5  },
+      { file: 'diary-12-thumb-h.jpg', idx: 11 },
+      { file: 'diary-04-thumb-h.jpg', idx: 3  },
+      { file: 'diary-07-thumb-h.jpg', idx: 6  },
+    ];
+    // Recupera e avanza il contatore di sequenza (ciclico)
+    let _diarySeqIdx = parseInt(localStorage.getItem('sc_diary_last_col_seq') || '0', 10);
+    _diarySeqIdx = (_diarySeqIdx + 1) % DIARY_LAST_COL_SEQUENCES.length;
+    localStorage.setItem('sc_diary_last_col_seq', String(_diarySeqIdx));
+    const _diaryLastColSeq = DIARY_LAST_COL_SEQUENCES[_diarySeqIdx];
+    // Altezze delle righe per allineare l'ultima colonna
+    const DIARY_ROW_HEIGHTS = [195, 190, 195, 190, 185];
+
+    // Definizione righe: quante thumbs per riga (8 base)
     const DIARY_ROW_SIZES = [8, 8, 8, 8, 8];
     let html = '<h2>Testimonial Diary</h2>';
     html += '<div class="sc-section-diary-grid" id="sc-diary-grid">';
     let tIdx = 0;
-    for (const rowSize of DIARY_ROW_SIZES) {
+    for (let rowNum = 0; rowNum < DIARY_ROW_SIZES.length; rowNum++) {
+      const rowSize = DIARY_ROW_SIZES[rowNum];
+      const rowH = DIARY_ROW_HEIGHTS[rowNum];
       html += '<div class="sc-diary-row">';
       for (let c = 0; c < rowSize; c++) {
         if (tIdx >= DIARY_THUMBS.length) break;
@@ -12131,6 +12170,19 @@ function scBuildSectionContent(section) {
       </div>`;
         }
       }
+      // ── Ultima colonna destra: thumb con orientamento dalla sequenza corrente ──
+      const orient = _diaryLastColSeq[rowNum]; // 'h' o 'v'
+      let lcThumb, lcW, lcH;
+      if (orient === 'h') {
+        lcThumb = DIARY_LAST_COL_POOL_H[rowNum % DIARY_LAST_COL_POOL_H.length];
+        lcW = 205; lcH = 140;
+      } else {
+        lcThumb = DIARY_LAST_COL_POOL_V[rowNum % DIARY_LAST_COL_POOL_V.length];
+        lcW = 115; lcH = rowH;
+      }
+      html += `<div class="sc-diary-cell sc-diary-last-col" data-idx="${lcThumb.idx}" onclick="scOpenChild(${lcThumb.idx}, 'diary')" style="width:${lcW}px;height:${lcH}px;">
+        <div class="sc-diary-img-wrap"><img src="/static/site/images/diary/${lcThumb.file}" alt="Diary" loading="lazy"></div>
+      </div>`;
       html += '</div>';
     }
     html += '</div>';
