@@ -4667,8 +4667,11 @@
       display: block;
       position: relative;
       z-index: 2;
+      cursor: pointer;  /* click = fullscreen */
       transition: opacity .25s ease, max-height .35s cubic-bezier(.77,0,.175,1);
     }
+    /* In modalità diary il click sulla foto non attiva il fullscreen */
+    body.sc-diary-viewer-active #sculptures-carousel-img { cursor: default; }
     #sculptures-child.sc-fullscreen #sculptures-carousel-img {
       max-height: calc(100vh - 60px);
       max-width: 100vw;
@@ -4677,7 +4680,7 @@
     /* Didascalia in basso centrata */
     #sculptures-carousel-caption {
       position: absolute;
-      bottom: 8px;
+      bottom: 10px;
       left: 0;
       width: 100%;
       text-align: center;
@@ -5075,8 +5078,8 @@
       padding: 0 60px 0 60px;
     }
     #sc-karaoke.active { display: flex; }
-    /* Nascondi il karaoke tracce quando il viewer diary è aperto (evita sovrapposizione con diary karaoke) */
-    body.sc-viewer-active.sc-diary-viewer-active #sc-karaoke.active { display: none; }
+    /* Nascondi il karaoke tracce quando il viewer è aperto (evita sovrapposizione con caption e karaoke viewer) */
+    body.sc-viewer-active #sc-karaoke.active { display: none; }
     #sc-karaoke-line {
       display: flex;
       flex-wrap: nowrap;
@@ -5142,7 +5145,7 @@
     /* ── Karaoke dentro il viewer Sculptures ── */
     #sc-karaoke-viewer {
       position: absolute;
-      bottom: 0;
+      bottom: 44px;  /* sopra il caption (~2 righe testo + 10px bottom) */
       left: 0;
       right: 0;
       z-index: 10;
@@ -5151,7 +5154,7 @@
       height: 48px;
       display: none;
       align-items: flex-end;
-      padding: 0 50px 10px 50px;
+      padding: 0 60px 0 60px;
     }
     #sc-karaoke-viewer.active { display: flex; }
     #sc-karaoke-viewer-line {
@@ -12326,6 +12329,16 @@ function scOpenChild(idx, section) {
     document.body.classList.remove('sc-diary-viewer-active');
   }
   scUpdateCarousel();
+  // Click sulla foto = fullscreen (solo se non siamo in modalità diary)
+  const _img = document.getElementById('sculptures-carousel-img');
+  if (_img) {
+    _img._scClickHandler = function() {
+      if (!document.body.classList.contains('sc-diary-viewer-active')) {
+        scToggleFullscreen();
+      }
+    };
+    _img.addEventListener('click', _img._scClickHandler);
+  }
   // Keyboard nav
   document._scKeyHandler = function(e) {
     if (e.key === 'ArrowRight') scCarouselNav(1);
@@ -12354,6 +12367,12 @@ function scCloseChild() {
   if (iframe) iframe.src = '';
   document.body.classList.remove('sc-viewer-active');  // ripristina cursore normale
   document.body.classList.remove('sc-diary-viewer-active');  // rimuovi marker diary
+  // Rimuovi click handler sull'immagine
+  const _img = document.getElementById('sculptures-carousel-img');
+  if (_img && _img._scClickHandler) {
+    _img.removeEventListener('click', _img._scClickHandler);
+    _img._scClickHandler = null;
+  }
   _scResetExpandIcon();
   if (document._scKeyHandler) {
     document.removeEventListener('keydown', document._scKeyHandler);
