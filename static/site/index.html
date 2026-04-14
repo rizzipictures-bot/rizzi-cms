@@ -11929,21 +11929,36 @@ function scBuildSectionContent(section) {
     const viewEl = document.getElementById('view-sculptures');
     if (viewEl) viewEl.classList.add('sc-diary-mode');
 
-    // Griglia thumbs stile overview: 6 colonne, celle vuote trasparenti per completare l'ultima riga
-    const DIARY_COLS = 6;
-    const totalImgs = SC_DIARY_IMAGES.length;
-    const remainder = totalImgs % DIARY_COLS;
-    const emptyCells = remainder === 0 ? 0 : DIARY_COLS - remainder;
+    // Griglia: ogni riga ha 5 thumbs reali + 1 cella vuota trasparente
+    // La cella vuota cambia posizione ad ogni riga (sempre dopo almeno 2 thumbs)
+    // Posizioni vuota per riga (0-based, tra 2 e 4): riga0=pos2, riga1=pos4, riga2=pos3, riga3=pos2, ...
+    const DIARY_IMGS_PER_ROW = 5;  // thumbs reali per riga
+    const DIARY_EMPTY_POSITIONS = [2, 4, 3, 2, 4, 3]; // posizione cella vuota per ogni riga (ciclica)
     let html = '<h2>Testimonial Diary</h2>';
     html += '<div class="sc-section-diary-grid" id="sc-diary-grid">';
-    SC_DIARY_IMAGES.forEach((d, idx) => {
-      html += `<div class="sc-diary-cell" data-idx="${idx}" onclick="scOpenChild(${idx}, 'diary')">
+    let imgIdx = 0;
+    let rowIdx = 0;
+    while (imgIdx < SC_DIARY_IMAGES.length) {
+      const emptyPos = DIARY_EMPTY_POSITIONS[rowIdx % DIARY_EMPTY_POSITIONS.length];
+      // Costruisci la riga: 6 celle totali, 1 vuota in posizione emptyPos
+      for (let col = 0; col < 6; col++) {
+        if (col === emptyPos) {
+          // Cella vuota trasparente
+          html += `<div class="sc-diary-cell sc-diary-empty"></div>`;
+        } else {
+          if (imgIdx < SC_DIARY_IMAGES.length) {
+            const d = SC_DIARY_IMAGES[imgIdx];
+            html += `<div class="sc-diary-cell" data-idx="${imgIdx}" onclick="scOpenChild(${imgIdx}, 'diary')">
         <div class="sc-diary-img-wrap"><img src="${d.file}" alt="${d.title || 'Diary'}" loading="lazy"></div>
       </div>`;
-    });
-    // Celle vuote trasparenti per completare l'ultima riga
-    for (let e = 0; e < emptyCells; e++) {
-      html += `<div class="sc-diary-cell sc-diary-empty diary-cell-in"></div>`;
+            imgIdx++;
+          } else {
+            // Cella vuota per completare l'ultima riga
+            html += `<div class="sc-diary-cell sc-diary-empty"></div>`;
+          }
+        }
+      }
+      rowIdx++;
     }
     html += '</div>';
     el.innerHTML = html;
