@@ -12654,8 +12654,10 @@ function scBuildSectionContent(section) {
         const cellType = corbozPattern[posInPattern];
         const cellClass = cellType === 'h' ? 'sc-cell-h' : 'sc-cell-v';
         const capHtml = img.caption ? `<div class="sc-img-caption">${img.caption}</div>` : '';
+        // Passa la sezione corrente a scOpenChild per abilitare il pannello testo
+        const sectionParam = section ? `'${section}'` : 'null';
         html += `
-          <div class="${cellClass}" onclick="scOpenChild(${idx})">
+          <div class="${cellClass}" onclick="scOpenChild(${idx}, ${sectionParam})">
             <div class="sc-img-wrap"><img src="${img.url}" alt="${img.title}" loading="lazy"></div>
             ${capHtml}
           </div>
@@ -12983,26 +12985,29 @@ function scUpdateCarousel() {
   _scUpdateRecordingsPlaylist(posIdx);
   // Aggiorna il pannello testo se siamo in sezione diary
   _scUpdateDiaryPanel(posIdx);
-  // Mostra il pannello trascrizione per tutte le foto di images-book (non in fullscreen)
+  // Mostra il pannello testo per tutte le foto di images-book (non in fullscreen)
   const coverPanel = document.getElementById('sc-cover-text-panel');
   if (coverPanel) {
     if (_scCurrentSection === 'images-book') {
-      // Scegli il blocco di trascrizione ciclicamente in base all'indice foto
-      const blockIdx = scCurrentIndex % SC_TRANSCRIPT_BLOCKS.length;
-      const block = SC_TRANSCRIPT_BLOCKS[blockIdx];
-      // Aggiorna il contenuto del pannello
       const pEls = coverPanel.querySelectorAll('p:not(.sc-cover-text-link)');
-      if (pEls.length > 0) pEls[0].textContent = block;
-      // Mostra/nascondi il link "View Images." solo sulla copertina (indice 0)
       const viewLink = coverPanel.querySelector('.sc-cover-text-link');
-      if (viewLink) viewLink.style.display = scCurrentIndex === 0 ? 'block' : 'none';
+      if (scCurrentIndex === 0) {
+        // Prima foto (copertina): testo fisso della copertina
+        if (pEls.length > 0) pEls[0].innerHTML = 'First of a trilogy of books devoted to the African Americans issue, <em>Sculptures Vol. I.</em> is an intimate and conceptual narrative of the greatest manifestation of African Americans from the Martin L. King times. Photographs taken at Washington December 13, 2014, more precisely during the protest on civil rights which took place in the capital after the clashes and deaths of Ferguson, combine the political motivation an intimate dimension of the project linked to the author\u2019s personal life.';
+        if (viewLink) viewLink.style.display = 'block';
+      } else {
+        // Foto successive: blocchi di trascrizione audio ciclici
+        const blockIdx = (scCurrentIndex - 1) % SC_TRANSCRIPT_BLOCKS.length;
+        const block = SC_TRANSCRIPT_BLOCKS[blockIdx];
+        if (pEls.length > 0) pEls[0].textContent = block;
+        if (viewLink) viewLink.style.display = 'none';
+      }
       if (viewLink && !viewLink._bound) {
         viewLink._bound = true;
         viewLink.addEventListener('click', () => scCarouselNav(1));
       }
       // Posiziona il pannello nel lato opposto alla foto
       if (posIdx !== undefined) {
-        // sc-pos-left (posIdx=1) = foto a sinistra = testo a destra
         coverPanel.classList.toggle('sc-panel-right', posIdx === 1);
       }
       coverPanel.style.display = 'flex';
