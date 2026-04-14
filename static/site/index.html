@@ -4345,6 +4345,7 @@
       right: 0;
       bottom: 0;
       overflow-y: auto;
+      overflow-x: hidden;  /* blocca scroll orizzontale causato da 100vw */
       padding: 0 0 60px;
       color: #fff;
       font-family: 'Times New Roman', Times, serif;
@@ -4454,9 +4455,10 @@
     .sc-section-recordings .sc-section-images > div:hover .sc-img-wrap img {
       opacity: 0.75 !important;  /* 85% base − 10% = 75% */
     }
-    /* Recordings: thumbs abbassate di 20px verso il testo */
+    /* Recordings: thumbs abbassate di 20px verso il testo, padding-bottom 0 per evitare scroll */
     .sc-section-recordings.sc-section-images {
       padding-top: 20px !important;
+      padding-bottom: 0 !important;  /* elimina spazio extra sotto le thumbs */
     }
 
     /* Recordings: celle verticali alte fino al crocino (quasi tutta la viewport meno header e testo) */
@@ -4601,8 +4603,7 @@
       width: 100vw;
       margin-left: calc(-21px);
       margin-right: calc(-21px);
-      padding: 0 40px 120px;  /* alzato ulteriormente: era 6px */
-      margin-top: -19px;        /* -19px aggiuntivi per avvicinarsi alle thumbs */
+      padding: 0 40px 120px;  /* padding-top zero: testo a ridosso delle thumbs */
       text-align: justify;
       background: #000;
       color: #fff;
