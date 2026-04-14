@@ -4881,25 +4881,45 @@
     }
 
     /* ── Bottone audio Sculptures ── */
-    #sc-audio-btn {
+    /* ── Controlli audio Play/Stop fissi in basso a sinistra ── */
+    #sc-audio-controls {
       position: fixed;
-      bottom: 14px;          /* allineato al karaoke */
+      bottom: 12px;
       left: 18px;
-      z-index: 1300;
-      width: 28px;
-      height: 28px;
+      z-index: 1400;
+      display: none;               /* mostrato solo in Sculptures */
+      align-items: center;
+      gap: 10px;
+      pointer-events: auto;
+    }
+    #sc-audio-controls.visible { display: flex; }
+    #sc-audio-btn-play,
+    #sc-audio-btn-stop {
       background: transparent;
       border: none;
       cursor: pointer;
-      display: none;               /* mostrato solo in Sculptures */
-      align-items: center;
-      justify-content: center;
       padding: 0;
       outline: none;
-      transition: border-color 0.2s ease, opacity 0.2s ease;
+      font-family: 'Courier New', Courier, monospace;
+      font-size: 9px;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      line-height: 1;
+      opacity: 0.75;
+      transition: opacity 0.2s ease;
     }
-    #sc-audio-btn:hover { opacity: 0.8; }
-    #sc-audio-btn.playing { opacity: 1; }
+    #sc-audio-btn-play { color: #fff; }
+    #sc-audio-btn-stop { color: #4c00fc; }
+    #sc-audio-btn-play:hover,
+    #sc-audio-btn-stop:hover { opacity: 1; }
+    /* In diary mode: sfondo leggermente scuro per leggibilità su carta */
+    .sc-diary-nav-mode #sc-audio-controls {
+      background: rgba(0,0,0,0.08);
+      border-radius: 3px;
+      padding: 3px 5px;
+    }
+    .sc-diary-nav-mode #sc-audio-btn-play { color: #111; }
+    .sc-diary-nav-mode #sc-audio-btn-stop { color: #4c00fc; }
 
     /* ══════════════════════════════════════════════════════════════
        BOX TOPICS — popup bianco dal basso (stile Corboz) — solo in images-book
@@ -5486,9 +5506,8 @@
     .sc-diary-nav-mode #sculptures-nav [data-sc-section].active {
       color: #4c00fc !important;
     }
-    /* Nascondi back e bottone audio in modalità diary (non necessari) */
-    .sc-diary-nav-mode #sculptures-back,
-    .sc-diary-nav-mode #sc-audio-btn {
+    /* Nascondi back in modalità diary (non necessario) */
+    .sc-diary-nav-mode #sculptures-back {
       display: none !important;
     }
 
@@ -7153,18 +7172,11 @@
         <!-- Generata via JS -->
       </div>
 
-      <!-- Bottone audio play/pause (fisso in basso a sinistra) -->
-      <button id="sc-audio-btn" onclick="scToggleAudio()" title="Play / Pause audio">
-        <!-- Icona play (default) -->
-        <svg id="sc-audio-icon-play" width="10" height="12" viewBox="0 0 10 12" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <path d="M1 1L9 6L1 11V1Z" fill="white" stroke="white" stroke-width="0.5" stroke-linejoin="round"/>
-        </svg>
-        <!-- Icona pause (nascosta) -->
-        <svg id="sc-audio-icon-pause" width="10" height="12" viewBox="0 0 10 12" fill="none" xmlns="http://www.w3.org/2000/svg" style="display:none">
-          <rect x="1" y="1" width="3" height="10" fill="white"/>
-          <rect x="6" y="1" width="3" height="10" fill="white"/>
-        </svg>
-      </button>
+      <!-- Controlli audio Play/Stop fissi in basso a sinistra -->
+      <div id="sc-audio-controls">
+        <button id="sc-audio-btn-play" onclick="scAudioPlay()" title="Play audio">▶ play</button>
+        <button id="sc-audio-btn-stop" onclick="scAudioStop()" title="Stop audio">■ stop</button>
+      </div>
 
       <!-- Elemento audio (nascosto) -->
       <audio id="sc-audio-player" preload="none"></audio>
@@ -12980,12 +12992,6 @@ function _scPlayIndex(idx) {
   player.loop = false;  // no loop: alla fine passa al successivo
   player.load();
   player.play().then(() => {
-    const iconPlay  = document.getElementById('sc-audio-icon-play');
-    const iconPause = document.getElementById('sc-audio-icon-pause');
-    const btn = document.getElementById('sc-audio-btn');
-    if (iconPlay)  iconPlay.style.display  = 'none';
-    if (iconPause) iconPause.style.display = 'block';
-    if (btn) btn.classList.add('playing');
     scAudioFadeTo(0.72, 2000);
     scStartKaraoke(currentSrc);
     // Aggiorna lo stato playing nella playlist laterale
@@ -13003,9 +13009,9 @@ function scPrepareRandomAudio() {
   _scPlaylist = [];
   _scPlaylistDone = [];
   scAudioIndex = -1;
-  // Mostra il bottone
-  const btn = document.getElementById('sc-audio-btn');
-  if (btn) btn.style.display = 'flex';
+  // Mostra i controlli audio
+  const ctrl = document.getElementById('sc-audio-controls');
+  if (ctrl) ctrl.classList.add('visible');
   // Avvia il primo recording random
   _scPlayIndex(_scPickNextIndex());
   // Registra l'evento 'ended' per passare automaticamente al successivo
@@ -13024,9 +13030,9 @@ function _scOnAudioEnded() {
   setTimeout(() => {
     const player = document.getElementById('sc-audio-player');
     if (!player) return;
-    // Controlla che siamo ancora in Sculptures (il player è visibile)
-    const btn = document.getElementById('sc-audio-btn');
-    if (!btn || btn.style.display === 'none') return;
+    // Controlla che siamo ancora in Sculptures (i controlli sono visibili)
+    const ctrl = document.getElementById('sc-audio-controls');
+    if (!ctrl || !ctrl.classList.contains('visible')) return;
     _scPlayIndex(_scPickNextIndex());
   }, 1000);
 }
@@ -13259,9 +13265,7 @@ function _scStartDiaryAudio(pageFile) {
   _scDiaryMainWasPlaying = mainPlayer && !mainPlayer.paused;
   if (_scDiaryMainWasPlaying) {
     mainPlayer.pause();
-    // Aggiorna il bottone play/pause del player principale
-    const btn = document.getElementById('sc-audio-btn');
-    if (btn) btn.classList.remove('playing');
+    // (nessun aggiornamento icona necessario: il bottone play/stop non ha stato visivo)
   }
 
   // Prepara le parole del karaoke
@@ -13305,10 +13309,7 @@ function _scStopDiaryAudio(resumeMain) {
   if (resumeMain && _scDiaryMainWasPlaying) {
     const mainPlayer = document.getElementById('sc-audio-player');
     if (mainPlayer && mainPlayer.src) {
-      mainPlayer.play().then(() => {
-        const btn = document.getElementById('sc-audio-btn');
-        if (btn) btn.classList.add('playing');
-      }).catch(() => {});
+      mainPlayer.play().catch(() => {});
     }
   }
   _scDiaryMainWasPlaying = false;
@@ -13366,53 +13367,55 @@ function _scDiaryKaraokeShowWord(word) {
 }
 
 // Toggle play/pause
-function scToggleAudio() {
+// Riprende l'audio (se in pausa) o avvia dall'inizio (se fermo)
+function scAudioPlay() {
   const player = document.getElementById('sc-audio-player');
-  const iconPlay  = document.getElementById('sc-audio-icon-play');
-  const iconPause = document.getElementById('sc-audio-icon-pause');
-  const btn = document.getElementById('sc-audio-btn');
   if (!player) return;
-
-  if (player.paused) {
+  if (!player.paused) return; // già in play
+  if (player.src && player.src !== window.location.href) {
+    // Riprendi da dove era
     player.play().then(() => {
-      iconPlay.style.display  = 'none';
-      iconPause.style.display = 'block';
-      if (btn) btn.classList.add('playing');
-      // Riprendi karaoke dal punto corrente (se era stato fermato)
       if (_scKaraokeWords.length === 0 && scAudioFiles[scAudioIndex]) {
         scStartKaraoke(scAudioFiles[scAudioIndex].url);
       }
     }).catch(() => {});
-  } else {
-    player.pause();
-    iconPlay.style.display  = 'block';
-    iconPause.style.display = 'none';
-    if (btn) btn.classList.remove('playing');
-    // Il karaoke si ferma da solo (controlla player.paused nel tick)
+  } else if (scAudioFiles.length > 0) {
+    // Avvia dall'inizio
+    _scPlayIndex(_scPickNextIndex());
   }
+}
+
+// Ferma completamente audio e karaoke (bottone Stop)
+function scAudioStop() {
+  const player = document.getElementById('sc-audio-player');
+  if (!player || player.paused) {
+    scStopKaraoke();
+    return;
+  }
+  // Fade-out rapido (0.4s) poi stop
+  scAudioFadeTo(0, 400);
+  setTimeout(() => {
+    if (player) { player.pause(); player.currentTime = 0; player.volume = 0; }
+    scStopKaraoke();
+  }, 450);
 }
 
 // Ferma l'audio con fade-out quando si esce da Sculptures
 function scStopAudio() {
   const player = document.getElementById('sc-audio-player');
   if (!player || player.paused) {
-    // già fermo: reset immediato
     _scStopAudioNow();
     return;
   }
-  // Fade-out in 1.2 secondi, poi stop
   scAudioFadeTo(0, 1200);
   setTimeout(_scStopAudioNow, 1300);
 }
 function _scStopAudioNow() {
   const player = document.getElementById('sc-audio-player');
   if (player) { player.pause(); player.currentTime = 0; player.volume = 0; }
-  const iconPlay  = document.getElementById('sc-audio-icon-play');
-  const iconPause = document.getElementById('sc-audio-icon-pause');
-  const btn = document.getElementById('sc-audio-btn');
-  if (iconPlay)  iconPlay.style.display  = 'block';
-  if (iconPause) iconPause.style.display = 'none';
-  if (btn) { btn.classList.remove('playing'); btn.style.display = 'none'; }
+  // Nascondi i controlli audio
+  const ctrl = document.getElementById('sc-audio-controls');
+  if (ctrl) ctrl.classList.remove('visible');
   // Ferma anche il karaoke
   scStopKaraoke();
 }
