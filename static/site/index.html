@@ -5114,11 +5114,11 @@
       overflow: visible !important;
       position: relative;
     }
-    /* Cornice nera: padding attorno all'iframe (ridotto del 40%: 52→31px, 80→48px) */
+    /* Nessuna cornice nera: il video occupa tutto lo spazio senza padding/background */
     #sc-vb-video-frame {
       position: relative;
-      background: #000;
-      padding: 31px 31px 80px 31px; /* top right bottom(spazio per strip+controlli) left */
+      background: transparent;
+      padding: 0 0 48px 0; /* solo spazio in basso per strip+controlli */
       display: inline-block;
     }
     #sc-vb-video-frame iframe {
@@ -5130,9 +5130,9 @@
     /* Strip thumbnails + linea bianca + pallino hover */
     #sc-vb-strip-wrap {
       position: absolute;
-      left: 31px;
-      right: 31px;
-      bottom: 44px;
+      left: 0;
+      right: 0;
+      bottom: 26px;
       height: 22px;
       cursor: none;
     }
@@ -5173,11 +5173,11 @@
       transition: left 0.05s linear;
       z-index: 2;
     }
-    /* Barra comandi PLAY / STOP in basso a sinistra dentro la cornice */
+    /* Barra comandi PLAY / STOP in basso a sinistra, allineata al bordo del video */
     #sc-vb-controls {
       position: absolute;
-      bottom: 14px;
-      left: 31px;
+      bottom: 4px;
+      left: 0;
       display: flex;
       align-items: center;
       gap: 28px;
