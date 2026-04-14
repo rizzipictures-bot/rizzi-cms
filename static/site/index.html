@@ -4603,6 +4603,7 @@
       margin-right: calc(-21px);
       padding: 26px 40px 120px;
       text-align: justify;
+      text-align-last: justify;  /* forza giustificazione anche sull'ultima riga */
       background: #000;
       color: #fff;
       font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
@@ -5235,18 +5236,20 @@
     #sc-vb-strip-wrap {
       display: none !important;
     }
-    /* ── Progress bar Video Book: linea sottile con pallino seek ── */
+    /* ── Progress bar Video Book: linea nera 1px con pallino seek 7px ── */
     #sc-vb-progress-wrap {
-      display: none;
+      display: none;          /* nascosta di default */
       position: relative;
-      width: 100%;
-      height: 20px;          /* spazio cliccabile attorno alla linea */
+      width: min(82.8vw, 943px);  /* stessa larghezza del video */
+      height: 30px;           /* spazio cliccabile: metà dello spazio bianco */
       align-items: center;
-      cursor: none;          /* nasconde il cursore di default */
-      margin-top: 0;
+      cursor: crosshair;
+      margin: 0 auto;         /* centrata orizzontalmente */
+      flex-shrink: 0;
     }
+    /* Visibile solo in video mode (dentro sc-vb-iframe-wrap che è display:flex in video mode) */
     #sculptures-child.sc-video-mode #sc-vb-progress-wrap {
-      display: flex;
+      display: flex !important;
     }
     #sc-vb-progress-line {
       position: absolute;
@@ -5267,7 +5270,7 @@
       border-radius: 50%;
       transform: translate(-50%, -50%);
       pointer-events: none;
-      transition: left 0.1s linear;
+      transition: left 0.08s linear;
       left: 0%;
     }
     /* Ogni frame è un div generato via JS con background-image individuale */
@@ -5339,7 +5342,8 @@
     }
     #sc-vb-stop:hover { opacity: 1; }
     #sculptures-child.sc-video-mode #sc-vb-iframe-wrap {
-      display: block !important;
+      display: flex !important;
+      flex-direction: column;
       width: min(82.8vw, 943px);
       position: relative;
       z-index: 3;
@@ -7452,11 +7456,6 @@
         <div id="sc-vb-iframe-wrap" style="display:none;">
           <div id="sc-vb-video-frame">
             <iframe id="sc-vb-iframe" src="" allow="autoplay; fullscreen; picture-in-picture" allowfullscreen></iframe>
-            <!-- Progress bar con pallino seek -->
-            <div id="sc-vb-progress-wrap">
-              <div id="sc-vb-progress-line"></div>
-              <div id="sc-vb-progress-dot"></div>
-            </div>
             <!-- Strip thumbnails con pallino hover e click-to-seek -->
             <div id="sc-vb-strip-wrap">
               <div id="sc-vb-strip">
@@ -7470,6 +7469,11 @@
               <button id="sc-vb-play" onclick="scVbPlay()">&#9654;</button>
               <button id="sc-vb-stop" onclick="scVbStop()">&#9632;</button>
             </div>
+          </div>
+          <!-- Progress bar con pallino seek: nello spazio bianco sotto il video -->
+          <div id="sc-vb-progress-wrap">
+            <div id="sc-vb-progress-line"></div>
+            <div id="sc-vb-progress-dot"></div>
           </div>
         </div>
         <img id="sculptures-carousel-img" src="" alt="">
@@ -13276,10 +13280,20 @@ function scCloseInfo() {
   const info = document.getElementById('sculptures-info');
   if (!info) return;
   info.classList.remove('active');
+  // Cancella i timer auto-show se l'utente chiude manualmente
+  if (window._scInfoAutoTimer) { clearTimeout(window._scInfoAutoTimer); window._scInfoAutoTimer = null; }
+  if (window._scInfoAutoClose) { clearTimeout(window._scInfoAutoClose); window._scInfoAutoClose = null; }
   setTimeout(() => {
     // Riporta la nav su Overview dopo la fine della transizione (500ms)
-    scSwitchSection('overview');
-  }, 500); // 500ms = durata transition Corboz
+    // Non richiamare scSwitchSection('overview') qui: evita loop con auto-show
+    const wrapper = document.getElementById('sculptures-grid-wrapper');
+    const sectionContent = document.getElementById('sculptures-section-content');
+    const pageTitle = document.getElementById('sculptures-page-title');
+    if (wrapper) wrapper.style.display = 'block';
+    if (sectionContent) sectionContent.classList.remove('active');
+    if (pageTitle) pageTitle.style.display = 'block';
+    document.body.classList.remove('sc-diary-nav-mode');
+  }, 500);
 }
 
 // Inizializza la pagina Sculptures (chiamata da buildSculpturesIndex per compatibilità)
