@@ -5178,30 +5178,35 @@
        TESTIMONIAL DIARY — Hero full-page + cascade thumbs
     ═══════════════════════════════════════════════════════════════ */
     #sculptures-section-content.sc-diary-mode {
-      /* La hero è impostata come background-image via JS */
-      background-color: #f0ede8; /* fallback carta */
+      /* Rendi il container trasparente: la hero sta sotto come elemento separato */
+      background: transparent !important;
+      color: #fff;
+      overflow: hidden;
+    }
+    /* Hero background: elemento fisso dentro #view-sculptures, sotto il container */
+    #sc-diary-hero-bg {
+      position: absolute;
+      inset: 0;
+      z-index: 0;
       background-size: cover;
       background-position: center center;
       background-repeat: no-repeat;
-      background-attachment: scroll;
-      color: #fff;
-      overflow: hidden;
+      pointer-events: none;
     }
     #sculptures-section-content.sc-diary-mode.diary-thumbs-visible {
       overflow-y: auto;
     }
-    /* Overlay grigio sul background: attivato quando le thumbs appaiono */
-    #sculptures-section-content.sc-diary-mode::before {
+    /* Overlay grigio sull'elemento hero: attivato quando le thumbs appaiono */
+    #sc-diary-hero-bg::after {
       content: '';
-      position: fixed;
+      position: absolute;
       inset: 0;
-      background: rgba(60,60,60,0.40);
+      background: rgba(30,30,30,0.55);
       opacity: 0;
       transition: opacity 0.8s ease;
       pointer-events: none;
-      z-index: 1;
     }
-    #sculptures-section-content.sc-diary-mode.hero-dimmed::before {
+    #sc-diary-hero-bg.hero-dimmed::after {
       opacity: 1;
     }
     /* Titolo: rimane bianco su sfondo trasparente sopra la hero */
@@ -11866,7 +11871,7 @@ function scBuildSectionContent(section) {
 
   // ── Pagina speciale: Testimonial Diary ──
   if (section === 'diary') {
-    el.style.background = '#000';
+    el.style.background = '';  // rimuovi qualsiasi background inline precedente
     el.style.minHeight  = '100vh';
     el.classList.add('sc-diary-mode');
     document.body.classList.add('sc-diary-nav-mode');
@@ -11881,9 +11886,16 @@ function scBuildSectionContent(section) {
       intro: d.intro || null
     }));
 
-    // ── Hero full-page: pagina del diario con scritte a mano come background ──
-    // diary-02.jpg = diario aperto su due pagine con testimonianze scritte a mano
-    const heroImg = 'images/diary/diary-02.jpg';
+    // ── Hero full-page: elemento separato dentro #view-sculptures, sotto il container ──
+    // Rimuovi eventuale hero precedente
+    const oldHero = document.getElementById('sc-diary-hero-bg');
+    if (oldHero) oldHero.remove();
+    // Crea il nuovo elemento hero
+    const heroBg = document.createElement('div');
+    heroBg.id = 'sc-diary-hero-bg';
+    heroBg.style.backgroundImage = 'url(images/diary/diary-02.jpg)';
+    const viewEl = document.getElementById('view-sculptures');
+    if (viewEl) viewEl.insertBefore(heroBg, viewEl.firstChild);
 
     // Griglia thumbs (tutte le immagini)
     let html = '<h2>Testimonial Diary</h2>';
@@ -11895,13 +11907,12 @@ function scBuildSectionContent(section) {
     });
     html += '</div>';
     el.innerHTML = html;
-    // Imposta il background dopo innerHTML
-    el.style.backgroundImage = 'url(' + heroImg + ')';
 
     // ── Animazione cascade: dopo 2.5s, le thumbs cadono una alla volta con 150ms di ritardo ──
     window._scDiaryCascadeTimer = setTimeout(() => {
       window._scDiaryCascadeTimer = null;
-      el.classList.add('hero-dimmed');  // attiva overlay ::before
+      const heroBgEl = document.getElementById('sc-diary-hero-bg');
+      if (heroBgEl) heroBgEl.classList.add('hero-dimmed');  // attiva overlay sull'elemento hero
       el.classList.add('diary-thumbs-visible');
       const cells = el.querySelectorAll('.sc-diary-cell');
       cells.forEach((cell, i) => {
@@ -11918,8 +11929,9 @@ function scBuildSectionContent(section) {
     clearTimeout(window._scDiaryCascadeTimer);
     window._scDiaryCascadeTimer = null;
   }
-  // Rimuovi il background-image e le classi diary
-  el.style.backgroundImage = '';
+  // Rimuovi l'elemento hero e le classi diary
+  const diaryHero = document.getElementById('sc-diary-hero-bg');
+  if (diaryHero) diaryHero.remove();
   el.classList.remove('sc-diary-mode', 'diary-thumbs-visible', 'hero-dimmed');
   document.body.classList.remove('sc-diary-nav-mode');
 
