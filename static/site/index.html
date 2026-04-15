@@ -12565,8 +12565,12 @@ function scSwitchSection(section) {
     // Rimuovi modalità archive (menu torna bianco, sfondo torna nero)
     document.body.classList.remove('sc-archive-nav-mode');
     const _vscOv = document.getElementById('view-sculptures');
-    if (_vscOv) _vscOv.style.background = '';
-    if (sectionContent) { sectionContent.style.background = ''; sectionContent.style.color = ''; }
+    if (_vscOv) { _vscOv.style.background = ''; _vscOv.classList.remove('sc-diary-mode'); }
+    if (sectionContent) { sectionContent.style.background = ''; sectionContent.style.color = ''; sectionContent.classList.remove('sc-diary-mode','diary-thumbs-visible'); }
+    // Cleanup Synopsis/Diary: rimuovi elementi hero/overlay/grain dal body
+    if (window._scSynopsisCascadeTimer) { clearTimeout(window._scSynopsisCascadeTimer); window._scSynopsisCascadeTimer = null; }
+    if (window._scDiaryCascadeTimer) { clearTimeout(window._scDiaryCascadeTimer); window._scDiaryCascadeTimer = null; }
+    ['sc-diary-bg-img','sc-diary-bg-overlay','sc-diary-bg-grain','sc-synopsis-bg-overlay'].forEach(function(id){ var e=document.getElementById(id); if(e) e.remove(); });
     scBuildGrid();
     // Auto-show box information: gestito nell'entrata a Sculptures (showView), non qui
   } else if (section === 'information') {
@@ -13217,10 +13221,14 @@ function scBuildSectionContent(section) {
     const _vsc = document.getElementById('view-sculptures');
     if (_vsc) _vsc.style.background = '';
   }
-  // Rimuovi la classe diary-mode se eravamo in diary
+  // Rimuovi la classe diary-mode se eravamo in diary o synopsis
   if (window._scDiaryCascadeTimer) {
     clearTimeout(window._scDiaryCascadeTimer);
     window._scDiaryCascadeTimer = null;
+  }
+  if (window._scSynopsisCascadeTimer) {
+    clearTimeout(window._scSynopsisCascadeTimer);
+    window._scSynopsisCascadeTimer = null;
   }
   // Nascondi il box Artist's note se visibile
   if (window._scDiaryGridNoteTimer) { clearTimeout(window._scDiaryGridNoteTimer); window._scDiaryGridNoteTimer = null; }
