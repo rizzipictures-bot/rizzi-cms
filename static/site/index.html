@@ -7936,6 +7936,16 @@
       </button>
     </div>
 
+    <!-- Overlay + Popup testo Archive (Publisher's Note / Conversation) -->
+    <div id="sc-arc-text-popup-overlay" onclick="_scArcTextClose()"></div>
+    <div id="sc-arc-text-popup">
+      <div id="sc-arc-text-popup-header">
+        <span id="sc-arc-text-popup-title"></span>
+        <button id="sc-arc-text-popup-close" onclick="_scArcTextClose()">× close</button>
+      </div>
+      <div id="sc-arc-text-popup-body"></div>
+    </div>
+
     <!-- ── VIEW: MISCELLANEA ── -->
     <div class="view" id="view-miscellanea" style="position:relative;">
       <div class="cities-page-title">Miscellanea</div>
@@ -13687,6 +13697,126 @@ function _scBuildArchivePage() {
     .sc-arc-icons-video-wrap:hover .sc-arc-icons-video-label {
       opacity: 1;
     }
+    /* ── Text section: thumb verticali giallino/marrone ── */
+    .sc-arc-text-thumbs {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      padding: 7px 8px;
+    }
+    .sc-arc-text-thumb {
+      display: flex;
+      align-items: flex-end;
+      width: 52px;
+      height: 74px;
+      background: #f5eecc;
+      border: none;
+      border-radius: 2px;
+      cursor: pointer;
+      padding: 5px 5px 5px 5px;
+      box-shadow: 1px 1px 4px rgba(0,0,0,0.18);
+      transition: transform 0.18s ease, box-shadow 0.18s ease;
+      position: relative;
+    }
+    .sc-arc-text-thumb:hover {
+      transform: scale(1.08);
+      box-shadow: 2px 3px 10px rgba(0,0,0,0.22);
+    }
+    .sc-arc-text-thumb-label {
+      font-family: Helvetica, Arial, sans-serif;
+      font-size: 5.5px;
+      font-weight: 700;
+      line-height: 1.35;
+      color: #5a3a1a;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      text-align: left;
+      pointer-events: none;
+    }
+    /* ── Popup testo Archive (Publisher's Note / Conversation) ── */
+    #sc-arc-text-popup {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%) scale(0);
+      transform-origin: center center;
+      width: 33vw;
+      max-height: 72vh;
+      background: #faf7e8;
+      border-radius: 4px;
+      box-shadow: 0 8px 40px rgba(0,0,0,0.22);
+      z-index: 2000;
+      display: flex;
+      flex-direction: column;
+      opacity: 0;
+      transition: transform 0.38s cubic-bezier(0.34, 1.56, 0.64, 1),
+                  opacity 0.22s ease;
+      pointer-events: none;
+    }
+    #sc-arc-text-popup.sc-arc-text-popup-open {
+      transform: translate(-50%, -50%) scale(1);
+      opacity: 1;
+      pointer-events: auto;
+    }
+    #sc-arc-text-popup-header {
+      padding: 14px 16px 8px 16px;
+      border-bottom: 1px solid rgba(90,58,26,0.18);
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    #sc-arc-text-popup-title {
+      font-family: Helvetica, Arial, sans-serif;
+      font-size: 9px;
+      font-weight: 700;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: #5a3a1a;
+    }
+    #sc-arc-text-popup-close {
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-family: Helvetica, Arial, sans-serif;
+      font-size: 8px;
+      font-weight: 700;
+      color: #5a3a1a;
+      letter-spacing: 0.1em;
+      opacity: 0.7;
+      transition: opacity 0.15s;
+      padding: 0;
+    }
+    #sc-arc-text-popup-close:hover { opacity: 1; }
+    #sc-arc-text-popup-body {
+      overflow-y: auto;
+      padding: 14px 16px 20px 16px;
+      font-family: Helvetica, Arial, sans-serif;
+      font-size: 9px;
+      line-height: 1.65;
+      color: #2a1a08;
+      flex: 1;
+    }
+    #sc-arc-text-popup-body p {
+      margin: 0 0 10px 0;
+    }
+    #sc-arc-text-popup-body .sc-arc-text-speaker {
+      font-weight: 700;
+      color: #5a3a1a;
+    }
+    #sc-arc-text-popup-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.25);
+      z-index: 1999;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.22s ease;
+    }
+    #sc-arc-text-popup-overlay.sc-arc-text-popup-open {
+      opacity: 1;
+      pointer-events: auto;
+    }
     </style>
   `;
 
@@ -13796,8 +13926,14 @@ function _scBuildArchivePage() {
     html += '<div class="sc-arc-col">';
     if (c === 0) {
       html += '<div class="sc-arc-col-title">Text</div>';
-      // Placeholder: i testi e l\'intervista verranno aggiunti qui
-      html += '<div class="sc-arc-text-placeholder" style="font-family:\'Courier New\',Courier,monospace;font-size:8.5px;color:rgba(0,0,0,0.35);padding:7px 8px;">— coming soon —</div>';
+      html += '<div class="sc-arc-text-thumbs">';
+      html += '<button class="sc-arc-text-thumb" onclick="_scArcTextOpen(\'publisher\')">';
+      html += '<span class="sc-arc-text-thumb-label">Publisher\'s<br>note</span>';
+      html += '</button>';
+      html += '<button class="sc-arc-text-thumb" onclick="_scArcTextOpen(\'conversation\')">';
+      html += '<span class="sc-arc-text-thumb-label">Alessandro Rizzi<br>Conversation</span>';
+      html += '</button>';
+      html += '</div>';
     } else {
       html += '<div class="sc-arc-col-title">&nbsp;</div>';
     }
@@ -13807,6 +13943,42 @@ function _scBuildArchivePage() {
 
   html += '</div>'; // #sc-archive-bib
   return html;
+}
+
+// ── Popup testo Archive: Publisher's Note e Conversation ──
+const _SC_ARC_TEXT_DATA = {
+  publisher: {
+    title: "Publisher\u2019s Note",
+    html: `<p>Abiding by the facts, we can affirm that <em>Sculptures</em> is in all respects an instant book whose photographs were shot over the timespan of a few hours in Washington D.C. on December 14, 2014, and more precisely, during the civil rights protests that took place in the capital after the fatal shooting and civil unrest originating in Ferguson. Another important fact about this work is the emotional premise that led the author to the decision to travel to Washington D.C.: his relationship with an Afro-American woman. The body of work should not be attributed to this precise space-time reference (a political event, for that matter) or the very intimate trigger for the work, and the author manages to achieve a sort of liberation from these two strong elements at play.</p><p>Rizzi gives back a sharp and paradigmatic work on American society as a whole, and on the importance of a political demonstration that is a sign of the times and is coherent to its prescribed script, he plays with the fragments and cracks of what could be a historic moment for the struggle of the black community but that does not appear to be so: the <em>sculptures</em> at play in this event are part of a larger scenario that provides for their presence and contribution as actors both united and alone. This kind of structural weakness of the human element does not manifest in what is portrayed in the photographs which always appears to be plastic and structured, but instead lives within this visual paradox, as testimony to the distance in the union, and a fragility, despite the solidity, structure, and plasticity within each one of us.</p>`
+  },
+  conversation: {
+    title: "Alessandro Rizzi Conversation",
+    html: `<p style="font-size:8px;color:#5a3a1a;margin-bottom:12px;">Sculptures \u2014 Giovanni Spadaccini in conversation with Alessandro Rizzi, october 2015.</p><p><span class="sc-arc-text-speaker">GS</span> Do you find it normal, as a photographer, to talk about photography? I bring this question up at the beginning because to me discussing about photography has always seemed strange, almost paradoxical, as I find the theoretical analyses on photography strange, somehow independent from the artistic production in the strict sense. Excluding perhaps some photographers who theorize and write on their own vision, it seems to me that the theoretical discourse on photography remains on the side as an attempt to add something that is not necessary.</p><p><span class="sc-arc-text-speaker">AR</span> I like to talk about photography, perhaps just because I am not a theoretician and photography theory has never interested me much, because I believe, as you say, that theory has never had a great influence on the photographic practice\u2014a tangible influence on the photographic works, I mean. I have always been interested, instead, by relating the photographic practice to the real existence of people (myself included), to memories, to the traces from my travels.</p><p><span class="sc-arc-text-speaker">GS</span> Indeed, your travels. Shortly before I met you, I thought how important it is, for a photographer like you, to physically move in order to take pictures. To move your body in space in order to go and grasp the real thing. Also this project on Washington, even if different from your previous ones, is the result of a movement, as if it was a real research method.</p><p><span class="sc-arc-text-speaker">AR</span> It\u2019s true, although this aspect is now less pronounced than how it was in the start, when I was moved by the desire to photograph far away places, the need of knowing the world, of exploring diversity and distance. Then, things changed in time, and I felt that somehow I lost the sense of diversity in terms of aesthetics (the search of the exotic, for example) and I rather acquired a strong push to go where other lives are. I no longer search for someone or something different from me, I look at how the others live, driven by more sincere human curiosity and empathy.</p><p><span class="sc-arc-text-speaker">GS</span> In fact, your photographs are designed to be viewed in a series, in a sequence, and not to be hung solitary on a wall, because that \u201canthropological\u201d aspect, which is a bit the hallmark of what you do, would be lost. It is no longer, to say it in Ghirri\u2019s words, a matter of renewing the wonder, because our eye is already very compromised and disenchanted, but of being guided in a narration of reality, right?</p><p><span class="sc-arc-text-speaker">AR</span> That\u2019s what I tried to explain to the students of a workshop I\u2019m giving in these days. These people come to class with the idea that a \u201cplastic\u201d photograph (that is, a photograph which is fully completed in its own lines and movements) is still the dominant one, it\u2019s the picture that \u201cmust be done\u201d. On this point, I tried to prove them wrong, because I don\u2019t believe in this vision and it\u2019s an idea that doesn\u2019t satisfy me. You used the term \u201cseries\u201d, but I imagine what I do as an abacus, on which moments and fractions of the world rank in a line and build up a vision, something that stays together. That\u2019s why storytelling doesn\u2019t interest me at all: in my case, it\u2019s more like a kind of accumulation, stratification of looks, experiences and memories.</p><p><span class="sc-arc-text-speaker">GS</span> This is basically an idea of experience, nence, right?</p><p><span class="sc-arc-text-speaker">AR</span> Yes, of course.</p><p><span class="sc-arc-text-speaker">GS</span> That is, photography as documentation of experience. A fascinating thing\u2014however obvious\u2014is that the photographer\u2019s work grows and refines through the accumulation of experience, that is, following the chronological sequence of the photographer\u2019s life.</p><p><span class="sc-arc-text-speaker">AR</span> Yes, but it\u2019s not said that it grows into a climax, I think it\u2019s a curve that goes up and down depending on the moment in life, so I am not one of those who think that a photographer gives the best of himself within the age of 40. Mainly reportage photographers have such an idea, but it\u2019s essentially linked to a question of health and physical shape, which prevents them from doing certain things after a certain age. From my point of view, I do not think it\u2019s necessary to have this kind of daily energy; in my work I seek a form of power that is nestled into the look.</p><p><span class="sc-arc-text-speaker">GS</span> Maybe what you say has to do with your philosophical education or, better, with an understanding of philosophy as research of the concept\u2019s intensity. Philosophical practice is often described as a kind of flow from a distance, while the great books in the history of Western philosophy are there just to prove the contrary and don\u2019t hide that their authors felt about the suffering that their authors felt about the things of this world and their being wounded by them to the point of seeking answers all the time.</p><p><span class="sc-arc-text-speaker">AR</span> What you say touches a subject that is close to my heart, so much so that the word you used, intensity, is the one I most often use to define myself and my work. I tend to think that photography can give the opportunity to penetrate the intensity of the world through the surprise \u2013 similar to an upheaval, at times\u2014that we feel in front of it. In my work I consider very important the moments when I don\u2019t have the camera in my hand and I become a spectator, I let myself be invaded by things and it\u2019s in those moments, how Aristotle says, that astonishment and wonder lie. I say this even though I don\u2019t consider myself as a \u201chot (warm?)\u201d photographer, one that applies moral or ideological categories to the human beings.</p><p><span class="sc-arc-text-speaker">GS</span> I would like you to speak about this book on Washington, if you feel like. Why did you go to document the protest for civil rights by Blacks? What did push you, a white Italian, to be a witness to such an event?</p><p><span class="sc-arc-text-speaker">AR</span> I\u2019m surprised myself, I never imagined I could leave in order to document a single day of a manifestation. And I still feel this surprise, but I wanted to be present at the biggest event for the rights of Afroamericans from Martin Luther King\u2019s times. The very strong sense of brotherhood I felt towards this human and ethnic group of people was triggered in me by a love affair I had with an Afroamerican girl (born in Italy from American father); when the riots in Ferguson started, I asked myself what I could do to bear witness to the very serious events that were taking place there and, at the same time, to demonstrate my closeness to the person I loved.</p><p><span class="sc-arc-text-speaker">GP</span> I often think that the aspect which, above all the others, defines an artist\u2019s aesthetics is his conception of time. We talked about ideology before and, if you notice, the artists who are short of breath, those who remain glued to their time, are those who are most strongly linked to an ideology, because out of their time they become aphasic, they almost don\u2019t speak anymore. I am convinced that every great artist has an idea of time that is different from the usual, vectorial one\u2014ent from the usual, vectorial one. I think the most powerful artists, those who are able to transmit that intensity, we were talking about, see human history as a perpetual contemporary to themselves, and they perceive themselves contemporary to artists from the past, because the human being\u2019s happiness or suffering is always actual.</p><p><span class="sc-arc-text-speaker">AR</span> Well, I can\u2019t avoid to think about the universality I find whenever I approach everyday and normal situations. It\u2019s a question of character, an aspect of my personality that I can\u2019t do without, and that sometimes, instead of being an expansive condition, becomes limiting, difficult but necessary.</p><p><span class="sc-arc-text-speaker">AR</span> Actually, there is nothing more abstract than rights, I believe that a photographer should find an inter-section between the intimate and the universal spheres with great delicacy, and in this sense the love story I lived in those days helped me a lot to face something that is so far away from me in terms of belonging, but that is within me in terms of life experience, and I couldn\u2019t do so if I was equipped only with my own bare identity. That\u2019s what I hope I was able to record; not so much the protest itself, but rather the contemporary black America. The people who was there to demonstrate didn\u2019t come from the most humble social classes, the ones that are more frequently subjected to violence by the police, but from a black middle class that is not even directly affected by these issues. They were not the Blacks from Ferguson, Chicago or Detroit, but a bourgeoisie that stood up for the rights of their brothers, who were absent.</p><p><span class="sc-arc-text-speaker">GS</span> Speaking again of universal concepts: you left in order to photograph and you came back with an idea of belonging and cohesion and a deep split.</p><p><span class="sc-arc-text-speaker">AR</span> I didn\u2019t find the magic of a great hope, but rather the fragmentation I often see in other human groups, a complete universe that is totally fragmented, the end of the experience of social cohesion.</p>`
+  }
+};
+
+function _scArcTextOpen(key) {
+  const d = _SC_ARC_TEXT_DATA[key];
+  if (!d) return;
+  const popup   = document.getElementById('sc-arc-text-popup');
+  const overlay = document.getElementById('sc-arc-text-popup-overlay');
+  const title   = document.getElementById('sc-arc-text-popup-title');
+  const body    = document.getElementById('sc-arc-text-popup-body');
+  if (!popup || !overlay || !title || !body) return;
+  title.textContent = d.title;
+  body.innerHTML = d.html;
+  body.scrollTop = 0;
+  overlay.classList.add('sc-arc-text-popup-open');
+  popup.classList.remove('sc-arc-text-popup-open');
+  popup.offsetHeight;
+  requestAnimationFrame(() => popup.classList.add('sc-arc-text-popup-open'));
+}
+
+function _scArcTextClose() {
+  const popup   = document.getElementById('sc-arc-text-popup');
+  const overlay = document.getElementById('sc-arc-text-popup-overlay');
+  if (popup)   popup.classList.remove('sc-arc-text-popup-open');
+  if (overlay) overlay.classList.remove('sc-arc-text-popup-open');
 }
 
 // Avvia una traccia audio specifica dall'Archive (indice 0-based in scAudioFiles)
