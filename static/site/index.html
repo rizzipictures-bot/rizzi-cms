@@ -13293,15 +13293,16 @@ function scBuildSectionContent(section) {
       { key: 'conversation',  label: 'Alessandro Rizzi\nConversation' },
     ];
 
-    let html = '<h2 style="position:relative;z-index:25;color:#fff;background:transparent;">Interview</h2>';
-    html += '<div class="sc-synopsis-intro-text" style="position:relative;z-index:25;font-family:Helvetica,Arial,sans-serif;font-size:13px;font-weight:400;line-height:1.75;color:rgba(255,255,255,0.88);max-width:580px;padding:0 14px 40px;">';
+    let html = '<h2 id="sc-synopsis-title" style="position:relative;z-index:25;color:#fff;background:transparent;transition:color 1.2s ease;">Interview</h2>';
+    html += '<div id="sc-synopsis-intro-text" style="position:relative;z-index:25;font-family:Helvetica,Arial,sans-serif;font-size:13px;font-weight:400;line-height:1.75;color:rgba(255,255,255,0.88);max-width:580px;padding:0 14px 40px;transition:color 1.2s ease;">';
     html += '<p><em>Sculptures</em> is a long-term project on the African American experience, built around a single day — December 13, 2014 — in Washington D.C. The following texts are part of the book published by Yard Press in October 2015. The Publisher\u2019s Note frames the work from the outside; the Conversation between Giovanni Spadaccini and Alessandro Rizzi opens it from within.</p>';
     html += '</div>';
-    html += '<div class="sc-synopsis-grid" id="sc-synopsis-grid" style="position:relative;z-index:25;display:flex;flex-direction:row;gap:28px;padding:0 14px 60px;align-items:flex-start;">';
+    html += '<div class="sc-synopsis-grid" id="sc-synopsis-grid" style="position:relative;z-index:25;display:flex;flex-direction:row;gap:32px;padding:0 14px 60px;align-items:flex-start;">';
     _synThumbs.forEach((t, i) => {
       const labelHtml = t.label.replace('\n', '<br>');
-      html += `<div class="sc-synopsis-cell" data-key="${t.key}" onclick="_scInterviewOpen('${t.key}')" style="opacity:0;transform:translateY(-180px) translateX(-40px);cursor:pointer;flex-shrink:0;">`;
-      html += `<div style="width:140px;height:198px;background-image:url('/static/site/images/interview-thumb-bg.jpg');background-size:cover;background-position:center;border-radius:3px;box-shadow:2px 4px 18px rgba(0,0,0,0.55);display:flex;align-items:flex-end;padding:10px;"><span style="font-family:Georgia,serif;font-size:9px;font-weight:700;color:#3a1e08;text-shadow:0 1px 3px rgba(255,255,255,0.6);line-height:1.4;">${labelHtml}</span></div>`;
+      // Thumb quasi metà pagina: 44vw larghezza, A4 ratio (1:1.414), ruotate 180°
+      html += `<div class="sc-synopsis-cell" data-key="${t.key}" onclick="_scInterviewOpen('${t.key}')" style="opacity:0;transform:translateY(-180px) translateX(-40px) rotate(180deg);cursor:pointer;flex-shrink:0;width:44vw;">`;
+      html += `<div style="width:100%;padding-bottom:141.4%;position:relative;background-image:url('/static/site/images/interview-thumb-bg.jpg');background-size:cover;background-position:center;border-radius:3px;box-shadow:2px 4px 24px rgba(0,0,0,0.6);"><span style="position:absolute;bottom:10px;left:10px;font-family:Georgia,serif;font-size:14px;font-weight:700;color:#3a1e08;text-shadow:0 1px 3px rgba(255,255,255,0.6);line-height:1.4;">${labelHtml}</span></div>`;
       html += '</div>';
     });
     html += '</div>';
@@ -13317,11 +13318,16 @@ function scBuildSectionContent(section) {
       const _synGrEl = document.getElementById('sc-diary-bg-grain');
       if (_synGrEl) _synGrEl.classList.add('active');
       el.classList.add('diary-thumbs-visible');
+      // Testo da bianco a nero (schiarimento sfondo)
+      const _synTitle = document.getElementById('sc-synopsis-title');
+      const _synIntro = document.getElementById('sc-synopsis-intro-text');
+      if (_synTitle) _synTitle.style.color = '#000';
+      if (_synIntro) _synIntro.style.color = 'rgba(0,0,0,0.82)';
       const cells = el.querySelectorAll('.sc-synopsis-cell');
       cells.forEach((cell, i) => {
         setTimeout(() => {
           cell.style.opacity = '1';
-          cell.style.transform = 'translateY(0) translateX(0)';
+          cell.style.transform = 'rotate(180deg)';
           cell.style.transition = 'opacity 0.4s ease, transform 0.55s cubic-bezier(0.22,1,0.36,1)';
         }, i * 200);
       });
