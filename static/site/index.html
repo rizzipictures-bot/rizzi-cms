@@ -7947,19 +7947,21 @@
     </div>
 
     <!-- ── VIEWER: Interview Synopsis ── -->
-    <div id="sc-interview-viewer-overlay" onclick="_scInterviewClose()"></div>
     <div id="sc-interview-viewer">
-      <div id="sc-interview-viewer-header">
-        <span id="sc-interview-viewer-title"></span>
-        <button id="sc-interview-viewer-close" onclick="_scInterviewClose()">× close</button>
+      <!-- Background: testo verticale sfocato -->
+      <div id="sc-iv-bg"></div>
+      <!-- Bottone chiudi -->
+      <button id="sc-interview-viewer-close" onclick="_scInterviewClose()">× close</button>
+      <!-- Thumb centrale -->
+      <div id="sc-iv-thumb-wrap">
+        <div id="sc-iv-thumb"></div>
       </div>
-      <div id="sc-interview-viewer-body">
-        <div id="sc-interview-viewer-text"></div>
-      </div>
-      <!-- Audio player nascosto per la Conversation -->
-      <audio id="sc-interview-audio" style="display:none"></audio>
-      <!-- Indicatore speaker -->
+      <!-- Karaoke sotto -->
+      <div id="sc-iv-karaoke"><div id="sc-iv-karaoke-line"></div></div>
+      <!-- Badge speaker -->
       <div id="sc-interview-speaker-badge"></div>
+      <!-- Audio player nascosto -->
+      <audio id="sc-interview-audio" style="display:none"></audio>
     </div>
 
     <!-- ── VIEW: MISCELLANEA ── -->
@@ -14016,125 +14018,140 @@ function _scBuildArchivePage() {
         pointer-events: none;
       }
       /* ── Viewer fullwidth testo verticale ── */
-      #sc-interview-viewer-overlay {
-        position: fixed;
-        inset: 0;
-        background: rgba(0,0,0,0.6);
-        z-index: 2100;
-        opacity: 0;
-        pointer-events: none;
-        transition: opacity 0.28s ease;
-      }
-      #sc-interview-viewer-overlay.sc-iv-open {
-        opacity: 1;
-        pointer-events: auto;
-      }
+      /* ── VIEWER INTERVIEW (stile Testimony) ── */
       #sc-interview-viewer {
         position: fixed;
         inset: 0;
         z-index: 2101;
-        background: #f0ead8;
-        background-image: url('/static/site/images/interview-thumb-bg.jpg');
-        background-size: cover;
-        background-position: center;
-        background-blend-mode: multiply;
+        background: #1a1008;
         display: flex;
         flex-direction: column;
-        transform: scale(0.04);
-        transform-origin: center center;
+        align-items: center;
+        justify-content: center;
         opacity: 0;
         pointer-events: none;
-        transition: transform 0.45s cubic-bezier(0.34,1.56,0.64,1),
-                    opacity 0.28s ease;
+        transition: opacity 0.45s ease;
+        overflow: hidden;
       }
       #sc-interview-viewer.sc-iv-open {
-        transform: scale(1);
         opacity: 1;
         pointer-events: auto;
       }
-      #sc-interview-viewer-header {
-        flex-shrink: 0;
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        padding: 16px 28px 10px;
-        border-bottom: 1px solid rgba(90,58,26,0.2);
-        background: rgba(240,234,216,0.85);
-        backdrop-filter: blur(4px);
+      /* Background: testo verticale sfocato e chiarito */
+      #sc-iv-bg {
+        position: absolute;
+        inset: 0;
+        background-image: url('/static/site/images/interview-thumb-bg.jpg');
+        background-size: cover;
+        background-position: center;
+        filter: blur(12px) brightness(2.2);
+        transform: scale(1.08);
+        opacity: 0.22;
+        z-index: 0;
       }
-      #sc-interview-viewer-title {
-        font-family: Helvetica, Arial, sans-serif;
-        font-size: 10px;
-        font-weight: 700;
-        letter-spacing: 0.18em;
-        text-transform: uppercase;
-        color: #5a3a1a;
-      }
+      /* Bottone chiudi */
       #sc-interview-viewer-close {
+        position: absolute;
+        top: 18px;
+        right: 24px;
+        z-index: 10;
         background: none;
         border: none;
         cursor: pointer;
         font-family: Helvetica, Arial, sans-serif;
         font-size: 9px;
         font-weight: 700;
-        color: #5a3a1a;
-        letter-spacing: 0.1em;
-        opacity: 0.7;
+        color: rgba(255,255,255,0.75);
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        opacity: 0.8;
         transition: opacity 0.15s;
         padding: 0;
       }
-      #sc-interview-viewer-close:hover { opacity: 1; }
-      #sc-interview-viewer-body {
+      #sc-interview-viewer-close:hover { opacity: 1; color: #fff; }
+      /* Thumb centrale */
+      #sc-iv-thumb-wrap {
+        position: relative;
+        z-index: 5;
+        display: flex;
+        align-items: center;
+        justify-content: center;
         flex: 1;
-        overflow-x: auto;
-        overflow-y: hidden;
-        padding: 32px 40px;
+        width: 100%;
       }
-      #sc-interview-viewer-text {
-        /* Testo in colonne verticali — come un giornale orientale */
-        writing-mode: vertical-rl;
-        text-orientation: mixed;
-        height: 100%;
-        column-count: auto;
-        column-width: 280px;
-        column-gap: 32px;
-        font-family: Georgia, 'Times New Roman', serif;
-        font-size: 11px;
-        font-weight: 600;
-        line-height: 1.8;
-        color: #2a1a08;
-        white-space: normal;
-        direction: ltr;
+      #sc-iv-thumb {
+        width: 38vw;
+        max-width: 520px;
+        aspect-ratio: 1 / 1.414;
+        background-image: url('/static/site/images/interview-thumb-bg.jpg');
+        background-size: cover;
+        background-position: center;
+        border-radius: 4px;
+        box-shadow: 0 8px 48px rgba(0,0,0,0.7);
+        transform: rotate(180deg);
       }
-      #sc-interview-viewer-text p {
-        margin: 0 0 0 20px;
-        break-inside: avoid;
+      /* Karaoke sotto la thumb */
+      #sc-iv-karaoke {
+        position: relative;
+        z-index: 5;
+        width: 100%;
+        min-height: 56px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 0 40px 32px;
+        flex-shrink: 0;
       }
-      #sc-interview-viewer-text .sc-iv-speaker {
-        font-weight: 800;
-        color: #5a3a1a;
-        letter-spacing: 0.06em;
+      #sc-iv-karaoke-line {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.3em;
+        align-items: baseline;
+        justify-content: center;
+        font-family: Helvetica, Arial, sans-serif;
+        font-size: 15px;
+        font-weight: 400;
+        color: rgba(255,255,255,0.85);
+        letter-spacing: 0.04em;
+        line-height: 1.5;
+        text-align: center;
+        min-height: 28px;
       }
-      /* Badge speaker in basso */
+      #sc-iv-karaoke-line .sc-ivk-word {
+        transition: color 0.12s ease, opacity 0.12s ease;
+        opacity: 0.45;
+      }
+      #sc-iv-karaoke-line .sc-ivk-word.active {
+        opacity: 1;
+        color: #fff;
+        font-weight: 700;
+      }
+      #sc-iv-karaoke-line .sc-ivk-word.gs {
+        color: rgba(220,180,120,0.9);
+      }
+      #sc-iv-karaoke-line .sc-ivk-word.gs.active {
+        color: #f0c060;
+      }
+      /* Badge speaker */
       #sc-interview-speaker-badge {
         position: absolute;
         bottom: 20px;
         right: 28px;
+        z-index: 10;
         font-family: Helvetica, Arial, sans-serif;
         font-size: 9px;
         font-weight: 700;
         letter-spacing: 0.12em;
-        color: #5a3a1a;
-        background: rgba(240,234,216,0.9);
+        text-transform: uppercase;
+        color: rgba(255,255,255,0.9);
+        background: rgba(0,0,0,0.45);
         padding: 4px 10px;
         border-radius: 20px;
         opacity: 0;
         transition: opacity 0.4s ease;
         pointer-events: none;
       }
-      #sc-interview-speaker-badge.sc-iv-badge-visible {
-        opacity: 1;
-      }
+      #sc-interview-speaker-badge.sc-iv-badge-visible { opacity: 1; }
     `;
     document.head.appendChild(_iStyle);
   }
@@ -14319,26 +14336,26 @@ const _SC_INTERVIEW_DATA = {
     title: "Alessandro Rizzi Conversation",
     // Manifest audio: ogni battuta ha speaker e file
     turns: [
-      { speaker: 'GS', file: '/static/site/audio/interview/conv-01-gs.mp3' },
-      { speaker: 'AR', file: '/static/site/audio/interview/conv-02-ar.mp3' },
-      { speaker: 'GS', file: '/static/site/audio/interview/conv-03-gs.mp3' },
-      { speaker: 'AR', file: '/static/site/audio/interview/conv-04-ar.mp3' },
-      { speaker: 'GS', file: '/static/site/audio/interview/conv-05-gs.mp3' },
-      { speaker: 'AR', file: '/static/site/audio/interview/conv-06-ar.mp3' },
-      { speaker: 'GS', file: '/static/site/audio/interview/conv-07-gs.mp3' },
-      { speaker: 'AR', file: '/static/site/audio/interview/conv-08-ar.mp3' },
-      { speaker: 'GS', file: '/static/site/audio/interview/conv-09-gs.mp3' },
-      { speaker: 'AR', file: '/static/site/audio/interview/conv-10-ar.mp3' },
-      { speaker: 'GS', file: '/static/site/audio/interview/conv-11-gs.mp3' },
-      { speaker: 'AR', file: '/static/site/audio/interview/conv-12-ar.mp3' },
-      { speaker: 'GS', file: '/static/site/audio/interview/conv-13-gs.mp3' },
-      { speaker: 'AR', file: '/static/site/audio/interview/conv-14-ar.mp3' },
-      { speaker: 'GS', file: '/static/site/audio/interview/conv-15-gs.mp3' },
-      { speaker: 'AR', file: '/static/site/audio/interview/conv-16-ar.mp3' },
-      { speaker: 'GS', file: '/static/site/audio/interview/conv-17-gs.mp3' },
-      { speaker: 'AR', file: '/static/site/audio/interview/conv-18-ar.mp3' },
-      { speaker: 'GS', file: '/static/site/audio/interview/conv-19-gs.mp3' },
-      { speaker: 'AR', file: '/static/site/audio/interview/conv-20-ar.mp3' },
+      { speaker: 'GS', file: '/static/site/audio/interview/conv-01-gs.mp3', text: 'Do you find it normal, as a photographer, to talk about photography? I bring this question up at the beginning because to me discussing about photography has always seemed strange, almost paradoxical, as I find the theoretical analyses on photography strange, somehow independent from the artistic production in the strict sense. Excluding perhaps some photographers who theorize and write on their own vision, it seems to me that the theoretical discourse on photography remains on the side as an attempt to add something that is not necessary.' },
+      { speaker: 'AR', file: '/static/site/audio/interview/conv-02-ar.mp3', text: 'I like to talk about photography, perhaps just because I am not a theoretician and photography theory has never interested me much, because I believe, as you say, that theory has never had a great influence on the photographic practice — a tangible influence on the photographic works, I mean. I have always been interested, instead, by relating the photographic practice to the real existence of people, to memories, to the traces from my travels.' },
+      { speaker: 'GS', file: '/static/site/audio/interview/conv-03-gs.mp3', text: 'Indeed, your travels. Shortly before I met you, I thought how important it is, for a photographer like you, to physically move in order to take pictures. To move your body in space in order to go and grasp the real thing. Also this project on Washington, even if different from your previous ones, is the result of a movement, as if it was a real research method.' },
+      { speaker: 'AR', file: '/static/site/audio/interview/conv-04-ar.mp3', text: "It's true, although this aspect is now less pronounced than how it was in the start, when I was moved by the desire to photograph far away places, the need of knowing the world, of exploring diversity and distance. Then, things changed in time, and I felt that somehow I lost the sense of diversity in terms of aesthetics — the search of the exotic, for example — and I rather acquired a strong push to go where other lives are. I no longer search for someone or something different from me, I look at how the others live, driven by more sincere human curiosity and empathy." },
+      { speaker: 'GS', file: '/static/site/audio/interview/conv-05-gs.mp3', text: 'In fact, your photographs are designed to be viewed in a series, in a sequence, and not to be hung solitary on a wall, because that anthropological aspect, which is a bit the hallmark of what you do, would be lost. It is no longer, to say it in Ghirri\'s words, a matter of renewing the wonder, because our eye is already very compromised and disenchanted, but of being guided in a narration of reality, right?' },
+      { speaker: 'AR', file: '/static/site/audio/interview/conv-06-ar.mp3', text: "That's what I tried to explain to the students of a workshop I'm giving in these days. These people come to class with the idea that a plastic photograph — that is, a photograph which is fully completed in its own lines and movements — is still the dominant one. You used the term series, but I imagine what I do as an abacus, on which moments and fractions of the world rank in a line and build up a vision, something that stays together." },
+      { speaker: 'GS', file: '/static/site/audio/interview/conv-07-gs.mp3', text: 'This is basically an idea of experience, right?' },
+      { speaker: 'AR', file: '/static/site/audio/interview/conv-08-ar.mp3', text: 'Yes, of course.' },
+      { speaker: 'GS', file: '/static/site/audio/interview/conv-09-gs.mp3', text: "That is, photography as documentation of experience. A fascinating thing — however obvious — is that the photographer's work grows and refines through the accumulation of experience, that is, following the chronological sequence of the photographer's life." },
+      { speaker: 'AR', file: '/static/site/audio/interview/conv-10-ar.mp3', text: "Yes, but it's not said that it grows into a climax. I think it's a curve that goes up and down depending on the moment in life, so I am not one of those who think that a photographer gives the best of himself within the age of 40. From my point of view, I do not think it's necessary to have this kind of daily energy, in my work I seek a form of power that is nestled into the look." },
+      { speaker: 'GS', file: '/static/site/audio/interview/conv-11-gs.mp3', text: "Maybe what you say has to do with your philosophical education or, better, with an understanding of philosophy as research of the concept's intensity. Philosophical practice is often described as a kind of look from a distance, while the great books in the history of Western philosophy are there just to prove the contrary." },
+      { speaker: 'AR', file: '/static/site/audio/interview/conv-12-ar.mp3', text: 'What you say touches a subject that is close to my heart, so much so that the word you used, intensity, is the one I most often use to define myself and my work. I tend to think that photography can give the opportunity to penetrate the intensity of the world through the surprise — similar to an upheaval, at times — that we feel in front of it.' },
+      { speaker: 'GS', file: '/static/site/audio/interview/conv-13-gs.mp3', text: 'I often think that the aspect which, above all the others, defines an artist\'s aesthetics is his conception of time. I am convinced that every great artist has an idea of time that is different from the usual, vectorial one. The most powerful artists see human history as a perpetual contemporaneity, and they perceive themselves contemporary to artists from the past.' },
+      { speaker: 'AR', file: '/static/site/audio/interview/conv-14-ar.mp3', text: "Well, I can't avoid to think about the universality I find whenever I approach everyday and normal situations. It's a question of character, an aspect of my personality that I can't do without, and that sometimes, instead of being an expansive condition, becomes limiting, difficult but necessary." },
+      { speaker: 'GS', file: '/static/site/audio/interview/conv-15-gs.mp3', text: 'I would like you to speak about this book on Washington, if you feel like. Why did you go to document the protest for civil rights by Blacks? What did push you, a white Italian, to be a witness to such an event?' },
+      { speaker: 'AR', file: '/static/site/audio/interview/conv-16-ar.mp3', text: "I'm surprised myself, I never imagined I could leave in order to document a single day of a manifestation. And I still feel this surprise, but I wanted to be present at the biggest event for the rights of Afroamericans from Martin Luther King's times. The very strong sense of brotherhood I felt towards this human and ethnic group of people was triggered in me by a love affair I had with an Afroamerican girl." },
+      { speaker: 'GS', file: '/static/site/audio/interview/conv-17-gs.mp3', text: "The photographer's work is very often a solitary job that allows you to deal with abstract and universal concepts: the Masses, the Afroamericans, the Man, the Workers and in this case, the Human Rights. This characteristic is what can make you feel close to a cause such as the protest in Washington. At the same time, because of this person you were with back then, your intimacy was strongly implicated." },
+      { speaker: 'AR', file: '/static/site/audio/interview/conv-18-ar.mp3', text: "Actually, there is nothing more abstract than rights. I believe that a photographer should find an intersection between the intimate and the universal spheres with great delicacy, and in this sense the love story I lived in those days helped me a lot. That's what I hope I was able to record: not so much the protest itself, but rather the contemporary black America." },
+      { speaker: 'GS', file: '/static/site/audio/interview/conv-19-gs.mp3', text: 'Speaking again of universal concepts: you left in order to photograph an idea of belonging and cohesion and you came back with the documentation of a deep split.' },
+      { speaker: 'AR', file: '/static/site/audio/interview/conv-20-ar.mp3', text: "I didn't find the magic of a great hope, but rather the fragmentation I often see in other human groups, a complete universe that is totally fragmented, the end of the experience of social cohesion." },
     ],
     html: `<p style="font-size:9px;color:#5a3a1a;margin-bottom:0 0 0 16px;letter-spacing:0.08em;"><em>Sculptures</em> \u2014 Giovanni Spadaccini in conversation with Alessandro Rizzi, October 2015.</p><p><span class="sc-iv-speaker">GS</span> Do you find it normal, as a photographer, to talk about photography? I bring this question up at the beginning because to me discussing about photography has always seemed strange, almost paradoxical, as I find the theoretical analyses on photography strange, somehow independent from the artistic production in the strict sense. Excluding perhaps some photographers who theorize and write on their own vision, it seems to me that the theoretical discourse on photography remains on the side as an attempt to add something that is not necessary.</p><p><span class="sc-iv-speaker">AR</span> I like to talk about photography, perhaps just because I am not a theoretician and photography theory has never interested me much, because I believe, as you say, that theory has never had a great influence on the photographic practice \u2014 a tangible influence on the photographic works, I mean. I have always been interested, instead, by relating the photographic practice to the real existence of people, to memories, to the traces from my travels.</p><p><span class="sc-iv-speaker">GS</span> Indeed, your travels. Shortly before I met you, I thought how important it is, for a photographer like you, to physically move in order to take pictures. To move your body in space in order to go and grasp the real thing. Also this project on Washington, even if different from your previous ones, is the result of a movement, as if it was a real research method.</p><p><span class="sc-iv-speaker">AR</span> It\u2019s true, although this aspect is now less pronounced than how it was in the start, when I was moved by the desire to photograph far away places, the need of knowing the world, of exploring diversity and distance. Then, things changed in time, and I felt that somehow I lost the sense of diversity in terms of aesthetics \u2014 the search of the exotic, for example \u2014 and I rather acquired a strong push to go where other lives are. I no longer search for someone or something different from me, I look at how the others live, driven by more sincere human curiosity and empathy.</p><p><span class="sc-iv-speaker">GS</span> In fact, your photographs are designed to be viewed in a series, in a sequence, and not to be hung solitary on a wall, because that anthropological aspect, which is a bit the hallmark of what you do, would be lost. It is no longer, to say it in Ghirri\u2019s words, a matter of renewing the wonder, because our eye is already very compromised and disenchanted, but of being guided in a narration of reality, right?</p><p><span class="sc-iv-speaker">AR</span> That\u2019s what I tried to explain to the students of a workshop I\u2019m giving in these days. These people come to class with the idea that a plastic photograph \u2014 that is, a photograph which is fully completed in its own lines and movements \u2014 is still the dominant one, it\u2019s the picture that must be done. On this point, I tried to prove them wrong, because I don\u2019t believe in this vision and it\u2019s an idea that doesn\u2019t satisfy me. You used the term series, but I imagine what I do as an abacus, on which moments and fractions of the world rank in a line and build up a vision, something that stays together. That\u2019s why storytelling doesn\u2019t interest me at all: in my case, it\u2019s more like a kind of accumulation, stratification of looks, experiences and memories, which over time becomes a catalog of observations on humanity.</p><p><span class="sc-iv-speaker">GS</span> This is basically an idea of experience, right?</p><p><span class="sc-iv-speaker">AR</span> Yes, of course.</p><p><span class="sc-iv-speaker">GS</span> That is, photography as documentation of experience. A fascinating thing \u2014 however obvious \u2014 is that the photographer\u2019s work grows and refines through the accumulation of experience, that is, following the chronological sequence of the photographer\u2019s life.</p><p><span class="sc-iv-speaker">AR</span> Yes, but it\u2019s not said that it grows into a climax. I think it\u2019s a curve that goes up and down depending on the moment in life, so I am not one of those who think that a photographer gives the best of himself within the age of 40. Mainly reportage photographers have such an idea, but it\u2019s essentially linked to a question of health and physical shape, which prevents them from doing certain things after a certain age. From my point of view, I do not think it\u2019s necessary to have this kind of daily energy, in my work I seek a form of power that is nestled into the look.</p><p><span class="sc-iv-speaker">GS</span> Maybe what you say has to do with your philosophical education or, better, with an understanding of philosophy as research of the concept\u2019s intensity. Philosophical practice is often described as a kind of look from a distance, while the great books in the history of Western philosophy are there just to prove the contrary and don\u2019t hide this research, nor the suffering that their authors felt about the things of this world and their being wounded by them to the point of seeking answers all the time.</p><p><span class="sc-iv-speaker">AR</span> What you say touches a subject that is close to my heart, so much so that the word you used, intensity, is the one I most often use to define myself and my work. I tend to think that photography can give the opportunity to penetrate the intensity of the world through the surprise \u2014 similar to an upheaval, at times \u2014 that we feel in front of it. In my work I consider very important the moments when I don\u2019t have the camera in my hand and I become a spectator, I let myself be invaded by things and it\u2019s in those moments, how Aristotle says, that astonishment and wonder lie. I say this even though I don\u2019t consider myself as a hot photographer, one that applies moral or ideological categories to the human beings.</p><p><span class="sc-iv-speaker">GS</span> I often think that the aspect which, above all the others, defines an artist\u2019s aesthetics is his conception of time. We talked about ideology before and, if you notice, the artists who are short of breath, those who remain glued to their time, are those who are most strongly linked to an ideology, because out of their time they become aphasic, they almost don\u2019t speak anymore. I am convinced that every great artist has an idea of time that is different from the usual, vectorial one. I think the most powerful artists, those who are able to transmit that intensity we were talking about, see human history as a perpetual contemporaneity, and they perceive themselves contemporary to artists from the past, because the human being\u2019s happiness or suffering is always actual.</p><p><span class="sc-iv-speaker">AR</span> Well, I can\u2019t avoid to think about the universality I find whenever I approach everyday and normal situations. It\u2019s a question of character, an aspect of my personality that I can\u2019t do without, and that sometimes, instead of being an expansive condition, becomes limiting, difficult but necessary.</p><p><span class="sc-iv-speaker">GS</span> I would like you to speak about this book on Washington, if you feel like. Why did you go to document the protest for civil rights by Blacks? What did push you, a white Italian, to be a witness to such an event?</p><p><span class="sc-iv-speaker">AR</span> I\u2019m surprised myself, I never imagined I could leave in order to document a single day of a manifestation. And I still feel this surprise, but I wanted to be present at the biggest event for the rights of Afroamericans from Martin Luther King\u2019s times. The very strong sense of brotherhood I felt towards this human and ethnic group of people was triggered in me by a love affair I had with an Afroamerican girl \u2014 born in Italy from American father: when the riots in Ferguson started, I asked myself what I could do to bear witness to the very serious events that were taking place there and, at the same time, to demonstrate my closeness to the person I loved.</p><p><span class="sc-iv-speaker">GS</span> The photographer\u2019s work is very often a solitary job that allows you to deal with abstract and universal concepts: the Masses, the Afroamericans, the Man, the Workers and in this case, abstraction into abstraction, the Human Rights. This characteristic is what can make you feel close to a cause such as the protest in Washington, which, on paper, is the farthest issue from your personal history you could deal with. At the same time, because of this person you were with back then, your intimacy was strongly implicated, a part of your life was involved there.</p><p><span class="sc-iv-speaker">AR</span> Actually, there is nothing more abstract than rights. I believe that a photographer should find an intersection between the intimate and the universal spheres with great delicacy, and in this sense the love story I lived in those days helped me a lot to get to face something that is so far away from me in terms of belonging, but that is within me in terms of life experience, and I couldn\u2019t do so if I was equipped only with my own bare identity. That\u2019s what I hope I was able to record: not so much the protest itself, but rather the contemporary black America. The people who were there to demonstrate didn\u2019t come from the most humble social classes, the ones that are more frequently subjected to violence by the police, but from a black middle class that is not even directly affected by these issues. They were not the Blacks from Ferguson, not even those from the suburbs of Chicago or Detroit, but a bourgeoisie that stood up for the rights of their brothers, who were absent.</p><p><span class="sc-iv-speaker">GS</span> Speaking again of universal concepts: you left in order to photograph an idea of belonging and cohesion and you came back with the documentation of a deep split.</p><p><span class="sc-iv-speaker">AR</span> I didn\u2019t find the magic of a great hope, but rather the fragmentation I often see in other human groups, a complete universe that is totally fragmented, the end of the experience of social cohesion.</p>`
   }
@@ -14347,25 +14364,33 @@ const _SC_INTERVIEW_DATA = {
 let _scInterviewTurnIdx = 0;
 let _scInterviewTurns = [];
 
+// Karaoke Interview: timer e stato
+let _scIvKaraokeTimer = null;
+let _scIvKaraokeWords = [];
+let _scIvKaraokeIdx   = 0;
+let _scIvCurrentSpeaker = 'AR';
+
 function _scInterviewOpen(key) {
   const d = _SC_INTERVIEW_DATA[key];
   if (!d) return;
-  const viewer  = document.getElementById('sc-interview-viewer');
-  const overlay = document.getElementById('sc-interview-viewer-overlay');
-  const title   = document.getElementById('sc-interview-viewer-title');
-  const textEl  = document.getElementById('sc-interview-viewer-text');
-  const badge   = document.getElementById('sc-interview-speaker-badge');
-  if (!viewer || !overlay || !title || !textEl) return;
-  title.textContent = d.title;
-  textEl.innerHTML  = d.html;
-  textEl.scrollLeft = 0;
-  overlay.classList.add('sc-iv-open');
+  const viewer = document.getElementById('sc-interview-viewer');
+  if (!viewer) return;
+  // Imposta la thumb con il label del testo
+  const thumbEl = document.getElementById('sc-iv-thumb');
+  if (thumbEl) {
+    thumbEl.title = d.title;
+  }
+  // Apri il viewer
   viewer.classList.remove('sc-iv-open');
   viewer.offsetHeight;
   requestAnimationFrame(() => viewer.classList.add('sc-iv-open'));
-  // Audio: solo per Conversation
+  // Keyboard: Escape chiude
+  document._scIvKeyHandler = function(e) { if (e.key === 'Escape') _scInterviewClose(); };
+  document.addEventListener('keydown', document._scIvKeyHandler);
+  // Audio + karaoke: solo per Conversation
   _scInterviewTurns = [];
   _scInterviewTurnIdx = 0;
+  _scIvStopKaraoke();
   if (key === 'conversation' && d.turns) {
     _scInterviewTurns = d.turns;
     _scInterviewPlayTurn(0);
@@ -14378,34 +14403,79 @@ function _scInterviewPlayTurn(idx) {
   const audio = document.getElementById('sc-interview-audio');
   const badge = document.getElementById('sc-interview-speaker-badge');
   if (!audio) return;
-  // Mostra badge speaker
+  _scIvCurrentSpeaker = turn.speaker;
+  // Badge speaker
   if (badge) {
     badge.textContent = turn.speaker === 'AR' ? 'Alessandro Rizzi' : 'Giovanni Spadaccini';
     badge.classList.add('sc-iv-badge-visible');
     setTimeout(() => badge.classList.remove('sc-iv-badge-visible'), 3000);
   }
+  // Prepara karaoke: estrai parole dal testo della battuta
+  _scIvStopKaraoke();
+  if (turn.text) {
+    _scIvKaraokeWords = turn.text.trim().split(/\s+/);
+    _scIvKaraokeIdx = 0;
+    _scIvStartKaraoke(audio, turn.speaker);
+  }
   audio.src = turn.file;
   audio.onended = () => {
+    _scIvStopKaraoke();
     _scInterviewTurnIdx = idx + 1;
     _scInterviewPlayTurn(_scInterviewTurnIdx);
   };
   audio.onerror = () => {
-    // File non ancora disponibile: salta alla prossima battuta
+    _scIvStopKaraoke();
     _scInterviewTurnIdx = idx + 1;
     setTimeout(() => _scInterviewPlayTurn(_scInterviewTurnIdx), 500);
   };
   audio.play().catch(() => {});
 }
 
+function _scIvStartKaraoke(audio, speaker) {
+  const line = document.getElementById('sc-iv-karaoke-line');
+  if (!line || !_scIvKaraokeWords.length) return;
+  // Mostra tutte le parole sbiadite
+  line.innerHTML = _scIvKaraokeWords.map((w, i) =>
+    `<span class="sc-ivk-word${speaker === 'GS' ? ' gs' : ''}" data-idx="${i}">${w}</span>`
+  ).join(' ');
+  // Avanza parola per parola in base al currentTime dell'audio
+  const totalWords = _scIvKaraokeWords.length;
+  _scIvKaraokeTimer = setInterval(() => {
+    if (!audio || audio.paused || audio.ended) return;
+    const progress = audio.duration > 0 ? audio.currentTime / audio.duration : 0;
+    const targetIdx = Math.min(Math.floor(progress * totalWords), totalWords - 1);
+    if (targetIdx !== _scIvKaraokeIdx) {
+      // Deattiva parola precedente
+      const prev = line.querySelector(`[data-idx="${_scIvKaraokeIdx}"]`);
+      if (prev) prev.classList.remove('active');
+      _scIvKaraokeIdx = targetIdx;
+      // Attiva parola corrente
+      const cur = line.querySelector(`[data-idx="${targetIdx}"]`);
+      if (cur) { cur.classList.add('active'); cur.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'nearest' }); }
+    }
+  }, 80);
+}
+
+function _scIvStopKaraoke() {
+  if (_scIvKaraokeTimer) { clearInterval(_scIvKaraokeTimer); _scIvKaraokeTimer = null; }
+  _scIvKaraokeWords = [];
+  _scIvKaraokeIdx = 0;
+  const line = document.getElementById('sc-iv-karaoke-line');
+  if (line) line.innerHTML = '';
+}
+
 function _scInterviewClose() {
-  const viewer  = document.getElementById('sc-interview-viewer');
-  const overlay = document.getElementById('sc-interview-viewer-overlay');
-  const audio   = document.getElementById('sc-interview-audio');
-  if (viewer)  viewer.classList.remove('sc-iv-open');
-  if (overlay) overlay.classList.remove('sc-iv-open');
-  if (audio)   { audio.pause(); audio.src = ''; }
+  const viewer = document.getElementById('sc-interview-viewer');
+  const audio  = document.getElementById('sc-interview-audio');
+  if (viewer) viewer.classList.remove('sc-iv-open');
+  if (audio)  { audio.pause(); audio.src = ''; }
+  _scIvStopKaraoke();
   _scInterviewTurns = [];
   _scInterviewTurnIdx = 0;
+  if (document._scIvKeyHandler) {
+    document.removeEventListener('keydown', document._scIvKeyHandler);
+    document._scIvKeyHandler = null;
+  }
 }
 
 // Avvia una traccia audio specifica dall'Archive (indice 0-based in scAudioFiles)
