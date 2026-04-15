@@ -219,7 +219,7 @@
   <!-- Keywords injected via JS after DOM load for maximum crawler coverage -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;900&family=Plus+Jakarta+Sans:wght@800&family=EB+Garamond:wght@400;500&family=IBM+Plex+Mono:wght@400;700&family=Barlow+Condensed:wght@800;900&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;900&family=Plus+Jakarta+Sans:wght@800&family=EB+Garamond:wght@400;500&family=IBM+Plex+Mono:wght@400;700&family=Barlow+Condensed:wght@800;900&family=Special+Elite&display=swap" rel="stylesheet">
   <style>
     /* Univers Next W01 — stesso font di nadavkander.com */
     @font-face {
@@ -13528,18 +13528,13 @@ function scBuildSectionContent(section) {
   if (section === 'synopsis') {
     el.style.background = '';
     el.style.minHeight  = '100vh';
-    el.classList.add('sc-diary-mode'); // riusa la classe diary per trasparenza
+    el.classList.add('sc-diary-mode');
     document.body.classList.add('sc-diary-nav-mode');
 
-    // ── Hero fullscreen: immagine libretto come sfondo fisso (come Diary) ──
-    const _synOldBg = document.getElementById('sc-diary-bg-img');
-    if (_synOldBg) _synOldBg.remove();
-    const _synOldOv = document.getElementById('sc-diary-bg-overlay');
-    if (_synOldOv) _synOldOv.remove();
-    const _synOldGr = document.getElementById('sc-diary-bg-grain');
-    if (_synOldGr) _synOldGr.remove();
+    // ── Cleanup elementi precedenti ──
+    ['sc-diary-bg-img','sc-diary-bg-overlay','sc-diary-bg-grain'].forEach(id => { const e=document.getElementById(id); if(e) e.remove(); });
 
-    // Crea hero con immagine libretto
+    // ── Hero fullscreen: immagine libretto come sfondo fisso ──
     const _synHero = document.createElement('div');
     _synHero.id = 'sc-diary-bg-img';
     _synHero.style.cssText = 'position:fixed;top:0;left:0;width:100vw;height:100vh;z-index:1099;pointer-events:none;overflow:hidden;transition:filter 1.2s ease;';
@@ -13550,12 +13545,12 @@ function scBuildSectionContent(section) {
     _synHero.appendChild(_synImg);
     document.body.appendChild(_synHero);
 
-    // Crea overlay (inizialmente trasparente, diventa bianco-avorio)
+    // Overlay bianco-avorio
     const _synOv = document.createElement('div');
     _synOv.id = 'sc-diary-bg-overlay';
     document.body.appendChild(_synOv);
 
-    // Crea grana
+    // Grana
     const _synGrain = document.createElement('div');
     _synGrain.id = 'sc-diary-bg-grain';
     document.body.appendChild(_synGrain);
@@ -13564,51 +13559,64 @@ function scBuildSectionContent(section) {
     const _synViewEl = document.getElementById('view-sculptures');
     if (_synViewEl) _synViewEl.classList.add('sc-diary-mode');
 
-    // ── Contenuto: titolo + testo intro + griglia thumb ──
-    const _synThumbs = [
-      { key: 'publisher',     label: 'Publisher\u2019s Note' },
-      { key: 'conversation',  label: 'Alessandro Rizzi\nConversation' },
-    ];
+    // ── Testo intervista: tutte le battute GS/AR ──
+    const _synTurns = _SC_INTERVIEW_DATA.conversation.turns;
 
-    let html = '<h2 id="sc-synopsis-title" style="position:relative;z-index:25;color:#fff;background:transparent;transition:color 1.2s ease;">Interview</h2>';
-    html += '<div id="sc-synopsis-intro-text" style="position:relative;z-index:25;font-family:Helvetica,Arial,sans-serif;font-size:13px;font-weight:400;line-height:1.75;color:rgba(255,255,255,0.88);max-width:580px;padding:0 14px 40px;transition:color 1.2s ease;">';
-    html += '<p><em>Sculptures</em> is a long-term project on the African American experience, built around a single day — December 13, 2014 — in Washington D.C. The following texts are part of the book published by Yard Press in October 2015. The Publisher\u2019s Note frames the work from the outside; the Conversation between Giovanni Spadaccini and Alessandro Rizzi opens it from within.</p>';
-    html += '</div>';
-    html += '<div class="sc-synopsis-grid" id="sc-synopsis-grid" style="position:relative;z-index:25;display:flex;flex-direction:row;gap:48px;padding:0 14px 60px;align-items:flex-start;justify-content:center;width:100%;box-sizing:border-box;">';
-    _synThumbs.forEach((t, i) => {
-      const labelHtml = t.label.replace('\n', '<br>');
-      // Thumb quasi metà pagina: 44vw larghezza, A4 ratio (1:1.414), ruotate 180°
-      html += `<div class="sc-synopsis-cell" data-key="${t.key}" onclick="_scInterviewOpen('${t.key}')" style="opacity:0;transform:translateY(-180px) translateX(-40px) rotate(180deg);cursor:pointer;flex-shrink:0;width:42vw;">`;
-      html += `<div style="width:100%;padding-bottom:141.4%;position:relative;background-image:url('/static/site/images/interview-thumb-bg.jpg');background-size:cover;background-position:center;border-radius:3px;box-shadow:2px 4px 24px rgba(0,0,0,0.3);filter:brightness(1.45) saturate(0.55);"><span style="position:absolute;bottom:10px;left:10px;font-family:Georgia,serif;font-size:14px;font-weight:700;color:#3a1e08;text-shadow:0 1px 3px rgba(255,255,255,0.6);line-height:1.4;">${labelHtml}</span></div>`;
-      html += '</div>';
+    // Costruisce l'HTML del testo typewriter (inizialmente invisibile)
+    let html = '<div id="sc-synopsis-typewriter-wrap" class="sc-synopsis-typewriter-wrap">';
+    html += '<p class="sc-synopsis-header" style="opacity:0;transform:translateX(-60px);transition:opacity 0.5s ease, transform 0.5s ease;"><em>Sculptures</em> — Giovanni Spadaccini in conversation with Alessandro Rizzi, October 2015.</p>';
+    _synTurns.forEach((turn, i) => {
+      html += `<p class="sc-synopsis-turn" data-idx="${i}" style="opacity:0;transform:translateX(-80px);transition:opacity 0.45s ease, transform 0.45s cubic-bezier(0.22,1,0.36,1);"><span class="sc-synopsis-speaker">${turn.speaker}</span>${turn.text}</p>`;
     });
     html += '</div>';
+
+    // Player cerchio in fondo
+    html += `<div id="sc-synopsis-player" class="sc-synopsis-player" style="opacity:0;transform:translateY(20px);transition:opacity 0.5s ease, transform 0.5s ease;">
+      <button id="sc-synopsis-play-btn" class="sc-synopsis-play-btn" onclick="_scSynopsisTogglePlay()" aria-label="Play interview">
+        <svg viewBox="0 0 52 52" fill="none" xmlns="http://www.w3.org/2000/svg" width="28" height="28">
+          <path id="sc-synopsis-play-icon" d="M20 15L38 26L20 37V15Z" fill="#000"/>
+        </svg>
+      </button>
+      <span class="sc-synopsis-player-label">Play Interview</span>
+    </div>`;
+
     el.innerHTML = html;
 
-    // ── Animazione cascade: dopo 2s le thumb cadono una alla volta (come Diary) ──
+    // ── Sequenza animazione: dopo 1.8s schiarisce il bg, poi appaiono le righe da sx ──
     window._scSynopsisCascadeTimer = setTimeout(() => {
       window._scSynopsisCascadeTimer = null;
+
+      // 1. Attiva overlay bianco e blur sfondo
       const _synOvEl = document.getElementById('sc-diary-bg-overlay');
       if (_synOvEl) _synOvEl.classList.add('active');
       const _synBgEl = document.getElementById('sc-diary-bg-img');
       if (_synBgEl) _synBgEl.classList.add('diary-bg-blurred');
       const _synGrEl = document.getElementById('sc-diary-bg-grain');
       if (_synGrEl) _synGrEl.classList.add('active');
-      el.classList.add('diary-thumbs-visible');
-      // Testo da bianco a nero (schiarimento sfondo)
-      const _synTitle = document.getElementById('sc-synopsis-title');
-      const _synIntro = document.getElementById('sc-synopsis-intro-text');
-      if (_synTitle) _synTitle.style.color = '#000';
-      if (_synIntro) _synIntro.style.color = 'rgba(0,0,0,0.82)';
-      const cells = el.querySelectorAll('.sc-synopsis-cell');
-      cells.forEach((cell, i) => {
+
+      // 2. Dopo 600ms (overlay quasi completo) inizia ad apparire il testo da sx
+      setTimeout(() => {
+        const header = el.querySelector('.sc-synopsis-header');
+        if (header) { header.style.opacity = '1'; header.style.transform = 'translateX(0)'; }
+
+        // Ogni riga appare con delay crescente molto rapido (80ms tra una e l'altra)
+        const turns = el.querySelectorAll('.sc-synopsis-turn');
+        turns.forEach((turn, i) => {
+          setTimeout(() => {
+            turn.style.opacity = '1';
+            turn.style.transform = 'translateX(0)';
+          }, 120 + i * 80);
+        });
+
+        // Player appare alla fine
+        const totalDelay = 120 + turns.length * 80 + 300;
         setTimeout(() => {
-          cell.style.opacity = '1';
-          cell.style.transform = 'rotate(180deg)';
-          cell.style.transition = 'opacity 0.4s ease, transform 0.55s cubic-bezier(0.22,1,0.36,1)';
-        }, i * 200);
-      });
-    }, 2000);
+          const player = document.getElementById('sc-synopsis-player');
+          if (player) { player.style.opacity = '1'; player.style.transform = 'translateY(0)'; }
+        }, totalDelay);
+
+      }, 600);
+    }, 1800);
 
     return;
   }
@@ -14228,57 +14236,102 @@ function _scBuildArchivePage() {
     const _iStyle = document.createElement('style');
     _iStyle.id = 'sc-interview-css';
     _iStyle.textContent = `
-      /* ── Pagina Synopsis / Interview ── */
-      .sc-synopsis-page {
-        padding: 48px 60px 80px;
-        min-height: 100vh;
-        background: #000;
-        color: #fff;
-      }
-      .sc-synopsis-intro {
-        font-family: Helvetica, Arial, sans-serif;
-        font-size: 13px;
-        font-weight: 400;
-        line-height: 1.75;
-        color: rgba(255,255,255,0.82);
-        max-width: 640px;
-        margin: 0 0 64px 0;
-      }
-      .sc-synopsis-intro em { font-style: italic; }
-      .sc-synopsis-thumbs {
-        display: flex;
-        flex-direction: row;
-        gap: 28px;
-        align-items: flex-start;
-      }
-      .sc-synopsis-thumb {
-        width: 160px;
-        height: 226px; /* A4: 160 × 1.414 */
-        background-image: url('/static/site/images/interview-thumb-bg.jpg');
-        background-size: cover;
-        background-position: center;
-        border-radius: 3px;
-        box-shadow: 2px 4px 18px rgba(0,0,0,0.55);
-        cursor: pointer;
+      /* ── Pagina Synopsis: testo typewriter macchina da scrivere ── */
+
+      /* Wrapper testo: colonna centrata, scrollabile */
+      .sc-synopsis-typewriter-wrap {
         position: relative;
-        transition: transform 0.22s cubic-bezier(0.34,1.56,0.64,1),
-                    box-shadow 0.22s ease;
-        display: flex;
-        align-items: flex-end;
-        padding: 10px 10px;
+        z-index: 25;
+        max-width: 680px;
+        margin: 0 auto;
+        padding: 28px 24px 20px;
+        font-family: 'Special Elite', 'Courier New', Courier, monospace;
+        font-size: 13px;
+        line-height: 1.85;
+        color: #000;
+        overflow-anchor: none;
       }
-      .sc-synopsis-thumb:hover {
-        transform: scale(1.06) translateY(-4px);
-        box-shadow: 4px 8px 28px rgba(0,0,0,0.7);
+
+      /* Header titolo intervista */
+      .sc-synopsis-header {
+        font-family: 'Special Elite', 'Courier New', Courier, monospace;
+        font-size: 11px;
+        font-style: italic;
+        color: #333;
+        margin: 0 0 28px 0;
+        letter-spacing: 0.02em;
       }
-      .sc-synopsis-thumb-label {
-        font-family: Georgia, 'Times New Roman', serif;
-        font-size: 8px;
+
+      /* Ogni paragrafo GS/AR */
+      .sc-synopsis-turn {
+        margin: 0 0 18px 0;
+        padding: 0;
+        font-family: 'Special Elite', 'Courier New', Courier, monospace;
+        font-size: 13px;
+        line-height: 1.85;
+        color: #111;
+      }
+
+      /* Prefisso GS / AR in bold */
+      .sc-synopsis-speaker {
+        font-family: 'Special Elite', 'Courier New', Courier, monospace;
         font-weight: 700;
-        line-height: 1.4;
-        color: #3a1e08;
-        text-shadow: 0 1px 3px rgba(255,255,255,0.6);
-        pointer-events: none;
+        font-size: 13px;
+        color: #000;
+        margin-right: 10px;
+        letter-spacing: 0.05em;
+      }
+
+      /* Player cerchio in fondo */
+      .sc-synopsis-player {
+        position: relative;
+        z-index: 25;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        padding: 32px 0 60px;
+        gap: 12px;
+      }
+
+      /* Bottone cerchio con triangolo play */
+      .sc-synopsis-play-btn {
+        width: 64px;
+        height: 64px;
+        border-radius: 50%;
+        background: #000;
+        border: none;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0 4px 18px rgba(0,0,0,0.35);
+        transition: transform 0.3s cubic-bezier(0.22,1,0.36,1),
+                    box-shadow 0.3s ease,
+                    background 0.2s ease;
+        outline: none;
+        padding: 0;
+        flex-shrink: 0;
+      }
+      .sc-synopsis-play-btn:hover {
+        transform: scale(1.12);
+        box-shadow: 0 8px 28px rgba(0,0,0,0.5);
+      }
+      .sc-synopsis-play-btn svg path {
+        fill: #fff;
+        transition: fill 0.2s ease;
+      }
+      .sc-synopsis-play-btn.playing {
+        background: #111;
+      }
+
+      /* Label sotto il player */
+      .sc-synopsis-player-label {
+        font-family: 'Special Elite', 'Courier New', Courier, monospace;
+        font-size: 10px;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        color: #333;
       }
       /* ── Viewer fullwidth testo verticale ── */
       /* ── VIEWER INTERVIEW (stile Testimony) ── */
@@ -14770,6 +14823,94 @@ function _scInterviewClose() {
     document.removeEventListener('keydown', document._scIvKeyHandler);
     document._scIvKeyHandler = null;
   }
+}
+
+// ── Player Synopsis: play/pause dell'intera conversazione ──
+// Usa sc-interview-audio (stesso elemento del viewer) ma in modo standalone
+window._scSynopsisAudio = null;
+window._scSynopsisTurnIdx = 0;
+window._scSynopsisPlaying = false;
+
+function _scSynopsisTogglePlay() {
+  const btn = document.getElementById('sc-synopsis-play-btn');
+  const label = document.querySelector('.sc-synopsis-player-label');
+  const iconPath = document.getElementById('sc-synopsis-play-icon');
+
+  if (window._scSynopsisPlaying) {
+    // ─ PAUSA ─
+    if (window._scSynopsisAudio) { window._scSynopsisAudio.pause(); }
+    window._scSynopsisPlaying = false;
+    if (btn) btn.classList.remove('playing');
+    // Icona play
+    if (iconPath) iconPath.setAttribute('d', 'M20 15L38 26L20 37V15Z');
+    if (label) label.textContent = 'Play Interview';
+    return;
+  }
+
+  // ─ PLAY ─
+  // Ferma tutte le altre tracce audio attive
+  const mainPlayer = document.getElementById('sc-audio-player');
+  if (mainPlayer && !mainPlayer.paused) { mainPlayer.pause(); mainPlayer.currentTime = 0; }
+  const ivAudio = document.getElementById('sc-interview-audio');
+  if (ivAudio && !ivAudio.paused) { ivAudio.pause(); ivAudio.src = ''; }
+  scStopKaraoke && scStopKaraoke();
+
+  // Crea o riusa l'elemento audio
+  if (!window._scSynopsisAudio) {
+    window._scSynopsisAudio = new Audio();
+    window._scSynopsisAudio.onended = () => {
+      window._scSynopsisTurnIdx++;
+      const turns = _SC_INTERVIEW_DATA.conversation.turns;
+      if (window._scSynopsisTurnIdx < turns.length) {
+        _scSynopsisPlayTurn(window._scSynopsisTurnIdx);
+      } else {
+        // Fine intervista
+        window._scSynopsisPlaying = false;
+        window._scSynopsisTurnIdx = 0;
+        const b = document.getElementById('sc-synopsis-play-btn');
+        const lbl = document.querySelector('.sc-synopsis-player-label');
+        const ip = document.getElementById('sc-synopsis-play-icon');
+        if (b) b.classList.remove('playing');
+        if (ip) ip.setAttribute('d', 'M20 15L38 26L20 37V15Z');
+        if (lbl) lbl.textContent = 'Play Interview';
+      }
+    };
+    window._scSynopsisAudio.onerror = () => {
+      window._scSynopsisTurnIdx++;
+      const turns = _SC_INTERVIEW_DATA.conversation.turns;
+      if (window._scSynopsisTurnIdx < turns.length) {
+        setTimeout(() => _scSynopsisPlayTurn(window._scSynopsisTurnIdx), 300);
+      }
+    };
+  }
+
+  window._scSynopsisPlaying = true;
+  if (btn) btn.classList.add('playing');
+  // Icona pausa (due barre verticali)
+  if (iconPath) iconPath.setAttribute('d', 'M18 14h4v24h-4V14zm12 0h4v24h-4V14z');
+  if (label) label.textContent = 'Pause';
+
+  // Se era in pausa, riprende; altrimenti riparte dall'inizio
+  if (window._scSynopsisAudio.paused && window._scSynopsisAudio.src && window._scSynopsisAudio.currentTime > 0) {
+    window._scSynopsisAudio.play().catch(() => {});
+  } else {
+    window._scSynopsisTurnIdx = 0;
+    _scSynopsisPlayTurn(0);
+  }
+}
+
+function _scSynopsisPlayTurn(idx) {
+  const turns = _SC_INTERVIEW_DATA.conversation.turns;
+  if (idx >= turns.length || !window._scSynopsisAudio) return;
+  const turn = turns[idx];
+  // Evidenzia il paragrafo corrente nella pagina
+  document.querySelectorAll('.sc-synopsis-turn').forEach((p, i) => {
+    p.style.color = i === idx ? '#000' : 'rgba(0,0,0,0.38)';
+    p.style.fontWeight = i === idx ? '700' : '';
+    if (i === idx) p.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  });
+  window._scSynopsisAudio.src = turn.file;
+  window._scSynopsisAudio.play().catch(() => {});
 }
 
 // Avvia una traccia audio specifica dall'Archive (indice 0-based in scAudioFiles)
@@ -15651,6 +15792,17 @@ function _scPlayIndex(idx) {
   scAudioIndex = idx;
   const player = document.getElementById('sc-audio-player');
   if (!player) return;
+  // Ferma il player Synopsis se attivo
+  if (window._scSynopsisPlaying && window._scSynopsisAudio) {
+    window._scSynopsisAudio.pause();
+    window._scSynopsisPlaying = false;
+    const synBtn = document.getElementById('sc-synopsis-play-btn');
+    const synIp = document.getElementById('sc-synopsis-play-icon');
+    const synLbl = document.querySelector('.sc-synopsis-player-label');
+    if (synBtn) synBtn.classList.remove('playing');
+    if (synIp) synIp.setAttribute('d', 'M20 15L38 26L20 37V15Z');
+    if (synLbl) synLbl.textContent = 'Play Interview';
+  }
   const currentSrc = scAudioFiles[idx].url;
   player.src = currentSrc;
   player.volume = 0;
