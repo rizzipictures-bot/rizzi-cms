@@ -5047,15 +5047,14 @@
     }
 
     /* ── Popup grigio istituzione (MoMA / THE MET) ── */
-    /* Effetto cascata: si sovrappone al box info nel terzo inferiore destro */
+    /* Effetto cascata: si sovrappone al box info nel terzo inferiore — top calcolato via JS */
     #sc-inst-popup-box {
       position: fixed;
-      /* Allineato al bordo sinistro del box info (left:0) ma sporgente verso destra.
-         Si posiziona nel terzo inferiore del box info, leggermente sfalsato in basso. */
-      bottom: 0;
+      /* top e left impostati via JS in scInstPopupShow() per sovrapporsi al terzo inferiore del box bianco */
+      top: 0;  /* valore di default, sovrascritto via JS */
       left: 0;
       z-index: 1600;  /* sopra sculptures-info (1500) */
-      background: #d4d4d4;  /* grigio chiaro (+30% rispetto a #b0b0b0) */
+      background: #e0e0e0;  /* grigio molto chiaro (+15% rispetto a #d4d4d4) */
       border-radius: 0 10px 0 0;  /* angolo arrotondato in alto a destra */
       /* Larghezza: 55% * 1.3 = 71.5% del box bianco (60vw) */
       width: calc(60vw * 0.715);
@@ -13436,6 +13435,14 @@ function scToggleDiaryGridNote() {
     body.innerHTML = d.rows.map(function(r) {
       return '<div class="sc-inst-row"><span class="sc-inst-label">' + r[0] + '</span><span class="sc-inst-value">' + r[1] + '</span></div>';
     }).join('');
+    // Calcola posizione: sovrapposto al terzo inferiore del box bianco
+    var infoEl = document.getElementById('sculptures-info');
+    if (infoEl) {
+      var infoRect = infoEl.getBoundingClientRect();
+      // top del popup = 2/3 dell'altezza del box bianco (terzo inferiore)
+      var popupTop = infoRect.top + (infoRect.height * 2 / 3);
+      box.style.top = popupTop + 'px';
+    }
     // Mostra con animazione
     box.classList.remove('sc-inst-visible');
     box.offsetHeight; // reflow
