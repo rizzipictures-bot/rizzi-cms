@@ -7941,7 +7941,7 @@
     <div id="sc-arc-text-popup">
       <div id="sc-arc-text-popup-header">
         <span id="sc-arc-text-popup-title"></span>
-        <button id="sc-arc-text-popup-close" onclick="_scArcTextClose()">× close</button>
+        <button id="sc-arc-text-popup-close" class="ae-fab-btn ae-fab-close" onclick="_scArcTextClose()" aria-label="Chiudi"><svg viewBox="0 0 20 20" width="12" height="12" fill="none" stroke-width="1.5" stroke-linecap="round"><line x1="2.5" y1="2.5" x2="17.5" y2="17.5"/><line x1="17.5" y1="2.5" x2="2.5" y2="17.5"/></svg></button>
       </div>
       <div id="sc-arc-text-popup-body"></div>
     </div>
@@ -13926,20 +13926,7 @@ function _scBuildArchivePage() {
       text-transform: uppercase;
       color: #fff;
     }
-    #sc-arc-text-popup-close {
-      background: none;
-      border: none;
-      cursor: pointer;
-      font-family: Helvetica, Arial, sans-serif;
-      font-size: 8px;
-      font-weight: 700;
-      color: #fff;
-      letter-spacing: 0.1em;
-      opacity: 0.7;
-      transition: opacity 0.15s;
-      padding: 0;
-    }
-    #sc-arc-text-popup-close:hover { opacity: 1; }
+    /* #sc-arc-text-popup-close usa ae-fab-btn ae-fab-close (cerchio viola) */
     #sc-arc-text-popup-body {
       overflow-y: auto;
       padding: 14px 16px 20px 16px;
