@@ -6005,6 +6005,16 @@
       display: none !important;
     }
 
+    /* ── Archive nav mode: menu nero su sfondo bianco ── */
+    .sc-archive-nav-mode #sculptures-nav [data-sc-section],
+    .sc-archive-nav-mode #sculptures-back {
+      color: #000 !important;
+    }
+    .sc-archive-nav-mode #sculptures-nav [data-sc-section]:hover,
+    .sc-archive-nav-mode #sculptures-nav [data-sc-section].active {
+      color: #4c00fc !important;
+    }
+
     /* ── Griglia thumbs stile Jack Davison: righe libere, mix portrait+landscape ── */
     .sc-section-diary-grid {
       position: relative;
@@ -13131,10 +13141,11 @@ function scBuildSectionContent(section) {
 
     return;
   }
-  // Rimuovi background nero se eravamo in archive
+  // Rimuovi background bianco e classe archive se eravamo in archive
   if (scCurrentSection === 'archive') {
     el.style.background = '';
     el.style.color = '';
+    document.body.classList.remove('sc-archive-nav-mode');
   }
   // Rimuovi la classe diary-mode se eravamo in diary
   if (window._scDiaryCascadeTimer) {
@@ -13161,11 +13172,13 @@ function scBuildSectionContent(section) {
   // Mappa sezione -> titolo
   // ── Pagina speciale: Archive ──
   if (section === 'archive') {
-    el.style.background = '#000';
+    el.style.background = '#fff';
     el.style.minHeight  = '100vh';
-    el.style.color      = '#fff';
+    el.style.color      = '#000';
+    // Menu nero (come in diary-nav-mode ma invertito: testo nero su sfondo bianco)
+    document.body.classList.add('sc-archive-nav-mode');
     el.innerHTML = `
-      <h2 style="color:#fff;font-family:Helvetica,Arial,sans-serif;font-size:clamp(2rem,6vw,5rem);font-weight:900;letter-spacing:-0.02em;text-transform:uppercase;padding:0 0 0.5em 0;margin:0;">Archive</h2>
+      <h2 style="color:#000;font-family:Helvetica,Arial,sans-serif;font-size:clamp(2rem,6vw,5rem);font-weight:900;letter-spacing:-0.02em;text-transform:uppercase;padding:0 0 0.5em 0;margin:0;">Archive</h2>
       <div id="sc-archive-content" style="min-height:60vh;"></div>
     `;
     return;
