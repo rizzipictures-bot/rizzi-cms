@@ -219,7 +219,7 @@
   <!-- Keywords injected via JS after DOM load for maximum crawler coverage -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;900&family=Plus+Jakarta+Sans:wght@800&family=EB+Garamond:wght@400;500&family=IBM+Plex+Mono:wght@400;700&family=Barlow+Condensed:wght@800;900&family=Special+Elite&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;900&family=Plus+Jakarta+Sans:wght@800&family=EB+Garamond:wght@400;500&family=IBM+Plex+Mono:wght@400;700&family=Barlow+Condensed:wght@800;900&family=Special+Elite&family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
   <style>
     /* Univers Next W01 — stesso font di nadavkander.com */
     @font-face {
@@ -12808,6 +12808,8 @@ function scSwitchSection(section) {
     document.body.classList.remove('sc-archive-nav-mode');
     const _vscOv = document.getElementById('view-sculptures');
     if (_vscOv) { _vscOv.style.background = ''; _vscOv.classList.remove('sc-diary-mode'); }
+    // Rimuovi modalità mapping-lives
+    if (_vscOv) _vscOv.style.background = '';
     if (sectionContent) { sectionContent.style.background = ''; sectionContent.style.color = ''; sectionContent.classList.remove('sc-diary-mode','diary-thumbs-visible'); }
     // Cleanup Synopsis/Diary: rimuovi elementi hero/overlay/grain dal body
     if (window._scSynopsisCascadeTimer) { clearTimeout(window._scSynopsisCascadeTimer); window._scSynopsisCascadeTimer = null; }
@@ -12946,6 +12948,14 @@ function scBuildGrid() {
     sc_section: 'archive'
   });
 
+  // Aggiungi la thumb Mapping Lives hardcoded (mappa animata con punti rossi)
+  scCurrentImages.push({
+    url: null,
+    title: 'Mapping Lives',
+    desc: 'Police Violence · USA',
+    sc_section: 'mapping-lives'
+  });
+
   // Pattern misto Corboz: H-V-H-V (riga1) / V-H-V-V (riga2) — identico a Images Book
   const PATTERN = [true, false, true, false, false, true, false, false]; // true = orizzontale
   scCurrentImages.forEach((img, idx) => {
@@ -13068,6 +13078,73 @@ function scBuildGrid() {
         inner.appendChild(img2);
         wrap.appendChild(inner);
       }
+    } else if (targetSection === 'mapping-lives') {
+      // Thumb Mapping Lives: canvas animato con punti rossi su sfondo nero
+      const canvas = document.createElement('canvas');
+      canvas.className = 'sc-mapping-canvas';
+      canvas.style.cssText = 'position:absolute;top:0;left:0;width:100%;height:100%;';
+      wrap.appendChild(canvas);
+      // Avvia animazione canvas dopo inserimento nel DOM
+      setTimeout(() => {
+        const w = canvas.offsetWidth || 200;
+        const h = canvas.offsetHeight || 280;
+        canvas.width = w;
+        canvas.height = h;
+        const ctx = canvas.getContext('2d');
+        // Punti fissi che simulano la distribuzione geografica USA
+        const pts = [
+          [0.18,0.32],[0.22,0.28],[0.25,0.35],[0.30,0.30],[0.35,0.38],[0.38,0.25],[0.42,0.40],
+          [0.45,0.28],[0.50,0.35],[0.55,0.30],[0.58,0.42],[0.62,0.25],[0.65,0.38],[0.70,0.32],
+          [0.72,0.45],[0.75,0.28],[0.78,0.40],[0.80,0.35],[0.82,0.22],[0.85,0.48],[0.88,0.30],
+          [0.20,0.55],[0.28,0.60],[0.35,0.52],[0.42,0.58],[0.50,0.62],[0.55,0.55],[0.60,0.65],
+          [0.65,0.58],[0.70,0.70],[0.75,0.55],[0.80,0.65],[0.85,0.60],[0.90,0.52],[0.15,0.68],
+          [0.30,0.72],[0.45,0.75],[0.60,0.78],[0.72,0.80],[0.82,0.72],[0.88,0.78],[0.25,0.42],
+          [0.48,0.48],[0.68,0.50],[0.78,0.58],[0.92,0.40],[0.12,0.45],[0.55,0.72],[0.38,0.68]
+        ];
+        let frame = 0;
+        let animId = null;
+        const draw = () => {
+          ctx.fillStyle = '#0a0a0a';
+          ctx.fillRect(0, 0, w, h);
+          // Griglia sottile
+          ctx.strokeStyle = 'rgba(255,255,255,0.04)';
+          ctx.lineWidth = 0.5;
+          for (let gx = 0; gx < w; gx += 30) { ctx.beginPath(); ctx.moveTo(gx,0); ctx.lineTo(gx,h); ctx.stroke(); }
+          for (let gy = 0; gy < h; gy += 30) { ctx.beginPath(); ctx.moveTo(0,gy); ctx.lineTo(w,gy); ctx.stroke(); }
+          // Punti rossi con pulsazione
+          pts.forEach((p, i) => {
+            const px = p[0] * w;
+            const py = p[1] * h;
+            const pulse = Math.sin(frame * 0.03 + i * 0.4) * 0.5 + 0.5;
+            const r = 2 + pulse * 1.5;
+            const alpha = 0.4 + pulse * 0.6;
+            ctx.beginPath();
+            ctx.arc(px, py, r, 0, Math.PI * 2);
+            ctx.fillStyle = `rgba(230,57,70,${alpha})`;
+            ctx.fill();
+            // Alone
+            if (pulse > 0.7) {
+              ctx.beginPath();
+              ctx.arc(px, py, r * 2.5, 0, Math.PI * 2);
+              ctx.fillStyle = `rgba(230,57,70,${(pulse-0.7)*0.3})`;
+              ctx.fill();
+            }
+          });
+          // Titolo in basso
+          ctx.fillStyle = 'rgba(241,241,241,0.6)';
+          ctx.font = '7px \'IBM Plex Mono\', monospace';
+          ctx.letterSpacing = '0.08em';
+          ctx.fillText('2015 — ' + new Date().getFullYear(), 10, h - 10);
+          frame++;
+          animId = requestAnimationFrame(draw);
+        };
+        draw();
+        // Pausa on hover
+        cell.addEventListener('mouseenter', () => { if (animId) { cancelAnimationFrame(animId); animId = null; } });
+        cell.addEventListener('mouseleave', () => { if (!animId) { draw(); } });
+        // Cleanup quando la griglia viene distrutta
+        canvas._stopAnim = () => { if (animId) cancelAnimationFrame(animId); };
+      }, 150);
     } else {
       // Placeholder grigio se il progetto non ha ancora immagini
       const ph = document.createElement('div');
@@ -13637,6 +13714,47 @@ function scBuildSectionContent(section) {
     el.innerHTML = _scBuildArchivePage();
     // Collega gli eventi expand/collapse dopo il render
     requestAnimationFrame(() => _scArchiveBindExpand());
+    return;
+  }
+
+  // ── Pagina speciale: Mapping Lives ──
+  if (section === 'mapping-lives') {
+    el.style.background = '#0a0a0a';
+    el.style.minHeight  = '100vh';
+    el.style.color      = '#f1f1f1';
+    el.style.padding    = '0';
+    el.style.overflow   = 'hidden';
+    // Sfondo nero anche sul contenitore padre
+    const _vscML = document.getElementById('view-sculptures');
+    if (_vscML) _vscML.style.background = '#0a0a0a';
+    // Iframe che carica il sito Mapping Lives standalone
+    el.innerHTML = `
+      <div style="position:relative;width:100%;height:100vh;overflow:hidden;">
+        <iframe
+          id="sc-mapping-iframe"
+          src="https://police-violence-map.manus.space/"
+          style="position:absolute;top:0;left:0;width:100%;height:100%;border:none;"
+          allow="geolocation"
+          loading="lazy"
+          title="Mapping Lives — Police Violence Against Black Americans"
+        ></iframe>
+        <div id="sc-mapping-loading" style="position:absolute;top:0;left:0;width:100%;height:100%;background:#0a0a0a;display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:10;transition:opacity 0.6s ease;">
+          <div style="font-family:'DM Serif Display',serif;font-size:28px;color:#f1f1f1;letter-spacing:0.04em;margin-bottom:8px;">Mapping Lives</div>
+          <div style="font-family:'IBM Plex Mono',monospace;font-size:10px;color:#555;letter-spacing:0.12em;text-transform:uppercase;">Loading map data&hellip;</div>
+        </div>
+      </div>
+    `;
+    // Nascondi overlay loading quando l'iframe è pronto
+    requestAnimationFrame(() => {
+      const iframe = document.getElementById('sc-mapping-iframe');
+      const loading = document.getElementById('sc-mapping-loading');
+      if (iframe && loading) {
+        iframe.addEventListener('load', () => {
+          loading.style.opacity = '0';
+          setTimeout(() => { if (loading.parentNode) loading.style.display = 'none'; }, 600);
+        });
+      }
+    });
     return;
   }
 
