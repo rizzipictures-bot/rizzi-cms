@@ -13576,6 +13576,27 @@ function _scBuildArchivePage() {
       transition: opacity .15s;
     }
     .sc-arc-collapse-btn:hover { opacity: 0.65; }
+    .sc-arc-play-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      background: none;
+      border: none;
+      cursor: pointer;
+      padding: 0;
+      margin-left: 6px;
+      font-family: Helvetica, Arial, sans-serif;
+      font-size: 7px;
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      color: #000;
+      text-transform: uppercase;
+      opacity: 0.75;
+      transition: opacity .15s;
+      vertical-align: middle;
+    }
+    .sc-arc-play-btn:hover { opacity: 1; }
+    .sc-arc-play-btn svg { display: block; }
     </style>
   `;
 
@@ -13592,12 +13613,14 @@ function _scBuildArchivePage() {
     const fullText = t.text || '';
     const preview = fullText.length > 80 ? fullText.substring(0, 80) : fullText;
     const needsExpand = fullText.length > 80;
-    const fullHtml = `<span class="sc-arc-testimony-text">${fullText}</span>`;
+    const trackIdx = parseInt(t.track, 10) - 1; // indice 0-based nell'array scAudioFiles
+    const playBtn = `<button class="sc-arc-play-btn" onclick="_scArchivePlayTrack(${trackIdx})" title="Play track ${t.track}"><svg width="8" height="8" viewBox="0 0 8 8" fill="none" xmlns="http://www.w3.org/2000/svg"><polygon points="1,0.5 7.5,4 1,7.5" fill="#000"/></svg></button>`;
+    const fullHtml = `<span class="sc-arc-testimony-text">${fullText}</span>${playBtn}`;
     if (!needsExpand) {
       return `
       <div class="sc-arc-entry" data-arc-id="speech-${t.track}">
         <span class="sc-arc-track-id">#${t.track}</span>
-        <span class="sc-arc-first-line">${preview}</span>
+        <span class="sc-arc-first-line">${preview}</span>${playBtn}
       </div>`;
     }
     return `
@@ -13663,6 +13686,23 @@ function _scBuildArchivePage() {
 
   html += '</div>'; // #sc-archive-bib
   return html;
+}
+
+// Avvia una traccia audio specifica dall'Archive (indice 0-based in scAudioFiles)
+function _scArchivePlayTrack(idx) {
+  scLoadAudioFiles();
+  if (!scAudioFiles[idx]) return;
+  // Assicura che i controlli audio siano visibili
+  const ctrl = document.getElementById('sc-audio-controls');
+  if (ctrl) ctrl.classList.add('visible');
+  // Registra il listener ended se non già fatto
+  const player = document.getElementById('sc-audio-player');
+  if (player) {
+    player.removeEventListener('ended', _scOnAudioEnded);
+    player.addEventListener('ended', _scOnAudioEnded);
+  }
+  // Avvia la traccia
+  _scPlayIndex(idx);
 }
 
 // Torna alla sezione precedente da Archive
