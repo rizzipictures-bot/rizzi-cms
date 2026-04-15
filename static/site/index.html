@@ -13792,6 +13792,9 @@ function _scBuildArchivePage() {
       opacity: 1;
       z-index: 100;
     }
+    .sc-arc-icons-video-wrap:hover img {
+      filter: grayscale(0) !important;
+    }
     .sc-arc-icons-video-wrap video {
       display: block;
       width: 100%;
@@ -13885,8 +13888,8 @@ function _scBuildArchivePage() {
       left: 50%;
       transform: translate(-50%, -50%) scale(0);
       transform-origin: center center;
-      width: 33vw;
-      max-height: 72vh;
+      width: 88vw;
+      max-height: 78vh;
       background: #f0ead8;
       background-image:
         url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='4' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23n)' opacity='0.06'/%3E%3C/svg%3E");
@@ -14272,7 +14275,7 @@ function _scBuildArchivePage() {
       html += '<div class="sc-arc-col-title">Icons</div>';
       html += '<div style="display:flex;align-items:flex-start;gap:10px;">';
       html += '<div class="sc-arc-icons-video-wrap" onclick="this.classList.toggle(\'sc-arc-icons-expanded\')" title="Click to expand"><video src="/static/site/video/bg-washington.mp4" autoplay loop muted playsinline preload="auto"></video><span class="sc-arc-icons-video-label">March for All Justice</span></div>';
-      html += '<img src="/static/site/images/icons-nan-poster.png" alt="National March Against Police Violence" style="width:64px;height:64px;object-fit:cover;flex-shrink:0;cursor:pointer;transition:transform 0.3s ease;" onmouseover="this.style.transform=\'scale(1.08)\'" onmouseout="this.style.transform=\'scale(1)\'">';
+      html += '<div class="sc-arc-icons-video-wrap" onclick="this.classList.toggle(\'sc-arc-icons-expanded\')" title="Click to expand" style="margin-left:8px;"><img src="/static/site/images/icons-nan-poster.png" alt="National March Against Police Violence" style="display:block;width:100%;height:100%;object-fit:cover;filter:grayscale(1);transition:filter 0.28s ease;"><span class="sc-arc-icons-video-label">National March Against Police Violence</span></div>';
       html += '</div>';
     } else {
       html += '<div class="sc-arc-col-title">&nbsp;</div>';
