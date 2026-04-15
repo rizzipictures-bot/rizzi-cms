@@ -13569,7 +13569,7 @@ function _scBuildArchivePage() {
       font-family: Helvetica, Arial, sans-serif;
       font-size: 7px;
       letter-spacing: 0.12em;
-      color: #4c00fc;
+      color: #6600ff;
       cursor: pointer;
       display: block;
       margin-top: 5px;
@@ -13684,6 +13684,17 @@ function _scBuildArchivePage() {
     if (c === 0) html += '<div class="sc-arc-col-title">Diary</div>';
     else html += '<div class="sc-arc-col-title">&nbsp;</div>';
     diaryCols[c].forEach(d => { html += buildDiaryEntry(d); });
+    html += '</div>';
+  }
+  html += '</div>';
+
+  // Separatore + Sezione Icons
+  html += '<div style="height:1px;background:#000;margin:24px 0 0;"></div>';
+  html += '<div class="sc-arc-grid" id="sc-arc-icons-grid" style="margin-top:0;">';
+  for (let c = 0; c < 5; c++) {
+    html += '<div class="sc-arc-col">';
+    if (c === 0) html += '<div class="sc-arc-col-title">Icons</div>';
+    else html += '<div class="sc-arc-col-title">&nbsp;</div>';
     html += '</div>';
   }
   html += '</div>';
