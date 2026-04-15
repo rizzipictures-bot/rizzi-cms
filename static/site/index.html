@@ -13448,6 +13448,17 @@ function _scBuildArchivePage() {
       box-sizing: border-box;
       padding: 0 0 80px 0;
     }
+    .sc-arc-header-row {
+      display: flex;
+      align-items: baseline;
+      gap: 14px;
+      background: #fff;
+      padding: 0.55em 0 0.4em 0;
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      width: 100%;
+    }
     .sc-arc-header {
       font-family: Helvetica, Arial, sans-serif;
       font-size: clamp(1.8rem, 5.4vw, 4.5rem);
@@ -13455,14 +13466,20 @@ function _scBuildArchivePage() {
       letter-spacing: -0.02em;
       text-transform: uppercase;
       color: #000;
-      background: #fff;
-      padding: 0.55em 0 0.4em 0;
+      background: transparent;
+      padding: 0;
       margin: 0;
       display: block;
-      width: 100%;
-      position: sticky;
-      top: 0;
-      z-index: 10;
+      flex-shrink: 0;
+    }
+    .sc-arc-header-sub {
+      font-family: 'Courier New', Courier, monospace;
+      font-size: 9px;
+      font-weight: 400;
+      color: #000;
+      letter-spacing: 0.04em;
+      white-space: nowrap;
+      padding-bottom: 0.15em;
     }
     .sc-arc-grid {
       display: grid;
@@ -13661,7 +13678,7 @@ function _scBuildArchivePage() {
   // ── Assembla HTML ──
   let html = css;
   html += '<div id="sc-archive-bib">';
-  html += '<span class="sc-arc-header">Archive</span>';
+  html += '<div class="sc-arc-header-row"><span class="sc-arc-header">Archive</span><span class="sc-arc-header-sub">Washington D.C. 12.13.2014</span></div>';
 
   // Sezione Speech
   html += '<div class="sc-arc-grid" id="sc-arc-speech-grid">';
