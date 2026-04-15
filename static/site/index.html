@@ -5045,30 +5045,85 @@
       cursor: pointer;
       position: relative;
     }
-    /* Popup immagine al hover: centrato verticalmente nello schermo */
-    .sc-info-institution-link .sc-inst-popup {
-      display: none;
+
+    /* ── Popup nero istituzione (MoMA / THE MET) ── */
+    /* Box fisso in basso a destra, slide da sinistra a destra */
+    #sc-inst-popup-box {
       position: fixed;
-      left: 50%;
-      top: 50%;
-      transform: translate(-50%, -50%);
-      z-index: 9999;
-      background: #fff;
-      border-radius: 6px;
-      box-shadow: 0 4px 32px rgba(0,0,0,0.28);
-      padding: 8px;
-      pointer-events: none;
-      max-width: 340px;
-      max-height: 80vh;
+      bottom: 28px;
+      right: 28px;
+      z-index: 9200;
+      background: #000;
+      border-radius: 8px;
+      width: 168px;          /* 30% più piccolo del box bianco (240px) */
+      overflow: hidden;
+      box-shadow: 0 4px 24px rgba(0,0,0,0.5);
+      pointer-events: auto;
+      /* Stato nascosto: traslato fuori a sinistra */
+      transform: translateX(calc(100% + 56px));
+      opacity: 0;
+      transition: transform 0.55s cubic-bezier(0.77, 0, 0.175, 1),
+                  opacity 0.35s cubic-bezier(0.77, 0, 0.175, 1);
     }
-    .sc-info-institution-link .sc-inst-popup img {
-      display: block;
-      max-width: 100%;
-      max-height: 74vh;
-      border-radius: 3px;
+    #sc-inst-popup-box.sc-inst-visible {
+      transform: translateX(0);
+      opacity: 1;
+    }
+    /* Header con logo */
+    #sc-inst-popup-header {
+      padding: 10px 12px 6px 12px;
+      display: flex;
+      align-items: center;
+      border-bottom: 1px solid rgba(255,255,255,0.12);
+    }
+    #sc-inst-popup-logo {
+      max-height: 28px;
+      max-width: 110px;
       object-fit: contain;
+      display: block;
     }
-    .sc-info-institution-link:hover .sc-inst-popup {
+    /* Corpo con le info */
+    #sc-inst-popup-body {
+      padding: 8px 12px 28px 12px;  /* padding-bottom per la X */
+      font-family: Helvetica, Arial, sans-serif;
+      font-size: 9px;
+      line-height: 1.4;
+      color: rgba(255,255,255,0.85);
+    }
+    #sc-inst-popup-body .sc-inst-row {
+      display: flex;
+      gap: 4px;
+      margin-bottom: 3px;
+    }
+    #sc-inst-popup-body .sc-inst-label {
+      color: rgba(255,255,255,0.45);
+      flex-shrink: 0;
+      min-width: 52px;
+    }
+    #sc-inst-popup-body .sc-inst-value {
+      color: #fff;
+      font-weight: 600;
+    }
+    /* Pulsante X: pallino bianco in basso a destra */
+    #sc-inst-popup-close {
+      position: absolute;
+      bottom: 7px;
+      right: 8px;
+      width: 16px;
+      height: 16px;
+      background: #fff;
+      border-radius: 50%;
+      border: none;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0;
+      flex-shrink: 0;
+    }
+    #sc-inst-popup-close svg {
+      width: 8px;
+      height: 8px;
       display: block;
     }
 
@@ -7639,7 +7694,7 @@
         </svg>
       </button>
       <div id="sculptures-info-text">
-        <p>Sculptures is a Long Term Project about the Afro-Americans Issue. A contemporary photographic work that focus on different layers of the complexity social matter. The first Volume of a trilogy books which has been published by Yard Press at the end of 2015 received awards and international interest.</p><p>Sculptures VOL I, has been selected as one of the Best European Publication in the 2016 by Kaleid Edition London and is collected in the permanent Art Book Collection of <a class="sc-info-institution-link" href="#" onclick="return false;">M.o.M.A.<span class="sc-inst-popup"><img src="" alt="MoMA" id="sc-popup-moma-img"></span></a>, <a class="sc-info-institution-link" href="#" onclick="return false;">Metropolitan Museum of Art &ndash; THE MET<span class="sc-inst-popup"><img src="" alt="The Met" id="sc-popup-met-img"></span></a>, Oslo National Academy of Arts Library, Chicago SAIC J. Flasch Artists&rsquo; Book Collection.</p>
+        <p>Sculptures is a Long Term Project about the Afro-Americans Issue. A contemporary photographic work that focus on different layers of the complexity social matter. The first Volume of a trilogy books which has been published by Yard Press at the end of 2015 received awards and international interest.</p><p>Sculptures VOL I, has been selected as one of the Best European Publication in the 2016 by Kaleid Edition London and is collected in the permanent Art Book Collection of <a class="sc-info-institution-link" href="#" onclick="scInstPopupShow('moma');return false;" data-inst="moma">M.o.M.A.</a>, <a class="sc-info-institution-link" href="#" onclick="scInstPopupShow('met');return false;" data-inst="met">Metropolitan Museum of Art &ndash; THE MET</a>, Oslo National Academy of Arts Library, Chicago SAIC J. Flasch Artists&rsquo; Book Collection.</p>
 
         <span class="sc-info-title">Impressum</span>
 
@@ -7791,6 +7846,20 @@
         <p style="color:#4c00fc;font-style:normal;font-weight:600;margin-bottom:0.6em;">Artist&rsquo;s note</p>
         <p>The Black Diary is a notebook I chose to purchase in Washington, D.C. on December 12, 2014, the day before the &ldquo;March for Justice&rdquo; held in the capital following the fatal shooting and the civil unrest that began in Ferguson. I invited people who had come to Washington to leave a personal testimony&mdash;an inscription of their presence&mdash;so as to gather traces of their physical and emotional involvement in that specific moment of American history. Images of the demonstration are collected and transformed into sculptures.</p>
       </div>
+    </div>
+
+    <!-- Popup nero istituzione (MoMA / THE MET) — FUORI da sculptures-child -->
+    <div id="sc-inst-popup-box">
+      <div id="sc-inst-popup-header">
+        <img id="sc-inst-popup-logo" src="" alt="">
+      </div>
+      <div id="sc-inst-popup-body"></div>
+      <button id="sc-inst-popup-close" onclick="scInstPopupClose()" title="Close">
+        <svg viewBox="0 0 10 10" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <line x1="1" y1="1" x2="9" y2="9" stroke="#000" stroke-width="1.5" stroke-linecap="round"/>
+          <line x1="9" y1="1" x2="1" y2="9" stroke="#000" stroke-width="1.5" stroke-linecap="round"/>
+        </svg>
+      </button>
     </div>
 
     <!-- ── VIEW: MISCELLANEA ── -->
@@ -13309,6 +13378,74 @@ function scToggleDiaryGridNote() {
   if (!box) return;
   box.classList.toggle('sc-diary-grid-note-open');
 }
+
+// ── Popup nero istituzione (MoMA / THE MET) ──
+(function() {
+  const _SC_INST_DATA = {
+    moma: {
+      logo: '/static/site/images/logo-moma-white.png',
+      alt: 'MoMA',
+      rows: [
+        ['Title',     'Sculptures: Alessandro Rizzi'],
+        ['Creator',   'Rizzi, Alessandro; Spadaccini, Giovanni'],
+        ['Date',      '2015'],
+        ['Publisher', 'Roma: Yard Press'],
+        ['Format',    '[112] s.+ tekstbilag alle kol. ill. 33 cm'],
+        ['Type',      'Book'],
+        ['Language',  'English'],
+        ['Dewey',     '770.92'],
+        ['MMS ID',    '9999197109727 02243'],
+        ['Source',    'Library Catalog']
+      ]
+    },
+    met: {
+      logo: '/static/site/images/logo-themet.png',
+      alt: 'THE MET',
+      rows: [
+        ['Authors',   'Rizzi, Alessandro, 1973–'],
+        ['Title',     'Sculptures / Alessandro Rizzi'],
+        ['Publisher', '[Italy]: Yard Press, [2015]'],
+        ['Location',  'Watson Library Special Collections – Bookcage'],
+        ['Call No.',  'N7433.4.R595 S38 2015 Quarto'],
+        ['Status',    'REQUESTABLE'],
+        ['Descr.',    '1 volume: illustrations; 34 cm + 1 folded sheet'],
+        ['Donor',     'Arthur K. Watson Gift; William Alexander Smith Fund'],
+        ['OCLC',      '982125890']
+      ]
+    }
+  };
+
+  let _scInstTimer = null;
+
+  window.scInstPopupShow = function(key) {
+    const d = _SC_INST_DATA[key];
+    if (!d) return;
+    const box  = document.getElementById('sc-inst-popup-box');
+    const logo = document.getElementById('sc-inst-popup-logo');
+    const body = document.getElementById('sc-inst-popup-body');
+    if (!box || !logo || !body) return;
+    // Popola logo
+    logo.src = d.logo;
+    logo.alt = d.alt;
+    // Popola corpo
+    body.innerHTML = d.rows.map(function(r) {
+      return '<div class="sc-inst-row"><span class="sc-inst-label">' + r[0] + '</span><span class="sc-inst-value">' + r[1] + '</span></div>';
+    }).join('');
+    // Mostra con animazione
+    box.classList.remove('sc-inst-visible');
+    box.offsetHeight; // reflow
+    requestAnimationFrame(function() { box.classList.add('sc-inst-visible'); });
+    // Auto-close dopo 4s
+    if (_scInstTimer) clearTimeout(_scInstTimer);
+    _scInstTimer = setTimeout(function() { window.scInstPopupClose(); }, 4000);
+  };
+
+  window.scInstPopupClose = function() {
+    if (_scInstTimer) { clearTimeout(_scInstTimer); _scInstTimer = null; }
+    const box = document.getElementById('sc-inst-popup-box');
+    if (box) box.classList.remove('sc-inst-visible');
+  };
+})();
 
 function scToggleVbText() {
   const box = document.getElementById('sc-vb-text-box');
