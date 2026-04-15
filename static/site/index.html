@@ -13013,6 +13013,10 @@ function scBuildSectionContent(section) {
 
   // ── Pagina speciale: Testimonial Diary ──
   if (section === 'diary') {
+    // Cleanup preventivo: cancella timer residui di Synopsis e rimuovi elementi hero precedenti
+    if (window._scSynopsisCascadeTimer) { clearTimeout(window._scSynopsisCascadeTimer); window._scSynopsisCascadeTimer = null; }
+    if (window._scDiaryCascadeTimer) { clearTimeout(window._scDiaryCascadeTimer); window._scDiaryCascadeTimer = null; }
+    ['sc-diary-bg-img','sc-diary-bg-overlay','sc-diary-bg-grain','sc-synopsis-bg-overlay'].forEach(function(id){ var e=document.getElementById(id); if(e) e.remove(); });
     el.style.background = '';  // rimuovi qualsiasi background inline precedente
     el.style.minHeight  = '100vh';
     el.classList.add('sc-diary-mode');
@@ -13029,7 +13033,7 @@ function scBuildSectionContent(section) {
     }));
 
     // ── Hero full-page: elemento <img> fixed nel body, z-index 1099 (sotto view-sculptures 1100) ──
-    // Rimuovi eventuali elementi residui
+    // Rimuovi eventuali elementi residui (già rimossi sopra, ma per sicurezza)
     const oldBg = document.getElementById('sc-diary-bg-img');
     if (oldBg) oldBg.remove();
     const oldOv = document.getElementById('sc-diary-bg-overlay');
