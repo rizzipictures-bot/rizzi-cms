@@ -5701,7 +5701,9 @@
       width: 100%;
       height: 100%;
       object-fit: cover;
-      object-position: center;
+      object-position: center 30%;
+      transform: scale(1.22);
+      transform-origin: center center;
       z-index: 0;  /* sotto la grana (z-index:1) e il carousel (z-index:2) */
       pointer-events: none;
       opacity: 0;
@@ -16821,8 +16823,8 @@ loadFromCMS();
     if (!_running) return;
     const w = canvas.width;
     const h = canvas.height;
-    const bw = Math.ceil(w / 2);
-    const bh = Math.ceil(h / 2);
+    const bw = Math.ceil(w * 0.75);
+    const bh = Math.ceil(h * 0.75);
     const imageData = ctx.createImageData(bw, bh);
     const data = imageData.data;
     const len = data.length;
