@@ -12785,7 +12785,7 @@ function scBuildSectionContent(section) {
       // Imposta l'iframe Vimeo (sempre, per riavviarlo se era stato fermato)
       const iframe = document.getElementById('sc-vb-iframe');
       if (iframe) {
-        iframe.src = 'https://player.vimeo.com/video/326170622?api=1&color=ffffff&title=0&byline=0&portrait=0&badge=0&share=0&like=0&watchlater=0&transparent=0';
+        iframe.src = 'https://player.vimeo.com/video/326170622?api=1&loop=1&color=ffffff&title=0&byline=0&portrait=0&badge=0&share=0&like=0&watchlater=0&transparent=0';
       }
       // Mostra il wrapper iframe
       const iframeWrap = document.getElementById('sc-vb-iframe-wrap');
@@ -13392,6 +13392,29 @@ function scCloseVideoBook() {
     if (e.origin !== 'https://player.vimeo.com') return;
     try {
       const data = JSON.parse(e.data);
+      // Quando il player è pronto: registra gli eventi finish e timeupdate
+      if (data.event === 'ready') {
+        const _rdyIframe = document.getElementById('sc-vb-iframe');
+        if (_rdyIframe && _rdyIframe.contentWindow) {
+          _rdyIframe.contentWindow.postMessage(JSON.stringify({ method: 'addEventListener', value: 'finish' }), 'https://player.vimeo.com');
+          _rdyIframe.contentWindow.postMessage(JSON.stringify({ method: 'addEventListener', value: 'timeupdate' }), 'https://player.vimeo.com');
+        }
+      }
+      // Quando il video finisce: riporta al secondo 0 e metti in pausa (evita schermata 'More from')
+      if (data.event === 'finish') {
+        const _finIframe = document.getElementById('sc-vb-iframe');
+        if (_finIframe && _finIframe.contentWindow) {
+          _finIframe.contentWindow.postMessage(JSON.stringify({ method: 'setCurrentTime', value: 0 }), 'https://player.vimeo.com');
+          setTimeout(function() {
+            _finIframe.contentWindow.postMessage(JSON.stringify({ method: 'pause' }), 'https://player.vimeo.com');
+          }, 150);
+        }
+        // Riporta il pallino a 0
+        const _finDot = document.getElementById('sc-vb-progress-dot');
+        if (_finDot) _finDot.style.left = '0%';
+        _vbCurrentTime = 0;
+        _vbSeeking = false;
+      }
       if (data.event === 'timeupdate' && typeof data.data === 'object' && data.data.seconds !== undefined) {
         _vbCurrentTime = data.data.seconds;
         const dot = document.getElementById('sc-vb-progress-dot');
