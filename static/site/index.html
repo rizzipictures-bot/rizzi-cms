@@ -13241,19 +13241,28 @@ function scBuildSectionContent(section) {
 
   // ── Pagina speciale: Synopsis / Interview ──
   if (section === 'synopsis') {
-    el.style.background = '#000';
+    el.style.background = 'transparent';
     el.style.minHeight  = '100vh';
     el.style.color      = '#fff';
     const _vscSyn = document.getElementById('view-sculptures');
     if (_vscSyn) _vscSyn.style.background = '#000';
+    // Crea overlay di schiarimento (come Diary)
+    let _synOverlay = document.getElementById('sc-synopsis-bg-overlay');
+    if (!_synOverlay) {
+      _synOverlay = document.createElement('div');
+      _synOverlay.id = 'sc-synopsis-bg-overlay';
+      _synOverlay.style.cssText = 'position:fixed;top:0;left:0;width:100vw;height:100vh;background:rgba(255,255,255,0);z-index:1099;pointer-events:none;transition:background 1.8s ease;';
+      document.body.appendChild(_synOverlay);
+    }
+    _synOverlay.style.background = 'rgba(255,255,255,0)';
     el.innerHTML = `
       <div class="sc-synopsis-page">
         <div class="sc-synopsis-intro">
-          <p><em>Sculptures</em> is a long-term project on the African American experience, built around a single day — December 13, 2014 — in Washington D.C. The following texts are part of the book published by Yard Press in October 2015. The Publisher’s Note frames the work from the outside; the Conversation between Giovanni Spadaccini and Alessandro Rizzi opens it from within.</p>
+          <p><em>Sculptures</em> is a long-term project on the African American experience, built around a single day — December 13, 2014 — in Washington D.C. The following texts are part of the book published by Yard Press in October 2015. The Publisher\u2019s Note frames the work from the outside; the Conversation between Giovanni Spadaccini and Alessandro Rizzi opens it from within.</p>
         </div>
-        <div class="sc-synopsis-thumbs">
+        <div class="sc-synopsis-thumbs" id="sc-synopsis-thumbs-row">
           <button class="sc-synopsis-thumb" onclick="_scInterviewOpen('publisher')">
-            <span class="sc-synopsis-thumb-label">Publisher’s<br>Note</span>
+            <span class="sc-synopsis-thumb-label">Publisher\u2019s<br>Note</span>
           </button>
           <button class="sc-synopsis-thumb" onclick="_scInterviewOpen('conversation')">
             <span class="sc-synopsis-thumb-label">Alessandro Rizzi<br>Conversation</span>
@@ -13261,6 +13270,11 @@ function scBuildSectionContent(section) {
         </div>
       </div>
     `;
+    // Schiarisce lo sfondo quando le thumb entrano in viewport (come Diary)
+    setTimeout(() => {
+      const _synO = document.getElementById('sc-synopsis-bg-overlay');
+      if (_synO) _synO.style.background = 'rgba(255,255,255,0.78)';
+    }, 600);
     return;
   }
 
@@ -13743,7 +13757,7 @@ function _scBuildArchivePage() {
     }
     /* Stato espanso al click: scale 300% (4.8x = 1.6 hover × 3) */
     .sc-arc-icons-video-wrap.sc-arc-icons-expanded {
-      transform: scale(4.8) translateX(28px) !important;
+      transform: scale(4.8) translateX(28px) translateY(-38px) !important;
       z-index: 200 !important;
       opacity: 1 !important;
     }
@@ -13761,8 +13775,9 @@ function _scBuildArchivePage() {
     .sc-arc-text-thumb {
       display: flex;
       align-items: flex-end;
-      width: 52px;
-      height: 73.5px; /* A4: 210:297 = 1:1.414 */
+      width: 44px;
+      height: 62.2px; /* A4: 44 × 1.414 = 62.2px */
+      /* nota: le thumb devono sembrare A4 — proporzione corretta */
       background: #f0ead8;
       background-image:
         url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='200' height='200' filter='url(%23n)' opacity='0.07'/%3E%3C/svg%3E");
