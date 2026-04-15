@@ -12698,6 +12698,14 @@ function scBuildGrid() {
     return;
   }
 
+  // Aggiungi la thumb Archive hardcoded (fermo immagine video b/n ruotato in verticale)
+  scCurrentImages.push({
+    url: '/static/site/images/archive-thumb.jpg',
+    title: 'Archive',
+    desc: 'Sculptures Records',
+    sc_section: 'archive'
+  });
+
   // Pattern misto Corboz: H-V-H-V (riga1) / V-H-V-V (riga2) — identico a Images Book
   const PATTERN = [true, false, true, false, false, true, false, false]; // true = orizzontale
   scCurrentImages.forEach((img, idx) => {
