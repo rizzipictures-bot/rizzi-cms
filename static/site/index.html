@@ -4898,6 +4898,52 @@
     #sculptures-next { right: 4px; }  /* margine destro */
 
     /* ── Info panel Sculptures — identico a andrecorboz.usi.ch/images ── */
+    /* ── Box Note auto-show nella pagina Recordings ── */
+    #sc-recordings-note-box {
+      position: fixed;
+      left: 0;
+      top: 0;
+      width: 60vw;
+      height: auto;
+      max-height: none;
+      overflow-y: auto;
+      background-color: #fff;
+      color: #222;
+      padding: 20px 20px 60px;
+      box-shadow: 0 2px 15px 3px rgba(0,0,0,.15);
+      z-index: 1500;
+      font-family: Helvetica, Arial, sans-serif;
+      font-size: 17px;
+      clip-path: inset(0 100% 0 0);
+      transition: clip-path 0.5s cubic-bezier(0.77, 0, 0.175, 1);
+    }
+    #sc-recordings-note-box.active {
+      clip-path: inset(0 0% 0 0);
+    }
+    #sc-recordings-note-close {
+      position: absolute;
+      right: 10px;
+      bottom: 10px;
+      border: none;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 5;
+      outline: none;
+      padding: 0;
+      transition: transform 0.7s cubic-bezier(0.77, 0, 0.175, 1), opacity .15s;
+    }
+    #sc-recordings-note-close:hover { transform: rotate(180deg); }
+    #sc-recordings-note-text {
+      font-family: Helvetica, Arial, sans-serif;
+      font-size: 17px;
+      font-weight: 700;
+      line-height: 1.25;
+      letter-spacing: -0.03em;
+      color: rgb(34, 34, 34);
+    }
+
     #sculptures-info {
       position: fixed;
       left: 0;
@@ -7587,6 +7633,19 @@
           <p id="sculptures-carousel-desc" class="sc-desc"></p>
         </div>
       </div>
+      <!-- Box Note auto-show nella pagina Recordings -->
+      <div id="sc-recordings-note-box">
+        <button id="sc-recordings-note-close" class="btn-circle-close black" onclick="scCloseRecordingsNote()" style="width:40px;height:40px;position:absolute;right:10px;bottom:10px;">
+          <svg width="18" height="18" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg" style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%)">
+            <line x1="0" y1="0" x2="18" y2="18" stroke="white" stroke-width="1.5" stroke-linecap="round"/>
+            <line x1="18" y1="0" x2="0" y2="18" stroke="white" stroke-width="1.5" stroke-linecap="round"/>
+          </svg>
+        </button>
+        <div id="sc-recordings-note-text">
+          These tracks were captured on a cold Saturday in Washington, D.C. &mdash; December 13, 2014. They are part of <em>Sculptures</em>, my long-term project on the African American experience, and form a central element of an ongoing exhibition concept. After extensive listening sessions, I chose to leave the recordings exactly as they were taken in the field. Their sequence remains unchanged, allowing the initial quiet to serve as an entry point into the charged, impassioned voices that follow. Firsthand accounts of those hours are documented in a field diary, also part of the <em>Sculptures</em> <span style="color:#4c00fc">archive.</span>
+        </div>
+      </div>
+
       <!-- Box Photographer's Note — visibile solo nel viewer Testimonial Diary -->
       <div id="sc-diary-note-box" onclick="scToggleDiaryNote()">
         <div id="sc-diary-note-drag"></div>
@@ -12212,6 +12271,31 @@ function scSwitchSection(section) {
       sectionContent.classList.add('active');
       scBuildSectionContent(section);
     }
+    // Auto-show box Note in Recordings (ogni volta che si naviga sulla pagina, non nel viewer)
+    if (section === 'recordings') {
+      const _recBox = document.getElementById('sc-recordings-note-box');
+      if (_recBox) {
+        _recBox.classList.remove('active');
+        if (window._scRecNoteTimer) { clearTimeout(window._scRecNoteTimer); window._scRecNoteTimer = null; }
+        if (window._scRecNoteClose) { clearTimeout(window._scRecNoteClose); window._scRecNoteClose = null; }
+        window._scRecNoteTimer = setTimeout(function() {
+          if (!_recBox.classList.contains('active')) {
+            requestAnimationFrame(() => _recBox.classList.add('active'));
+            window._scRecNoteClose = setTimeout(function() {
+              _recBox.classList.remove('active');
+            }, 8000);
+          }
+        }, 3000);
+      }
+    } else {
+      // Nasconde il box Note se si naviga fuori da Recordings
+      const _recBox2 = document.getElementById('sc-recordings-note-box');
+      if (_recBox2) {
+        _recBox2.classList.remove('active');
+        if (window._scRecNoteTimer) { clearTimeout(window._scRecNoteTimer); window._scRecNoteTimer = null; }
+        if (window._scRecNoteClose) { clearTimeout(window._scRecNoteClose); window._scRecNoteClose = null; }
+      }
+    }
   }
 }
 
@@ -13550,6 +13634,15 @@ function scCloseInfo() {
     if (pageTitle) pageTitle.style.display = 'block';
     document.body.classList.remove('sc-diary-nav-mode');
   }, 500);
+}
+
+// Chiude il box Note di Recordings (click manuale)
+function scCloseRecordingsNote() {
+  const box = document.getElementById('sc-recordings-note-box');
+  if (!box) return;
+  box.classList.remove('active');
+  if (window._scRecNoteTimer) { clearTimeout(window._scRecNoteTimer); window._scRecNoteTimer = null; }
+  if (window._scRecNoteClose) { clearTimeout(window._scRecNoteClose); window._scRecNoteClose = null; }
 }
 
 // Inizializza la pagina Sculptures (chiamata da buildSculpturesIndex per compatibilità)
