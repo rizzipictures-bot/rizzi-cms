@@ -13789,6 +13789,22 @@ function _scBuildArchivePage() {
   }
   html += '</div>';
 
+  // Separatore + Sezione Text
+  html += '<div style="height:1px;background:#000;margin:24px 0 0;"></div>';
+  html += '<div class="sc-arc-grid" id="sc-arc-text-grid" style="margin-top:0;">';
+  for (let c = 0; c < 5; c++) {
+    html += '<div class="sc-arc-col">';
+    if (c === 0) {
+      html += '<div class="sc-arc-col-title">Text</div>';
+      // Placeholder: i testi e l\'intervista verranno aggiunti qui
+      html += '<div class="sc-arc-text-placeholder" style="font-family:\'Courier New\',Courier,monospace;font-size:8.5px;color:rgba(0,0,0,0.35);padding:7px 8px;">— coming soon —</div>';
+    } else {
+      html += '<div class="sc-arc-col-title">&nbsp;</div>';
+    }
+    html += '</div>';
+  }
+  html += '</div>';
+
   html += '</div>'; // #sc-archive-bib
   return html;
 }
