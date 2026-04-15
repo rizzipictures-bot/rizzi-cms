@@ -430,6 +430,23 @@ def serve_site_static(filename):
 def serve_subtitles():
     return send_from_directory(STATIC / 'site', 'subtitles.json')
 
+# ── SEO: sitemap.xml e robots.txt ───────────────────────────────────────────────────────────────
+@app.route('/sitemap.xml')
+def serve_sitemap():
+    from flask import make_response
+    resp = make_response(send_from_directory(STATIC / 'site', 'sitemap.xml'))
+    resp.headers['Content-Type'] = 'application/xml; charset=utf-8'
+    resp.headers['Cache-Control'] = 'public, max-age=86400'
+    return resp
+
+@app.route('/robots.txt')
+def serve_robots():
+    from flask import make_response
+    resp = make_response(send_from_directory(STATIC / 'site', 'robots.txt'))
+    resp.headers['Content-Type'] = 'text/plain; charset=utf-8'
+    resp.headers['Cache-Control'] = 'public, max-age=86400'
+    return resp
+
 # ── CMS ───────────────────────────────────────
 # http://localhost:5151/cms  →  CMS
 @app.route('/cms')

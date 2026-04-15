@@ -1,0 +1,49 @@
+# robots.txt — Alessandro Rizzi Photography
+# https://alessandroRizzi.com
+
+User-agent: *
+Allow: /
+
+# Allow all major search engine crawlers
+User-agent: Googlebot
+Allow: /
+
+User-agent: Googlebot-Image
+Allow: /
+
+User-agent: Bingbot
+Allow: /
+
+User-agent: Slurp
+Allow: /
+
+User-agent: DuckDuckBot
+Allow: /
+
+User-agent: Baiduspider
+Allow: /
+
+User-agent: YandexBot
+Allow: /
+
+User-agent: facebot
+Allow: /
+
+User-agent: Twitterbot
+Allow: /
+
+User-agent: LinkedInBot
+Allow: /
+
+User-agent: WhatsApp
+Allow: /
+
+# Block CMS and API endpoints from indexing
+User-agent: *
+Disallow: /cms
+Disallow: /cms/
+Disallow: /api/
+Disallow: /uploads/
+
+# Sitemap
+Sitemap: https://alessandroRizzi.com/sitemap.xml

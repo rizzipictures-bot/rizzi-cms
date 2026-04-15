@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
+        xmlns:image="http://www.google.com/schemas/sitemap-image/1.1"
+        xmlns:xhtml="http://www.w3.org/1999/xhtml">
+
+  <!-- ── Home / Overview ── -->
+  <url>
+    <loc>https://alessandroRizzi.com/</loc>
+    <lastmod>2025-01-01</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>1.0</priority>
+    <xhtml:link rel="alternate" hreflang="en" href="https://alessandroRizzi.com/"/>
+    <xhtml:link rel="alternate" hreflang="it" href="https://alessandroRizzi.com/"/>
+  </url>
+
+  <!-- ── Sculptures — Overview ── -->
+  <url>
+    <loc>https://alessandroRizzi.com/#sculptures</loc>
+    <lastmod>2025-01-01</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.95</priority>
+  </url>
+
+  <!-- ── Sculptures — Images Book ── -->
+  <url>
+    <loc>https://alessandroRizzi.com/#sculptures-images</loc>
+    <lastmod>2025-01-01</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.9</priority>
+  </url>
+
+  <!-- ── Sculptures — Recordings ── -->
+  <url>
+    <loc>https://alessandroRizzi.com/#sculptures-recordings</loc>
+    <lastmod>2025-01-01</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.9</priority>
+  </url>
+
+  <!-- ── Sculptures — Testimonial Diary ── -->
+  <url>
+    <loc>https://alessandroRizzi.com/#sculptures-diary</loc>
+    <lastmod>2025-01-01</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.9</priority>
+  </url>
+
+  <!-- ── Sculptures — Synopsis ── -->
+  <url>
+    <loc>https://alessandroRizzi.com/#sculptures-synopsis</loc>
+    <lastmod>2025-01-01</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.85</priority>
+  </url>
+
+  <!-- ── Sculptures — Archive ── -->
+  <url>
+    <loc>https://alessandroRizzi.com/#sculptures-archive</loc>
+    <lastmod>2025-01-01</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.9</priority>
+  </url>
+
+  <!-- ── Sculptures — Video Book ── -->
+  <url>
+    <loc>https://alessandroRizzi.com/#sculptures-video</loc>
+    <lastmod>2025-01-01</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.85</priority>
+  </url>
+
+  <!-- ── Sculptures — Information ── -->
+  <url>
+    <loc>https://alessandroRizzi.com/#sculptures-information</loc>
+    <lastmod>2025-01-01</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.85</priority>
+  </url>
+
+  <!-- ── Cities ── -->
+  <url>
+    <loc>https://alessandroRizzi.com/#cities</loc>
+    <lastmod>2025-01-01</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.85</priority>
+  </url>
+
+  <!-- ── Archive / Works Index ── -->
+  <url>
+    <loc>https://alessandroRizzi.com/#archive</loc>
+    <lastmod>2025-01-01</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.85</priority>
+  </url>
+
+  <!-- ── Miscellanea ── -->
+  <url>
+    <loc>https://alessandroRizzi.com/#miscellanea</loc>
+    <lastmod>2025-01-01</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <!-- ── Interview ── -->
+  <url>
+    <loc>https://alessandroRizzi.com/#interview</loc>
+    <lastmod>2025-01-01</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+</urlset>
