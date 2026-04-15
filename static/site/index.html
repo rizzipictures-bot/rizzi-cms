@@ -5693,6 +5693,29 @@
       flex: 0 0 auto;
     }
 
+    /* ── Video texture background in video mode ── */
+    #sc-vb-bg-video {
+      display: none;  /* nascosto di default */
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      object-position: center;
+      z-index: 0;  /* sotto la grana (z-index:1) e il carousel (z-index:2) */
+      pointer-events: none;
+      opacity: 0;
+      transition: opacity 1.5s ease;
+    }
+    #sculptures-child.sc-video-mode #sc-vb-bg-video {
+      display: block;
+    }
+    #sculptures-child.sc-video-mode #sc-vb-bg-video.sc-vb-bg-active {
+      opacity: 0.07;  /* 7% — quasi impercettibile, effetto texture */
+    }
+    /* In video mode la grana è leggermente più chiara per lasciar trasparire il video */
+    #sculptures-child.sc-video-mode #sc-child-grain { opacity: 0.48 !important; }
+
     /* ── Karaoke / sottotitoli sincronizzati (stile macchina da scrivere) ── */
     #sc-karaoke {
       position: fixed;
@@ -7764,6 +7787,8 @@
       <div id="sculptures-carousel">
         <img id="sc-child-bg" src="" alt="" aria-hidden="true">
         <canvas id="sc-child-grain"></canvas>
+        <!-- Video texture background: visibile solo in video mode, opacità 7% sotto la grana -->
+        <video id="sc-vb-bg-video" src="video/bg-washington.mp4" autoplay loop muted playsinline preload="none" aria-hidden="true"></video>
         <!-- Playlist laterale Recordings (visibile solo in sezione recordings) -->
         <div id="sc-recordings-playlist" style="display:none"></div>
         <!-- Pannello testo cover Images Book (visibile solo nel viewer intermedio, non in fullscreen) -->
@@ -12878,6 +12903,13 @@ function scBuildSectionContent(section) {
       // Mostra i controlli audio globali (play/stop) per controllare il video Vimeo
       const ctrl = document.getElementById('sc-audio-controls');
       if (ctrl) ctrl.classList.add('visible');
+      // Avvia il video texture background con fade-in ritardato
+      var _bgVid = document.getElementById('sc-vb-bg-video');
+      if (_bgVid) {
+        _bgVid.currentTime = 0;
+        _bgVid.play().catch(function() {});  // ignora errori autoplay
+        setTimeout(function() { _bgVid.classList.add('sc-vb-bg-active'); }, 800);
+      }
       // Keyboard: Escape chiude
       document._scKeyHandler = function(e) {
         if (e.key === 'Escape') scCloseVideoBook();
@@ -13301,6 +13333,12 @@ function scCloseChild() {
   const wasVideoMode = child && child.classList.contains('sc-video-mode');
   if (child) {
     child.classList.remove('active', 'sc-fullscreen', 'sc-video-mode');
+  }
+  // Ferma e nasconde il video texture background
+  var _bgVid = document.getElementById('sc-vb-bg-video');
+  if (_bgVid) {
+    _bgVid.classList.remove('sc-vb-bg-active');
+    setTimeout(function() { _bgVid.pause(); _bgVid.currentTime = 0; }, 1500);
   }
   // Nasconde il box Text se aperto
   const textBox = document.getElementById('sc-vb-text-box');
