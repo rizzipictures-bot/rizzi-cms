@@ -7646,6 +7646,7 @@
         <span data-sc-section="synopsis">Synopsis</span>
         <span data-sc-section="recordings">Recordings</span>
         <span data-sc-section="information">Information</span>
+        <span data-sc-section="archive">Archive</span>
         <span id="sculptures-back" onclick="scGoBack()">&#8592; Back</span>
       </nav>
 
@@ -13130,6 +13131,11 @@ function scBuildSectionContent(section) {
 
     return;
   }
+  // Rimuovi background nero se eravamo in archive
+  if (scCurrentSection === 'archive') {
+    el.style.background = '';
+    el.style.color = '';
+  }
   // Rimuovi la classe diary-mode se eravamo in diary
   if (window._scDiaryCascadeTimer) {
     clearTimeout(window._scDiaryCascadeTimer);
@@ -13153,6 +13159,18 @@ function scBuildSectionContent(section) {
   document.body.classList.remove('sc-diary-nav-mode');
 
   // Mappa sezione -> titolo
+  // ── Pagina speciale: Archive ──
+  if (section === 'archive') {
+    el.style.background = '#000';
+    el.style.minHeight  = '100vh';
+    el.style.color      = '#fff';
+    el.innerHTML = `
+      <h2 style="color:#fff;font-family:Helvetica,Arial,sans-serif;font-size:clamp(2rem,6vw,5rem);font-weight:900;letter-spacing:-0.02em;text-transform:uppercase;padding:0 0 0.5em 0;margin:0;">Archive</h2>
+      <div id="sc-archive-content" style="min-height:60vh;"></div>
+    `;
+    return;
+  }
+
   const titles = {
     'images-book': 'Images',
     'studies': 'Studies',
@@ -13161,6 +13179,7 @@ function scBuildSectionContent(section) {
     'video': 'Video Book',
     'synopsis': 'Synopsis',
     'recordings': 'Recordings',
+    'archive': 'Archive',
   };
   const title = titles[section] || section;
   // Raccoglie immagini dei progetti con sc_section corrispondente
