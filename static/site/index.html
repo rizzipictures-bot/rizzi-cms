@@ -7923,6 +7923,7 @@
         <span data-sc-section="recordings">Recordings</span>
         <span data-sc-section="information">Information</span>
         <span data-sc-section="archive">Archive</span>
+        <span data-sc-section="mapping-lives">Mapping Lives</span>
         <span id="sculptures-back" onclick="scGoBack()">&#8592; Back</span>
       </nav>
 
@@ -13713,7 +13714,42 @@ function scBuildSectionContent(section) {
     document.body.classList.add('sc-archive-nav-mode');
     el.innerHTML = _scBuildArchivePage();
     // Collega gli eventi expand/collapse dopo il render
-    requestAnimationFrame(() => _scArchiveBindExpand());
+    requestAnimationFrame(() => {
+      _scArchiveBindExpand();
+      // Anima il canvas della thumb Mapping Lives
+      const _mlCanvas = document.getElementById('sc-arc-mapping-canvas');
+      if (_mlCanvas) {
+        const _mlCtx = _mlCanvas.getContext('2d');
+        const _mlW = 120, _mlH = 68;
+        // Genera punti casuali che rappresentano le vittime sulla mappa USA
+        const _mlDots = Array.from({length: 80}, () => ({
+          x: 10 + Math.random() * 100,
+          y: 5 + Math.random() * 58,
+          r: 0.8 + Math.random() * 1.4,
+          phase: Math.random() * Math.PI * 2,
+          speed: 0.03 + Math.random() * 0.04
+        }));
+        let _mlFrame = 0;
+        function _mlAnimate() {
+          _mlCtx.fillStyle = '#0a0a0a';
+          _mlCtx.fillRect(0, 0, _mlW, _mlH);
+          _mlFrame++;
+          _mlDots.forEach(d => {
+            const pulse = 0.4 + 0.6 * Math.abs(Math.sin(d.phase + _mlFrame * d.speed));
+            _mlCtx.beginPath();
+            _mlCtx.arc(d.x, d.y, d.r * pulse, 0, Math.PI * 2);
+            _mlCtx.fillStyle = `rgba(230,57,70,${0.5 + 0.5 * pulse})`;
+            _mlCtx.fill();
+          });
+          // Titolo minuscolo
+          _mlCtx.fillStyle = 'rgba(255,255,255,0.18)';
+          _mlCtx.font = '3px Helvetica';
+          _mlCtx.fillText('MAPPING LIVES', 4, _mlH - 4);
+          requestAnimationFrame(_mlAnimate);
+        }
+        _mlAnimate();
+      }
+    });
     return;
   }
 
@@ -13732,7 +13768,7 @@ function scBuildSectionContent(section) {
       <div style="position:relative;width:100%;height:100vh;overflow:hidden;">
         <iframe
           id="sc-mapping-iframe"
-          src="https://police-violence-map.manus.space/"
+          src="https://3000-ittnr12oxidxpkxxfygi7-4fe05faa.us2.manus.computer"
           style="position:absolute;top:0;left:0;width:100%;height:100%;border:none;"
           allow="geolocation"
           loading="lazy"
@@ -14694,6 +14730,7 @@ function _scBuildArchivePage() {
       html += '<div style="display:flex;align-items:flex-start;gap:10px;">';
       html += '<div class="sc-arc-icons-video-wrap" onclick="this.classList.toggle(\'sc-arc-icons-expanded\')" title="Click to expand"><video src="/static/site/video/bg-washington.mp4" autoplay loop muted playsinline preload="auto"></video><span class="sc-arc-icons-video-label">March for All Justice</span></div>';
       html += '<div class="sc-arc-icons-video-wrap" onclick="this.classList.toggle(\'sc-arc-icons-expanded\')" title="Click to expand" style="margin-left:8px;"><img src="/static/site/images/icons-nan-poster.png" alt="National March Against Police Violence" style="display:block;width:100%;height:100%;object-fit:cover;filter:grayscale(1);transition:filter 0.28s ease;"><span class="sc-arc-icons-video-label">National March Against Police Violence</span></div>';
+      html += '<div class="sc-arc-icons-video-wrap sc-arc-icons-mapping" onclick="scSwitchSection(\'mapping-lives\')" title="Open Mapping Lives" style="margin-left:8px;position:relative;"><canvas id="sc-arc-mapping-canvas" width="120" height="68" style="display:block;width:100%;height:100%;"></canvas><span class="sc-arc-icons-video-label">Mapping Lives</span></div>';
       html += '</div>';
     } else {
       html += '<div class="sc-arc-col-title">&nbsp;</div>';
