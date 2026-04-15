@@ -4380,6 +4380,10 @@
       cursor: pointer;
       position: relative;
     }
+    /* La griglia deve avere overflow:visible per permettere il pop-up scale della cella Archive */
+    #sculptures-grid {
+      overflow: visible;
+    }
     /* Celle verticali (default) */
     #sculptures-grid > div .sc-thumb-wrap {
       width: 100%;
@@ -4489,6 +4493,41 @@
       transform: translate(-50%, -50%) !important;
       object-fit: contain !important;
       box-shadow: 0 6px 22px rgba(0,0,0,0.32), 0 2px 8px rgba(0,0,0,0.18);
+    }
+
+    /* ── Cella Archive: video animato + pop-up +10% on hover ── */
+    /* La cella stessa: z-index elevato in hover per sovrapporsi alle celle adiacenti */
+    #sculptures-grid [data-sc-section="archive"] {
+      z-index: 1;
+      position: relative;
+    }
+    #sculptures-grid [data-sc-section="archive"]:hover {
+      z-index: 10;
+    }
+    /* Il wrap: scala +10% on hover con transizione Corboz — overflow:hidden contiene il video */
+    #sculptures-grid [data-sc-section="archive"] .sc-thumb-wrap {
+      overflow: hidden;
+      background: #000;
+      transition: transform 0.45s cubic-bezier(0.77, 0, 0.175, 1);
+      transform-origin: center center;
+    }
+    #sculptures-grid [data-sc-section="archive"]:hover .sc-thumb-wrap {
+      transform: scale(1.10);
+    }
+    /* Video Archive: copre tutto il wrap, muto, autoplay, loop */
+    #sculptures-grid [data-sc-section="archive"] .sc-archive-video {
+      position: absolute;
+      top: 0; left: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      object-position: center center;
+      display: block;
+      opacity: 0.88;
+      transition: opacity 0.3s;
+    }
+    #sculptures-grid [data-sc-section="archive"]:hover .sc-archive-video {
+      opacity: 1;
     }
 
     /* ── Animazione scroll continuo cella Recordings ── */
@@ -12982,6 +13021,29 @@ function scBuildGrid() {
           bgText.appendChild(span);
         });
         wrap.insertBefore(bgText, imgEl);
+      }
+      // Per la cella Archive: sostituisce l'img con un <video> animato
+      if (targetSection === 'archive') {
+        wrap.removeChild(imgEl);
+        const videoEl = document.createElement('video');
+        videoEl.className = 'sc-archive-video';
+        videoEl.src = '/static/site/video/bg-washington.mp4';
+        videoEl.muted = true;
+        videoEl.loop = true;
+        videoEl.playsInline = true;
+        videoEl.autoplay = true;
+        videoEl.setAttribute('playsinline', '');
+        videoEl.setAttribute('muted', '');
+        videoEl.setAttribute('autoplay', '');
+        videoEl.setAttribute('loop', '');
+        // Pausa on hover, riprende on mouseleave
+        const cellEl = cell;
+        cellEl.addEventListener('mouseenter', () => { videoEl.pause(); });
+        cellEl.addEventListener('mouseleave', () => { videoEl.play().catch(() => {}); });
+        // Avvia il video quando l'overview diventa visibile
+        wrap.appendChild(videoEl);
+        // Avvio differito per garantire che il DOM sia pronto
+        setTimeout(() => { videoEl.play().catch(() => {}); }, 100);
       }
       // Per la cella Recordings: crea contenitore scroll con immagine duplicata per loop seamless
       if (targetSection === 'recordings') {
