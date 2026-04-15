@@ -14123,26 +14123,21 @@ function _scBuildArchivePage() {
       align-items: flex-end;
       width: 44px;
       height: 62.2px; /* A4: 44 × 1.414 = 62.2px */
-      /* nota: le thumb devono sembrare A4 — proporzione corretta */
-      background: #f0ead8;
-      background-image:
-        url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='200' height='200' filter='url(%23n)' opacity='0.07'/%3E%3C/svg%3E");
+      background: #000;
       border: none;
       border-radius: 2px;
       cursor: pointer;
       padding: 5px 4px 5px 4px;
-      box-shadow: 1px 1px 4px rgba(0,0,0,0.18);
+      box-shadow: 1px 1px 4px rgba(0,0,0,0.35);
       transition: transform 0.18s ease, box-shadow 0.18s ease;
       position: relative;
     }
     .sc-arc-text-thumb:hover {
       transform: scale(1.08);
-      box-shadow: 2px 3px 10px rgba(0,0,0,0.22);
+      box-shadow: 2px 3px 10px rgba(0,0,0,0.5);
     }
     .sc-arc-text-thumb--white {
-      background: #f7f5f0;
-      background-image:
-        url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='200' height='200' filter='url(%23n)' opacity='0.07'/%3E%3C/svg%3E");
+      background: #000;
     }
     .sc-arc-text-thumb-label {
       font-family: Georgia, 'Times New Roman', serif;
@@ -14150,7 +14145,7 @@ function _scBuildArchivePage() {
       font-weight: bold;
       font-style: normal;
       line-height: 1.4;
-      color: #4a2e10;
+      color: #fff;
       text-transform: none;
       letter-spacing: 0.01em;
       text-align: left;
