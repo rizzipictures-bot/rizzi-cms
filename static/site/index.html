@@ -14032,13 +14032,26 @@ function scToggleDiaryGridNote() {
     body.innerHTML = d.rows.map(function(r) {
       return '<div class="sc-inst-row"><span class="sc-inst-label">' + r[0] + '</span><span class="sc-inst-value">' + r[1] + '</span></div>';
     }).join('');
-    // Mostra con animazione — posizione gestita interamente via CSS (bottom-right)
+    // Posiziona il popup sovrapposto al box info, ancorato all'angolo bottom-right
+    var infoEl = document.getElementById('sculptures-info');
+    if (infoEl) {
+      var r = infoEl.getBoundingClientRect();
+      // Angolo bottom-right del box info: il popup si espande da qui verso l'interno
+      // Usiamo fixed con right/bottom calcolati dall'angolo del box
+      box.style.right  = (window.innerWidth  - r.right)  + 'px';
+      box.style.bottom = (window.innerHeight - r.bottom) + 'px';
+      box.style.top    = '';
+      box.style.left   = '';
+      // Larghezza = 75% del box info, altezza libera
+      box.style.width  = (r.width * 0.75) + 'px';
+    }
+    // Mostra con animazione scale dall'angolo bottom-right
     box.classList.remove('sc-inst-visible');
     box.offsetHeight; // reflow
     requestAnimationFrame(function() { box.classList.add('sc-inst-visible'); });
-    // Auto-close dopo 5s
+    // Auto-close dopo 6s
     if (_scInstTimer) clearTimeout(_scInstTimer);
-    _scInstTimer = setTimeout(function() { window.scInstPopupClose(); }, 5000);
+    _scInstTimer = setTimeout(function() { window.scInstPopupClose(); }, 6000);
   };
 
   window.scInstPopupClose = function() {
