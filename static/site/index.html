@@ -13631,7 +13631,18 @@ function _scBuildArchivePage() {
       filter: grayscale(1);
       opacity: 0.85;
       margin-top: 6px;
-      pointer-events: none;
+      pointer-events: auto;
+      cursor: default;
+      transition: transform 0.28s cubic-bezier(.22,.68,0,1.2), opacity 0.2s;
+      transform-origin: top left;
+      position: relative;
+      z-index: 1;
+    }
+    .sc-arc-icons-video:hover {
+      transform: scale(1.6) translateX(28px);
+      opacity: 1;
+      z-index: 100;
+      filter: grayscale(1);
     }
     </style>
   `;
