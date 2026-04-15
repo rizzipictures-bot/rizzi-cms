@@ -6005,14 +6005,40 @@
       display: none !important;
     }
 
-    /* ── Archive nav mode: menu nero su sfondo bianco ── */
-    .sc-archive-nav-mode #sculptures-nav [data-sc-section],
-    .sc-archive-nav-mode #sculptures-back {
-      color: #000 !important;
+    /* ── Archive nav mode: nasconde tutto il nav di Sculptures ── */
+    .sc-archive-nav-mode #sculptures-nav {
+      display: none !important;
     }
-    .sc-archive-nav-mode #sculptures-nav [data-sc-section]:hover,
-    .sc-archive-nav-mode #sculptures-nav [data-sc-section].active {
-      color: #4c00fc !important;
+    .sc-archive-nav-mode #sculptures-back {
+      display: none !important;
+    }
+
+    /* ── Archive: bottone Back fisso in basso a sinistra ── */
+    #sc-archive-back-btn {
+      position: fixed;
+      bottom: 22px;
+      left: 18px;
+      z-index: 1300;
+      display: none;
+      align-items: center;
+      gap: 5px;
+      background: none;
+      border: none;
+      cursor: pointer;
+      padding: 0;
+      font-family: 'Times New Roman', Times, serif;
+      font-size: 9px;
+      font-weight: 400;
+      letter-spacing: 0.3px;
+      color: #000;
+      opacity: 0.55;
+      transition: opacity 0.2s;
+      text-decoration: none;
+    }
+    #sc-archive-back-btn:hover { opacity: 1; }
+    #sc-archive-back-btn svg { display: block; }
+    .sc-archive-nav-mode #sc-archive-back-btn {
+      display: flex !important;
     }
 
     /* ── Griglia thumbs stile Jack Davison: righe libere, mix portrait+landscape ── */
@@ -7659,6 +7685,14 @@
         <span data-sc-section="archive">Archive</span>
         <span id="sculptures-back" onclick="scGoBack()">&#8592; Back</span>
       </nav>
+
+      <!-- Bottone Back fisso per la modalità Archive -->
+      <button id="sc-archive-back-btn" onclick="_scArchiveGoBack()">
+        <svg width="10" height="10" viewBox="0 0 10 10" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M7 1L3 5L7 9" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        Back
+      </button>
 
       <!-- Titolo grande (visibile solo in Overview, stile Corboz) -->
       <div id="sculptures-page-title">
@@ -13180,6 +13214,8 @@ function scBuildSectionContent(section) {
   // Mappa sezione -> titolo
   // ── Pagina speciale: Archive ──
   if (section === 'archive') {
+    // Salva la sezione precedente per il bottone Back
+    _scArchivePrevSection = scCurrentSection || 'overview';
     el.style.background = '#fff';
     el.style.minHeight  = '100vh';
     el.style.color      = '#000';
@@ -13506,7 +13542,7 @@ function _scBuildArchivePage() {
       text-transform: uppercase;
       color: #000;
       background: #fff;
-      padding: 0 0 0.4em 0;
+      padding: 0.55em 0 0.4em 0;
       margin: 0;
       display: block;
       width: 100%;
@@ -13712,6 +13748,13 @@ function _scBuildArchivePage() {
 
   html += '</div>'; // #sc-archive-bib
   return html;
+}
+
+// Torna alla sezione precedente da Archive
+// Se si proveniva da una sezione specifica, ci torna; altrimenti va a Overview
+let _scArchivePrevSection = 'overview';
+function _scArchiveGoBack() {
+  scSwitchSection(_scArchivePrevSection || 'overview');
 }
 
 // Collega gli eventi expand/collapse nella pagina Archive
