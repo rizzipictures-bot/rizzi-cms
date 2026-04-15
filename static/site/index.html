@@ -12500,6 +12500,11 @@ function scSwitchSection(section) {
     if (pageTitle) pageTitle.style.display = 'block';
     // Rimuovi modalità diary (menu torna bianco)
     document.body.classList.remove('sc-diary-nav-mode');
+    // Rimuovi modalità archive (menu torna bianco, sfondo torna nero)
+    document.body.classList.remove('sc-archive-nav-mode');
+    const _vscOv = document.getElementById('view-sculptures');
+    if (_vscOv) _vscOv.style.background = '';
+    if (sectionContent) { sectionContent.style.background = ''; sectionContent.style.color = ''; }
     scBuildGrid();
     // Auto-show box information: gestito nell'entrata a Sculptures (showView), non qui
   } else if (section === 'information') {
@@ -13146,6 +13151,9 @@ function scBuildSectionContent(section) {
     el.style.background = '';
     el.style.color = '';
     document.body.classList.remove('sc-archive-nav-mode');
+    // Ripristina sfondo nero di view-sculptures
+    const _vsc = document.getElementById('view-sculptures');
+    if (_vsc) _vsc.style.background = '';
   }
   // Rimuovi la classe diary-mode se eravamo in diary
   if (window._scDiaryCascadeTimer) {
@@ -13175,12 +13183,14 @@ function scBuildSectionContent(section) {
     el.style.background = '#fff';
     el.style.minHeight  = '100vh';
     el.style.color      = '#000';
+    // Sfondo bianco anche sul contenitore padre (view-sculptures ha background:#000 di default)
+    const _vscEl = document.getElementById('view-sculptures');
+    if (_vscEl) _vscEl.style.background = '#fff';
     // Menu nero (come in diary-nav-mode ma invertito: testo nero su sfondo bianco)
     document.body.classList.add('sc-archive-nav-mode');
-    el.innerHTML = `
-      <h2 style="color:#000;font-family:Helvetica,Arial,sans-serif;font-size:clamp(2rem,6vw,5rem);font-weight:900;letter-spacing:-0.02em;text-transform:uppercase;padding:0 0 0.5em 0;margin:0;">Archive</h2>
-      <div id="sc-archive-content" style="min-height:60vh;"></div>
-    `;
+    el.innerHTML = _scBuildArchivePage();
+    // Collega gli eventi expand/collapse dopo il render
+    requestAnimationFrame(() => _scArchiveBindExpand());
     return;
   }
 
@@ -13312,6 +13322,420 @@ function scBuildSectionContent(section) {
       });
     }
   }
+}
+
+// ════════════════════════════════════════════════════════════════
+// SCULPTURES — ARCHIVE PAGE: layout bibliografico
+// ════════════════════════════════════════════════════════════════
+
+// Dati Speech: testi delle tracce audio (diary-01 … diary-12)
+// Ogni traccia è suddivisa in testimonianze separate da nomi
+const SC_ARCHIVE_SPEECH = [
+  {
+    track: '01',
+    testimonies: [
+      { author: 'Jeffrey Johnson · Baltimore, MD', text: '\u201cNo Justice, No Peace\u201d' },
+      { author: 'Amefika Browk · Houston St. Suitland, MD', text: '\u201cAll the world is searching for Truth\u201d' },
+      { author: 'Sheik Alex Prather-El', text: '\u201cLove instead of Hate\u201d' },
+      { author: 'Grand Shiek · Darrel Johnson-Bey · Balt. MD', text: '\u201cUplifting\u201d' }
+    ]
+  },
+  {
+    track: '02',
+    testimonies: [
+      { author: 'Andre Williams · San Diego, CA', text: '\u201cI am Here for Action\u201d' },
+      { author: 'Theodora Lomax · Red Bank, NJ', text: '\u201cNO Justice NO Peace Only RIGHT Prevail \u2014 we will march on to victory\u201d' },
+      { author: 'Elliott Lomax · Bowie, MD', text: '\u201cI came because I fear for my life, and my son\u2019s life and my father\u2019s life and my brother\u2019s life at the hands of the public servants who are sworn to serve and protect us.\u201d' },
+      { author: 'Rachel Bards · Washington DC', text: '\u201cI came out of fear for my brothers and future sons.\u201d' },
+      { author: 'Greg Booker Jr.', text: '\u201cThis day as other days are significant to our tomorrows. Always stand for what is right in your heart.\u201d' }
+    ]
+  },
+  {
+    track: '03',
+    testimonies: [
+      { author: 'Andre Williams · San Diego, CA', text: '\u201cI am Here for Action\u201d' },
+      { author: 'Theodora Lomax · Red Bank, NJ', text: '\u201cNO Justice NO Peace Only RIGHT Prevail \u2014 we will march on to victory\u201d' },
+      { author: 'Elliott Lomax · Bowie, MD', text: '\u201cI came because I fear for my life, and my son\u2019s life and my father\u2019s life and my brother\u2019s life at the hands of the public servants who are sworn to serve and protect us.\u201d' },
+      { author: 'Rachel Bards · Washington DC', text: '\u201cI came out of fear for my brothers and future sons.\u201d' },
+      { author: 'Greg Booker Jr.', text: '\u201cThis day as other days are significant to our tomorrows. Always stand for what is right in your heart.\u201d' }
+    ]
+  },
+  {
+    track: '04',
+    testimonies: [
+      { author: 'Andre Williams · San Diego, CA', text: '\u201cI am Here for Action\u201d' },
+      { author: 'Theodora Lomax · Red Bank, NJ', text: '\u201cNO Justice NO Peace Only RIGHT Prevail \u2014 we will march on to victory\u201d' },
+      { author: 'Elliott Lomax · Bowie, MD', text: '\u201cI came because I fear for my life, and my son\u2019s life and my father\u2019s life and my brother\u2019s life at the hands of the public servants who are sworn to serve and protect us.\u201d' },
+      { author: 'Rachel Bards · Washington DC', text: '\u201cI came out of fear for my brothers and future sons.\u201d' },
+      { author: 'Greg Booker Jr.', text: '\u201cThis day as other days are significant to our tomorrows. Always stand for what is right in your heart.\u201d' }
+    ]
+  },
+  {
+    track: '05',
+    testimonies: [
+      { author: 'Paul Braham · Washington DC', text: '\u201cAs a black man I had to be here bc I\u2019ve been harassed and stopped by police. I love the crowd energy. I hope this will lead to widespread and long lasting change.\u201d' },
+      { author: 'Saba Ahmed & Allegra O\u2019Donoghue · Oakland, CA', text: '\u201c#blacklivesmatter. We\u2019re standing in solidarity as allies.\u201d' },
+      { author: 'Beverly Carter · Luke 17', text: '\u201cWrong doers will be accountable. Christians Rebuke wrong in Love hoping for God\u2019s will to be done, we will forgive. Have Faith in God!\u201d' },
+      { author: 'Cedric Lamar · NYC', text: '\u201cToday, I saw people of ALL colors standing up for the Red, White, & Blue. It\u2019s time to join the fight. How about you?\u201d' }
+    ]
+  },
+  {
+    track: '06',
+    testimonies: [
+      { author: 'Paul Braham · Washington DC', text: '\u201cAs a black man I had to be here bc I\u2019ve been harassed and stopped by police. I love the crowd energy. I hope this will lead to widespread and long lasting change.\u201d' },
+      { author: 'Saba Ahmed & Allegra O\u2019Donoghue · Oakland, CA', text: '\u201c#blacklivesmatter. We\u2019re standing in solidarity as allies.\u201d' },
+      { author: 'Beverly Carter · Luke 17', text: '\u201cWrong doers will be accountable. Christians Rebuke wrong in Love hoping for God\u2019s will to be done, we will forgive. Have Faith in God!\u201d' },
+      { author: 'Cedric Lamar · NYC', text: '\u201cToday, I saw people of ALL colors standing up for the Red, White, & Blue. It\u2019s time to join the fight. How about you?\u201d' }
+    ]
+  },
+  {
+    track: '07',
+    testimonies: [
+      { author: 'Paul Braham · Washington DC', text: '\u201cAs a black man I had to be here bc I\u2019ve been harassed and stopped by police. I love the crowd energy. I hope this will lead to widespread and long lasting change.\u201d' },
+      { author: 'Saba Ahmed & Allegra O\u2019Donoghue · Oakland, CA', text: '\u201c#blacklivesmatter. We\u2019re standing in solidarity as allies.\u201d' },
+      { author: 'Beverly Carter · Luke 17', text: '\u201cWrong doers will be accountable. Christians Rebuke wrong in Love hoping for God\u2019s will to be done, we will forgive. Have Faith in God!\u201d' },
+      { author: 'Cedric Lamar · NYC', text: '\u201cToday, I saw people of ALL colors standing up for the Red, White, & Blue. It\u2019s time to join the fight. How about you?\u201d' }
+    ]
+  },
+  {
+    track: '08',
+    testimonies: [
+      { author: 'Ann Robinson · Port Washington, MD', text: '\u201cWE THE PEOPLE \u2014 All the people, not just some of the people!!\u201d' },
+      { author: 'Dree · New York', text: '\u201cInternational solidarity and justice. Power.\u201d \u2014 \u201cMy feeling is that of both hope and despair. I will continue the fight until justice is served!\u201d' }
+    ]
+  },
+  {
+    track: '09',
+    testimonies: [
+      { author: 'Ann Robinson · Port Washington, MD', text: '\u201cWE THE PEOPLE \u2014 All the people, not just some of the people!!\u201d' },
+      { author: 'Dree · New York', text: '\u201cInternational solidarity and justice. Power.\u201d \u2014 \u201cMy feeling is that of both hope and despair. I will continue the fight until justice is served!\u201d' }
+    ]
+  },
+  {
+    track: '10',
+    testimonies: [
+      { author: 'Ann Robinson · Port Washington, MD', text: '\u201cWE THE PEOPLE \u2014 All the people, not just some of the people!!\u201d' },
+      { author: 'Dree · New York', text: '\u201cInternational solidarity and justice. Power.\u201d \u2014 \u201cMy feeling is that of both hope and despair. I will continue the fight until justice is served!\u201d' }
+    ]
+  },
+  {
+    track: '11',
+    testimonies: [
+      { author: 'Carlos Wilkins · Alexandria, VA', text: '\u201cToday the comradery and sense of unity was very empowering. The support from people of all colors was uplifting and we will use it to propel ourselves to higher heights as a people. God was here today.\u201d' },
+      { author: 'Debbie Allen · Englewood, NJ', text: '\u201cToday gives Me a feeling of Hope. Particularly I\u2019m seeing the faces of people from all Races and Ethnic groups. This is not a problem for Black People. This is a problem for all People and It is Clearly Seen in the group standing here today.\u201d' }
+    ]
+  },
+  {
+    track: '12',
+    testimonies: [
+      { author: 'Carlos Wilkins · Alexandria, VA', text: '\u201cToday the comradery and sense of unity was very empowering. The support from people of all colors was uplifting and we will use it to propel ourselves to higher heights as a people. God was here today.\u201d' },
+      { author: 'Debbie Allen · Englewood, NJ', text: '\u201cToday gives Me a feeling of Hope. Particularly I\u2019m seeing the faces of people from all Races and Ethnic groups. This is not a problem for Black People. This is a problem for all People and It is Clearly Seen in the group standing here today.\u201d' }
+    ]
+  }
+];
+
+// Dati Diary: testimonianze per pagina del diario (deduplicate per contenuto unico)
+const SC_ARCHIVE_DIARY = [
+  {
+    page: 'diary-01',
+    date: 'Washington, 13-12-2014',
+    testimonies: [
+      { author: 'Jeffrey Johnson · Baltimore, MD', text: '\u201cNo Justice, No Peace\u201d' },
+      { author: 'Amefika Browk · Houston St. Suitland, MD', text: '\u201cAll the world is searching for Truth\u201d' },
+      { author: 'Sheik Alex Prather-El', text: '\u201cLove instead of Hate\u201d' },
+      { author: 'Grand Shiek · Darrel Johnson-Bey · Balt. MD', text: '\u201cUplifting\u201d' }
+    ]
+  },
+  {
+    page: 'diary-02 / 03 / 04',
+    date: 'Washington, 13-12-2014',
+    testimonies: [
+      { author: 'Andre Williams · San Diego, CA', text: '\u201cI am Here for Action\u201d' },
+      { author: 'Theodora Lomax · Red Bank, NJ', text: '\u201cNO Justice NO Peace Only RIGHT Prevail \u2014 we will march on to victory\u201d' },
+      { author: 'Elliott Lomax · Bowie, MD', text: '\u201cI came because I fear for my life, and my son\u2019s life and my father\u2019s life and my brother\u2019s life at the hands of the public servants who are sworn to serve and protect us.\u201d' },
+      { author: 'Rachel Bards · Washington DC', text: '\u201cI came out of fear for my brothers and future sons.\u201d' },
+      { author: 'Greg Booker Jr.', text: '\u201cThis day as other days are significant to our tomorrows. Always stand for what is right in your heart.\u201d' }
+    ]
+  },
+  {
+    page: 'diary-05 / 06 / 07',
+    date: 'Washington, 13-12-2014',
+    testimonies: [
+      { author: 'Paul Braham · Washington DC', text: '\u201cAs a black man I had to be here bc I\u2019ve been harassed and stopped by police. I love the crowd energy. I hope this will lead to widespread and long lasting change.\u201d' },
+      { author: 'Saba Ahmed & Allegra O\u2019Donoghue · Oakland, CA', text: '\u201c#blacklivesmatter. We\u2019re standing in solidarity as allies.\u201d' },
+      { author: 'Beverly Carter · Luke 17', text: '\u201cWrong doers will be accountable. Christians Rebuke wrong in Love hoping for God\u2019s will to be done, we will forgive. Have Faith in God!\u201d' },
+      { author: 'Cedric Lamar · NYC', text: '\u201cToday, I saw people of ALL colors standing up for the Red, White, & Blue. It\u2019s time to join the fight. How about you?\u201d' }
+    ]
+  },
+  {
+    page: 'diary-08 / 09 / 10',
+    date: 'Washington, 13-12-2014',
+    testimonies: [
+      { author: 'Ann Robinson · Port Washington, MD', text: '\u201cWE THE PEOPLE \u2014 All the people, not just some of the people!!\u201d' },
+      { author: 'Dree · New York', text: '\u201cInternational solidarity and justice. Power.\u201d \u2014 \u201cMy feeling is that of both hope and despair. I will continue the fight until justice is served!\u201d' }
+    ]
+  },
+  {
+    page: 'diary-11 / 12',
+    date: 'Washington, 13-12-2014',
+    testimonies: [
+      { author: 'Carlos Wilkins · Alexandria, VA', text: '\u201cToday the comradery and sense of unity was very empowering. The support from people of all colors was uplifting and we will use it to propel ourselves to higher heights as a people. God was here today.\u201d' },
+      { author: 'Debbie Allen · Englewood, NJ', text: '\u201cToday gives Me a feeling of Hope. Particularly I\u2019m seeing the faces of people from all Races and Ethnic groups. This is not a problem for Black People. This is a problem for all People and It is Clearly Seen in the group standing here today.\u201d' }
+    ]
+  }
+];
+
+// Costruisce l'HTML della pagina Archive bibliografica
+function _scBuildArchivePage() {
+  // ── CSS inline per il layout bibliografico ──
+  const css = `
+    <style>
+    #sc-archive-bib {
+      font-family: 'Courier New', Courier, monospace;
+      background: #fff;
+      color: #000;
+      width: 100%;
+      box-sizing: border-box;
+      padding: 0 0 80px 0;
+    }
+    .sc-arc-header {
+      font-family: Helvetica, Arial, sans-serif;
+      font-size: clamp(2rem, 6vw, 5rem);
+      font-weight: 900;
+      letter-spacing: -0.02em;
+      text-transform: uppercase;
+      color: #000;
+      background: #fff;
+      padding: 0 0 0.4em 0;
+      margin: 0;
+      display: block;
+      width: 100%;
+      position: sticky;
+      top: 0;
+      z-index: 10;
+    }
+    .sc-arc-grid {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 0;
+      width: 100%;
+      border-top: 1px solid #000;
+    }
+    .sc-arc-col {
+      border-right: 1px solid #000;
+      padding: 0;
+      min-width: 0;
+    }
+    .sc-arc-col:last-child { border-right: none; }
+    .sc-arc-col-title {
+      font-family: Helvetica, Arial, sans-serif;
+      font-size: 8px;
+      font-weight: 700;
+      letter-spacing: 0.22em;
+      text-transform: uppercase;
+      color: #000;
+      padding: 6px 8px 5px 8px;
+      border-bottom: 1px solid #000;
+      background: #fff;
+      position: sticky;
+      top: 0;
+      z-index: 5;
+    }
+    .sc-arc-entry {
+      border-bottom: 1px solid rgba(0,0,0,0.15);
+      padding: 7px 8px 6px 8px;
+      cursor: default;
+    }
+    .sc-arc-entry:last-child { border-bottom: none; }
+    .sc-arc-track-id {
+      font-family: Helvetica, Arial, sans-serif;
+      font-size: 7px;
+      font-weight: 400;
+      letter-spacing: 0.18em;
+      color: rgba(0,0,0,0.35);
+      margin-bottom: 2px;
+      display: block;
+    }
+    .sc-arc-first-line {
+      font-family: 'Courier New', Courier, monospace;
+      font-size: 9px;
+      line-height: 1.45;
+      color: #000;
+      display: inline;
+    }
+    .sc-arc-expand-btn {
+      font-family: 'Courier New', Courier, monospace;
+      font-size: 9px;
+      color: #4c00fc;
+      cursor: pointer;
+      display: inline;
+      margin-left: 1px;
+      text-decoration: none;
+      background: none;
+      border: none;
+      padding: 0;
+      transition: opacity .15s;
+    }
+    .sc-arc-expand-btn:hover { opacity: 0.65; }
+    .sc-arc-full-text {
+      display: none;
+      margin-top: 4px;
+    }
+    .sc-arc-entry.expanded .sc-arc-full-text {
+      display: block;
+    }
+    .sc-arc-entry.expanded .sc-arc-expand-btn {
+      display: none;
+    }
+    .sc-arc-testimony {
+      font-family: 'Courier New', Courier, monospace;
+      font-size: 8.5px;
+      line-height: 1.5;
+      color: #000;
+      margin-bottom: 5px;
+      padding-bottom: 5px;
+      border-bottom: 1px dotted rgba(0,0,0,0.12);
+    }
+    .sc-arc-testimony:last-child { border-bottom: none; margin-bottom: 0; padding-bottom: 0; }
+    .sc-arc-testimony-author {
+      font-family: Helvetica, Arial, sans-serif;
+      font-size: 7px;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      color: rgba(0,0,0,0.45);
+      display: block;
+      margin-bottom: 1px;
+    }
+    .sc-arc-testimony-text {
+      font-family: 'Courier New', Courier, monospace;
+      font-size: 8.5px;
+      line-height: 1.45;
+      color: #000;
+      font-style: italic;
+    }
+    .sc-arc-collapse-btn {
+      font-family: Helvetica, Arial, sans-serif;
+      font-size: 7px;
+      letter-spacing: 0.12em;
+      color: #4c00fc;
+      cursor: pointer;
+      display: block;
+      margin-top: 5px;
+      background: none;
+      border: none;
+      padding: 0;
+      text-transform: uppercase;
+      transition: opacity .15s;
+    }
+    .sc-arc-collapse-btn:hover { opacity: 0.65; }
+    </style>
+  `;
+
+  // ── Costruisce le colonne Speech (5 colonne: tracce 01-12 distribuite) ──
+  // Distribuiamo 12 tracce in 5 colonne: 3+2+3+2+2 = 12
+  const speechCols = [[], [], [], [], []];
+  SC_ARCHIVE_SPEECH.forEach((t, i) => {
+    const col = i % 5;
+    speechCols[col].push(t);
+  });
+
+  function buildSpeechEntry(t) {
+    const first = t.testimonies[0];
+    // Prima frase: autore + prima parte del testo (fino a 60 char)
+    const firstText = first.author + ' \u2014 ' + first.text;
+    const preview = firstText.length > 72 ? firstText.substring(0, 72) + '\u2026' : firstText;
+    // Testo completo espanso
+    let fullHtml = '';
+    t.testimonies.forEach(tm => {
+      fullHtml += `<div class="sc-arc-testimony"><span class="sc-arc-testimony-author">${tm.author}</span><span class="sc-arc-testimony-text">${tm.text}</span></div>`;
+    });
+    return `
+      <div class="sc-arc-entry" data-arc-id="speech-${t.track}">
+        <span class="sc-arc-track-id">#${t.track}</span>
+        <span class="sc-arc-first-line">${preview}</span><button class="sc-arc-expand-btn" data-expand="speech-${t.track}">\u2026</button>
+        <div class="sc-arc-full-text">${fullHtml}<button class="sc-arc-collapse-btn" data-collapse="speech-${t.track}">\u2212 close</button></div>
+      </div>`;
+  }
+
+  // ── Costruisce le colonne Diary (5 colonne: 5 gruppi distribuiti) ──
+  const diaryCols = [[], [], [], [], []];
+  SC_ARCHIVE_DIARY.forEach((d, i) => {
+    const col = i % 5;
+    diaryCols[col].push(d);
+  });
+
+  function buildDiaryEntry(d) {
+    const first = d.testimonies[0];
+    const firstText = first.author + ' \u2014 ' + first.text;
+    const preview = firstText.length > 72 ? firstText.substring(0, 72) + '\u2026' : firstText;
+    let fullHtml = '';
+    d.testimonies.forEach(tm => {
+      fullHtml += `<div class="sc-arc-testimony"><span class="sc-arc-testimony-author">${tm.author}</span><span class="sc-arc-testimony-text">${tm.text}</span></div>`;
+    });
+    return `
+      <div class="sc-arc-entry" data-arc-id="diary-${d.page}">
+        <span class="sc-arc-track-id">#${d.page}</span>
+        <span class="sc-arc-first-line">${preview}</span><button class="sc-arc-expand-btn" data-expand="diary-${d.page}">\u2026</button>
+        <div class="sc-arc-full-text">${fullHtml}<button class="sc-arc-collapse-btn" data-collapse="diary-${d.page}">\u2212 close</button></div>
+      </div>`;
+  }
+
+  // ── Assembla HTML ──
+  let html = css;
+  html += '<div id="sc-archive-bib">';
+  html += '<span class="sc-arc-header">Archive</span>';
+
+  // Sezione Speech
+  html += '<div class="sc-arc-grid" id="sc-arc-speech-grid">';
+  for (let c = 0; c < 5; c++) {
+    html += '<div class="sc-arc-col">';
+    if (c === 0) html += '<div class="sc-arc-col-title">Speech</div>';
+    else html += '<div class="sc-arc-col-title">&nbsp;</div>';
+    speechCols[c].forEach(t => { html += buildSpeechEntry(t); });
+    html += '</div>';
+  }
+  html += '</div>';
+
+  // Separatore
+  html += '<div style="height:1px;background:#000;margin:24px 0 0;"></div>';
+
+  // Sezione Diary
+  html += '<div class="sc-arc-grid" id="sc-arc-diary-grid" style="margin-top:0;">';
+  for (let c = 0; c < 5; c++) {
+    html += '<div class="sc-arc-col">';
+    if (c === 0) html += '<div class="sc-arc-col-title">Diary</div>';
+    else html += '<div class="sc-arc-col-title">&nbsp;</div>';
+    diaryCols[c].forEach(d => { html += buildDiaryEntry(d); });
+    html += '</div>';
+  }
+  html += '</div>';
+
+  html += '</div>'; // #sc-archive-bib
+  return html;
+}
+
+// Collega gli eventi expand/collapse nella pagina Archive
+function _scArchiveBindExpand() {
+  const bib = document.getElementById('sc-archive-bib');
+  if (!bib) return;
+  bib.addEventListener('click', function(e) {
+    // Expand: click su ...
+    const expBtn = e.target.closest('[data-expand]');
+    if (expBtn) {
+      const id = expBtn.dataset.expand;
+      const entry = bib.querySelector('[data-arc-id="' + id + '"]');
+      if (entry) entry.classList.add('expanded');
+      return;
+    }
+    // Collapse: click su \u2212 close
+    const colBtn = e.target.closest('[data-collapse]');
+    if (colBtn) {
+      const id = colBtn.dataset.collapse;
+      const entry = bib.querySelector('[data-arc-id="' + id + '"]');
+      if (entry) entry.classList.remove('expanded');
+      return;
+    }
+  });
 }
 
 // Apre il pannello viewer in basso (Stato 2)
