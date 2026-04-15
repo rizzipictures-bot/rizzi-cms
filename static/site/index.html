@@ -5037,6 +5037,41 @@
       text-decoration: none;
     }
 
+    /* ── Link istituzione nel box Information (MoMA, THE MET) ── */
+    .sc-info-institution-link {
+      color: #4c00fc;
+      font-weight: 700;
+      text-decoration: none;
+      cursor: pointer;
+      position: relative;
+    }
+    /* Popup immagine al hover: centrato verticalmente nello schermo */
+    .sc-info-institution-link .sc-inst-popup {
+      display: none;
+      position: fixed;
+      left: 50%;
+      top: 50%;
+      transform: translate(-50%, -50%);
+      z-index: 9999;
+      background: #fff;
+      border-radius: 6px;
+      box-shadow: 0 4px 32px rgba(0,0,0,0.28);
+      padding: 8px;
+      pointer-events: none;
+      max-width: 340px;
+      max-height: 80vh;
+    }
+    .sc-info-institution-link .sc-inst-popup img {
+      display: block;
+      max-width: 100%;
+      max-height: 74vh;
+      border-radius: 3px;
+      object-fit: contain;
+    }
+    .sc-info-institution-link:hover .sc-inst-popup {
+      display: block;
+    }
+
     /* ── Bottone audio Sculptures ── */
     /* ── Controlli audio Play/Stop fissi in basso a sinistra — centrati verticalmente al karaoke ── */
     /* karaoke: bottom=14px, height=52px → centro = 14 + 26 = 40px dal basso */
@@ -7604,7 +7639,7 @@
         </svg>
       </button>
       <div id="sculptures-info-text">
-        <p>Sculptures is a Long Term Project about the Afro-Americans Issue. A contemporary photographic work that focus on different layers of the complexity social matter. The first Volume of a trilogy books which has been published by Yard Press at the end of 2015 received awards and international interest.</p><p>Sculptures VOL I, has been selected as one of the Best European Publication in the 2016 by Kaleid Edition London and is collected in the permanent Art Book Collection of M.o.M.A. and Metropolitan Museum of Art.</p>
+        <p>Sculptures is a Long Term Project about the Afro-Americans Issue. A contemporary photographic work that focus on different layers of the complexity social matter. The first Volume of a trilogy books which has been published by Yard Press at the end of 2015 received awards and international interest.</p><p>Sculptures VOL I, has been selected as one of the Best European Publication in the 2016 by Kaleid Edition London and is collected in the permanent Art Book Collection of <a class="sc-info-institution-link" href="#" onclick="return false;">M.o.M.A.<span class="sc-inst-popup"><img src="" alt="MoMA" id="sc-popup-moma-img"></span></a>, <a class="sc-info-institution-link" href="#" onclick="return false;">Metropolitan Museum of Art &ndash; THE MET<span class="sc-inst-popup"><img src="" alt="The Met" id="sc-popup-met-img"></span></a>, Oslo National Academy of Arts Library, Chicago SAIC J. Flasch Artists&rsquo; Book Collection.</p>
 
         <span class="sc-info-title">Impressum</span>
 
