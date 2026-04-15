@@ -13241,40 +13241,84 @@ function scBuildSectionContent(section) {
 
   // ── Pagina speciale: Synopsis / Interview ──
   if (section === 'synopsis') {
-    el.style.background = 'transparent';
+    el.style.background = '';
     el.style.minHeight  = '100vh';
-    el.style.color      = '#fff';
-    const _vscSyn = document.getElementById('view-sculptures');
-    if (_vscSyn) _vscSyn.style.background = '#000';
-    // Crea overlay di schiarimento (come Diary)
-    let _synOverlay = document.getElementById('sc-synopsis-bg-overlay');
-    if (!_synOverlay) {
-      _synOverlay = document.createElement('div');
-      _synOverlay.id = 'sc-synopsis-bg-overlay';
-      _synOverlay.style.cssText = 'position:fixed;top:0;left:0;width:100vw;height:100vh;background:rgba(255,255,255,0);z-index:1099;pointer-events:none;transition:background 1.8s ease;';
-      document.body.appendChild(_synOverlay);
-    }
-    _synOverlay.style.background = 'rgba(255,255,255,0)';
-    el.innerHTML = `
-      <div class="sc-synopsis-page">
-        <div class="sc-synopsis-intro">
-          <p><em>Sculptures</em> is a long-term project on the African American experience, built around a single day — December 13, 2014 — in Washington D.C. The following texts are part of the book published by Yard Press in October 2015. The Publisher\u2019s Note frames the work from the outside; the Conversation between Giovanni Spadaccini and Alessandro Rizzi opens it from within.</p>
-        </div>
-        <div class="sc-synopsis-thumbs" id="sc-synopsis-thumbs-row">
-          <button class="sc-synopsis-thumb" onclick="_scInterviewOpen('publisher')">
-            <span class="sc-synopsis-thumb-label">Publisher\u2019s<br>Note</span>
-          </button>
-          <button class="sc-synopsis-thumb" onclick="_scInterviewOpen('conversation')">
-            <span class="sc-synopsis-thumb-label">Alessandro Rizzi<br>Conversation</span>
-          </button>
-        </div>
-      </div>
-    `;
-    // Schiarisce lo sfondo quando le thumb entrano in viewport (come Diary)
-    setTimeout(() => {
-      const _synO = document.getElementById('sc-synopsis-bg-overlay');
-      if (_synO) _synO.style.background = 'rgba(255,255,255,0.78)';
-    }, 600);
+    el.classList.add('sc-diary-mode'); // riusa la classe diary per trasparenza
+    document.body.classList.add('sc-diary-nav-mode');
+
+    // ── Hero fullscreen: immagine libretto come sfondo fisso (come Diary) ──
+    const _synOldBg = document.getElementById('sc-diary-bg-img');
+    if (_synOldBg) _synOldBg.remove();
+    const _synOldOv = document.getElementById('sc-diary-bg-overlay');
+    if (_synOldOv) _synOldOv.remove();
+    const _synOldGr = document.getElementById('sc-diary-bg-grain');
+    if (_synOldGr) _synOldGr.remove();
+
+    // Crea hero con immagine libretto
+    const _synHero = document.createElement('div');
+    _synHero.id = 'sc-diary-bg-img';
+    _synHero.style.cssText = 'position:fixed;top:0;left:0;width:100vw;height:100vh;z-index:1099;pointer-events:none;overflow:hidden;transition:filter 1.2s ease;';
+    const _synImg = document.createElement('img');
+    _synImg.src = '/static/site/images/interview-thumb-bg.jpg';
+    _synImg.alt = '';
+    _synImg.style.cssText = 'width:100%;height:100%;object-fit:cover;object-position:center;display:block;';
+    _synHero.appendChild(_synImg);
+    document.body.appendChild(_synHero);
+
+    // Crea overlay (inizialmente trasparente, diventa bianco-avorio)
+    const _synOv = document.createElement('div');
+    _synOv.id = 'sc-diary-bg-overlay';
+    document.body.appendChild(_synOv);
+
+    // Crea grana
+    const _synGrain = document.createElement('div');
+    _synGrain.id = 'sc-diary-bg-grain';
+    document.body.appendChild(_synGrain);
+
+    // Rendi view-sculptures trasparente
+    const _synViewEl = document.getElementById('view-sculptures');
+    if (_synViewEl) _synViewEl.classList.add('sc-diary-mode');
+
+    // ── Contenuto: titolo + testo intro + griglia thumb ──
+    const _synThumbs = [
+      { key: 'publisher',     label: 'Publisher\u2019s Note' },
+      { key: 'conversation',  label: 'Alessandro Rizzi\nConversation' },
+    ];
+
+    let html = '<h2 style="position:relative;z-index:25;color:#fff;background:transparent;">Interview</h2>';
+    html += '<div class="sc-synopsis-intro-text" style="position:relative;z-index:25;font-family:Helvetica,Arial,sans-serif;font-size:13px;font-weight:400;line-height:1.75;color:rgba(255,255,255,0.88);max-width:580px;padding:0 14px 40px;">';
+    html += '<p><em>Sculptures</em> is a long-term project on the African American experience, built around a single day — December 13, 2014 — in Washington D.C. The following texts are part of the book published by Yard Press in October 2015. The Publisher\u2019s Note frames the work from the outside; the Conversation between Giovanni Spadaccini and Alessandro Rizzi opens it from within.</p>';
+    html += '</div>';
+    html += '<div class="sc-synopsis-grid" id="sc-synopsis-grid" style="position:relative;z-index:25;display:flex;flex-direction:row;gap:28px;padding:0 14px 60px;align-items:flex-start;">';
+    _synThumbs.forEach((t, i) => {
+      const labelHtml = t.label.replace('\n', '<br>');
+      html += `<div class="sc-synopsis-cell" data-key="${t.key}" onclick="_scInterviewOpen('${t.key}')" style="opacity:0;transform:translateY(-180px) translateX(-40px);cursor:pointer;flex-shrink:0;">`;
+      html += `<div style="width:140px;height:198px;background-image:url('/static/site/images/interview-thumb-bg.jpg');background-size:cover;background-position:center;border-radius:3px;box-shadow:2px 4px 18px rgba(0,0,0,0.55);display:flex;align-items:flex-end;padding:10px;"><span style="font-family:Georgia,serif;font-size:9px;font-weight:700;color:#3a1e08;text-shadow:0 1px 3px rgba(255,255,255,0.6);line-height:1.4;">${labelHtml}</span></div>`;
+      html += '</div>';
+    });
+    html += '</div>';
+    el.innerHTML = html;
+
+    // ── Animazione cascade: dopo 2s le thumb cadono una alla volta (come Diary) ──
+    window._scSynopsisCascadeTimer = setTimeout(() => {
+      window._scSynopsisCascadeTimer = null;
+      const _synOvEl = document.getElementById('sc-diary-bg-overlay');
+      if (_synOvEl) _synOvEl.classList.add('active');
+      const _synBgEl = document.getElementById('sc-diary-bg-img');
+      if (_synBgEl) _synBgEl.classList.add('diary-bg-blurred');
+      const _synGrEl = document.getElementById('sc-diary-bg-grain');
+      if (_synGrEl) _synGrEl.classList.add('active');
+      el.classList.add('diary-thumbs-visible');
+      const cells = el.querySelectorAll('.sc-synopsis-cell');
+      cells.forEach((cell, i) => {
+        setTimeout(() => {
+          cell.style.opacity = '1';
+          cell.style.transform = 'translateY(0) translateX(0)';
+          cell.style.transition = 'opacity 0.4s ease, transform 0.55s cubic-bezier(0.22,1,0.36,1)';
+        }, i * 200);
+      });
+    }, 2000);
+
     return;
   }
 
