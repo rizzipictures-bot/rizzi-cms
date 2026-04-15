@@ -5721,8 +5721,8 @@
     /* ── Karaoke / sottotitoli sincronizzati (stile macchina da scrivere) ── */
     #sc-karaoke {
       position: fixed;
-      bottom: 40px;  /* allineato ai controlli play/stop (bottom:40px) */
-      left: 0;
+      bottom: 38px;  /* 2px più in basso dei controlli play/stop */
+      left: 65px;   /* parte subito dopo il bottone stop */
       right: 0;
       z-index: 1290;
       pointer-events: none;
@@ -5730,8 +5730,7 @@
       height: 52px;
       display: none;
       align-items: flex-end;
-      /* padding-left abbastanza ampio da non sovrapporsi ai controlli play/stop (left:18px + ~36px) */
-      padding: 0 60px 0 70px;
+      padding: 0 60px 0 4px;
     }
     #sc-karaoke.active { display: flex; }
     /* Nascondi il karaoke tracce quando il viewer è aperto (evita sovrapposizione con caption e karaoke viewer) */
