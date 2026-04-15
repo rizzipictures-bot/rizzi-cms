@@ -12519,8 +12519,8 @@ function scGoBack() {
 
 // Naviga tra le sezioni del menu Sculptures
 function scSwitchSection(section) {
-  // Salva la sezione precedente prima di aggiornarla (usata da _scArchiveGoBack)
-  const _scPrevSectionBeforeSwitch = scCurrentSection;
+  // Salva la sezione precedente prima di aggiornarla (usata da _scArchiveGoBack in scBuildSectionContent)
+  window._scPrevSectionBeforeSwitch = scCurrentSection;
   scCurrentSection = section;
   // Aggiorna nav active
   document.querySelectorAll('#sculptures-nav [data-sc-section]').forEach(el => {
@@ -13219,7 +13219,7 @@ function scBuildSectionContent(section) {
   // ── Pagina speciale: Archive ──
   if (section === 'archive') {
     // Salva la sezione precedente per il bottone Back (usa il valore salvato prima dell'aggiornamento)
-    _scArchivePrevSection = (_scPrevSectionBeforeSwitch && _scPrevSectionBeforeSwitch !== 'archive') ? _scPrevSectionBeforeSwitch : 'overview';
+    _scArchivePrevSection = (window._scPrevSectionBeforeSwitch && window._scPrevSectionBeforeSwitch !== 'archive') ? window._scPrevSectionBeforeSwitch : 'overview';
     el.style.background = '#fff';
     el.style.minHeight  = '100vh';
     el.style.color      = '#000';
