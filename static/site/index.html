@@ -13622,6 +13622,16 @@ function _scBuildArchivePage() {
     }
     .sc-arc-play-btn:hover { opacity: 1; }
     .sc-arc-play-btn svg { display: block; }
+    .sc-arc-icons-video {
+      display: block;
+      width: 120px;
+      height: 68px;
+      object-fit: cover;
+      filter: grayscale(1);
+      opacity: 0.85;
+      margin-top: 6px;
+      pointer-events: none;
+    }
     </style>
   `;
 
@@ -13639,7 +13649,7 @@ function _scBuildArchivePage() {
     const preview = fullText.length > 80 ? fullText.substring(0, 80) : fullText;
     const needsExpand = fullText.length > 80;
     const trackIdx = parseInt(t.track, 10) - 1; // indice 0-based nell'array scAudioFiles
-    const playBtn = `<button class="sc-arc-play-btn" onclick="_scArchivePlayTrack(${trackIdx})" title="Play track ${t.track}"><svg width="8" height="8" viewBox="0 0 8 8" fill="none" xmlns="http://www.w3.org/2000/svg"><polygon points="1,0.5 7.5,4 1,7.5" fill="#000"/></svg></button>`;
+    const playBtn = `<button class="sc-arc-play-btn" onclick="_scArchivePlayTrack(${trackIdx})" title="Play track ${t.track}" style="display:inline-flex;align-items:center;justify-content:center;width:14px;height:14px;border-radius:50%;border:1.5px solid #000;background:none;padding:0;margin-left:5px;cursor:pointer;vertical-align:middle;"><svg width="7" height="7" viewBox="0 0 8 8" fill="none" xmlns="http://www.w3.org/2000/svg"><polygon points="2,0.5 7.5,4 2,7.5" fill="#000"/></svg></button>`;
     const fullHtml = `<span class="sc-arc-testimony-text">${fullText}</span>${playBtn}`;
     if (!needsExpand) {
       return `
@@ -13714,8 +13724,12 @@ function _scBuildArchivePage() {
   html += '<div class="sc-arc-grid" id="sc-arc-icons-grid" style="margin-top:0;">';
   for (let c = 0; c < 5; c++) {
     html += '<div class="sc-arc-col">';
-    if (c === 0) html += '<div class="sc-arc-col-title">Icons</div>';
-    else html += '<div class="sc-arc-col-title">&nbsp;</div>';
+    if (c === 0) {
+      html += '<div class="sc-arc-col-title">Icons</div>';
+      html += '<video class="sc-arc-icons-video" src="/static/site/video/bg-washington.mp4" autoplay loop muted playsinline preload="auto"></video>';
+    } else {
+      html += '<div class="sc-arc-col-title">&nbsp;</div>';
+    }
     html += '</div>';
   }
   html += '</div>';
