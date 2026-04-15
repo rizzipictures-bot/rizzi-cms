@@ -13011,7 +13011,7 @@ function scBuildSectionContent(section) {
         if (currentSrc) scStartKaraoke(currentSrc);
       }
       // Mostra il box Artist's note quando l'ultima thumb appare
-      const _gridNoteDelay = cells.length * 150;
+      const _gridNoteDelay = Math.max(0, cells.length * 150 - 1000);
       if (window._scDiaryGridNoteTimer) { clearTimeout(window._scDiaryGridNoteTimer); window._scDiaryGridNoteTimer = null; }
       window._scDiaryGridNoteTimer = setTimeout(function() {
         const _gn = document.getElementById('sc-diary-grid-note-box');
