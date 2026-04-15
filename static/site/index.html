@@ -14247,7 +14247,10 @@ function _scBuildArchivePage() {
     html += '<div class="sc-arc-col">';
     if (c === 0) {
       html += '<div class="sc-arc-col-title">Icons</div>';
+      html += '<div style="display:flex;align-items:flex-start;gap:10px;">';
       html += '<div class="sc-arc-icons-video-wrap" onclick="this.classList.toggle(\'sc-arc-icons-expanded\')" title="Click to expand"><video src="/static/site/video/bg-washington.mp4" autoplay loop muted playsinline preload="auto"></video><span class="sc-arc-icons-video-label">March for All Justice</span></div>';
+      html += '<img src="/static/site/images/icons-nan-poster.png" alt="National March Against Police Violence" style="width:64px;height:64px;object-fit:cover;flex-shrink:0;cursor:pointer;transition:transform 0.3s ease;" onmouseover="this.style.transform=\'scale(1.08)\'" onmouseout="this.style.transform=\'scale(1)\'">';
+      html += '</div>';
     } else {
       html += '<div class="sc-arc-col-title">&nbsp;</div>';
     }
