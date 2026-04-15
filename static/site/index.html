@@ -13894,11 +13894,9 @@ function _scBuildArchivePage() {
       transform-origin: center center;
       width: 88vw;
       max-height: 78vh;
-      background: #f0ead8;
-      background-image:
-        url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='4' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23n)' opacity='0.06'/%3E%3C/svg%3E");
+      background: #000;
       border-radius: 4px;
-      box-shadow: 0 8px 40px rgba(0,0,0,0.22);
+      box-shadow: 0 8px 40px rgba(0,0,0,0.55);
       z-index: 2000;
       display: flex;
       flex-direction: column;
@@ -13914,7 +13912,7 @@ function _scBuildArchivePage() {
     }
     #sc-arc-text-popup-header {
       padding: 14px 16px 8px 16px;
-      border-bottom: 1px solid rgba(90,58,26,0.18);
+      border-bottom: 1px solid rgba(255,255,255,0.18);
       flex-shrink: 0;
       display: flex;
       align-items: center;
@@ -13926,7 +13924,7 @@ function _scBuildArchivePage() {
       font-weight: 700;
       letter-spacing: 0.18em;
       text-transform: uppercase;
-      color: #5a3a1a;
+      color: #fff;
     }
     #sc-arc-text-popup-close {
       background: none;
@@ -13935,7 +13933,7 @@ function _scBuildArchivePage() {
       font-family: Helvetica, Arial, sans-serif;
       font-size: 8px;
       font-weight: 700;
-      color: #5a3a1a;
+      color: #fff;
       letter-spacing: 0.1em;
       opacity: 0.7;
       transition: opacity 0.15s;
@@ -13949,7 +13947,7 @@ function _scBuildArchivePage() {
       font-size: 9px;
       font-weight: bold;
       line-height: 1.65;
-      color: #2a1a08;
+      color: #fff;
       flex: 1;
     }
     #sc-arc-text-popup-body p {
@@ -13957,7 +13955,7 @@ function _scBuildArchivePage() {
     }
     #sc-arc-text-popup-body .sc-arc-text-speaker {
       font-weight: 700;
-      color: #5a3a1a;
+      color: rgba(255,255,255,0.6);
     }
     #sc-arc-text-popup-overlay {
       position: fixed;
