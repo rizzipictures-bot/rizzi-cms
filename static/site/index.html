@@ -13697,6 +13697,19 @@ function _scBuildArchivePage() {
     .sc-arc-icons-video-wrap:hover .sc-arc-icons-video-label {
       opacity: 1;
     }
+    .sc-arc-icons-video-wrap {
+      cursor: pointer;
+    }
+    /* Stato espanso al click: scale 300% (4.8x = 1.6 hover × 3) */
+    .sc-arc-icons-video-wrap.sc-arc-icons-expanded {
+      transform: scale(4.8) translateX(28px) !important;
+      z-index: 200 !important;
+      opacity: 1 !important;
+    }
+    .sc-arc-icons-video-wrap.sc-arc-icons-expanded .sc-arc-icons-video-label {
+      opacity: 1;
+      font-size: 2px; /* scala con il video, rimane leggibile */
+    }
     /* ── Text section: thumb verticali giallino/marrone ── */
     .sc-arc-text-thumbs {
       display: flex;
@@ -13911,7 +13924,7 @@ function _scBuildArchivePage() {
     html += '<div class="sc-arc-col">';
     if (c === 0) {
       html += '<div class="sc-arc-col-title">Icons</div>';
-      html += '<div class="sc-arc-icons-video-wrap"><video src="/static/site/video/bg-washington.mp4" autoplay loop muted playsinline preload="auto"></video><span class="sc-arc-icons-video-label">March for All Justice</span></div>';
+      html += '<div class="sc-arc-icons-video-wrap" onclick="this.classList.toggle(\'sc-arc-icons-expanded\')" title="Click to expand"><video src="/static/site/video/bg-washington.mp4" autoplay loop muted playsinline preload="auto"></video><span class="sc-arc-icons-video-label">March for All Justice</span></div>';
     } else {
       html += '<div class="sc-arc-col-title">&nbsp;</div>';
     }
