@@ -13737,6 +13737,11 @@ function _scBuildArchivePage() {
       transform: scale(1.08);
       box-shadow: 2px 3px 10px rgba(0,0,0,0.22);
     }
+    .sc-arc-text-thumb--white {
+      background: #f7f5f0;
+      background-image:
+        url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='200' height='200' filter='url(%23n)' opacity='0.07'/%3E%3C/svg%3E");
+    }
     .sc-arc-text-thumb-label {
       font-family: Georgia, 'Times New Roman', serif;
       font-size: 5.2px;
@@ -13951,6 +13956,9 @@ function _scBuildArchivePage() {
       html += '<button class="sc-arc-text-thumb" onclick="_scArcTextOpen(\'conversation\')">';
       html += '<span class="sc-arc-text-thumb-label">Alessandro Rizzi<br>Conversation</span>';
       html += '</button>';
+      html += '<button class="sc-arc-text-thumb sc-arc-text-thumb--white" onclick="_scArcTextOpen(\'love\')">';
+      html += '<span class="sc-arc-text-thumb-label">A Story of Love<br>&amp; Brotherhood</span>';
+      html += '</button>';
       html += '</div>';
     } else {
       html += '<div class="sc-arc-col-title">&nbsp;</div>';
@@ -13968,6 +13976,10 @@ const _SC_ARC_TEXT_DATA = {
   publisher: {
     title: "Publisher\u2019s Note",
     html: `<p>Abiding by the facts, we can affirm that <em>Sculptures</em> is in all respects an instant book whose photographs were shot over the timespan of a few hours in Washington D.C. on December 14, 2014, and more precisely, during the civil rights protests that took place in the capital after the fatal shooting and civil unrest originating in Ferguson. Another important fact about this work is the emotional premise that led the author to the decision to travel to Washington D.C.: his relationship with an Afro-American woman. The body of work should not be attributed to this precise space-time reference (a political event, for that matter) or the very intimate trigger for the work, and the author manages to achieve a sort of liberation from these two strong elements at play.</p><p>Rizzi gives back a sharp and paradigmatic work on American society as a whole, and on the importance of a political demonstration that is a sign of the times and is coherent to its prescribed script, he plays with the fragments and cracks of what could be a historic moment for the struggle of the black community but that does not appear to be so: the <em>sculptures</em> at play in this event are part of a larger scenario that provides for their presence and contribution as actors both united and alone. This kind of structural weakness of the human element does not manifest in what is portrayed in the photographs which always appears to be plastic and structured, but instead lives within this visual paradox, as testimony to the distance in the union, and a fragility, despite the solidity, structure, and plasticity within each one of us.</p>`
+  },
+  love: {
+    title: "A Story of Love and Brotherhood",
+    html: `<p style="font-size:8px;color:#5a3a1a;margin-bottom:16px;letter-spacing:0.08em;">December 13, 2014. Washington D.C. United States of America.</p><p>Can love reach far enough to touch the deepest strings that hold a society together? Can a personal story become an artist’s passage into the heart of civil and human rights?</p><p>My answer was given on December 13, 2014. Washington D.C. The March for All Justice. The great march of Afro-American people against police violence—the largest demonstration for civil rights since the time of Martin Luther King.</p><p><em>A Story of Love and Brotherhood</em> is my story. The story of a white Italian man, an artist, who decides to leave—to photograph, to witness, to be present. It is the story of a love for an Italian-Afro-American woman, and of how that love became the door through which I entered something much larger than myself: a struggle, a wound, a dignity. It is the story of how an artist asks himself what it means to give universal weight to his own experience—to his own life among other lives, among other human beings.</p><p><em>A Story of Love and Brotherhood</em> is a book and exhibition project. It gathers photographs, visual traces, and sound recordings from December 14, 2014, in Washington D.C.—a single day that carried the weight of history, and the quiet, irreducible weight of love.</p>`
   },
   conversation: {
     title: "Alessandro Rizzi Conversation",
