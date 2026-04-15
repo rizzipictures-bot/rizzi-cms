@@ -5190,12 +5190,12 @@
       bottom: 3.5vw;
       left: 50%;
       z-index: 1295;
-      width: 200px;
+      width: 250px;  /* +25% rispetto a 200px */
       box-shadow: rgba(0,0,0,0.08) 0px 2px 15px 3px;
-      padding: 14px 10px;
+      padding: 11px 10px;  /* ridotto per compensare altezza -15% */
       text-align: center;
       overflow: hidden;
-      height: 46px;  /* più stretto in altezza */
+      height: 39px;  /* -15% rispetto a 46px */
       /* Stato nascosto: fuori viewport in basso */
       transform: translate(-50%, 200px);
       opacity: 0;
@@ -13062,7 +13062,7 @@ function scBuildSectionContent(section) {
     html += '</div>';
     el.innerHTML = html;
 
-    // ── Animazione cascade: dopo 2.5s, le thumbs cadono una alla volta con 150ms di ritardo ──
+    // ── Animazione cascade: dopo 2s (-0.5s), le thumbs cadono una alla volta con 105ms di ritardo (-30%) ──
     window._scDiaryCascadeTimer = setTimeout(() => {
       window._scDiaryCascadeTimer = null;
       const ovEl = document.getElementById('sc-diary-bg-overlay');
@@ -13076,7 +13076,7 @@ function scBuildSectionContent(section) {
       cells.forEach((cell, i) => {
         setTimeout(() => {
           cell.classList.add('diary-cell-in');
-        }, i * 150); // 150ms tra una thumb e l'altra — effetto cascade visibile
+        }, i * 105); // 105ms tra una thumb e l'altra — velocizzato del 30% (era 150ms)
       });
       // Riavvia il karaoke se c'è una traccia in play (il karaoke deve girare su background e thumbs)
       const diaryAudio = document.getElementById('sc-audio-player');
@@ -13085,7 +13085,7 @@ function scBuildSectionContent(section) {
         if (currentSrc) scStartKaraoke(currentSrc);
       }
       // Mostra il box Artist's note quando l'ultima thumb appare
-      const _gridNoteDelay = Math.max(0, cells.length * 150 - 1000);
+      const _gridNoteDelay = Math.max(0, cells.length * 105 - 1000);
       if (window._scDiaryGridNoteTimer) { clearTimeout(window._scDiaryGridNoteTimer); window._scDiaryGridNoteTimer = null; }
       window._scDiaryGridNoteTimer = setTimeout(function() {
         const _gn = document.getElementById('sc-diary-grid-note-box');
@@ -13095,7 +13095,7 @@ function scBuildSectionContent(section) {
           requestAnimationFrame(() => _gn.classList.add('sc-diary-grid-note-visible'));
         }
       }, _gridNoteDelay);
-    }, 2500);
+    }, 2000);
 
     return;
   }
