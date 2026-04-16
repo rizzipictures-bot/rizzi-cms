@@ -14666,6 +14666,7 @@ function _scBuildArchivePage() {
       display: flex;
       flex-direction: column;
       align-items: center;
+      overflow: visible;
     }
     #sc-libretto-viewer.open {
       transform: translate(-50%, -50%) scale(1);
@@ -14702,7 +14703,7 @@ function _scBuildArchivePage() {
     /* Contenitore libro (doppie pagine) */
     #sc-libretto-book {
       position: relative;
-      width: 100%;
+      width: calc(100% - 120px);
       flex: 1;
       display: flex;
       align-items: stretch;
@@ -14741,7 +14742,7 @@ function _scBuildArchivePage() {
       width: 8px;
       background: linear-gradient(to right, transparent, rgba(0,0,0,0.06), transparent);
     }
-    /* Frecce navigazione */
+    /* Frecce navigazione — posizionate rispetto al viewer */
     .sc-libretto-arrow {
       position: absolute;
       top: 50%;
@@ -14749,27 +14750,28 @@ function _scBuildArchivePage() {
       width: 44px;
       height: 44px;
       border-radius: 50%;
-      background: rgba(0,0,0,0.55);
-      border: 1px solid rgba(255,255,255,0.18);
+      background: rgba(0,0,0,0.65);
+      border: 1px solid rgba(255,255,255,0.25);
       cursor: pointer;
       display: flex;
       align-items: center;
       justify-content: center;
-      z-index: 5;
+      z-index: 10;
       transition: background 0.18s, transform 0.18s;
       color: #fff;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.4);
     }
     .sc-libretto-arrow:hover {
-      background: rgba(0,0,0,0.8);
+      background: rgba(0,0,0,0.9);
       transform: translateY(-50%) scale(1.08);
     }
     .sc-libretto-arrow:disabled {
-      opacity: 0.25;
+      opacity: 0.2;
       cursor: default;
       pointer-events: none;
     }
-    #sc-libretto-prev { left: -56px; }
-    #sc-libretto-next { right: -56px; }
+    #sc-libretto-prev { left: 8px; }
+    #sc-libretto-next { right: 8px; }
     /* Indicatori di pagina (pallini) */
     #sc-libretto-dots {
       display: flex;
