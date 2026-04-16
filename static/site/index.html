@@ -4357,6 +4357,7 @@
     }
     #sculptures-site-link.sc-revealed {
       clip-path: inset(0 0% 0 0);
+      opacity: 0.5;
     }
     #sculptures-site-link:hover {
       opacity: 0.85;
@@ -8023,7 +8024,7 @@
 
       <!-- Menu verticale animato in alto a sinistra -->
       <nav id="sculptures-nav">
-        <span id="sculptures-site-link" onclick="scGoBack()" style="opacity:0.55;">Site</span>
+        <span id="sculptures-site-link" onclick="scGoBack()">Site</span>
         <hr id="sculptures-nav-sep" />
         <span data-sc-section="overview" class="active">Overview</span>
         <span data-sc-section="images-book">Images</span>
@@ -16281,17 +16282,19 @@ function buildSculpturesIndex() {
 
 // Anima le voci del menu Sculptures una dopo l'altra (reveal da sx verso dx)
 function scRevealMenu() {
-  const items = document.querySelectorAll(
+  // Include sculptures-site-link nell'animazione reveal
+  const siteLink = document.getElementById('sculptures-site-link');
+  const navItems = Array.from(document.querySelectorAll(
     '#sculptures-nav [data-sc-section], #sculptures-back'
-  );
-  // Reset: rimuovi la classe revealed da tutti
+  ));
+  const items = siteLink ? [siteLink, ...navItems] : navItems;
+  // Reset
   items.forEach(el => el.classList.remove('sc-revealed'));
-
-  // Stagger: ogni voce appare con un ritardo crescente
+  // Stagger
   items.forEach((el, i) => {
     setTimeout(() => {
       el.classList.add('sc-revealed');
-    }, 120 + i * 80); // prima voce dopo 120ms, poi +80ms per ciascuna
+    }, 120 + i * 80);
   });
 
 }
