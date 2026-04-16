@@ -8117,10 +8117,24 @@
     line-height: 1.25;
     letter-spacing: -0.03em;
     color: rgb(34, 34, 34) !important;
-    background: rgba(128,128,128,0.25);
+    background: transparent;
     pointer-events: none;
     text-align: left;
     text-indent: 0 !important;
+  }
+  /* Overlay grigio 15% che si estende a tutta l'altezza della pagina */
+  #sc-synopsis-statement::before {
+    content: '';
+    position: fixed;
+    top: 0;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: calc(100vw - 80px);
+    max-width: 680px;
+    background: rgba(128,128,128,0.15);
+    z-index: -1;
+    pointer-events: none;
   }
   #view-sculptures .sc-synopsis-statement-title {
     font-family: Helvetica, Arial, sans-serif;
