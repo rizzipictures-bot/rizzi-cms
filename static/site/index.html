@@ -6282,6 +6282,42 @@
     .sc-archive-nav-mode #sc-archive-back-btn {
       display: flex !important;
     }
+    /* ── Mapping Lives nav mode: nasconde nav, mostra Back bianco, nasconde player ── */
+    .sc-mapping-nav-mode #sculptures-nav {
+      display: none !important;
+    }
+    .sc-mapping-nav-mode #sculptures-back {
+      display: none !important;
+    }
+    .sc-mapping-nav-mode #sc-audio-controls {
+      display: none !important;
+    }
+    #sc-mapping-back-btn {
+      position: fixed;
+      bottom: 22px;
+      left: 18px;
+      z-index: 1500;
+      display: none;
+      align-items: center;
+      gap: 5px;
+      background: none;
+      border: none;
+      cursor: pointer;
+      padding: 0;
+      font-family: 'Times New Roman', Times, serif;
+      font-size: 9px;
+      font-weight: 400;
+      letter-spacing: 0.3px;
+      color: #fff;
+      opacity: 0.65;
+      transition: opacity 0.2s;
+      text-decoration: none;
+    }
+    #sc-mapping-back-btn:hover { opacity: 1; }
+    #sc-mapping-back-btn svg { display: block; }
+    .sc-mapping-nav-mode #sc-mapping-back-btn {
+      display: flex !important;
+    }
 
     /* ── Griglia thumbs stile Jack Davison: righe libere, mix portrait+landscape ── */
     .sc-section-diary-grid {
@@ -7931,6 +7967,13 @@
 
       <!-- Bottone Back fisso per la modalità Archive -->
       <button id="sc-archive-back-btn" onclick="_scArchiveGoBack()">
+        <svg width="10" height="10" viewBox="0 0 10 10" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M7 1L3 5L7 9" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        Back
+      </button>
+      <!-- Bottone Back fisso per la modalità Mapping Lives -->
+      <button id="sc-mapping-back-btn" onclick="scSwitchSection('overview')">
         <svg width="10" height="10" viewBox="0 0 10 10" fill="none" xmlns="http://www.w3.org/2000/svg">
           <path d="M7 1L3 5L7 9" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/>
         </svg>
@@ -12809,6 +12852,8 @@ function scSwitchSection(section) {
     document.body.classList.remove('sc-diary-nav-mode');
     // Rimuovi modalità archive (menu torna bianco, sfondo torna nero)
     document.body.classList.remove('sc-archive-nav-mode');
+    // Rimuovi modalità mapping-lives
+    document.body.classList.remove('sc-mapping-nav-mode');
     const _vscOv = document.getElementById('view-sculptures');
     if (_vscOv) { _vscOv.style.background = ''; _vscOv.classList.remove('sc-diary-mode'); }
     // Rimuovi modalità mapping-lives
@@ -13578,6 +13623,10 @@ function scBuildSectionContent(section) {
     const _vsc = document.getElementById('view-sculptures');
     if (_vsc) _vsc.style.background = '';
   }
+  // Rimuovi modalità mapping-lives se eravamo in mapping-lives
+  if (scCurrentSection === 'mapping-lives') {
+    document.body.classList.remove('sc-mapping-nav-mode');
+  }
   // Rimuovi la classe diary-mode se eravamo in diary o synopsis
   if (window._scDiaryCascadeTimer) {
     clearTimeout(window._scDiaryCascadeTimer);
@@ -13762,6 +13811,8 @@ function scBuildSectionContent(section) {
     el.style.color      = '#f1f1f1';
     el.style.padding    = '0';
     el.style.overflow   = 'hidden';
+    // Attiva modalità mapping-lives: nasconde nav, mostra Back bianco, nasconde player
+    document.body.classList.add('sc-mapping-nav-mode');
     // Sfondo nero anche sul contenitore padre
     const _vscML = document.getElementById('view-sculptures');
     if (_vscML) _vscML.style.background = '#0a0a0a';
