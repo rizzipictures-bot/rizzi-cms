@@ -6495,15 +6495,15 @@
     #sc-diary-text-panel.dp-left  { left: 40px; }   /* +40px verso centro */
     #sc-diary-text-panel.dp-right { right: 40px; }  /* +40px verso centro */
     .sc-diary-testimony {
-      border-bottom: 1px solid var(--diary-panel-border, rgba(255,255,255,0.15));
+      border-bottom: 1px solid rgba(0,0,0,0.15) !important;
       padding: 10px 0;
     }
-    .sc-diary-testimony:first-child { border-top: 1px solid var(--diary-panel-border, rgba(255,255,255,0.15)); }
+    .sc-diary-testimony:first-child { border-top: 1px solid rgba(0,0,0,0.15) !important; }
     .sc-diary-testimony-author {
       font-family: 'Courier New', Courier, monospace;
       font-size: 10px;
       font-weight: 700;
-      color: var(--diary-panel-author, #fff);
+      color: #000 !important;
       letter-spacing: 0.02em;
       margin-bottom: 4px;
       line-height: 1.3;
@@ -6511,21 +6511,21 @@
     .sc-diary-testimony-text {
       font-family: 'Times New Roman', Times, serif;
       font-size: 12px;
-      color: var(--diary-panel-color, rgba(255,255,255,0.85));
+      color: #222 !important;
       line-height: 1.5;
       font-style: italic;
     }
     .sc-diary-testimony-intro {
       font-family: 'Times New Roman', Times, serif;
       font-size: 12px;
-      color: rgba(255,255,255,0.85);
+      color: #333 !important;
       line-height: 1.6;
     }
     .sc-diary-date-label {
       font-family: 'Courier New', Courier, monospace;
       font-size: 9px;
       font-weight: 700;
-      color: rgba(255,255,255,0.45);
+      color: rgba(0,0,0,0.45) !important;
       letter-spacing: 0.08em;
       text-transform: uppercase;
       margin-bottom: 10px;
