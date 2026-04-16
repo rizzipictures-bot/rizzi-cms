@@ -13229,72 +13229,98 @@ function scBuildGrid() {
         wrap.appendChild(inner);
       }
     } else if (targetSection === 'mapping-lives') {
-      // Thumb Mapping Lives: canvas animato con punti rossi su sfondo nero
-      const canvas = document.createElement('canvas');
-      canvas.className = 'sc-mapping-canvas';
-      canvas.style.cssText = 'position:absolute;top:0;left:0;width:100%;height:100%;';
-      wrap.appendChild(canvas);
-      // Avvia animazione canvas dopo inserimento nel DOM
-      setTimeout(() => {
-        const w = canvas.offsetWidth || 200;
-        const h = canvas.offsetHeight || 280;
-        canvas.width = w;
-        canvas.height = h;
-        const ctx = canvas.getContext('2d');
-        // Punti fissi che simulano la distribuzione geografica USA
-        const pts = [
-          [0.18,0.32],[0.22,0.28],[0.25,0.35],[0.30,0.30],[0.35,0.38],[0.38,0.25],[0.42,0.40],
-          [0.45,0.28],[0.50,0.35],[0.55,0.30],[0.58,0.42],[0.62,0.25],[0.65,0.38],[0.70,0.32],
-          [0.72,0.45],[0.75,0.28],[0.78,0.40],[0.80,0.35],[0.82,0.22],[0.85,0.48],[0.88,0.30],
-          [0.20,0.55],[0.28,0.60],[0.35,0.52],[0.42,0.58],[0.50,0.62],[0.55,0.55],[0.60,0.65],
-          [0.65,0.58],[0.70,0.70],[0.75,0.55],[0.80,0.65],[0.85,0.60],[0.90,0.52],[0.15,0.68],
-          [0.30,0.72],[0.45,0.75],[0.60,0.78],[0.72,0.80],[0.82,0.72],[0.88,0.78],[0.25,0.42],
-          [0.48,0.48],[0.68,0.50],[0.78,0.58],[0.92,0.40],[0.12,0.45],[0.55,0.72],[0.38,0.68]
-        ];
-        let frame = 0;
-        let animId = null;
-        const draw = () => {
-          ctx.fillStyle = '#0a0a0a';
-          ctx.fillRect(0, 0, w, h);
-          // Griglia sottile
-          ctx.strokeStyle = 'rgba(255,255,255,0.04)';
-          ctx.lineWidth = 0.5;
-          for (let gx = 0; gx < w; gx += 30) { ctx.beginPath(); ctx.moveTo(gx,0); ctx.lineTo(gx,h); ctx.stroke(); }
-          for (let gy = 0; gy < h; gy += 30) { ctx.beginPath(); ctx.moveTo(0,gy); ctx.lineTo(w,gy); ctx.stroke(); }
-          // Punti rossi con pulsazione
-          pts.forEach((p, i) => {
-            const px = p[0] * w;
-            const py = p[1] * h;
-            const pulse = Math.sin(frame * 0.03 + i * 0.4) * 0.5 + 0.5;
-            const r = 2 + pulse * 1.5;
-            const alpha = 0.4 + pulse * 0.6;
-            ctx.beginPath();
-            ctx.arc(px, py, r, 0, Math.PI * 2);
-            ctx.fillStyle = `rgba(230,57,70,${alpha})`;
-            ctx.fill();
-            // Alone
-            if (pulse > 0.7) {
-              ctx.beginPath();
-              ctx.arc(px, py, r * 2.5, 0, Math.PI * 2);
-              ctx.fillStyle = `rgba(230,57,70,${(pulse-0.7)*0.3})`;
-              ctx.fill();
-            }
-          });
-          // Titolo in basso
-          ctx.fillStyle = 'rgba(241,241,241,0.6)';
-          ctx.font = '7px \'IBM Plex Mono\', monospace';
-          ctx.letterSpacing = '0.08em';
-          ctx.fillText('2015 — ' + new Date().getFullYear(), 10, h - 10);
-          frame++;
-          animId = requestAnimationFrame(draw);
-        };
-        draw();
-        // Pausa on hover
-        cell.addEventListener('mouseenter', () => { if (animId) { cancelAnimationFrame(animId); animId = null; } });
-        cell.addEventListener('mouseleave', () => { if (!animId) { draw(); } });
-        // Cleanup quando la griglia viene distrutta
-        canvas._stopAnim = () => { if (animId) cancelAnimationFrame(animId); };
-      }, 150);
+      // Thumb Mapping Lives: immagine reale dello screenshot con overlay pulsante
+      // Rimuovi l'img già aggiunta (url=null) e usa l'immagine reale
+      if (imgEl && imgEl.parentNode === wrap) wrap.removeChild(imgEl);
+      // Immagine di sfondo reale
+      const mlImg = document.createElement('img');
+      mlImg.src = 'https://d2xsxph8kpxj0f.cloudfront.net/310519663156367470/hy3xamEYKuuFBSr4ou5CS9/mapping-lives-thumb_386e0ba1.webp';
+      mlImg.alt = 'Mapping Lives';
+      mlImg.style.cssText = 'position:absolute;top:0;left:0;width:100%;height:100%;object-fit:cover;object-position:center center;display:block;';
+      wrap.appendChild(mlImg);
+      // Overlay SVG con punti pulsanti sovrapposti all'immagine
+      // Posizioni approssimative dei cluster principali (in % rispetto alla thumb)
+      const mlDots = [
+        // Costa ovest — California cluster
+        {x:8,y:52,r:4,delay:0},{x:9,y:55,r:3,delay:0.3},{x:10,y:58,r:3.5,delay:0.7},
+        // Pacific Northwest
+        {x:7,y:28,r:2.5,delay:0.5},
+        // Texas cluster
+        {x:42,y:68,r:4,delay:0.2},{x:45,y:72,r:3,delay:0.8},
+        // Midwest — Chicago/Illinois
+        {x:62,y:38,r:4.5,delay:0.1},{x:65,y:42,r:3,delay:0.6},
+        // East Coast — New York
+        {x:82,y:32,r:4,delay:0.4},{x:84,y:35,r:3,delay:0.9},
+        // Florida
+        {x:75,y:75,r:3.5,delay:0.3},
+        // Georgia/Atlanta
+        {x:72,y:60,r:3,delay:0.7},
+        // Ohio/Pennsylvania
+        {x:73,y:38,r:3,delay:0.2},
+        // Minnesota/Minneapolis
+        {x:56,y:25,r:3,delay:0.5},
+        // Missouri/St.Louis
+        {x:60,y:48,r:2.5,delay:0.8},
+        // Louisiana/New Orleans
+        {x:58,y:68,r:2.5,delay:0.1},
+        // North Carolina
+        {x:76,y:50,r:3,delay:0.6},
+        // Maryland/DC
+        {x:79,y:42,r:2.5,delay:0.4},
+        // Colorado/Denver
+        {x:35,y:45,r:2.5,delay:0.9},
+        // Arizona/Phoenix
+        {x:22,y:62,r:3,delay:0.3},
+      ];
+      const svgNS = 'http://www.w3.org/2000/svg';
+      const svg = document.createElementNS(svgNS, 'svg');
+      svg.style.cssText = 'position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none;overflow:visible;';
+      svg.setAttribute('viewBox', '0 0 100 100');
+      svg.setAttribute('preserveAspectRatio', 'none');
+      // Stile animazione pulsazione
+      const defs = document.createElementNS(svgNS, 'defs');
+      const style = document.createElementNS(svgNS, 'style');
+      style.textContent = `
+        @keyframes ml-pulse {
+          0%   { r: var(--r); opacity: 0.55; }
+          50%  { r: calc(var(--r) * 1.7); opacity: 0.85; }
+          100% { r: var(--r); opacity: 0.55; }
+        }
+        @keyframes ml-ring {
+          0%   { r: var(--r); opacity: 0.4; }
+          60%  { r: calc(var(--r) * 2.8); opacity: 0; }
+          100% { r: calc(var(--r) * 2.8); opacity: 0; }
+        }
+        .ml-dot { animation: ml-pulse 2.4s ease-in-out infinite; }
+        .ml-ring { animation: ml-ring 2.4s ease-in-out infinite; }
+      `;
+      defs.appendChild(style);
+      svg.appendChild(defs);
+      mlDots.forEach(d => {
+        // Cerchio principale pulsante
+        const circle = document.createElementNS(svgNS, 'circle');
+        circle.setAttribute('cx', d.x);
+        circle.setAttribute('cy', d.y);
+        circle.setAttribute('r', d.r);
+        circle.setAttribute('fill', 'rgba(230,57,70,0.75)');
+        circle.style.setProperty('--r', d.r + 'px');
+        circle.style.animationDelay = d.delay + 's';
+        circle.classList.add('ml-dot');
+        svg.appendChild(circle);
+        // Anello di espansione
+        const ring = document.createElementNS(svgNS, 'circle');
+        ring.setAttribute('cx', d.x);
+        ring.setAttribute('cy', d.y);
+        ring.setAttribute('r', d.r);
+        ring.setAttribute('fill', 'none');
+        ring.setAttribute('stroke', 'rgba(230,57,70,0.5)');
+        ring.setAttribute('stroke-width', '0.5');
+        ring.style.setProperty('--r', d.r + 'px');
+        ring.style.animationDelay = d.delay + 's';
+        ring.classList.add('ml-ring');
+        svg.appendChild(ring);
+      });
+      wrap.appendChild(svg);
     } else {
       // Placeholder grigio se il progetto non ha ancora immagini
       const ph = document.createElement('div');
