@@ -15333,90 +15333,72 @@ function _scArchiveGoBack() {
   scSwitchSection(_scArchivePrevSection || 'overview');
 }
 
-// ── Audio ambient per Mapping Lives ──────────────────────────────────────────
-// Usa i file diary/recording dal CMS (scAudioFiles) come audio ambient
-// a basso volume, senza karaoke. Controllo play/stop accanto al Back button.
-let _scMappingAmbientPlaying = false;
-let _scMappingAmbientIdx = -1;
-let _scMappingAmbientFiles = []; // subset dei file audio usati come ambient
+// ── Audio per Mapping Lives ───────────────────────────────────────────────────
+// Usa il PLAYER PRINCIPALE (sc-audio-player) — nessun player separato,
+// nessuna sovrapposizione. Il bottone Sound è un semplice play/pause
+// del player già esistente. Se non c'è nulla caricato, avvia una traccia
+// random dalla playlist scAudioFiles.
 
-function _scMappingAmbientLoad() {
-  // Carica i file audio dal CMS se non ancora caricati
-  if (scAudioFiles.length === 0) scLoadAudioFiles();
-  _scMappingAmbientFiles = scAudioFiles.slice(); // copia dell'array
-  // Shuffle
-  for (let i = _scMappingAmbientFiles.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [_scMappingAmbientFiles[i], _scMappingAmbientFiles[j]] = [_scMappingAmbientFiles[j], _scMappingAmbientFiles[i]];
-  }
-}
-
-function _scMappingAmbientPlayNext() {
-  const player = document.getElementById('sc-mapping-ambient');
-  if (!player || _scMappingAmbientFiles.length === 0) return;
-  _scMappingAmbientIdx = (_scMappingAmbientIdx + 1) % _scMappingAmbientFiles.length;
-  const track = _scMappingAmbientFiles[_scMappingAmbientIdx];
-  if (!track || !track.url) return;
-  player.src = track.url;
-  player.volume = 0.18;
-  player.play().catch(() => {});
-  player.onended = () => {
-    if (_scMappingAmbientPlaying) _scMappingAmbientPlayNext();
-  };
-}
-
-function scMappingStartAmbient() {
-  if (_scMappingAmbientFiles.length === 0) _scMappingAmbientLoad();
-  _scMappingAmbientPlaying = true;
-  _scMappingAmbientPlayNext();
-  // Aggiorna UI
-  const btnPlay = document.getElementById('sc-mapping-audio-icon-play');
+function _scMappingUpdateBtn() {
+  const player = document.getElementById('sc-audio-player');
+  const btnPlay  = document.getElementById('sc-mapping-audio-icon-play');
   const btnPause = document.getElementById('sc-mapping-audio-icon-pause');
-  const btn = document.getElementById('sc-mapping-audio-btn');
-  if (btnPlay) btnPlay.style.display = 'none';
-  if (btnPause) btnPause.style.display = 'block';
-  if (btn) btn.classList.add('playing');
-}
-
-function scMappingStopAmbient() {
-  _scMappingAmbientPlaying = false;
-  const player = document.getElementById('sc-mapping-ambient');
-  if (player) {
-    // Fade out rapido
-    let vol = player.volume;
-    const fadeOut = setInterval(() => {
-      vol = Math.max(0, vol - 0.04);
-      player.volume = vol;
-      if (vol <= 0) {
-        clearInterval(fadeOut);
-        player.pause();
-        player.src = '';
-        player.volume = 0.18;
-      }
-    }, 50);
+  const btn      = document.getElementById('sc-mapping-audio-btn');
+  const isPlaying = player && !player.paused && player.src && player.src !== window.location.href;
+  if (btnPlay)  btnPlay.style.display  = isPlaying ? 'none'  : 'block';
+  if (btnPause) btnPause.style.display = isPlaying ? 'block' : 'none';
+  if (btn) {
+    if (isPlaying) btn.classList.add('playing');
+    else           btn.classList.remove('playing');
   }
-  // Aggiorna UI
-  const btnPlay = document.getElementById('sc-mapping-audio-icon-play');
-  const btnPause = document.getElementById('sc-mapping-audio-icon-pause');
-  const btn = document.getElementById('sc-mapping-audio-btn');
-  if (btnPlay) btnPlay.style.display = 'block';
-  if (btnPause) btnPause.style.display = 'none';
-  if (btn) btn.classList.remove('playing');
 }
 
 function scMappingToggleAudio() {
-  if (_scMappingAmbientPlaying) {
-    scMappingStopAmbient();
+  if (scAudioFiles.length === 0) scLoadAudioFiles();
+  const player = document.getElementById('sc-audio-player');
+  if (!player) return;
+
+  if (!player.paused && player.src && player.src !== window.location.href) {
+    // Era in play → metti in pausa con fade-out rapido
+    scAudioFadeTo(0, 400);
+    setTimeout(() => {
+      player.pause();
+      _scMappingUpdateBtn();
+    }, 420);
   } else {
-    scMappingStartAmbient();
+    // Era in pausa o senza sorgente → avvia / riprendi
+    if (player.src && player.src !== window.location.href) {
+      // Riprendi da dove era
+      player.volume = 0;
+      player.play().then(() => {
+        scAudioFadeTo(0.72, 1500);
+        _scMappingUpdateBtn();
+      }).catch(() => {});
+    } else {
+      // Nessuna traccia caricata: avvia random dalla playlist
+      if (scAudioFiles.length === 0) { _scMappingUpdateBtn(); return; }
+      const ctrl = document.getElementById('sc-audio-controls');
+      if (ctrl) ctrl.classList.add('visible');
+      player.removeEventListener('ended', _scOnAudioEnded);
+      player.addEventListener('ended', _scOnAudioEnded);
+      _scPlayIndex(_scPickNextIndex());
+      setTimeout(_scMappingUpdateBtn, 300);
+    }
   }
 }
 
-// Ferma l'audio ambient quando si esce da Mapping Lives
+// Aggiorna il bottone Sound ogni volta che il player principale cambia stato
+document.addEventListener('DOMContentLoaded', function() {
+  const player = document.getElementById('sc-audio-player');
+  if (!player) return;
+  player.addEventListener('play',  _scMappingUpdateBtn);
+  player.addEventListener('pause', _scMappingUpdateBtn);
+  player.addEventListener('ended', _scMappingUpdateBtn);
+});
+
+// Quando si esce da Mapping Lives: l'audio continua nelle altre sezioni
 function _scMappingAmbientCleanup() {
-  if (_scMappingAmbientPlaying) scMappingStopAmbient();
-  _scMappingAmbientPlaying = false;
-  _scMappingAmbientIdx = -1;
+  _scMappingUpdateBtn();
 }
 
 // Collega gli eventi expand/collapse nella pagina Archive
