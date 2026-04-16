@@ -6324,6 +6324,32 @@
     .sc-mapping-nav-mode #sc-mapping-back-btn {
       display: flex !important;
     }
+    /* ── Bottone audio ambient Mapping Lives ── */
+    #sc-mapping-audio-btn {
+      position: fixed;
+      bottom: 22px;
+      left: 68px;
+      z-index: 1500;
+      display: none;
+      align-items: center;
+      gap: 5px;
+      background: none;
+      border: none;
+      cursor: pointer;
+      padding: 0;
+      font-family: 'Times New Roman', Times, serif;
+      font-size: 9px;
+      font-weight: 400;
+      letter-spacing: 0.3px;
+      color: #fff;
+      opacity: 0.65;
+      transition: opacity 0.2s;
+    }
+    #sc-mapping-audio-btn:hover { opacity: 1; }
+    #sc-mapping-audio-btn.playing { opacity: 0.85; }
+    .sc-mapping-nav-mode #sc-mapping-audio-btn {
+      display: flex !important;
+    }
 
     /* ── Griglia thumbs stile Jack Davison: righe libere, mix portrait+landscape ── */
     .sc-section-diary-grid {
@@ -7986,6 +8012,17 @@
         </svg>
         Back
       </button>
+      <button id="sc-mapping-audio-btn" onclick="scMappingToggleAudio()" title="Ambient audio">
+        <svg id="sc-mapping-audio-icon-play" width="9" height="9" viewBox="0 0 10 10" fill="none" xmlns="http://www.w3.org/2000/svg" style="display:block">
+          <polygon points="2,1 9,5 2,9" fill="currentColor"/>
+        </svg>
+        <svg id="sc-mapping-audio-icon-pause" width="9" height="9" viewBox="0 0 10 10" fill="none" xmlns="http://www.w3.org/2000/svg" style="display:none">
+          <rect x="2" y="1" width="2.5" height="8" fill="currentColor"/>
+          <rect x="5.5" y="1" width="2.5" height="8" fill="currentColor"/>
+        </svg>
+        <span id="sc-mapping-audio-label">Sound</span>
+      </button>
+      <audio id="sc-mapping-ambient" preload="none" style="display:none"></audio>
 
       <!-- Titolo grande (visibile solo in Overview, stile Corboz) -->
       <div id="sculptures-page-title">
@@ -12861,6 +12898,8 @@ function scSwitchSection(section) {
     document.body.classList.remove('sc-archive-nav-mode');
     // Rimuovi modalità mapping-lives
     document.body.classList.remove('sc-mapping-nav-mode');
+    // Ferma audio ambient mapping-lives se attivo
+    if (typeof _scMappingAmbientCleanup === 'function') _scMappingAmbientCleanup();
     const _vscOv = document.getElementById('view-sculptures');
     if (_vscOv) { _vscOv.style.background = ''; _vscOv.classList.remove('sc-diary-mode'); }
     // Rimuovi modalità mapping-lives
@@ -13633,6 +13672,8 @@ function scBuildSectionContent(section) {
   // Rimuovi modalità mapping-lives se eravamo in mapping-lives
   if (scCurrentSection === 'mapping-lives') {
     document.body.classList.remove('sc-mapping-nav-mode');
+    // Ferma audio ambient mapping-lives se attivo
+    if (typeof _scMappingAmbientCleanup === 'function') _scMappingAmbientCleanup();
   }
   // Rimuovi la classe diary-mode se eravamo in diary o synopsis
   if (window._scDiaryCascadeTimer) {
@@ -15290,6 +15331,92 @@ function _scArchivePlayTrack(idx) {
 let _scArchivePrevSection = 'overview';
 function _scArchiveGoBack() {
   scSwitchSection(_scArchivePrevSection || 'overview');
+}
+
+// ── Audio ambient per Mapping Lives ──────────────────────────────────────────
+// Usa i file diary/recording dal CMS (scAudioFiles) come audio ambient
+// a basso volume, senza karaoke. Controllo play/stop accanto al Back button.
+let _scMappingAmbientPlaying = false;
+let _scMappingAmbientIdx = -1;
+let _scMappingAmbientFiles = []; // subset dei file audio usati come ambient
+
+function _scMappingAmbientLoad() {
+  // Carica i file audio dal CMS se non ancora caricati
+  if (scAudioFiles.length === 0) scLoadAudioFiles();
+  _scMappingAmbientFiles = scAudioFiles.slice(); // copia dell'array
+  // Shuffle
+  for (let i = _scMappingAmbientFiles.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [_scMappingAmbientFiles[i], _scMappingAmbientFiles[j]] = [_scMappingAmbientFiles[j], _scMappingAmbientFiles[i]];
+  }
+}
+
+function _scMappingAmbientPlayNext() {
+  const player = document.getElementById('sc-mapping-ambient');
+  if (!player || _scMappingAmbientFiles.length === 0) return;
+  _scMappingAmbientIdx = (_scMappingAmbientIdx + 1) % _scMappingAmbientFiles.length;
+  const track = _scMappingAmbientFiles[_scMappingAmbientIdx];
+  if (!track || !track.url) return;
+  player.src = track.url;
+  player.volume = 0.18;
+  player.play().catch(() => {});
+  player.onended = () => {
+    if (_scMappingAmbientPlaying) _scMappingAmbientPlayNext();
+  };
+}
+
+function scMappingStartAmbient() {
+  if (_scMappingAmbientFiles.length === 0) _scMappingAmbientLoad();
+  _scMappingAmbientPlaying = true;
+  _scMappingAmbientPlayNext();
+  // Aggiorna UI
+  const btnPlay = document.getElementById('sc-mapping-audio-icon-play');
+  const btnPause = document.getElementById('sc-mapping-audio-icon-pause');
+  const btn = document.getElementById('sc-mapping-audio-btn');
+  if (btnPlay) btnPlay.style.display = 'none';
+  if (btnPause) btnPause.style.display = 'block';
+  if (btn) btn.classList.add('playing');
+}
+
+function scMappingStopAmbient() {
+  _scMappingAmbientPlaying = false;
+  const player = document.getElementById('sc-mapping-ambient');
+  if (player) {
+    // Fade out rapido
+    let vol = player.volume;
+    const fadeOut = setInterval(() => {
+      vol = Math.max(0, vol - 0.04);
+      player.volume = vol;
+      if (vol <= 0) {
+        clearInterval(fadeOut);
+        player.pause();
+        player.src = '';
+        player.volume = 0.18;
+      }
+    }, 50);
+  }
+  // Aggiorna UI
+  const btnPlay = document.getElementById('sc-mapping-audio-icon-play');
+  const btnPause = document.getElementById('sc-mapping-audio-icon-pause');
+  const btn = document.getElementById('sc-mapping-audio-btn');
+  if (btnPlay) btnPlay.style.display = 'block';
+  if (btnPause) btnPause.style.display = 'none';
+  if (btn) btn.classList.remove('playing');
+}
+
+function scMappingToggleAudio() {
+  if (_scMappingAmbientPlaying) {
+    scMappingStopAmbient();
+  } else {
+    scMappingStartAmbient();
+  }
+}
+
+// Ferma l'audio ambient quando si esce da Mapping Lives
+function _scMappingAmbientCleanup() {
+  if (_scMappingAmbientPlaying) scMappingStopAmbient();
+  _scMappingAmbientPlaying = false;
+  _scMappingAmbientIdx = -1;
 }
 
 // Collega gli eventi expand/collapse nella pagina Archive
