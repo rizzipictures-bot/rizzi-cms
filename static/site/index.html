@@ -14387,8 +14387,8 @@ function _scBuildArchivePage() {
     .sc-arc-play-btn svg { display: block; }
     .sc-arc-icons-video {
       display: block;
-      width: 140px;
-      height: 72px;
+      width: 160px;
+      height: 68px;
       object-fit: cover;
       filter: grayscale(1);
       opacity: 0.85;
@@ -14409,8 +14409,8 @@ function _scBuildArchivePage() {
     .sc-arc-icons-video-wrap {
       display: inline-block;
       position: relative;
-      width: 140px;
-      height: 72px;
+      width: 160px;
+      height: 68px;
       margin-top: 6px;
       transition: transform 0.28s cubic-bezier(.22,.68,0,1.2), opacity 0.2s;
       transform-origin: top left;
@@ -14424,12 +14424,14 @@ function _scBuildArchivePage() {
     }
     .sc-arc-icons-video-wrap:hover img {
       filter: grayscale(0) !important;
+      object-fit: contain !important;
+      object-position: center !important;
     }
     .sc-arc-icons-video-wrap video {
       display: block;
       width: 100%;
       height: 100%;
-      object-fit: cover;
+      object-fit: contain;
       filter: grayscale(1);
     }
     .sc-arc-icons-video-label {
@@ -14461,6 +14463,12 @@ function _scBuildArchivePage() {
       transform: scale(4.8) translateX(28px) translateY(-38px) !important;
       z-index: 200 !important;
       opacity: 1 !important;
+    }
+    .sc-arc-icons-video-wrap.sc-arc-icons-expanded img {
+      object-fit: contain !important;
+    }
+    .sc-arc-icons-video-wrap.sc-arc-icons-expanded video {
+      object-fit: contain !important;
     }
     .sc-arc-icons-video-wrap.sc-arc-icons-expanded .sc-arc-icons-video-label {
       opacity: 1;
