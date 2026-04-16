@@ -14278,11 +14278,30 @@ function scBuildSectionContent(section) {
           const player = document.getElementById('sc-synopsis-player');
           if (player) { player.style.opacity = '1'; player.style.transform = 'translateY(0)'; }
         }, totalDelay);
-        // Statement autore: appare dopo il player (+ 1200ms)
+        // Statement autore: appare dopo il player (+ 800ms)
+        const _showStatement = () => {
+          const statement = document.getElementById('sc-synopsis-statement');
+          if (statement && statement.style.opacity !== '1') {
+            statement.style.opacity = '1';
+            statement.style.transform = 'translateY(0)';
+          }
+        };
+        setTimeout(_showStatement, totalDelay + 800);
+        // Fallback: IntersectionObserver attiva lo statement quando entra nel viewport
         setTimeout(() => {
           const statement = document.getElementById('sc-synopsis-statement');
-          if (statement) { statement.style.opacity = '1'; statement.style.transform = 'translateY(0)'; }
-        }, totalDelay + 1200);
+          if (statement && statement.style.opacity !== '1') {
+            const obs = new IntersectionObserver((entries) => {
+              entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                  _showStatement();
+                  obs.disconnect();
+                }
+              });
+            }, { threshold: 0.1 });
+            obs.observe(statement);
+          }
+        }, 500);
 
       }, 600);
     }, 1800);
