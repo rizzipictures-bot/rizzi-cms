@@ -14544,13 +14544,19 @@ function _scBuildArchivePage() {
       display: flex;
       flex-direction: column;
       opacity: 0;
+      visibility: hidden;  /* nasconde completamente figli (bottone X viola) quando chiuso */
       transition: transform 0.85s cubic-bezier(0.16, 1, 0.3, 1),
-                  opacity 0.45s ease;
+                  opacity 0.45s ease,
+                  visibility 0s 0.45s;  /* visibility ritardata per non bloccare la transizione di chiusura */
       pointer-events: none;
     }
     #sc-arc-text-popup.sc-arc-text-popup-open {
       transform: translate(-50%, -50%) scale(1);
       opacity: 1;
+      visibility: visible;
+      transition: transform 0.85s cubic-bezier(0.16, 1, 0.3, 1),
+                  opacity 0.45s ease,
+                  visibility 0s 0s;  /* visibility immediata all'apertura */
       pointer-events: auto;
     }
     #sc-arc-text-popup-header {
