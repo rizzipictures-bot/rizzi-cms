@@ -4255,7 +4255,11 @@
     }
 
     /* ── Nav Sculptures — menu fisso in alto a sinistra con animazione reveal ── */
+    /* Nascosto di default — visibile solo quando la view Sculptures è attiva */
     #sculptures-nav {
+      display: none;
+    }
+    body.sculptures-active #sculptures-nav {
       position: fixed;
       top: 0;
       left: 0;
