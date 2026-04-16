@@ -8098,20 +8098,23 @@
       transition: opacity 0.18s;
     }
 
-  /* ── Statement autore Synopsis (caricato sempre, non dipende da Archive) ── */
-  /* Statement autore — appare dopo le righe intervista */
-  /* Selettori con ID per battere #view-sculptures { color:#fff } */
-  #view-sculptures .sc-synopsis-statement {
-    position: relative;
-    z-index: 25;
-    max-width: 680px;
-    margin: 0 auto;
-    padding: 40px 24px 80px;
+  /* ── Statement autore Synopsis — overlay fisso centrato nella viewport ── */
+  #view-sculptures .sc-synopsis-statement,
+  #sc-synopsis-statement {
+    position: fixed !important;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%) translateY(20px);
+    z-index: 1200;
+    max-width: 560px;
+    width: calc(100vw - 80px);
+    padding: 36px 32px 32px;
     font-family: 'Special Elite', 'Courier New', Courier, monospace;
     font-size: 8px;
     line-height: 1.85;
     color: #000 !important;
-    border-top: 1px solid rgba(0,0,0,0.18);
+    background: rgba(255,255,255,0.0);
+    pointer-events: none;
   }
   #view-sculptures .sc-synopsis-statement-title {
     font-family: 'Special Elite', 'Courier New', Courier, monospace;
@@ -8120,11 +8123,11 @@
     letter-spacing: 0.08em;
     text-transform: uppercase;
     color: #000 !important;
-    margin: 0 0 20px 0;
+    margin: 0 0 18px 0;
   }
   #view-sculptures .sc-synopsis-statement p,
   #view-sculptures #sc-synopsis-statement p {
-    margin: 0 0 12px 0;
+    margin: 0 0 10px 0;
     font-family: 'Special Elite', 'Courier New', Courier, monospace;
     font-size: 8px;
     line-height: 1.85;
@@ -14235,8 +14238,8 @@ function scBuildSectionContent(section) {
       </button>
        <span class="sc-synopsis-player-label">Play Interview</span>
     </div>`;
-    // Statement autore: appare dopo le righe dell'intervista
-    html += `<div id="sc-synopsis-statement" class="sc-synopsis-statement" style="opacity:0;transform:translateY(40px);transition:opacity 0.8s ease, transform 0.8s cubic-bezier(0.22,1,0.36,1);">
+    // Statement autore: overlay fisso centrato, appare subito con l'overlay bianco
+    html += `<div id="sc-synopsis-statement" class="sc-synopsis-statement" style="opacity:0;transition:opacity 1.0s ease;transform:translate(-50%,-50%) translateY(20px);">
       <p class="sc-synopsis-statement-title">A Story of Love and Brotherhood</p>
       <p>December 13, 2014. Washington D.C. United States of America.</p>
       <p>Can love reach far enough to touch the deepest strings that hold a society together? Can a personal story become an artist&#8217;s passage into the heart of civil and human rights?</p>
@@ -14278,30 +14281,14 @@ function scBuildSectionContent(section) {
           const player = document.getElementById('sc-synopsis-player');
           if (player) { player.style.opacity = '1'; player.style.transform = 'translateY(0)'; }
         }, totalDelay);
-        // Statement autore: appare dopo il player (+ 800ms)
-        const _showStatement = () => {
-          const statement = document.getElementById('sc-synopsis-statement');
-          if (statement && statement.style.opacity !== '1') {
-            statement.style.opacity = '1';
-            statement.style.transform = 'translateY(0)';
-          }
-        };
-        setTimeout(_showStatement, totalDelay + 800);
-        // Fallback: IntersectionObserver attiva lo statement quando entra nel viewport
+        // Statement autore: overlay fisso centrato — appare 400ms dopo l'overlay bianco
         setTimeout(() => {
           const statement = document.getElementById('sc-synopsis-statement');
-          if (statement && statement.style.opacity !== '1') {
-            const obs = new IntersectionObserver((entries) => {
-              entries.forEach(entry => {
-                if (entry.isIntersecting) {
-                  _showStatement();
-                  obs.disconnect();
-                }
-              });
-            }, { threshold: 0.1 });
-            obs.observe(statement);
+          if (statement) {
+            statement.style.opacity = '1';
+            statement.style.transform = 'translate(-50%, -50%) translateY(0)';
           }
-        }, 500);
+        }, 400);
 
       }, 600);
     }, 1800);
