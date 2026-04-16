@@ -15068,10 +15068,10 @@ function _scBuildArchivePage() {
       }
       /* Bottone chiudi */
       #sc-interview-viewer-close {
-        position: absolute;
+        position: fixed;
         top: 18px;
         right: 24px;
-        z-index: 10;
+        z-index: 2200;
         background: none;
         border: none;
         cursor: pointer;
@@ -15084,10 +15084,10 @@ function _scBuildArchivePage() {
         opacity: 0.8;
         transition: opacity 0.15s;
         padding: 0;
-        visibility: hidden;
+        display: none;
       }
       #sc-interview-viewer.sc-iv-open #sc-interview-viewer-close {
-        visibility: visible;
+        display: block;
       }
       #sc-interview-viewer-close:hover { opacity: 1; color: #fff; }
       /* Thumb centrale */
