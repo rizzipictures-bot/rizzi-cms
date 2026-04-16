@@ -14961,7 +14961,8 @@ function _scBuildArchivePage() {
       }
 
       /* Statement autore — appare dopo le righe intervista */
-      .sc-synopsis-statement {
+      /* Selettori con ID per battere #view-sculptures { color:#fff } */
+      #view-sculptures .sc-synopsis-statement {
         position: relative;
         z-index: 25;
         max-width: 680px;
@@ -14973,7 +14974,7 @@ function _scBuildArchivePage() {
         color: #000 !important;
         border-top: 1px solid rgba(0,0,0,0.18);
       }
-      .sc-synopsis-statement-title {
+      #view-sculptures .sc-synopsis-statement-title {
         font-family: 'Special Elite', 'Courier New', Courier, monospace;
         font-size: 9px;
         font-weight: 700;
@@ -14982,11 +14983,16 @@ function _scBuildArchivePage() {
         color: #000 !important;
         margin: 0 0 20px 0;
       }
-      .sc-synopsis-statement p {
+      #view-sculptures .sc-synopsis-statement p,
+      #view-sculptures #sc-synopsis-statement p {
         margin: 0 0 12px 0;
         font-family: 'Special Elite', 'Courier New', Courier, monospace;
         font-size: 8px;
         line-height: 1.85;
+        color: #000 !important;
+      }
+      #view-sculptures #sc-synopsis-statement,
+      #view-sculptures #sc-synopsis-statement * {
         color: #000 !important;
       }
       /* Label sotto il player */
