@@ -15721,8 +15721,7 @@ function scToggleDiaryGridNote() {
       // Angolo bottom-right del box info: il popup si espande da qui verso l'interno
       // Usiamo fixed con right/bottom calcolati dall'angolo del box
       box.style.right  = (window.innerWidth  - r.right)  + 'px';
-      // Alziamo il popup di 60px per coprire le ultime righe di testo sopra il box info
-      box.style.bottom = (window.innerHeight - r.bottom + 60) + 'px';
+      box.style.bottom = (window.innerHeight - r.bottom) + 'px';
       box.style.top    = '';
       box.style.left   = '';
       // Larghezza = 75% del box info, altezza libera
