@@ -15291,11 +15291,11 @@ const _SC_LIBRETTO_PAGES = [
   'https://files.manuscdn.com/user_upload_by_module/session_file/310519663156367470/VoEhAgRwHsIHJNgB.png',
   'https://files.manuscdn.com/user_upload_by_module/session_file/310519663156367470/WAOgoOOYBOOVwNXh.png'
 ];
-// Ogni spread = una "apertura" del libro: { left: idx|null, right: idx|null, hasAudio: bool }
+// Ogni spread = una "apertura" del libro: { left: idx|null, right: idx|null, hasAudio: bool, audioSrc: string|null }
 const _SC_LIBRETTO_SPREADS = [
-  { left: 0, right: null, hasAudio: false },
-  { left: 1, right: null, hasAudio: true  },
-  { left: 2, right: null, hasAudio: false }
+  { left: 0, right: null, hasAudio: true,  audioSrc: '/static/site/audio/interview/conversation-gs.mp3' },
+  { left: 1, right: null, hasAudio: true,  audioSrc: '/static/site/audio/interview/conversation-ar.mp3' },
+  { left: 2, right: null, hasAudio: false, audioSrc: null }
 ];
 let _scLibrettoCurrentSpread = 0;
 let _scLibrettoAudioPlaying = false;
@@ -15435,8 +15435,12 @@ function _scLibrettoToggleAudio() {
     mainPlayer.pause();
     _scLibrettoAudioPlaying = false;
   } else {
-    const interviewSrc = '/static/site/audio/interview/conv-01-gs.mp3';
-    if (!mainPlayer.src.endsWith(interviewSrc)) {
+    // Usa l'audioSrc specifico dello spread corrente
+    const spread = _SC_LIBRETTO_SPREADS[_scLibrettoCurrentSpread];
+    const interviewSrc = spread.audioSrc || '/static/site/audio/interview/conversation-gs.mp3';
+    // Cambia sorgente solo se diversa da quella corrente
+    const currentSrc = mainPlayer.src ? mainPlayer.src.replace(window.location.origin, '') : '';
+    if (currentSrc !== interviewSrc) {
       mainPlayer.src = interviewSrc;
     }
     mainPlayer.play().then(() => {
