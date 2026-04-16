@@ -8047,7 +8047,7 @@
         <span data-sc-section="mapping-lives">Mapping Lives</span>
         <span data-sc-section="archive">Archive</span>
         <span data-sc-section="information">Information</span>
-        <span data-sc-section="studies" style="display:none;">Studies</span>
+        <span data-sc-section="studies">Studies</span>
         <span id="sculptures-back" onclick="scGoBack()">&#8592; Back</span>
       </nav>
 
@@ -10102,7 +10102,24 @@ function switchView(name) {
           requestAnimationFrame(() => _info.classList.add('active'));
           window._scInfoShownThisSession = true;
           window._scInfoAutoClose = setTimeout(function() {
-            if (_info.classList.contains('active')) _info.classList.remove('active');
+            // Non chiudere il box Info se il popup MET/MoMA è ancora visibile
+            var _instBox = document.getElementById('sc-inst-popup-box');
+            if (_instBox && _instBox.classList.contains('sc-inst-visible')) {
+              // Rimanda la chiusura: aspetta che il popup istituzione si chiuda
+              window._scInfoAutoClose = setTimeout(function() {
+                // Chiudi prima il popup istituzione (se ancora aperto), poi il box Info
+                if (_instBox.classList.contains('sc-inst-visible')) {
+                  window.scInstPopupClose && window.scInstPopupClose();
+                  setTimeout(function() {
+                    if (_info.classList.contains('active')) _info.classList.remove('active');
+                  }, 600);
+                } else {
+                  if (_info.classList.contains('active')) _info.classList.remove('active');
+                }
+              }, 3000);
+            } else {
+              if (_info.classList.contains('active')) _info.classList.remove('active');
+            }
           }, 8000);
         }
       }, 2700);
@@ -13228,72 +13245,82 @@ function scBuildGrid() {
         wrap.appendChild(inner);
       }
     } else if (targetSection === 'mapping-lives') {
-      // Thumb Mapping Lives: canvas animato con punti rossi su sfondo nero
-      const canvas = document.createElement('canvas');
-      canvas.className = 'sc-mapping-canvas';
-      canvas.style.cssText = 'position:absolute;top:0;left:0;width:100%;height:100%;';
-      wrap.appendChild(canvas);
-      // Avvia animazione canvas dopo inserimento nel DOM
-      setTimeout(() => {
-        const w = canvas.offsetWidth || 200;
-        const h = canvas.offsetHeight || 280;
-        canvas.width = w;
-        canvas.height = h;
-        const ctx = canvas.getContext('2d');
-        // Punti fissi che simulano la distribuzione geografica USA
-        const pts = [
-          [0.18,0.32],[0.22,0.28],[0.25,0.35],[0.30,0.30],[0.35,0.38],[0.38,0.25],[0.42,0.40],
-          [0.45,0.28],[0.50,0.35],[0.55,0.30],[0.58,0.42],[0.62,0.25],[0.65,0.38],[0.70,0.32],
-          [0.72,0.45],[0.75,0.28],[0.78,0.40],[0.80,0.35],[0.82,0.22],[0.85,0.48],[0.88,0.30],
-          [0.20,0.55],[0.28,0.60],[0.35,0.52],[0.42,0.58],[0.50,0.62],[0.55,0.55],[0.60,0.65],
-          [0.65,0.58],[0.70,0.70],[0.75,0.55],[0.80,0.65],[0.85,0.60],[0.90,0.52],[0.15,0.68],
-          [0.30,0.72],[0.45,0.75],[0.60,0.78],[0.72,0.80],[0.82,0.72],[0.88,0.78],[0.25,0.42],
-          [0.48,0.48],[0.68,0.50],[0.78,0.58],[0.92,0.40],[0.12,0.45],[0.55,0.72],[0.38,0.68]
-        ];
-        let frame = 0;
-        let animId = null;
-        const draw = () => {
-          ctx.fillStyle = '#0a0a0a';
-          ctx.fillRect(0, 0, w, h);
-          // Griglia sottile
-          ctx.strokeStyle = 'rgba(255,255,255,0.04)';
-          ctx.lineWidth = 0.5;
-          for (let gx = 0; gx < w; gx += 30) { ctx.beginPath(); ctx.moveTo(gx,0); ctx.lineTo(gx,h); ctx.stroke(); }
-          for (let gy = 0; gy < h; gy += 30) { ctx.beginPath(); ctx.moveTo(0,gy); ctx.lineTo(w,gy); ctx.stroke(); }
-          // Punti rossi con pulsazione
-          pts.forEach((p, i) => {
-            const px = p[0] * w;
-            const py = p[1] * h;
-            const pulse = Math.sin(frame * 0.03 + i * 0.4) * 0.5 + 0.5;
-            const r = 2 + pulse * 1.5;
-            const alpha = 0.4 + pulse * 0.6;
-            ctx.beginPath();
-            ctx.arc(px, py, r, 0, Math.PI * 2);
-            ctx.fillStyle = `rgba(230,57,70,${alpha})`;
-            ctx.fill();
-            // Alone
-            if (pulse > 0.7) {
-              ctx.beginPath();
-              ctx.arc(px, py, r * 2.5, 0, Math.PI * 2);
-              ctx.fillStyle = `rgba(230,57,70,${(pulse-0.7)*0.3})`;
-              ctx.fill();
-            }
-          });
-          // Titolo in basso
-          ctx.fillStyle = 'rgba(241,241,241,0.6)';
-          ctx.font = '7px \'IBM Plex Mono\', monospace';
-          ctx.letterSpacing = '0.08em';
-          ctx.fillText('2015 — ' + new Date().getFullYear(), 10, h - 10);
-          frame++;
-          animId = requestAnimationFrame(draw);
-        };
-        draw();
-        // Pausa on hover
-        cell.addEventListener('mouseenter', () => { if (animId) { cancelAnimationFrame(animId); animId = null; } });
-        cell.addEventListener('mouseleave', () => { if (!animId) { draw(); } });
-        // Cleanup quando la griglia viene distrutta
-        canvas._stopAnim = () => { if (animId) cancelAnimationFrame(animId); };
-      }, 150);
+      // Thumb Mapping Lives: immagine reale della mappa + overlay SVG con punti pulsanti
+      wrap.style.background = '#0a0a0a';
+      // Immagine di sfondo
+      const mlImg = document.createElement('img');
+      mlImg.src = 'https://d2xsxph8kpxj0f.cloudfront.net/310519663156367470/hy3xamEYKuuFBSr4ou5CS9/mapping-lives-thumb_d511e1f1.webp';
+      mlImg.alt = 'Mapping Lives';
+      mlImg.style.cssText = 'position:absolute;top:0;left:0;width:100%;height:100%;object-fit:cover;object-position:center center;display:block;';
+      wrap.appendChild(mlImg);
+      // Overlay SVG con punti pulsanti sui cluster principali USA
+      // Coordinate normalizzate (x%, y%) rispetto alla cella
+      const mlDots = [
+        // West Coast
+        [12,42],[13,55],[14,62],[15,70],
+        // Pacific Northwest
+        [11,22],[13,28],
+        // California cluster
+        [10,50],[11,58],[12,65],[13,72],
+        // Southwest
+        [18,60],[20,65],[22,55],
+        // Mountain/Plains
+        [28,40],[30,50],[32,45],
+        // Midwest cluster
+        [52,32],[54,38],[56,42],[58,35],
+        // Chicago area
+        [60,28],[62,32],[64,35],
+        // Texas cluster
+        [42,68],[44,72],[46,75],[48,70],
+        // Southeast
+        [62,55],[65,60],[68,65],[70,58],
+        // Mid-Atlantic
+        [72,38],[74,42],[76,35],
+        // New York area
+        [78,28],[80,32],[82,25],
+        // Florida
+        [70,78],[72,82],[74,75],
+        // New England
+        [82,20],[84,25],
+        // Deep South
+        [58,65],[60,70],[62,68],
+        // Ohio/Pennsylvania
+        [66,38],[68,42],[70,40],
+      ];
+      const mlSvgNS = 'http://www.w3.org/2000/svg';
+      const mlSvg = document.createElementNS(mlSvgNS, 'svg');
+      mlSvg.setAttribute('viewBox', '0 0 100 100');
+      mlSvg.setAttribute('preserveAspectRatio', 'none');
+      mlSvg.style.cssText = 'position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none;';
+      // Stile animazione
+      const mlStyle = document.createElementNS(mlSvgNS, 'style');
+      mlStyle.textContent = `
+        @keyframes ml-pulse { 0%,100%{r:1.2;opacity:0.7} 50%{r:2.2;opacity:1} }
+        @keyframes ml-ring  { 0%{r:1.5;opacity:0.5} 100%{r:4;opacity:0} }
+        .ml-dot { animation: ml-pulse 2.4s ease-in-out infinite; fill:#e63946; }
+        .ml-ring { animation: ml-ring 2.4s ease-out infinite; fill:none; stroke:#e63946; stroke-width:0.4; }
+      `;
+      mlSvg.appendChild(mlStyle);
+      mlDots.forEach(function(pt, i) {
+        const delay = (i * 0.11) % 2.4;
+        // Cerchio principale pulsante
+        const c = document.createElementNS(mlSvgNS, 'circle');
+        c.setAttribute('cx', pt[0]);
+        c.setAttribute('cy', pt[1]);
+        c.setAttribute('r', '1.2');
+        c.setAttribute('class', 'ml-dot');
+        c.style.animationDelay = delay + 's';
+        mlSvg.appendChild(c);
+        // Anello che si espande
+        const ring = document.createElementNS(mlSvgNS, 'circle');
+        ring.setAttribute('cx', pt[0]);
+        ring.setAttribute('cy', pt[1]);
+        ring.setAttribute('r', '1.5');
+        ring.setAttribute('class', 'ml-ring');
+        ring.style.animationDelay = delay + 's';
+        mlSvg.appendChild(ring);
+      });
+      wrap.appendChild(mlSvg);
     } else {
       // Placeholder grigio se il progetto non ha ancora immagini
       const ph = document.createElement('div');
@@ -15724,8 +15751,7 @@ function scToggleDiaryGridNote() {
       // Angolo bottom-right del box info: il popup si espande da qui verso l'interno
       // Usiamo fixed con right/bottom calcolati dall'angolo del box
       box.style.right  = (window.innerWidth  - r.right)  + 'px';
-      // Alziamo il popup di 60px per coprire le ultime righe di testo sopra il box info
-      box.style.bottom = (window.innerHeight - r.bottom + 60) + 'px';
+      box.style.bottom = (window.innerHeight - r.bottom) + 'px';
       box.style.top    = '';
       box.style.left   = '';
       // Larghezza = 75% del box info, altezza libera
