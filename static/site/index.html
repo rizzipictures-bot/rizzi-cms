@@ -13854,9 +13854,17 @@ function scBuildSectionContent(section) {
           <path id="sc-synopsis-play-icon" d="M20 15L38 26L20 37V15Z" fill="#000"/>
         </svg>
       </button>
-      <span class="sc-synopsis-player-label">Play Interview</span>
+       <span class="sc-synopsis-player-label">Play Interview</span>
     </div>`;
-
+    // Statement autore: appare dopo le righe dell'intervista
+    html += `<div id="sc-synopsis-statement" class="sc-synopsis-statement" style="opacity:0;transform:translateY(40px);transition:opacity 0.8s ease, transform 0.8s cubic-bezier(0.22,1,0.36,1);">
+      <p class="sc-synopsis-statement-title">A Story of Love and Brotherhood</p>
+      <p>December 13, 2014. Washington D.C. United States of America.</p>
+      <p>Can love reach far enough to touch the deepest strings that hold a society together? Can a personal story become an artist&#8217;s passage into the heart of civil and human rights?</p>
+      <p>My answer was given on December 13, 2014. Washington D.C. The March for All Justice. The great march of Afro-American people against police violence&#8212;the largest demonstration for civil rights since the time of Martin Luther King.</p>
+      <p>A Story of Love and Brotherhood is my story. The story of a white Italian man, an artist, who decides to leave&#8212;to photograph, to witness, to be present. It is the story of a love, of how it became the door through which I entered something much larger than myself: a struggle, a wound, a dignity. It is the story of how an artist asks himself what it means to give universal weight to his own experience&#8212;to his own life among other lives, among other human beings.</p>
+      <p>A Story of Love and Brotherhood is a book and exhibition project. It gathers photographs, visual traces, and sound recordings from December 13, 2014, in Washington D.C.&#8212;a single day that carried the weight of history, and the quiet, irreducible weight of love.</p>
+    </div>`;
     el.innerHTML = html;
 
     // ── Sequenza animazione: dopo 1.8s schiarisce il bg, poi appaiono le righe da sx ──
@@ -13891,6 +13899,11 @@ function scBuildSectionContent(section) {
           const player = document.getElementById('sc-synopsis-player');
           if (player) { player.style.opacity = '1'; player.style.transform = 'translateY(0)'; }
         }, totalDelay);
+        // Statement autore: appare dopo il player (+ 1200ms)
+        setTimeout(() => {
+          const statement = document.getElementById('sc-synopsis-statement');
+          if (statement) { statement.style.opacity = '1'; statement.style.transform = 'translateY(0)'; }
+        }, totalDelay + 1200);
 
       }, 600);
     }, 1800);
@@ -14946,6 +14959,35 @@ function _scBuildArchivePage() {
         background: #111;
       }
 
+      /* Statement autore — appare dopo le righe intervista */
+      .sc-synopsis-statement {
+        position: relative;
+        z-index: 25;
+        max-width: 680px;
+        margin: 0 auto;
+        padding: 40px 24px 80px;
+        font-family: 'Special Elite', 'Courier New', Courier, monospace;
+        font-size: 8px;
+        line-height: 1.85;
+        color: #000;
+        border-top: 1px solid rgba(0,0,0,0.12);
+      }
+      .sc-synopsis-statement-title {
+        font-family: 'Special Elite', 'Courier New', Courier, monospace;
+        font-size: 9px;
+        font-weight: 700;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: #000;
+        margin: 0 0 20px 0;
+      }
+      .sc-synopsis-statement p {
+        margin: 0 0 12px 0;
+        font-family: 'Special Elite', 'Courier New', Courier, monospace;
+        font-size: 8px;
+        line-height: 1.85;
+        color: #000;
+      }
       /* Label sotto il player */
       .sc-synopsis-player-label {
         font-family: 'Special Elite', 'Courier New', Courier, monospace;
