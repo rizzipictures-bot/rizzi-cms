@@ -4324,6 +4324,13 @@
     #sculptures-back {
       margin-top: 6px;
     }
+    /* Separatore sottile tra Site e Overview */
+    #sculptures-nav-sep {
+      border: none;
+      border-top: 1px solid rgba(255,255,255,0.18);
+      margin: 3px 0 4px 0;
+      width: 28px;
+    }
     /* Voce Site: stessa tipografia del menu, leggermente più tenue */
     #sculptures-site-link {
       margin: 0;
@@ -8017,6 +8024,7 @@
       <!-- Menu verticale animato in alto a sinistra -->
       <nav id="sculptures-nav">
         <span id="sculptures-site-link" onclick="scGoBack()" style="opacity:0.55;">Site</span>
+        <hr id="sculptures-nav-sep" />
         <span data-sc-section="overview" class="active">Overview</span>
         <span data-sc-section="images-book">Images</span>
         <span data-sc-section="diary">Testimonial Diary</span>
