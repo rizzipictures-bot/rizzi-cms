@@ -369,6 +369,7 @@
       transform: translate(0, 0);
       transition: none;
       will-change: transform;  /* GPU layer — usa transform invece di left/top */
+      visibility: hidden;  /* nascosto finché il mouse non si muove per la prima volta */
     }
     /* ── CURSORE RIDISEGNATO: pallino + croce bianca ── */
     #cursor-dot {
@@ -8892,6 +8893,8 @@ function _detectDarkBg(el) {
 let activeExpanded = null;
 document.addEventListener('mousemove', e => {
   mx = e.clientX; my = e.clientY;
+  // Mostra il cursore al primo movimento del mouse
+  if (cursor && cursor.style.visibility !== 'visible') cursor.style.visibility = 'visible';
 
   // Calcola angolo (snap 4 direzioni)
   if (prevMx !== null) {
