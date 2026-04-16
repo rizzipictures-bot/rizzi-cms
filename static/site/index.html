@@ -6385,9 +6385,10 @@
     /* Pannello testo diary nel viewer (laterale, stile playlist) */
     #sc-diary-text-panel {
       position: absolute;
-      top: 0;
-      bottom: 0;
-      width: 420px;
+      top: 80px;
+      bottom: 80px;
+      width: 380px;
+      max-width: 28vw;
       z-index: 5;
       display: none;
       flex-direction: column;
@@ -15343,11 +15344,57 @@ function scOpenChild(idx, section) {
     if (_noteBox) _noteBox.classList.remove('sc-diary-note-visible', 'sc-diary-note-open');
   }
   scUpdateCarousel();
-  // Click sulla foto = fullscreen (anche in modalità diary)
+  // Click sulla foto = lightbox bianco in diary, fullscreen nelle altre sezioni
   const _img = document.getElementById('sculptures-carousel-img');
   if (_img) {
     _img._scClickHandler = function() {
-      scToggleFullscreen();
+      if (section === 'diary') {
+        // Apri il lightbox bianco con la foto corrente
+        const _wp = document.getElementById('ae-zoom-white-popup');
+        const _wi = document.getElementById('ae-zoom-white-img');
+        if (_wp && _wi) {
+          // Raccoglie tutte le URL delle immagini della sezione diary per navigazione
+          const _diaryUrls = scCurrentImages.map(function(it) { return it.url; });
+          _wi.src = scCurrentImages[scCurrentIndex] ? scCurrentImages[scCurrentIndex].url : '';
+          if (_diaryUrls.length <= 1) {
+            _wp.classList.add('single-img');
+          } else {
+            _wp.classList.remove('single-img');
+          }
+          // Salva lista e indice per navigazione frecce
+          _wp._diaryList = _diaryUrls;
+          _wp._diaryIdx  = scCurrentIndex;
+          // Aggiorna frecce per navigare nel lightbox
+          const _wPrev = document.getElementById('ae-zoom-white-prev');
+          const _wNext = document.getElementById('ae-zoom-white-next');
+          if (_wPrev && !_wPrev._diaryBound) {
+            _wPrev._diaryBound = true;
+            _wPrev.addEventListener('click', function(e) {
+              e.stopPropagation();
+              if (!_wp.classList.contains('open')) return;
+              if (_wp._diaryList && _wp._diaryList.length > 1) {
+                _wp._diaryIdx = ((_wp._diaryIdx - 1) + _wp._diaryList.length) % _wp._diaryList.length;
+                _wi.src = _wp._diaryList[_wp._diaryIdx];
+              }
+            });
+          }
+          if (_wNext && !_wNext._diaryBound) {
+            _wNext._diaryBound = true;
+            _wNext.addEventListener('click', function(e) {
+              e.stopPropagation();
+              if (!_wp.classList.contains('open')) return;
+              if (_wp._diaryList && _wp._diaryList.length > 1) {
+                _wp._diaryIdx = (_wp._diaryIdx + 1) % _wp._diaryList.length;
+                _wi.src = _wp._diaryList[_wp._diaryIdx];
+              }
+            });
+          }
+          document.documentElement.appendChild(_wp);
+          _wp.classList.add('open');
+        }
+      } else {
+        scToggleFullscreen();
+      }
     };
     _img.addEventListener('click', _img._scClickHandler);
   }
@@ -15797,8 +15844,13 @@ function scUpdateCarousel() {
   const posIdx = _scPosIdx;
   if (carousel) {
     carousel.classList.remove('sc-pos-right', 'sc-pos-left', 'sc-pos-center');
-    carousel.classList.add(_scPositions[posIdx]);
-    _scPosIdx = (posIdx + 1) % 3;
+    // In diary: foto sempre centrata rispetto al bottone Note in basso
+    if (_scCurrentSection === 'diary') {
+      carousel.classList.add('sc-pos-center');
+    } else {
+      carousel.classList.add(_scPositions[posIdx]);
+      _scPosIdx = (posIdx + 1) % 3;
+    }
   }
   img.style.opacity = '0';
   if (bgImg) { bgImg.style.opacity = '0'; }
