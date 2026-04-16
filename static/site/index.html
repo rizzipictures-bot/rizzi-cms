@@ -4330,6 +4330,11 @@
       border-top: 1px solid rgba(255,255,255,0.18);
       margin: 3px 0 4px 0;
       width: 28px;
+      display: none;  /* nascosto di default — mostrato solo in Sculptures */
+    }
+    /* Visibile solo quando il menu Sculptures è attivo (classe aggiunta da scRevealMenu) */
+    #sculptures-nav.sc-nav-revealed #sculptures-nav-sep {
+      display: block;
     }
     /* Voce Site: stessa tipografia del menu, leggermente più tenue */
     #sculptures-site-link {
@@ -4357,7 +4362,7 @@
     }
     #sculptures-site-link.sc-revealed {
       clip-path: inset(0 0% 0 0);
-      opacity: 0.5;
+      opacity: 1;
     }
     #sculptures-site-link:hover {
       opacity: 0.85;
@@ -16294,6 +16299,9 @@ function scRevealMenu() {
     '#sculptures-nav [data-sc-section], #sculptures-back'
   ));
   const items = siteLink ? [siteLink, ...navItems] : navItems;
+  // Marca il nav come revealed (usato per mostrare l'<hr> separatore)
+  const nav = document.getElementById('sculptures-nav');
+  if (nav) nav.classList.add('sc-nav-revealed');
   // Reset
   items.forEach(el => el.classList.remove('sc-revealed'));
   // Stagger
