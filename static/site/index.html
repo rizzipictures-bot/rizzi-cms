@@ -8043,7 +8043,7 @@
         <span data-sc-section="recordings">Recordings</span>
         <span data-sc-section="video">Video Book</span>
         <span data-sc-section="life">A Life Beside</span>
-        <span data-sc-section="synopsis">Synopsis</span>
+        <span data-sc-section="synopsis">A Story of love and brotherhood</span>
         <span data-sc-section="mapping-lives">Mapping Lives</span>
         <span data-sc-section="archive">Archive</span>
         <span data-sc-section="information">Information</span>
@@ -8120,7 +8120,7 @@
           <li onclick="scTopicsNavigate('diary')">Testimonial Diary</li>
           <li onclick="scTopicsNavigate('life')">A Life Beside</li>
           <li onclick="scTopicsNavigate('studies')">Studies</li>
-          <li onclick="scTopicsNavigate('synopsis')">Synopsis</li>
+          <li onclick="scTopicsNavigate('synopsis')">A Story of love and brotherhood</li>
           <li onclick="scTopicsNavigate('recordings')">Recordings</li>
           <li onclick="scTopicsNavigate('information')">Information</li>
         </ul>
@@ -13059,7 +13059,7 @@ function scTopicsNavigate(section) {
     'diary': 'Testimonial Diary',
     'life': 'A Life Beside',
     'studies': 'Studies',
-    'synopsis': 'Synopsis',
+    'synopsis': 'A Story of love and brotherhood',
     'recordings': 'Recordings',
     'information': 'Information'
   };
@@ -13536,6 +13536,9 @@ function scBuildSectionContent(section) {
     el.style.background = '';  // rimuovi qualsiasi background inline precedente
     el.style.minHeight  = '100vh';
     el.classList.add('sc-diary-mode');
+    // Assicura sempre il menu nero in Diary (anche se si arriva da Information o altre sezioni)
+    document.body.classList.remove('sc-archive-nav-mode');
+    document.body.classList.remove('sc-mapping-nav-mode');
     document.body.classList.add('sc-diary-nav-mode');
     // NON fermare il karaoke: deve continuare su background e thumbs
     // (viene fermato solo quando si apre una foto con TTS)
@@ -14369,8 +14372,8 @@ function _scBuildArchivePage() {
     .sc-arc-play-btn svg { display: block; }
     .sc-arc-icons-video {
       display: block;
-      width: 120px;
-      height: 68px;
+      width: 140px;
+      height: 72px;
       object-fit: cover;
       filter: grayscale(1);
       opacity: 0.85;
@@ -14391,8 +14394,8 @@ function _scBuildArchivePage() {
     .sc-arc-icons-video-wrap {
       display: inline-block;
       position: relative;
-      width: 120px;
-      height: 68px;
+      width: 140px;
+      height: 72px;
       margin-top: 6px;
       transition: transform 0.28s cubic-bezier(.22,.68,0,1.2), opacity 0.2s;
       transform-origin: top left;
@@ -14612,62 +14615,214 @@ function _scBuildArchivePage() {
     .sc-arc-libretto-thumb:hover .sc-arc-libretto-preview {
       opacity: 1;
     }
-    /* Reader PDF overlay */
-    #sc-libretto-reader-overlay {
+    /* ── Libretto Viewer Sfogliabile ── */
+    #sc-libretto-overlay {
       position: fixed;
       inset: 0;
-      background: rgba(0,0,0,0.6);
+      background: rgba(0,0,0,0.82);
       z-index: 3998;
       opacity: 0;
       pointer-events: none;
-      transition: opacity 0.22s ease;
+      transition: opacity 0.28s ease;
     }
-    #sc-libretto-reader-overlay.open {
+    #sc-libretto-overlay.open {
       opacity: 1;
       pointer-events: auto;
     }
-    #sc-libretto-reader {
+    #sc-libretto-viewer {
       position: fixed;
       top: 50%;
       left: 50%;
       transform: translate(-50%, -50%) scale(0.92);
-      width: 90vw;
-      height: 90vh;
-      background: #111;
-      border-radius: 4px;
-      box-shadow: 0 12px 80px rgba(0,0,0,0.8);
+      width: min(92vw, 1200px);
+      height: min(90vh, 820px);
       z-index: 3999;
-      display: flex;
-      flex-direction: column;
       opacity: 0;
       pointer-events: none;
       transition: transform 0.5s cubic-bezier(0.16,1,0.3,1), opacity 0.3s ease;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
     }
-    #sc-libretto-reader.open {
+    #sc-libretto-viewer.open {
       transform: translate(-50%, -50%) scale(1);
       opacity: 1;
       pointer-events: auto;
     }
-    #sc-libretto-reader-header {
-      padding: 10px 14px 8px;
-      border-bottom: 1px solid rgba(255,255,255,0.12);
+    /* Bottone chiudi: pallino viola con X bianca */
+    #sc-libretto-close-btn {
+      position: absolute;
+      top: -18px;
+      right: -18px;
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      background: #4c00fc;
+      border: none;
+      cursor: pointer;
       display: flex;
       align-items: center;
-      justify-content: space-between;
+      justify-content: center;
+      z-index: 10;
+      box-shadow: 0 2px 12px rgba(76,0,252,0.5);
+      transition: background 0.18s, transform 0.18s;
       flex-shrink: 0;
     }
-    #sc-libretto-reader-title {
-      font-family: Helvetica, Arial, sans-serif;
-      font-size: 9px;
-      font-weight: 700;
-      letter-spacing: 0.18em;
-      text-transform: uppercase;
+    #sc-libretto-close-btn:hover {
+      background: #6a20ff;
+      transform: scale(1.12);
+    }
+    #sc-libretto-close-btn svg {
+      width: 14px;
+      height: 14px;
+    }
+    /* Contenitore libro (doppie pagine) */
+    #sc-libretto-book {
+      position: relative;
+      width: 100%;
+      flex: 1;
+      display: flex;
+      align-items: stretch;
+      background: #f5f0e0;
+      box-shadow: 0 8px 60px rgba(0,0,0,0.7), inset 0 0 0 1px rgba(0,0,0,0.08);
+      border-radius: 2px;
+      overflow: hidden;
+    }
+    /* Pagina sinistra e destra */
+    .sc-libretto-page {
+      flex: 1;
+      position: relative;
+      overflow: hidden;
+      background: #f5f0e0;
+    }
+    .sc-libretto-page img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      object-position: center;
+      display: block;
+    }
+    /* Linea centrale del libro */
+    #sc-libretto-spine {
+      width: 2px;
+      background: linear-gradient(to bottom, rgba(0,0,0,0.08), rgba(0,0,0,0.18), rgba(0,0,0,0.08));
+      flex-shrink: 0;
+      position: relative;
+    }
+    #sc-libretto-spine::before {
+      content: '';
+      position: absolute;
+      left: -3px;
+      top: 0;
+      bottom: 0;
+      width: 8px;
+      background: linear-gradient(to right, transparent, rgba(0,0,0,0.06), transparent);
+    }
+    /* Frecce navigazione */
+    .sc-libretto-arrow {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      background: rgba(0,0,0,0.55);
+      border: 1px solid rgba(255,255,255,0.18);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 5;
+      transition: background 0.18s, transform 0.18s;
       color: #fff;
     }
-    #sc-libretto-reader iframe {
-      flex: 1;
+    .sc-libretto-arrow:hover {
+      background: rgba(0,0,0,0.8);
+      transform: translateY(-50%) scale(1.08);
+    }
+    .sc-libretto-arrow:disabled {
+      opacity: 0.25;
+      cursor: default;
+      pointer-events: none;
+    }
+    #sc-libretto-prev { left: -56px; }
+    #sc-libretto-next { right: -56px; }
+    /* Indicatori di pagina (pallini) */
+    #sc-libretto-dots {
+      display: flex;
+      gap: 8px;
+      margin-top: 14px;
+      align-items: center;
+    }
+    .sc-libretto-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.35);
+      cursor: pointer;
+      transition: background 0.18s, transform 0.18s;
       border: none;
-      border-radius: 0 0 4px 4px;
+      padding: 0;
+    }
+    .sc-libretto-dot.active {
+      background: #fff;
+      transform: scale(1.3);
+    }
+    /* Cerchio play audio al centro */
+    #sc-libretto-play-btn {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 64px;
+      height: 64px;
+      border-radius: 50%;
+      background: rgba(76,0,252,0.82);
+      border: 2px solid rgba(255,255,255,0.4);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 6;
+      transition: background 0.18s, transform 0.18s;
+      box-shadow: 0 4px 24px rgba(76,0,252,0.5);
+    }
+    #sc-libretto-play-btn:hover {
+      background: rgba(76,0,252,1);
+      transform: translate(-50%, -50%) scale(1.1);
+    }
+    #sc-libretto-play-btn.playing {
+      background: rgba(220,0,0,0.82);
+    }
+    #sc-libretto-play-btn svg {
+      width: 28px;
+      height: 28px;
+      fill: #fff;
+    }
+    /* Numero pagina */
+    #sc-libretto-page-num {
+      position: absolute;
+      bottom: 8px;
+      left: 50%;
+      transform: translateX(-50%);
+      font-family: Helvetica, Arial, sans-serif;
+      font-size: 9px;
+      letter-spacing: 0.15em;
+      color: rgba(0,0,0,0.35);
+      text-transform: uppercase;
+      pointer-events: none;
+    }
+    /* Pagina singola (ultima pagina) */
+    #sc-libretto-book.single-page .sc-libretto-page:last-child {
+      flex: 0 0 50%;
+    }
+    #sc-libretto-book.single-page #sc-libretto-spine {
+      display: none;
+    }
+    /* Animazione cambio pagina */
+    #sc-libretto-book.turning {
+      opacity: 0.7;
+      transition: opacity 0.18s;
     }
     </style>
   `;
@@ -15104,36 +15259,202 @@ function _scArcTextClose() {
   if (overlay) overlay.classList.remove('sc-arc-text-popup-open');
 }
 
-// ── Libretto PDF reader ──
+// ── Libretto Viewer Sfogliabile ──
+// Pagine del libretto (CDN)
+const _SC_LIBRETTO_PAGES = [
+  'https://files.manuscdn.com/user_upload_by_module/session_file/310519663156367470/WakQbJoPslRJCFAs.png',
+  'https://files.manuscdn.com/user_upload_by_module/session_file/310519663156367470/VoEhAgRwHsIHJNgB.png',
+  'https://files.manuscdn.com/user_upload_by_module/session_file/310519663156367470/WAOgoOOYBOOVwNXh.png'
+];
+// Ogni spread = una "apertura" del libro: { left: idx|null, right: idx|null, hasAudio: bool }
+const _SC_LIBRETTO_SPREADS = [
+  { left: 0, right: null, hasAudio: false },
+  { left: 1, right: null, hasAudio: true  },
+  { left: 2, right: null, hasAudio: false }
+];
+let _scLibrettoCurrentSpread = 0;
+let _scLibrettoAudioPlaying = false;
+
 function _scLibrettoOpen() {
-  // Crea overlay e reader se non esistono
-  if (!document.getElementById('sc-libretto-reader')) {
+  _scLibrettoCurrentSpread = 0;
+  _scLibrettoAudioPlaying = false;
+
+  if (!document.getElementById('sc-libretto-overlay')) {
     const overlay = document.createElement('div');
-    overlay.id = 'sc-libretto-reader-overlay';
-    overlay.onclick = _scLibrettoClose;
+    overlay.id = 'sc-libretto-overlay';
+    overlay.onclick = function(e) { if (e.target === overlay) _scLibrettoClose(); };
     document.body.appendChild(overlay);
 
-    const reader = document.createElement('div');
-    reader.id = 'sc-libretto-reader';
-    reader.innerHTML = `
-      <div id="sc-libretto-reader-header">
-        <span id="sc-libretto-reader-title">LIBRETTO &mdash; SCULPTURES</span>
-        <button class="ae-fab-btn ae-fab-close" onclick="_scLibrettoClose()" aria-label="Chiudi"><svg viewBox="0 0 20 20" width="12" height="12" fill="none" stroke-width="1.5" stroke-linecap="round"><line x1="2.5" y1="2.5" x2="17.5" y2="17.5"/><line x1="17.5" y1="2.5" x2="2.5" y2="17.5"/></svg></button>
+    const viewer = document.createElement('div');
+    viewer.id = 'sc-libretto-viewer';
+    viewer.innerHTML = `
+      <button id="sc-libretto-close-btn" onclick="_scLibrettoClose()" aria-label="Chiudi libretto">
+        <svg viewBox="0 0 20 20" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round">
+          <line x1="4" y1="4" x2="16" y2="16"/>
+          <line x1="16" y1="4" x2="4" y2="16"/>
+        </svg>
+      </button>
+      <div id="sc-libretto-book">
+        <div class="sc-libretto-page" id="sc-libretto-page-left">
+          <img id="sc-libretto-img-left" src="" alt="Pagina libretto">
+        </div>
+        <div id="sc-libretto-spine"></div>
+        <div class="sc-libretto-page" id="sc-libretto-page-right">
+          <img id="sc-libretto-img-right" src="" alt="Pagina libretto">
+        </div>
+        <button class="sc-libretto-arrow" id="sc-libretto-prev" onclick="_scLibrettoPrev()" aria-label="Pagina precedente">
+          <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="18" height="18"><polyline points="13 4 7 10 13 16"/></svg>
+        </button>
+        <button class="sc-libretto-arrow" id="sc-libretto-next" onclick="_scLibrettoNext()" aria-label="Pagina successiva">
+          <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="18" height="18"><polyline points="7 4 13 10 7 16"/></svg>
+        </button>
+        <button id="sc-libretto-play-btn" onclick="_scLibrettoToggleAudio()" aria-label="Ascolta intervista" style="display:none">
+          <svg id="sc-libretto-play-icon" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+        </button>
+        <div id="sc-libretto-page-num"></div>
       </div>
-      <iframe src="https://d2xsxph8kpxj0f.cloudfront.net/310519663156367470/hy3xamEYKuuFBSr4ou5CS9/libretto_f17a9fba.pdf" title="Libretto Sculptures"></iframe>
+      <div id="sc-libretto-dots"></div>
     `;
-    document.body.appendChild(reader);
+    document.body.appendChild(viewer);
+    document.addEventListener('keydown', _scLibrettoKeydown);
   }
+
+  _scLibrettoRender();
+
   requestAnimationFrame(() => {
-    document.getElementById('sc-libretto-reader-overlay').classList.add('open');
-    document.getElementById('sc-libretto-reader').classList.add('open');
+    document.getElementById('sc-libretto-overlay').classList.add('open');
+    document.getElementById('sc-libretto-viewer').classList.add('open');
   });
 }
+
+function _scLibrettoRender() {
+  const spread   = _SC_LIBRETTO_SPREADS[_scLibrettoCurrentSpread];
+  const book     = document.getElementById('sc-libretto-book');
+  const imgL     = document.getElementById('sc-libretto-img-left');
+  const imgR     = document.getElementById('sc-libretto-img-right');
+  const pageR    = document.getElementById('sc-libretto-page-right');
+  const spine    = document.getElementById('sc-libretto-spine');
+  const playBtn  = document.getElementById('sc-libretto-play-btn');
+  const pageNum  = document.getElementById('sc-libretto-page-num');
+
+  book.classList.add('turning');
+  setTimeout(() => book.classList.remove('turning'), 200);
+
+  if (spread.left !== null) {
+    imgL.src = _SC_LIBRETTO_PAGES[spread.left];
+    imgL.style.display = 'block';
+  } else {
+    imgL.src = ''; imgL.style.display = 'none';
+  }
+
+  if (spread.right !== null) {
+    imgR.src = _SC_LIBRETTO_PAGES[spread.right];
+    imgR.style.display = 'block';
+    pageR.style.display = 'flex';
+    spine.style.display = 'block';
+  } else {
+    imgR.src = ''; imgR.style.display = 'none';
+    pageR.style.display = 'none';
+    spine.style.display = 'none';
+  }
+
+  if (spread.hasAudio) {
+    playBtn.style.display = 'flex';
+    _scLibrettoUpdatePlayIcon();
+  } else {
+    playBtn.style.display = 'none';
+    _scLibrettoStopAudio();
+  }
+
+  const total = _SC_LIBRETTO_SPREADS.length;
+  pageNum.textContent = (_scLibrettoCurrentSpread + 1) + ' / ' + total;
+
+  const prevBtn = document.getElementById('sc-libretto-prev');
+  const nextBtn = document.getElementById('sc-libretto-next');
+  if (prevBtn) prevBtn.disabled = (_scLibrettoCurrentSpread === 0);
+  if (nextBtn) nextBtn.disabled = (_scLibrettoCurrentSpread === total - 1);
+
+  const dotsEl = document.getElementById('sc-libretto-dots');
+  dotsEl.innerHTML = '';
+  for (let i = 0; i < total; i++) {
+    const dot = document.createElement('button');
+    dot.className = 'sc-libretto-dot' + (i === _scLibrettoCurrentSpread ? ' active' : '');
+    dot.setAttribute('aria-label', 'Pagina ' + (i+1));
+    dot.onclick = (function(idx) { return function() { _scLibrettoGoTo(idx); }; })(i);
+    dotsEl.appendChild(dot);
+  }
+}
+
+function _scLibrettoGoTo(idx) {
+  if (idx < 0 || idx >= _SC_LIBRETTO_SPREADS.length) return;
+  if (idx !== _scLibrettoCurrentSpread) _scLibrettoStopAudio();
+  _scLibrettoCurrentSpread = idx;
+  _scLibrettoRender();
+}
+
+function _scLibrettoPrev() { _scLibrettoGoTo(_scLibrettoCurrentSpread - 1); }
+function _scLibrettoNext() { _scLibrettoGoTo(_scLibrettoCurrentSpread + 1); }
+
+function _scLibrettoKeydown(e) {
+  const overlay = document.getElementById('sc-libretto-overlay');
+  if (!overlay || !overlay.classList.contains('open')) return;
+  if (e.key === 'ArrowRight' || e.key === 'ArrowDown') { e.preventDefault(); _scLibrettoNext(); }
+  if (e.key === 'ArrowLeft'  || e.key === 'ArrowUp')   { e.preventDefault(); _scLibrettoPrev(); }
+  if (e.key === 'Escape') { e.preventDefault(); _scLibrettoClose(); }
+}
+
+function _scLibrettoToggleAudio() {
+  const mainPlayer = document.getElementById('sc-audio-player');
+  if (!mainPlayer) return;
+  if (_scLibrettoAudioPlaying) {
+    mainPlayer.pause();
+    _scLibrettoAudioPlaying = false;
+  } else {
+    const interviewSrc = '/static/site/audio/interview/conv-01-gs.mp3';
+    if (!mainPlayer.src.endsWith(interviewSrc)) {
+      mainPlayer.src = interviewSrc;
+    }
+    mainPlayer.play().then(() => {
+      _scLibrettoAudioPlaying = true;
+      _scLibrettoUpdatePlayIcon();
+    }).catch(() => {});
+    mainPlayer.onended = function() {
+      _scLibrettoAudioPlaying = false;
+      _scLibrettoUpdatePlayIcon();
+    };
+  }
+  _scLibrettoUpdatePlayIcon();
+}
+
+function _scLibrettoUpdatePlayIcon() {
+  const playBtn  = document.getElementById('sc-libretto-play-btn');
+  const playIcon = document.getElementById('sc-libretto-play-icon');
+  if (!playBtn || !playIcon) return;
+  if (_scLibrettoAudioPlaying) {
+    playBtn.classList.add('playing');
+    playIcon.innerHTML = '<rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/>';
+  } else {
+    playBtn.classList.remove('playing');
+    playIcon.innerHTML = '<path d="M8 5v14l11-7z"/>';
+  }
+}
+
+function _scLibrettoStopAudio() {
+  const mainPlayer = document.getElementById('sc-audio-player');
+  if (mainPlayer && _scLibrettoAudioPlaying) {
+    mainPlayer.pause();
+    _scLibrettoAudioPlaying = false;
+    _scLibrettoUpdatePlayIcon();
+  }
+}
+
 function _scLibrettoClose() {
-  const overlay = document.getElementById('sc-libretto-reader-overlay');
-  const reader  = document.getElementById('sc-libretto-reader');
+  _scLibrettoStopAudio();
+  const overlay = document.getElementById('sc-libretto-overlay');
+  const viewer  = document.getElementById('sc-libretto-viewer');
   if (overlay) overlay.classList.remove('open');
-  if (reader)  reader.classList.remove('open');
+  if (viewer)  viewer.classList.remove('open');
+  document.removeEventListener('keydown', _scLibrettoKeydown);
 }
 
 // ── Viewer Interview Synopsis ──
@@ -16286,15 +16607,17 @@ function scCloseInfo() {
   if (window._scInfoAutoTimer) { clearTimeout(window._scInfoAutoTimer); window._scInfoAutoTimer = null; }
   if (window._scInfoAutoClose) { clearTimeout(window._scInfoAutoClose); window._scInfoAutoClose = null; }
   setTimeout(() => {
-    // Riporta la nav su Overview dopo la fine della transizione (500ms)
-    // Non richiamare scSwitchSection('overview') qui: evita loop con auto-show
-    const wrapper = document.getElementById('sculptures-grid-wrapper');
-    const sectionContent = document.getElementById('sculptures-section-content');
-    const pageTitle = document.getElementById('sculptures-page-title');
-    if (wrapper) wrapper.style.display = 'block';
-    if (sectionContent) sectionContent.classList.remove('active');
-    if (pageTitle) pageTitle.style.display = 'block';
-    document.body.classList.remove('sc-diary-nav-mode');
+    // Riporta la nav su Overview SOLO se l'utente è ancora in overview
+    // (evita di svuotare la pagina se l'utente era in Recordings, Diary, ecc.)
+    if (scCurrentSection === 'overview') {
+      const wrapper = document.getElementById('sculptures-grid-wrapper');
+      const sectionContent = document.getElementById('sculptures-section-content');
+      const pageTitle = document.getElementById('sculptures-page-title');
+      if (wrapper) wrapper.style.display = 'block';
+      if (sectionContent) sectionContent.classList.remove('active');
+      if (pageTitle) pageTitle.style.display = 'block';
+      document.body.classList.remove('sc-diary-nav-mode');
+    }
   }, 500);
 }
 
