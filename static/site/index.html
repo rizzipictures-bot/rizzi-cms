@@ -8122,9 +8122,8 @@
     text-align: left;
     text-indent: 0 !important;
   }
-  /* Overlay grigio 20% — fascia verticale tutta altezza, stessa larghezza del box testo, allineata a sinistra del box */
-  #sc-synopsis-statement::before {
-    content: '';
+  /* Overlay grigio 20% — fascia verticale tutta altezza, elemento separato */
+  #sc-synopsis-overlay {
     position: fixed;
     top: 0;
     bottom: 0;
@@ -8133,8 +8132,10 @@
     width: calc(100vw - 80px);
     max-width: 680px;
     background: rgba(128,128,128,0.20);
-    z-index: -1;
+    z-index: 1199;
     pointer-events: none;
+    opacity: 0;
+    transition: opacity 1.0s ease;
   }
   #view-sculptures .sc-synopsis-statement-title {
     font-family: Helvetica, Arial, sans-serif;
@@ -14276,6 +14277,8 @@ function scBuildSectionContent(section) {
       </button>
        <span class="sc-synopsis-player-label">Play Interview</span>
     </div>`;
+    // Overlay grigio verticale a tutta altezza
+    html += `<div id="sc-synopsis-overlay"></div>`;
     // Statement autore: overlay fisso centrato, appare subito con l'overlay bianco
     html += `<div id="sc-synopsis-statement" class="sc-synopsis-statement" style="opacity:0;transition:opacity 1.0s ease;transform:translate(-50%,-50%) translateY(20px);">
       <p class="sc-synopsis-statement-title">A Story of Love and Brotherhood</p>
@@ -14326,6 +14329,10 @@ function scBuildSectionContent(section) {
           if (statement) {
             statement.style.opacity = '1';
             statement.style.transform = 'translate(-50%, -50%) translateY(0)';
+          }
+          const overlay = document.getElementById('sc-synopsis-overlay');
+          if (overlay) {
+            overlay.style.opacity = '1';
           }
         }, 400);
 
