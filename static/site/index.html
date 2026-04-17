@@ -13487,7 +13487,9 @@ let scCurrentIndex   = 0;   // indice immagine nel carousel
 
     _introActive = true;
     _currentIdx = 0;
-    overlay.classList.add('active');
+    // Usa stili inline per garantire visibilità indipendentemente da stacking context
+    overlay.style.cssText = 'position:fixed;inset:0;background:rgba(120,120,120,0.40);z-index:99999;display:flex;align-items:center;justify-content:center;opacity:1;pointer-events:auto;';
+    player.style.cssText = 'position:relative;width:180px;height:320px;background:#000;overflow:hidden;box-shadow:0 8px 40px rgba(0,0,0,0.55);cursor:pointer;';
 
     function showFrame(idx) {
       if (!_introActive) return;
@@ -13522,9 +13524,10 @@ let scCurrentIndex   = 0;   // indice immagine nel carousel
     _introActive = false;
     const overlay = document.getElementById('sc-intro-overlay');
     if (overlay) {
-      overlay.classList.add('sc-intro-ending');
+      overlay.style.opacity = '0';
+      overlay.style.pointerEvents = 'none';
       setTimeout(function() {
-        overlay.classList.remove('active', 'sc-intro-ending');
+        overlay.style.cssText = 'display:none;';
         // Rimuovi le immagini per liberare memoria
         const player = document.getElementById('sc-intro-player');
         if (player) player.querySelectorAll('img').forEach(el => el.remove());
