@@ -15220,25 +15220,43 @@ function _scBuildArchivePage() {
       filter: grayscale(1);
       display: block;
     }
+    /* .sc-arc-icons-lightbox-close — ora usa btn-circle-close (stile viola) */
     .sc-arc-icons-lightbox-close {
       position: absolute;
       top: 18px;
       right: 22px;
-      color: #fff;
-      font-size: 22px;
-      font-family: Helvetica, Arial, sans-serif;
-      font-weight: 300;
-      cursor: pointer;
-      line-height: 1;
-      opacity: 0.7;
-      background: none;
+      /* Stile cerchio viola come sculptures-child-close */
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      background: #4c00fc;
       border: none;
+      cursor: pointer;
       padding: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: transform 0.35s cubic-bezier(0.34,1.56,0.64,1), opacity 0.2s;
+      opacity: 1;
+      z-index: 10001;
     }
-    .sc-arc-icons-lightbox-close:hover { opacity: 1; }
+    .sc-arc-icons-lightbox-close::before,
+    .sc-arc-icons-lightbox-close::after {
+      content: '';
+      position: absolute;
+      width: 13px;
+      height: 1.5px;
+      background: #fff;
+      border-radius: 1px;
+      top: 50%;
+      left: 50%;
+    }
+    .sc-arc-icons-lightbox-close::before { transform: translate(-50%, -50%) rotate(45deg); }
+    .sc-arc-icons-lightbox-close::after  { transform: translate(-50%, -50%) rotate(-45deg); }
+    .sc-arc-icons-lightbox-close:hover { transform: rotate(180deg); opacity: 0.85; }
     .sc-arc-icons-lightbox-label {
       position: absolute;
-      bottom: 24px;
+      bottom: 15px;
       left: 50%;
       transform: translateX(-50%);
       font-family: Helvetica, Arial, sans-serif;
@@ -15849,7 +15867,7 @@ function _scArcIconsClick(wrap, type) {
   const lb = document.createElement('div');
   lb.className = 'sc-arc-icons-lightbox';
   lb.onclick = function(e) {
-    if (e.target === lb || e.target.classList.contains('sc-arc-icons-lightbox-close')) {
+    if (e.target === lb) {
       document.body.removeChild(lb);
       wrap.classList.remove('sc-arc-icons-expanded');
     }
@@ -15876,10 +15894,15 @@ function _scArcIconsClick(wrap, type) {
   const lblEl = document.createElement('div');
   lblEl.className = 'sc-arc-icons-lightbox-label';
   lblEl.textContent = lbl ? lbl.textContent : '';
-  // Close button
+  // Close button (cerchio viola con X bianca, stile btn-circle-close)
   const closeBtn = document.createElement('button');
   closeBtn.className = 'sc-arc-icons-lightbox-close';
-  closeBtn.innerHTML = '&times;';
+  closeBtn.setAttribute('aria-label', 'Chiudi');
+  closeBtn.onclick = function(e) {
+    e.stopPropagation();
+    document.body.removeChild(lb);
+    wrap.classList.remove('sc-arc-icons-expanded');
+  };
   lb.appendChild(closeBtn);
   lb.appendChild(media);
   lb.appendChild(lblEl);
