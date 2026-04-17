@@ -8578,10 +8578,66 @@
       .sc-data-row { grid-template-columns: 48px 70px 70px 48px 1fr; }
       .sc-data-kv-row { grid-template-columns: 90px 1fr; }
       .sc-data-bar-row { grid-template-columns: 120px 1fr 40px; }
-      .sc-data-study-row { grid-template-columns: 1fr; }
+       .sc-data-study-row { grid-template-columns: 1fr; }
       .sc-data-src-row { grid-template-columns: 1fr; }
     }
-
+    /* ── Animazioni sezione Data ── */
+    /* Reveal progressivo: le righe entrano da sinistra */
+    @keyframes sc-data-slide-in {
+      from { opacity: 0; transform: translateX(-18px); }
+      to   { opacity: 1; transform: translateX(0); }
+    }
+    .sc-data-anim-row {
+      opacity: 0;
+      animation: sc-data-slide-in 0.45s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+    }
+    /* Hover espansione riga: aumenta padding e mostra linea viola a sinistra */
+    .sc-data-kv-row,
+    .sc-data-row,
+    .sc-data-study-row,
+    .sc-data-src-row {
+      position: relative;
+      transition: background 0.18s, padding-top 0.25s cubic-bezier(0.22,1,0.36,1),
+                  padding-bottom 0.25s cubic-bezier(0.22,1,0.36,1),
+                  box-shadow 0.25s;
+    }
+    .sc-data-kv-row:hover,
+    .sc-data-row:hover,
+    .sc-data-study-row:hover,
+    .sc-data-src-row:hover {
+      padding-top: 10px !important;
+      padding-bottom: 10px !important;
+      box-shadow: inset 3px 0 0 #4c00fc;
+    }
+    /* Linea viola sinistra al hover */
+    .sc-data-kv-row::before,
+    .sc-data-row::before,
+    .sc-data-study-row::before,
+    .sc-data-src-row::before {
+      content: '';
+      position: absolute;
+      left: 0; top: 0; bottom: 0;
+      width: 3px;
+      background: #4c00fc;
+      transform: scaleY(0);
+      transform-origin: center;
+      transition: transform 0.25s cubic-bezier(0.22, 1, 0.36, 1);
+    }
+    .sc-data-kv-row:hover::before,
+    .sc-data-row:hover::before,
+    .sc-data-study-row:hover::before,
+    .sc-data-src-row:hover::before {
+      transform: scaleY(1);
+    }
+    /* Counter animato: flash sul numero al reveal */
+    @keyframes sc-num-flash {
+      0%   { opacity: 0; transform: scale(0.85); }
+      60%  { opacity: 1; transform: scale(1.08); }
+      100% { opacity: 1; transform: scale(1); }
+    }
+    .sc-data-kv-num.sc-num-animated {
+      animation: sc-num-flash 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+    }
   </style>
 </head>
 <body>
@@ -15109,11 +15165,37 @@ function scBuildSectionContent(section) {
     if (_vscData) _vscData.style.background = '#faf9f6';
     document.body.classList.add('sc-archive-nav-mode');
     el.innerHTML = _scBuildDataPage();
-    // Anima le barre dopo il render
+    // Anima barre + reveal progressivo + counter animato dopo il render
     requestAnimationFrame(() => {
       requestAnimationFrame(() => {
+        // 1. Anima le barre
         document.querySelectorAll('.sc-data-bar-fill[data-w]').forEach(bar => {
+          bar.style.transition = 'width 0.8s cubic-bezier(0.22, 1, 0.36, 1)';
           bar.style.width = bar.getAttribute('data-w') + '%';
+        });
+        // 2. Reveal progressivo: stagger sulle righe animate
+        document.querySelectorAll('.sc-data-anim-row').forEach((row, i) => {
+          row.style.animationDelay = (i * 0.07) + 's';
+        });
+        // 3. Counter animato sui numeri con data-count
+        document.querySelectorAll('.sc-data-kv-num[data-count]').forEach((el, i) => {
+          const target = parseInt(el.getAttribute('data-count'));
+          const suffix = el.getAttribute('data-suffix') || '';
+          const delay = 200 + i * 120;
+          setTimeout(() => {
+            el.classList.add('sc-num-animated');
+            const duration = 900;
+            const start = performance.now();
+            function tick(now) {
+              const elapsed = now - start;
+              const progress = Math.min(elapsed / duration, 1);
+              const eased = 1 - Math.pow(1 - progress, 3);
+              const val = Math.round(eased * target);
+              el.textContent = val.toLocaleString('en-US') + suffix;
+              if (progress < 1) requestAnimationFrame(tick);
+            }
+            requestAnimationFrame(tick);
+          }, delay);
         });
       });
     });
@@ -15387,34 +15469,34 @@ function _scBuildDataPage() {
       The data below draws exclusively on peer-reviewed studies and verified databases.
     </div>
 
-    <!-- KEY FIGURES 2024 -->
+    <!-- KEY FIGURES 2025 -->
     <div class="sc-data-section-hdr">
       <span class="dsh-label">Key figures</span>
-      <span class="dsh-sub">United States &mdash; 2024</span>
+      <span class="dsh-sub">United States &mdash; 2025</span>
     </div>
-    <div class="sc-data-kv-row">
-      <div class="sc-data-kv-num red">1,365</div>
-      <div class="sc-data-kv-desc">people killed by U.S. law enforcement in 2024 &mdash; the deadliest year since records began in 2013</div>
+    <div class="sc-data-kv-row sc-data-anim-row">
+      <div class="sc-data-kv-num red" data-count="1314" data-suffix="">1,314</div>
+      <div class="sc-data-kv-desc">people killed by U.S. law enforcement in 2025 &mdash; first decline in six years (&minus;5% vs. record 2024). Source: <a href="https://campaignzero.org/research/mapping-police-violence-for-the-first-time-in-six-years-police-violence-declined-in-2025/" target="_blank" rel="noopener">Campaign Zero, Feb. 2026</a></div>
     </div>
-    <div class="sc-data-kv-row">
-      <div class="sc-data-kv-num red">2.9&times;</div>
-      <div class="sc-data-kv-desc">more likely: Black people were killed by police at 2.9 times the rate of white people in 2024</div>
+    <div class="sc-data-kv-row sc-data-anim-row">
+      <div class="sc-data-kv-num red">2.6&times;</div>
+      <div class="sc-data-kv-desc">more likely: Black people were killed by police at 2.6 times the rate of white people in 2025. Native Hawaiian &amp; Pacific Islanders: 5.5&times;. American Indian &amp; Alaska Native: 3.0&times;</div>
     </div>
-    <div class="sc-data-kv-row">
+    <div class="sc-data-kv-row sc-data-anim-row">
       <div class="sc-data-kv-num">1 in 1,000</div>
       <div class="sc-data-kv-desc">Black men face a 1-in-1,000 lifetime risk of being killed by police &mdash; the highest of any demographic group (PNAS, 2019)</div>
     </div>
-    <div class="sc-data-kv-row">
-      <div class="sc-data-kv-num">10</div>
-      <div class="sc-data-kv-desc">days in 2024 when U.S. law enforcement did not kill anyone &mdash; on average: one death every 6.44 hours</div>
+    <div class="sc-data-kv-row sc-data-anim-row">
+      <div class="sc-data-kv-num red" data-count="6" data-suffix="">6</div>
+      <div class="sc-data-kv-desc">days in all of 2025 when U.S. law enforcement did not kill anyone &mdash; on average: 3.6 people per day, one every 6.67 hours</div>
     </div>
-    <div class="sc-data-kv-row">
-      <div class="sc-data-kv-num red">84</div>
-      <div class="sc-data-kv-desc">unarmed people killed by police in 2024 &mdash; of these, 25 were Black, 21 Hispanic, 29 white</div>
+    <div class="sc-data-kv-row sc-data-anim-row">
+      <div class="sc-data-kv-num red">1,365</div>
+      <div class="sc-data-kv-desc">people killed in 2024 &mdash; the deadliest year on record since 2013. Of these, ~340 were Black (~25%). 84 were unarmed</div>
     </div>
-    <div class="sc-data-kv-row">
-      <div class="sc-data-kv-num">&lt;1%</div>
-      <div class="sc-data-kv-desc">of all police killings result in officers being charged with a crime (Police Violence Report, 2024)</div>
+    <div class="sc-data-kv-row sc-data-anim-row">
+      <div class="sc-data-kv-num">2&times;</div>
+      <div class="sc-data-kv-desc">rate of officers charged after a fatality has nearly doubled since 2020 &mdash; yet remains under 2% of all cases (Campaign Zero, 2026)</div>
     </div>
 
     <!-- ANNUAL TABLE -->
@@ -15441,36 +15523,36 @@ function _scBuildDataPage() {
     <div class="sc-data-row"><div class="dr-year">2022</div><div class="dr-total">1,192</div><div class="dr-black">&mdash;</div><div class="dr-pct">&mdash;</div><div class="dr-note">Washington Post: thousands of deaths unreported in FBI data (Dec. 2022)</div></div>
     <div class="sc-data-row"><div class="dr-year">2023</div><div class="dr-total">1,247</div><div class="dr-black">&mdash;</div><div class="dr-pct">&mdash;</div><div class="dr-note">Deadliest year until 2024 (MPV)</div></div>
     <div class="sc-data-row dr-record"><div class="dr-year">2024</div><div class="dr-total">1,365</div><div class="dr-black">~340</div><div class="dr-pct">~25%</div><div class="dr-note">Deadliest year on record &mdash; Black people 2.9&times; more likely to be killed (Campaign Zero, Feb. 2025)</div></div>
-    <div class="sc-data-row"><div class="dr-year">2025</div><div class="dr-total">1,314</div><div class="dr-black">&mdash;</div><div class="dr-pct">&mdash;</div><div class="dr-note">First decline in six years (&minus;5%) &mdash; rate of officers charged has nearly doubled since 2020 (MPV, Feb. 2026)</div></div>
+    <div class="sc-data-row sc-data-anim-row"><div class="dr-year">2025</div><div class="dr-total">1,314</div><div class="dr-black">&mdash;</div><div class="dr-pct">&mdash;</div><div class="dr-note">First decline in 6 years (&minus;5%) &mdash; only 6 days without a killing &mdash; 3.6 deaths/day &mdash; Black people 2.6&times; more likely to be killed (Campaign Zero, Feb. 2026)</div></div>
 
     <!-- RACIAL DISPARITY -->
     <div class="sc-data-section-hdr">
       <span class="dsh-label">Racial disparity in police killings</span>
-      <span class="dsh-sub">rate per population vs. white people &mdash; 2024</span>
-    </div>
-    <div class="sc-data-bar-row">
-      <div>Black Americans</div>
-      <div class="sc-data-bar-track"><div class="sc-data-bar-fill red" data-w="38" style="width:0"></div></div>
-      <div class="sc-data-bar-value">2.9&times;</div>
-    </div>
-    <div class="sc-data-bar-row">
-      <div>American Indian / Alaska Native</div>
-      <div class="sc-data-bar-track"><div class="sc-data-bar-fill red" data-w="41" style="width:0"></div></div>
-      <div class="sc-data-bar-value">3.1&times;</div>
+      <span class="dsh-sub">rate per population vs. white people &mdash; 2025 (Campaign Zero)</span>
     </div>
     <div class="sc-data-bar-row">
       <div>Native Hawaiian / Pacific Islander</div>
       <div class="sc-data-bar-track"><div class="sc-data-bar-fill red" data-w="100" style="width:0"></div></div>
-      <div class="sc-data-bar-value">7.6&times;</div>
+      <div class="sc-data-bar-value">5.5&times;</div>
+    </div>
+    <div class="sc-data-bar-row">
+      <div>American Indian / Alaska Native</div>
+      <div class="sc-data-bar-track"><div class="sc-data-bar-fill red" data-w="55" style="width:0"></div></div>
+      <div class="sc-data-bar-value">3.0&times;</div>
+    </div>
+    <div class="sc-data-bar-row">
+      <div>Black Americans</div>
+      <div class="sc-data-bar-track"><div class="sc-data-bar-fill red" data-w="47" style="width:0"></div></div>
+      <div class="sc-data-bar-value">2.6&times;</div>
     </div>
     <div class="sc-data-bar-row">
       <div>Hispanic Americans</div>
-      <div class="sc-data-bar-track"><div class="sc-data-bar-fill" data-w="17" style="width:0"></div></div>
+      <div class="sc-data-bar-track"><div class="sc-data-bar-fill" data-w="24" style="width:0"></div></div>
       <div class="sc-data-bar-value">1.3&times;</div>
     </div>
     <div class="sc-data-bar-row">
       <div>White Americans</div>
-      <div class="sc-data-bar-track"><div class="sc-data-bar-fill" data-w="13" style="width:0"></div></div>
+      <div class="sc-data-bar-track"><div class="sc-data-bar-fill" data-w="18" style="width:0"></div></div>
       <div class="sc-data-bar-value">1.0&times;</div>
     </div>
 
