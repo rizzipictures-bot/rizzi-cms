@@ -4738,6 +4738,109 @@
       font-style: italic;
     }
 
+    /* ── Viewer Sculptures — griglia Studies (sfondo bianco, foto verticali non tagliate) ── */
+    #sculptures-section-content.sc-studies-mode {
+      background: #fff !important;
+    }
+    #sculptures-section-content.sc-studies-mode .sc-section-images {
+      background: #fff !important;
+    }
+    #sculptures-section-content.sc-studies-mode .sc-section-images > div .sc-img-wrap {
+      height: auto !important;
+      overflow: visible !important;
+    }
+    #sculptures-section-content.sc-studies-mode .sc-section-images > div .sc-img-wrap img {
+      position: relative !important;
+      top: auto !important; left: auto !important;
+      width: 100% !important;
+      height: auto !important;
+      object-fit: contain !important;
+      display: block !important;
+    }
+    #sculptures-section-content.sc-studies-mode .sc-section-images .sc-img-caption {
+      color: #000 !important;
+      font-family: 'Times New Roman', Times, serif !important;
+      font-weight: 400 !important;
+      font-size: 0.7rem !important;
+      text-transform: none !important;
+      letter-spacing: 0 !important;
+      padding: 4px 2px 8px !important;
+      opacity: 0.6;
+    }
+    /* Box testo Studies — popup bianco dal basso */
+    #sc-studies-text-box {
+      background: #fff;
+      border-radius: 10px;
+      position: fixed;
+      bottom: 3.5vw;
+      left: 50%;
+      z-index: 1295;
+      width: 280px;
+      box-shadow: rgba(0,0,0,0.08) 0px 2px 15px 3px;
+      padding: 11px 14px;
+      text-align: center;
+      overflow: hidden;
+      height: 39px;
+      transform: translate(-50%, 200px);
+      opacity: 0;
+      pointer-events: none;
+      transition: transform 0.7s cubic-bezier(0.77, 0, 0.175, 1),
+                  opacity 0.4s cubic-bezier(0.77, 0, 0.175, 1),
+                  height 0.7s cubic-bezier(0.77, 0, 0.175, 1);
+    }
+    #sc-studies-text-box.sc-studies-text-visible {
+      transform: translate(-50%, 0);
+      opacity: 1;
+      pointer-events: auto;
+    }
+    #sc-studies-text-box.sc-studies-text-open {
+      height: auto;
+      max-height: 70vh;
+      overflow-y: auto;
+    }
+    #sc-studies-text-drag {
+      position: absolute;
+      top: 10px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 60px;
+      height: 3px;
+      background: rgb(230,230,230);
+      border-radius: 5px;
+      cursor: pointer;
+      transition: 0.3s;
+    }
+    #sc-studies-text-drag:hover { width: 50px; background: rgb(200,200,200); }
+    #sc-studies-text-label {
+      position: relative;
+      cursor: pointer;
+      font-family: Arial, sans-serif;
+      font-size: 13.6px;
+      font-weight: bold;
+      color: #000;
+      line-height: 1;
+      user-select: none;
+      padding-top: 2px;
+    }
+    #sc-studies-text-content {
+      text-align: left;
+      padding: 14px 4px 6px;
+      opacity: 0;
+      transition: opacity 0.3s cubic-bezier(0.77, 0, 0.175, 1);
+      pointer-events: none;
+    }
+    #sc-studies-text-box.sc-studies-text-open #sc-studies-text-content {
+      opacity: 1;
+      pointer-events: auto;
+    }
+    #sc-studies-text-content p {
+      font-family: 'Times New Roman', Times, serif;
+      font-size: 13px;
+      color: #222;
+      line-height: 1.55;
+      margin: 0 0 10px;
+    }
+
     /* Hover dimming −10% per le thumbs della sezione Recordings */
     .sc-section-recordings .sc-section-images > div:hover .sc-img-wrap img {
       opacity: 0.75 !important;  /* 85% base − 10% = 75% */
@@ -8880,6 +8983,17 @@
         </ul>
       </div>
 
+      <!-- Box testo Studies — popup bianco dal basso -->
+      <div id="sc-studies-text-box">
+        <div id="sc-studies-text-drag" onclick="scToggleStudiesText()"></div>
+        <div id="sc-studies-text-label" onclick="scToggleStudiesText()">Text</div>
+        <div id="sc-studies-text-content">
+          <p>These photographs were taken in Washington D.C. on December 13, 2014, during the March for All Justice — one of the largest civil rights demonstrations since the era of Martin Luther King. The march took place in the aftermath of the deaths of Michael Brown in Ferguson, Missouri, and Eric Garner in New York City, and drew hundreds of thousands of people to the capital.</p>
+          <p>The images in this section are studies — frames that exist outside the sequence of the book, yet belong to the same day, the same light, the same crowd. They are photographs of proximity: of bodies in motion, of faces turned toward something larger than themselves.</p>
+          <p>Washington D.C., December 13, 2014. &copy; Alessandro Rizzi</p>
+        </div>
+      </div>
+
       <!-- Box video overlay (stile Information) -->
       <div id="sc-video-box">
         <button id="sc-video-close" class="btn-circle-close black" onclick="scCloseVideo()" style="width:40px;height:40px;position:absolute;right:10px;bottom:10px;">
@@ -10845,6 +10959,17 @@ function switchView(name) {
     if (sectionContent) sectionContent.classList.remove('active');
     if (pageTitle) pageTitle.style.display = 'block';
     scBuildGrid();
+    // Delegated click handler per le celle Studies (data-studies-idx)
+    if (sectionContent && !sectionContent._studiesListenerAdded) {
+      sectionContent._studiesListenerAdded = true;
+      sectionContent.addEventListener('click', function(e) {
+        const cell = e.target.closest('[data-studies-idx]');
+        if (!cell) return;
+        const idx = parseInt(cell.getAttribute('data-studies-idx'), 10);
+        const urls = (scCurrentImages || []).map(i => i.url);
+        _scStudiesOpenLightbox(idx, urls);
+      });
+    }
     // Avvia l'animazione reveal del menu
     scRevealMenu();
     // Intro animazione: si attiva ogni volta che si entra in Sculptures
@@ -14074,6 +14199,61 @@ function scTopicsNavigate(section) {
   scSwitchSection(section);
 }
 
+// Apre il lightbox bianco per la sezione Studies
+function _scStudiesOpenLightbox(idx, urlList) {
+  const popup = document.getElementById('ae-zoom-white-popup');
+  const imgEl = document.getElementById('ae-zoom-white-img');
+  const prevBtn = document.getElementById('ae-zoom-white-prev');
+  const nextBtn = document.getElementById('ae-zoom-white-next');
+  if (!popup || !imgEl) return;
+  const urls = Array.isArray(urlList) ? urlList : [urlList];
+  let currentIdx = idx;
+  // Imposta immagine corrente
+  imgEl.src = urls[currentIdx];
+  // Mostra/nasconde frecce
+  if (urls.length <= 1) {
+    popup.classList.add('single-img');
+  } else {
+    popup.classList.remove('single-img');
+  }
+  // Aggiorna handler frecce
+  if (prevBtn) {
+    prevBtn.onclick = function(e) {
+      e.stopPropagation();
+      currentIdx = ((currentIdx - 1) + urls.length) % urls.length;
+      imgEl.src = urls[currentIdx];
+    };
+  }
+  if (nextBtn) {
+    nextBtn.onclick = function(e) {
+      e.stopPropagation();
+      currentIdx = (currentIdx + 1) % urls.length;
+      imgEl.src = urls[currentIdx];
+    };
+  }
+  // Apri popup
+  document.documentElement.appendChild(popup);
+  popup.classList.add('open');
+}
+
+// Box testo Studies
+function scToggleStudiesText() {
+  const box = document.getElementById('sc-studies-text-box');
+  if (!box) return;
+  box.classList.toggle('sc-studies-text-open');
+}
+function _scShowStudiesTextBox() {
+  const box = document.getElementById('sc-studies-text-box');
+  if (box) box.classList.add('sc-studies-text-visible');
+}
+function _scHideStudiesTextBox() {
+  const box = document.getElementById('sc-studies-text-box');
+  if (box) {
+    box.classList.remove('sc-studies-text-visible');
+    box.classList.remove('sc-studies-text-open');
+  }
+}
+
 // Costruisce la griglia Overview: una thumbnail per ogni progetto sculptures
 // (una per sezione — cliccando si naviga alla sezione corrispondente)
 function scBuildGrid() {
@@ -15060,15 +15240,29 @@ function scBuildSectionContent(section) {
   scCurrentImages = sectionImages;
   // Per images-book usa titolo "IMAGES" e sfondo nero
   const isImagesBook = (section === 'images-book');
+  const isStudies = (section === 'studies');
   const displayTitle = isImagesBook ? 'Images' : title;
   let html = `<h2>${displayTitle}</h2>`;
   if (isImagesBook) {
     // Sfondo nero sul contenitore
     el.style.background = '#000';
     el.style.minHeight  = '100vh';
+    el.classList.remove('sc-studies-mode');
+  } else if (isStudies) {
+    // Sfondo bianco per Studies
+    el.style.background = '#fff';
+    el.style.minHeight  = '100vh';
+    el.classList.add('sc-studies-mode');
   } else {
     el.style.background = '';
     el.style.minHeight  = '';
+    el.classList.remove('sc-studies-mode');
+  }
+  // Mostra/nasconde box testo Studies
+  if (isStudies) {
+    setTimeout(_scShowStudiesTextBox, 400);
+  } else {
+    _scHideStudiesTextBox();
   }
   if (sectionImages.length > 0) {
     const sectionClass = section === 'recordings' ? 'sc-section-images sc-section-recordings' : 'sc-section-images';
@@ -15080,16 +15274,27 @@ function scBuildSectionContent(section) {
       sectionImages.forEach((img, idx) => {
         const posInPattern = idx % 8;
         const cellType = corbozPattern[posInPattern];
-        const cellClass = cellType === 'h' ? 'sc-cell-h' : 'sc-cell-v';
+        // Studies: tutte le celle sono verticali (sc-cell-v)
+        const cellClass = isStudies ? 'sc-cell-v' : (cellType === 'h' ? 'sc-cell-h' : 'sc-cell-v');
         const capHtml = img.caption ? `<div class="sc-img-caption">${img.caption}</div>` : '';
-        // Passa la sezione corrente a scOpenChild per abilitare il pannello testo
-        const sectionParam = section ? `'${section}'` : 'null';
-        html += `
-          <div class="${cellClass}" onclick="scOpenChild(${idx}, ${sectionParam})">
-            <div class="sc-img-wrap"><img src="${img.url}" alt="${img.title}" loading="lazy"></div>
-            ${capHtml}
-          </div>
-        `;
+        if (isStudies) {
+          // Studies: click apre lightbox bianco con navigazione (usa scCurrentImages)
+          html += `
+            <div class="sc-cell-v" data-studies-idx="${idx}" style="cursor:pointer">
+              <div class="sc-img-wrap"><img src="${img.url}" alt="${img.caption || 'Study'}" loading="lazy"></div>
+              ${capHtml}
+            </div>
+          `;
+        } else {
+          // Passa la sezione corrente a scOpenChild per abilitare il pannello testo
+          const sectionParam = section ? `'${section}'` : 'null';
+          html += `
+            <div class="${cellClass}" onclick="scOpenChild(${idx}, ${sectionParam})">
+              <div class="sc-img-wrap"><img src="${img.url}" alt="${img.title}" loading="lazy"></div>
+              ${capHtml}
+            </div>
+          `;
+        }
       });
     }
     html += '</div>';
