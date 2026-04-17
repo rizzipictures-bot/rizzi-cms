@@ -14509,6 +14509,8 @@ function scBuildSectionContent(section) {
     `;
   }
   el.innerHTML = html;
+  // Assicura che il menu sia sempre visibile quando si naviga tra sezioni
+  scRevealMenu();
 
   // Recordings: genera le thumb con animazione scroll via DOM (non innerHTML)
   if (section === 'recordings' && sectionImages.length > 0) {
