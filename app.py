@@ -818,6 +818,18 @@ def tag_image_ai(pid, iid):
     t.start()
     return jsonify({'ok': True, 'message': 'tagging avviato in background'})
 
+@app.route('/api/projects/<pid>/images/<iid>/overview', methods=['PUT'])
+def update_image_overview(pid, iid):
+    """Aggiorna il flag in_overview di una singola immagine."""
+    db = load_db()
+    p = next((p for p in db['projects'] if p['id'] == pid), None)
+    if not p: return jsonify({'error': 'not found'}), 404
+    img = next((i for i in p['images'] if i['id'] == iid), None)
+    if img:
+        img['in_overview'] = request.json.get('in_overview', False)
+    save_db(db)
+    return jsonify(img)
+
 @app.route('/api/projects/<pid>/images/<iid>/caption', methods=['PUT'])
 def update_caption(pid, iid):
     db = load_db()
