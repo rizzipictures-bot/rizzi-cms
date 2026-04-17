@@ -15798,8 +15798,8 @@ function _scBuildArchivePage() {
     if (c === 0) {
       html += '<div class="sc-arc-col-title">Text</div>';
       html += '<div class="sc-arc-text-thumbs">';
-      html += '<button class="sc-arc-text-thumb" onclick="_scArcTextOpen(\'publisher\')">';
-      html += '<span class="sc-arc-text-thumb-label">Publisher\'s<br>note</span>';
+      html += '<button class="sc-arc-text-thumb" onclick="_scLibrettoOpenLastPage()">'
+;      html += '<span class="sc-arc-text-thumb-label">Publisher\'s<br>note</span>';
       html += '</button>';
       html += '<button class="sc-arc-text-thumb" onclick="_scArcTextOpen(\'conversation\')">';
       html += '<span class="sc-arc-text-thumb-label">Alessandro Rizzi<br>Conversation</span>';
@@ -15931,6 +15931,26 @@ const _SC_LIBRETTO_SPREADS = [
 let _scLibrettoCurrentSpread = 0;
 let _scLibrettoAudioPlaying = false;
 
+// Apre il libretto direttamente all'ultima pagina (Publisher's note + Impressum)
+// senza frecce di navigazione e senza bottone play audio
+function _scLibrettoOpenLastPage() {
+  _scLibrettoOpen();
+  // Doppio rAF: prima _scLibrettoOpen ripristina i bottoni, poi li nascondiamo
+  requestAnimationFrame(() => requestAnimationFrame(() => {
+    const lastIdx = _SC_LIBRETTO_SPREADS.length - 1;
+    _scLibrettoGoTo(lastIdx);
+    // Nascondi frecce, play e dots
+    const prevBtn = document.getElementById('sc-libretto-prev');
+    const nextBtn = document.getElementById('sc-libretto-next');
+    const playBtn = document.getElementById('sc-libretto-play-btn');
+    const dotsEl  = document.getElementById('sc-libretto-dots');
+    if (prevBtn) prevBtn.style.display = 'none';
+    if (nextBtn) nextBtn.style.display = 'none';
+    if (playBtn) playBtn.style.display = 'none';
+    if (dotsEl)  dotsEl.style.display  = 'none';
+  }));
+}
+
 function _scLibrettoOpen() {
   _scLibrettoCurrentSpread = 0;
   _scLibrettoAudioPlaying = false;
@@ -15980,6 +16000,13 @@ function _scLibrettoOpen() {
   requestAnimationFrame(() => {
     document.getElementById('sc-libretto-overlay').classList.add('open');
     document.getElementById('sc-libretto-viewer').classList.add('open');
+    // Ripristina visibilità frecce/play (potrebbero essere stati nascosti da _scLibrettoOpenLastPage)
+    const prevBtn = document.getElementById('sc-libretto-prev');
+    const nextBtn = document.getElementById('sc-libretto-next');
+    const dotsEl  = document.getElementById('sc-libretto-dots');
+    if (prevBtn) prevBtn.style.display = '';
+    if (nextBtn) nextBtn.style.display = '';
+    if (dotsEl)  dotsEl.style.display  = '';
   });
 }
 
