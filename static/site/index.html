@@ -10522,9 +10522,10 @@ function switchView(name) {
     scBuildGrid();
     // Avvia l'animazione reveal del menu
     scRevealMenu();
-    // Intro animazione: una sola volta per sessione (indipendentemente da come si arriva)
-    if (!sessionStorage.getItem('sc_intro_seen')) {
-      sessionStorage.setItem('sc_intro_seen', '1');
+    // Intro animazione: si attiva ogni volta che si entra in Sculptures
+    // (ma non si ripete se si naviga tra sezioni senza ricaricare la pagina)
+    if (!window._scIntroShownThisLoad) {
+      window._scIntroShownThisLoad = true;
       setTimeout(function() { window._scIntroPlay && window._scIntroPlay(); }, 300);
     }
     // Prepara un file audio random (in standby — parte solo al click)
@@ -13489,8 +13490,8 @@ let scCurrentIndex   = 0;   // indice immagine nel carousel
     _currentIdx = 0;
 
     // Mostra overlay con stili inline (garantisce visibilita su tutti i browser)
-    overlay.style.cssText = 'position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(120,120,120,0.40);z-index:99999;display:flex;align-items:center;justify-content:center;opacity:1;pointer-events:auto;';
-    player.style.cssText = 'position:relative;width:180px;height:320px;background:#000;overflow:hidden;box-shadow:0 8px 40px rgba(0,0,0,0.55);cursor:pointer;flex-shrink:0;';
+    overlay.style.cssText = 'position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(120,120,120,0.40);z-index:99999;display:flex;align-items:center;justify-content:flex-start;padding-left:63vw;opacity:1;pointer-events:auto;';
+    player.style.cssText = 'position:relative;width:360px;height:450px;background:#000;overflow:hidden;box-shadow:0 8px 40px rgba(0,0,0,0.55);cursor:pointer;flex-shrink:0;';
 
     function showFrame(idx) {
       if (!_introActive) return;
@@ -15145,7 +15146,8 @@ function _scBuildArchivePage() {
       z-index: 8000;
       display: flex;
       align-items: center;
-      justify-content: center;
+      justify-content: flex-start;
+      padding-left: 63vw;
       opacity: 0;
       transition: opacity 0.4s ease;
       pointer-events: none;
@@ -15156,12 +15158,13 @@ function _scBuildArchivePage() {
     }
     #sc-intro-player {
       position: relative;
-      width: 180px;
-      height: 320px;
+      width: 360px;
+      height: 450px;
       background: #000;
       overflow: hidden;
       box-shadow: 0 8px 40px rgba(0,0,0,0.55);
       cursor: pointer;
+      flex-shrink: 0;
     }
     #sc-intro-player img {
       position: absolute;
@@ -15180,11 +15183,11 @@ function _scBuildArchivePage() {
     }
     #sc-intro-label {
       position: absolute;
-      bottom: 10px;
+      bottom: 14px;
       left: 0; right: 0;
       text-align: center;
       font-family: Helvetica, Arial, sans-serif;
-      font-size: 7px;
+      font-size: 9px;
       font-weight: 700;
       letter-spacing: 0.18em;
       text-transform: uppercase;
@@ -15195,10 +15198,10 @@ function _scBuildArchivePage() {
     }
     #sc-intro-skip {
       position: absolute;
-      top: 8px;
-      right: 8px;
+      top: 10px;
+      right: 10px;
       font-family: Helvetica, Arial, sans-serif;
-      font-size: 8px;
+      font-size: 10px;
       font-weight: 400;
       letter-spacing: 0.1em;
       color: rgba(255,255,255,0.45);
