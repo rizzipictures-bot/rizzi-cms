@@ -14919,6 +14919,55 @@ function _scBuildArchivePage() {
       opacity: 1;
       font-size: 2px; /* scala con il video, rimane leggibile */
     }
+    /* ── Icons video: lightbox al secondo click (400%) ── */
+    .sc-arc-icons-lightbox {
+      position: fixed;
+      inset: 0;
+      z-index: 9999;
+      background: rgba(0,0,0,0.88);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: zoom-out;
+    }
+    .sc-arc-icons-lightbox video,
+    .sc-arc-icons-lightbox img {
+      width: 80vw;
+      height: auto;
+      max-height: 80vh;
+      object-fit: contain;
+      filter: grayscale(1);
+      display: block;
+    }
+    .sc-arc-icons-lightbox-close {
+      position: absolute;
+      top: 18px;
+      right: 22px;
+      color: #fff;
+      font-size: 22px;
+      font-family: Helvetica, Arial, sans-serif;
+      font-weight: 300;
+      cursor: pointer;
+      line-height: 1;
+      opacity: 0.7;
+      background: none;
+      border: none;
+      padding: 0;
+    }
+    .sc-arc-icons-lightbox-close:hover { opacity: 1; }
+    .sc-arc-icons-lightbox-label {
+      position: absolute;
+      bottom: 24px;
+      left: 50%;
+      transform: translateX(-50%);
+      font-family: Helvetica, Arial, sans-serif;
+      font-size: 9px;
+      font-weight: 700;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: rgba(255,255,255,0.55);
+      white-space: nowrap;
+    }
     /* ── Text section: thumb verticali giallino/marrone ── */
     .sc-arc-text-thumbs {
       display: flex;
@@ -15350,8 +15399,8 @@ function _scBuildArchivePage() {
     if (c === 0) {
       html += '<div class="sc-arc-col-title">Icons</div>';
       html += '<div style="display:flex;align-items:flex-start;gap:10px;">';
-      html += '<div class="sc-arc-icons-video-wrap" onclick="this.classList.toggle(\'sc-arc-icons-expanded\')" title="Click to expand"><video src="/static/site/video/bg-washington.mp4" autoplay loop muted playsinline preload="auto"></video><span class="sc-arc-icons-video-label">March for All Justice</span></div>';
-      html += '<div class="sc-arc-icons-video-wrap" onclick="this.classList.toggle(\'sc-arc-icons-expanded\')" title="Click to expand" style="margin-left:8px;"><img src="/static/site/images/icons-nan-poster.png" alt="National March Against Police Violence" style="display:block;width:100%;height:100%;object-fit:cover;filter:grayscale(1);transition:filter 0.28s ease;"><span class="sc-arc-icons-video-label">National March Against Police Violence</span></div>';
+      html += '<div class="sc-arc-icons-video-wrap" onclick="_scArcIconsClick(this,\'video\')" title="Click to expand"><video src="/static/site/video/bg-washington.mp4" autoplay loop muted playsinline preload="auto"></video><span class="sc-arc-icons-video-label">March for All Justice</span></div>';
+      html += '<div class="sc-arc-icons-video-wrap" onclick="_scArcIconsClick(this,\'img\')" title="Click to expand" style="margin-left:8px;"><img src="/static/site/images/icons-nan-poster.png" alt="National March Against Police Violence" style="display:block;width:100%;height:100%;object-fit:cover;filter:grayscale(1);transition:filter 0.28s ease;"><span class="sc-arc-icons-video-label">National March Against Police Violence</span></div>';
       html += '<div class="sc-arc-icons-video-wrap sc-arc-icons-mapping" onclick="scSwitchSection(\'mapping-lives\')" title="Open Mapping Lives" style="margin-left:8px;position:relative;"><img src="https://d2xsxph8kpxj0f.cloudfront.net/310519663156367470/hy3xamEYKuuFBSr4ou5CS9/mapping-lives-thumb_d511e1f1.webp" alt="Mapping Lives" style="display:block;width:100%;height:100%;object-fit:cover;filter:grayscale(1);transition:filter 0.28s ease;"><span class="sc-arc-icons-video-label">Mapping Lives</span></div>';
       html += '</div>';
     } else {
@@ -15427,6 +15476,53 @@ function _scArcTextOpen(key) {
   requestAnimationFrame(() => popup.classList.add('sc-arc-text-popup-open'));
 }
 
+function _scArcIconsClick(wrap, type) {
+  // Primo click: espandi inline (sc-arc-icons-expanded)
+  // Secondo click (già espanso): apri lightbox al 400%
+  if (!wrap.classList.contains('sc-arc-icons-expanded')) {
+    wrap.classList.add('sc-arc-icons-expanded');
+    return;
+  }
+  // Già espanso → apri lightbox
+  const lb = document.createElement('div');
+  lb.className = 'sc-arc-icons-lightbox';
+  lb.onclick = function(e) {
+    if (e.target === lb || e.target.classList.contains('sc-arc-icons-lightbox-close')) {
+      document.body.removeChild(lb);
+      wrap.classList.remove('sc-arc-icons-expanded');
+    }
+  };
+  // Clona il contenuto (video o img)
+  let media;
+  if (type === 'video') {
+    media = document.createElement('video');
+    media.src = '/static/site/video/bg-washington.mp4';
+    media.autoplay = true;
+    media.loop = true;
+    media.muted = true;
+    media.playsInline = true;
+    media.style.cssText = 'width:80vw;height:auto;max-height:80vh;object-fit:contain;filter:grayscale(1);display:block;';
+  } else {
+    const origImg = wrap.querySelector('img');
+    media = document.createElement('img');
+    media.src = origImg ? origImg.src : '';
+    media.alt = origImg ? origImg.alt : '';
+    media.style.cssText = 'width:80vw;height:auto;max-height:80vh;object-fit:contain;filter:grayscale(1);display:block;';
+  }
+  // Label
+  const lbl = wrap.querySelector('.sc-arc-icons-video-label');
+  const lblEl = document.createElement('div');
+  lblEl.className = 'sc-arc-icons-lightbox-label';
+  lblEl.textContent = lbl ? lbl.textContent : '';
+  // Close button
+  const closeBtn = document.createElement('button');
+  closeBtn.className = 'sc-arc-icons-lightbox-close';
+  closeBtn.innerHTML = '&times;';
+  lb.appendChild(closeBtn);
+  lb.appendChild(media);
+  lb.appendChild(lblEl);
+  document.body.appendChild(lb);
+}
 function _scArcTextClose() {
   const popup   = document.getElementById('sc-arc-text-popup');
   const overlay = document.getElementById('sc-arc-text-popup-overlay');
