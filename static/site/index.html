@@ -13523,22 +13523,22 @@ let scCurrentIndex   = 0;   // indice immagine nel carousel
       null,                                                  // Mapping Lives (mappa)
     ];
 
-    // Raccoglie le thumbnail reali dalla griglia già costruita
+    // Thumbnail CDN pre-processate (corrispondono alle celle della griglia in ordine)
+    const THUMB_CDN_URLS = [
+      'https://d2xsxph8kpxj0f.cloudfront.net/310519663156367470/hy3xamEYKuuFBSr4ou5CS9/thumb_00_Images_Book_Vol._1_301e1fd4.jpg',
+      'https://d2xsxph8kpxj0f.cloudfront.net/310519663156367470/hy3xamEYKuuFBSr4ou5CS9/thumb_01_Sculptures_Recordings_c4724875.jpg',
+      'https://d2xsxph8kpxj0f.cloudfront.net/310519663156367470/hy3xamEYKuuFBSr4ou5CS9/thumb_02_video_book_d9ceaa49.jpg',
+      'https://d2xsxph8kpxj0f.cloudfront.net/310519663156367470/hy3xamEYKuuFBSr4ou5CS9/thumb_03_Testimonial_Diary_7c279f26.jpg',
+      'https://d2xsxph8kpxj0f.cloudfront.net/310519663156367470/hy3xamEYKuuFBSr4ou5CS9/thumb_04_A_story_of_love_and_brotherhoo_e9231a6f.jpg',
+      'https://d2xsxph8kpxj0f.cloudfront.net/310519663156367470/hy3xamEYKuuFBSr4ou5CS9/thumb_05_Archive_e370c0b0.jpg',
+      'https://d2xsxph8kpxj0f.cloudfront.net/310519663156367470/hy3xamEYKuuFBSr4ou5CS9/thumb_06_Mapping_Lives_770d3ef0.jpg',
+    ];
+    // Raccoglie le posizioni reali delle celle dalla griglia
     const gridCells = Array.from(document.querySelectorAll('#sculptures-grid > div'));
-    const thumbData = gridCells.map(function(cell) {
-      // Prova prima img, poi video (Archive usa <video>)
-      const img = cell.querySelector('img');
-      const vid = cell.querySelector('video');
+    const thumbData = gridCells.map(function(cell, i) {
       const rect = cell.getBoundingClientRect();
-      let url = null;
-      if (img && img.src) {
-        url = img.src;
-      } else if (vid && vid.src) {
-        // Per Archive: usa archive-thumb.jpg come fallback visivo
-        url = '/static/site/images/archive-thumb.jpg';
-      }
       return {
-        url: url,
+        url: THUMB_CDN_URLS[i] || null,
         rect: rect
       };
     });
