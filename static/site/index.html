@@ -13418,11 +13418,14 @@ let scCurrentIndex   = 0;   // indice immagine nel carousel
     '/static/site/images/diary/diary-11.jpg',
     '/static/site/images/diary/diary-08.jpg',
     '/static/site/images/diary/diary-cover.jpg',
-    // Finale
-    '/static/site/images/thumb-story-love-brotherhood.png',
-    '/static/site/images/diary/diary-07.jpg',
-    '/static/site/images/diary/diary-03.jpg',
-    '/static/site/images/thumb-story-love-brotherhood.png',
+    // Finale: thumbnail delle celle Overview (appaiono prima della redistribuzione)
+    'https://d2xsxph8kpxj0f.cloudfront.net/310519663156367470/hy3xamEYKuuFBSr4ou5CS9/thumb_00_Images_Book_Vol._1_301e1fd4.jpg',
+    'https://d2xsxph8kpxj0f.cloudfront.net/310519663156367470/hy3xamEYKuuFBSr4ou5CS9/thumb_01_Sculptures_Recordings_c4724875.jpg',
+    'https://d2xsxph8kpxj0f.cloudfront.net/310519663156367470/hy3xamEYKuuFBSr4ou5CS9/thumb_02_video_book_d9ceaa49.jpg',
+    'https://d2xsxph8kpxj0f.cloudfront.net/310519663156367470/hy3xamEYKuuFBSr4ou5CS9/thumb_03_Testimonial_Diary_7c279f26.jpg',
+    'https://d2xsxph8kpxj0f.cloudfront.net/310519663156367470/hy3xamEYKuuFBSr4ou5CS9/thumb_04_A_story_of_love_and_brotherhoo_e9231a6f.jpg',
+    'https://d2xsxph8kpxj0f.cloudfront.net/310519663156367470/hy3xamEYKuuFBSr4ou5CS9/thumb_05_Archive_e370c0b0.jpg',
+    'https://d2xsxph8kpxj0f.cloudfront.net/310519663156367470/hy3xamEYKuuFBSr4ou5CS9/thumb_06_Mapping_Lives_770d3ef0.jpg',
   ];
 
   // Curva temporale: slow → fast → slow
@@ -13432,16 +13435,18 @@ let scCurrentIndex   = 0;   // indice immagine nel carousel
   // frame 10-14: 100ms
   // frame 15-29: 70ms (velocissimo)
   // frame 30-34: 100ms
-  // frame 35-39: 180ms
-  // frame 40-43: 280ms (rallenta)
+  // frame 35-36: 180ms
+  // frame 37-43: 320ms (rallenta — thumbnail finali)
+  // frame 44-50: 400ms (thumbnail celle Overview)
   function getDelay(idx) {
     if (idx < 5)  return 300;
     if (idx < 10) return 180;
     if (idx < 15) return 100;
     if (idx < 30) return 70;
     if (idx < 35) return 100;
-    if (idx < 40) return 180;
-    return 280;
+    if (idx < 37) return 180;
+    if (idx < 44) return 320;
+    return 400;  // thumbnail finali celle
   }
 
   // Labels che appaiono durante l'animazione
