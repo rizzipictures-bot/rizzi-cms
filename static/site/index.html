@@ -15330,15 +15330,21 @@ function scBuildSectionContent(section) {
     el.style.background = '#000';
     el.style.minHeight  = '100vh';
     el.classList.remove('sc-studies-mode');
+    const _vscImgBook = document.getElementById('view-sculptures');
+    if (_vscImgBook) _vscImgBook.style.backgroundColor = '';
   } else if (isStudies) {
-    // Sfondo bianco per Studies
+    // Sfondo bianco per Studies — anche il contenitore padre
     el.style.background = '#fff';
     el.style.minHeight  = '100vh';
     el.classList.add('sc-studies-mode');
+    const _vscStudies = document.getElementById('view-sculptures');
+    if (_vscStudies) _vscStudies.style.backgroundColor = '#fff';
   } else {
     el.style.background = '';
     el.style.minHeight  = '';
     el.classList.remove('sc-studies-mode');
+    const _vscOther = document.getElementById('view-sculptures');
+    if (_vscOther) _vscOther.style.backgroundColor = '';
   }
   // Mostra/nasconde box testo Studies
   if (isStudies) {
