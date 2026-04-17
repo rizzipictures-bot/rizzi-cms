@@ -8620,6 +8620,16 @@
     <div id="sc-top-overlay"></div>
 
     <!-- Popup lightbox Sculptures (stile Corboz) -->
+    
+    <!-- ══ SCULPTURES INTRO PLAYER ══ -->
+    <div id="sc-intro-overlay">
+      <div id="sc-intro-player" onclick="_scIntroSkip()">
+        <!-- Le immagini vengono iniettate via JS -->
+        <div id="sc-intro-label">Washington D.C. · 12.13.2014</div>
+        <div id="sc-intro-skip">skip ×</div>
+      </div>
+    </div>
+
     <div id="sculptures-child">
       <!-- Bottone × chiudi -->
       <button id="sculptures-child-close" class="btn-circle-close" onclick="scCloseChild()" title="Chiudi" style="--close-color:#4c00fc">
@@ -10519,6 +10529,11 @@ function switchView(name) {
     scBuildGrid();
     // Avvia l'animazione reveal del menu
     scRevealMenu();
+    // Intro animazione: solo alla prima visita da sito esterno (una volta per sessione)
+    if (_comingFromOutside && !sessionStorage.getItem('sc_intro_seen')) {
+      sessionStorage.setItem('sc_intro_seen', '1');
+      setTimeout(function() { window._scIntroPlay && window._scIntroPlay(); }, 300);
+    }
     // Prepara un file audio random (in standby — parte solo al click)
     scPrepareRandomAudio();
     // Auto-show info box: solo se si arriva dall'esterno (non da navigazione interna)
@@ -13370,6 +13385,161 @@ let scCurrentImages  = [];  // immagini della sezione corrente per il carousel
 let scCurrentIndex   = 0;   // indice immagine nel carousel
 
 // Torna alla vista precedente (Index)
+
+// ══════════════════════════════════════════════════════════════
+// SCULPTURES INTRO — animazione piccolo player verticale
+// Si attiva solo alla prima visita da sito esterno (sessionStorage)
+// ══════════════════════════════════════════════════════════════
+(function() {
+  // Lista immagini: vb-frames (30) + diary (13) + extra
+  const INTRO_FRAMES = [
+    // vb-frames: fotogrammi Washington DC
+    '/static/site/images/vb-frames/frame_00.jpg',
+    '/static/site/images/vb-frames/frame_02.jpg',
+    '/static/site/images/vb-frames/frame_04.jpg',
+    '/static/site/images/vb-frames/frame_06.jpg',
+    '/static/site/images/vb-frames/frame_08.jpg',
+    '/static/site/images/vb-frames/frame_10.jpg',
+    '/static/site/images/vb-frames/frame_12.jpg',
+    '/static/site/images/vb-frames/frame_14.jpg',
+    '/static/site/images/vb-frames/frame_16.jpg',
+    '/static/site/images/vb-frames/frame_18.jpg',
+    '/static/site/images/vb-frames/frame_20.jpg',
+    '/static/site/images/vb-frames/frame_22.jpg',
+    '/static/site/images/vb-frames/frame_24.jpg',
+    '/static/site/images/vb-frames/frame_26.jpg',
+    '/static/site/images/vb-frames/frame_28.jpg',
+    // diary pages
+    '/static/site/images/diary/diary-cover.jpg',
+    '/static/site/images/diary/diary-01.jpg',
+    '/static/site/images/diary/diary-02.jpg',
+    '/static/site/images/diary/diary-03.jpg',
+    '/static/site/images/diary/diary-04.jpg',
+    '/static/site/images/diary/diary-05.jpg',
+    '/static/site/images/diary/diary-06.jpg',
+    '/static/site/images/diary/diary-07.jpg',
+    '/static/site/images/diary/diary-08.jpg',
+    '/static/site/images/vb-frames/frame_01.jpg',
+    '/static/site/images/vb-frames/frame_03.jpg',
+    '/static/site/images/vb-frames/frame_05.jpg',
+    '/static/site/images/vb-frames/frame_07.jpg',
+    '/static/site/images/vb-frames/frame_09.jpg',
+    '/static/site/images/vb-frames/frame_11.jpg',
+    '/static/site/images/vb-frames/frame_13.jpg',
+    '/static/site/images/vb-frames/frame_15.jpg',
+    '/static/site/images/vb-frames/frame_17.jpg',
+    '/static/site/images/vb-frames/frame_19.jpg',
+    '/static/site/images/vb-frames/frame_21.jpg',
+    '/static/site/images/vb-frames/frame_23.jpg',
+    '/static/site/images/vb-frames/frame_25.jpg',
+    '/static/site/images/vb-frames/frame_27.jpg',
+    '/static/site/images/vb-frames/frame_29.jpg',
+    // extra
+    '/static/site/images/archive-thumb.jpg',
+    '/static/site/images/diary/diary-09.jpg',
+    '/static/site/images/diary/diary-10.jpg',
+    '/static/site/images/diary/diary-11.jpg',
+    '/static/site/images/diary/diary-12.jpg',
+  ];
+
+  // Curva temporale: slow → fast → slow
+  // Totale ~6.5s per 44 frame
+  // frame 0-4: 300ms (lento)
+  // frame 5-9: 180ms
+  // frame 10-14: 100ms
+  // frame 15-29: 70ms (velocissimo)
+  // frame 30-34: 100ms
+  // frame 35-39: 180ms
+  // frame 40-43: 280ms (rallenta)
+  function getDelay(idx) {
+    if (idx < 5)  return 300;
+    if (idx < 10) return 180;
+    if (idx < 15) return 100;
+    if (idx < 30) return 70;
+    if (idx < 35) return 100;
+    if (idx < 40) return 180;
+    return 280;
+  }
+
+  // Labels che appaiono durante l'animazione
+  const LABELS = {
+    0:  'Washington D.C. · 12.13.2014',
+    5:  'March for All Justice',
+    15: '',
+    30: 'Sculptures',
+    40: 'A. Rizzi',
+  };
+
+  let _introActive = false;
+  let _introTimer = null;
+  let _introImgEls = [];
+  let _currentIdx = 0;
+
+  window._scIntroPlay = function() {
+    const overlay = document.getElementById('sc-intro-overlay');
+    const player  = document.getElementById('sc-intro-player');
+    const label   = document.getElementById('sc-intro-label');
+    if (!overlay || !player) return;
+
+    // Crea elementi img per ogni frame
+    _introImgEls = [];
+    player.querySelectorAll('img').forEach(el => el.remove());
+    INTRO_FRAMES.forEach(function(src) {
+      const img = document.createElement('img');
+      img.src = src;
+      img.draggable = false;
+      player.insertBefore(img, label);
+      _introImgEls.push(img);
+    });
+
+    _introActive = true;
+    _currentIdx = 0;
+    overlay.classList.add('active');
+
+    function showFrame(idx) {
+      if (!_introActive) return;
+      if (idx >= INTRO_FRAMES.length) {
+        // Fine animazione
+        _scIntroEnd();
+        return;
+      }
+      // Nascondi tutti, mostra solo idx
+      _introImgEls.forEach(function(el, i) {
+        el.classList.toggle('sc-intro-visible', i === idx);
+      });
+      // Aggiorna label se previsto
+      if (LABELS[idx] !== undefined && label) {
+        label.textContent = LABELS[idx];
+      }
+      _currentIdx = idx;
+      _introTimer = setTimeout(function() { showFrame(idx + 1); }, getDelay(idx));
+    }
+
+    showFrame(0);
+  };
+
+  window._scIntroSkip = function() {
+    if (!_introActive) return;
+    _introActive = false;
+    if (_introTimer) { clearTimeout(_introTimer); _introTimer = null; }
+    _scIntroEnd();
+  };
+
+  function _scIntroEnd() {
+    _introActive = false;
+    const overlay = document.getElementById('sc-intro-overlay');
+    if (overlay) {
+      overlay.classList.add('sc-intro-ending');
+      setTimeout(function() {
+        overlay.classList.remove('active', 'sc-intro-ending');
+        // Rimuovi le immagini per liberare memoria
+        const player = document.getElementById('sc-intro-player');
+        if (player) player.querySelectorAll('img').forEach(el => el.remove());
+      }, 650);
+    }
+  }
+})();
+
 function scGoBack() {
   switchView('index');
 }
@@ -14971,6 +15141,82 @@ function _scBuildArchivePage() {
       white-space: nowrap;
     }
     /* ── Text section: thumb verticali giallino/marrone ── */
+
+    /* ══════════════════════════════════════════════════════
+       SCULPTURES INTRO — piccolo player verticale centrato
+    ══════════════════════════════════════════════════════ */
+    #sc-intro-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(120,120,120,0.40);
+      z-index: 8000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      opacity: 0;
+      transition: opacity 0.4s ease;
+      pointer-events: none;
+    }
+    #sc-intro-overlay.active {
+      opacity: 1;
+      pointer-events: auto;
+    }
+    #sc-intro-player {
+      position: relative;
+      width: 180px;
+      height: 320px;
+      background: #000;
+      overflow: hidden;
+      box-shadow: 0 8px 40px rgba(0,0,0,0.55);
+      cursor: pointer;
+    }
+    #sc-intro-player img {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      opacity: 0;
+      transition: opacity 0.06s ease;
+    }
+    #sc-intro-player img.sc-intro-visible {
+      opacity: 1;
+    }
+    #sc-intro-label {
+      position: absolute;
+      bottom: 10px;
+      left: 0; right: 0;
+      text-align: center;
+      font-family: Helvetica, Arial, sans-serif;
+      font-size: 7px;
+      font-weight: 700;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: rgba(255,255,255,0.6);
+      pointer-events: none;
+      z-index: 10;
+      transition: opacity 0.3s;
+    }
+    #sc-intro-skip {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      font-family: Helvetica, Arial, sans-serif;
+      font-size: 8px;
+      font-weight: 400;
+      letter-spacing: 0.1em;
+      color: rgba(255,255,255,0.45);
+      cursor: pointer;
+      z-index: 20;
+      user-select: none;
+    }
+    #sc-intro-skip:hover { color: rgba(255,255,255,0.9); }
+    #sc-intro-overlay.sc-intro-ending {
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.6s ease;
+    }
+
     .sc-arc-text-thumbs {
       display: flex;
       flex-direction: row;
