@@ -13545,7 +13545,7 @@ function scBuildGrid() {
   // Override thumbnail per synopsis (A Story of Love and Brotherhood) con screenshot
   const synopsisEntry = scCurrentImages.find(img => img.sc_section === 'synopsis');
   if (synopsisEntry) {
-    synopsisEntry.url = 'https://files.manuscdn.com/user_upload_by_module/session_file/310519663156367470/muAHmqVHKOBszqwr.png';
+    synopsisEntry.url = 'https://files.manuscdn.com/user_upload_by_module/session_file/310519663156367470/ySfYcvqPeVGfRPGR.png';
   }
   // Aggiungi la thumb Archive hardcoded (fermo immagine video b/n ruotato in verticale)
   scCurrentImages.push({
@@ -13569,7 +13569,8 @@ function scBuildGrid() {
     const cell = document.createElement('div');
     cell.style.cursor = 'pointer';
     // Assegna classe orizzontale secondo il pattern (si ripete ogni 8)
-    if (PATTERN[idx % 8]) cell.classList.add('sc-cell-h');
+    // La cella synopsis è sempre verticale (non orizzontale)
+    if (PATTERN[idx % 8] && img.sc_section !== 'synopsis') cell.classList.add('sc-cell-h');
     // Usa il campo sc_section del progetto come destinazione;
     // se non impostato, apre il lightbox
     const targetSection = img.sc_section || null;
