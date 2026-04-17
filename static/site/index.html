@@ -4767,6 +4767,18 @@
       padding: 4px 2px 8px !important;
       opacity: 0.6;
     }
+    /* ── Animazione card Studies: entrano dal basso una a una ── */
+    .sc-studies-card-hidden {
+      opacity: 0;
+      transform: translateY(40px) scale(0.97);
+      transition: none;
+    }
+    .sc-studies-card-visible {
+      opacity: 1;
+      transform: translateY(0) scale(1);
+      transition: opacity 0.55s cubic-bezier(0.22, 1, 0.36, 1),
+                  transform 0.55s cubic-bezier(0.22, 1, 0.36, 1);
+    }
     /* Box testo Studies — popup bianco dal basso */
     #sc-studies-text-box {
       background: #fff;
@@ -14329,6 +14341,11 @@ function _scStudiesOpenLightbox(idx, urlList) {
 function scToggleStudiesText() {
   const box = document.getElementById('sc-studies-text-box');
   if (!box) return;
+  // Cancella il timer auto-chiusura se l'utente interagisce manualmente
+  if (box._autoCloseTimer) {
+    clearTimeout(box._autoCloseTimer);
+    box._autoCloseTimer = null;
+  }
   box.classList.toggle('sc-studies-text-open');
 }
 function _scShowStudiesTextBox() {
@@ -15381,7 +15398,41 @@ function scBuildSectionContent(section) {
   }
   // Mostra/nasconde box testo Studies
   if (isStudies) {
-    setTimeout(_scShowStudiesTextBox, 400);
+    // Animazione card: entra una a una, poi apre il box testo
+    setTimeout(function() {
+      const cards = el.querySelectorAll('.sc-studies-card-hidden');
+      const totalCards = cards.length;
+      const perCard = 120; // ms tra una card e la successiva
+      cards.forEach(function(card, i) {
+        setTimeout(function() {
+          card.classList.remove('sc-studies-card-hidden');
+          card.classList.add('sc-studies-card-visible');
+          // Dopo l'ultima card, mostra e apre il box testo
+          if (i === totalCards - 1) {
+            var delay = 600; // attendi che l'ultima card finisca l'animazione
+            setTimeout(function() {
+              _scShowStudiesTextBox();
+              // Apri il box automaticamente
+              setTimeout(function() {
+                var box = document.getElementById('sc-studies-text-box');
+                if (box && !box.classList.contains('sc-studies-text-open')) {
+                  box.classList.add('sc-studies-text-open');
+                  box._autoCloseTimer = setTimeout(function() {
+                    if (box.classList.contains('sc-studies-text-open')) {
+                      box.classList.remove('sc-studies-text-open');
+                    }
+                  }, 7000);
+                }
+              }, 400);
+            }, delay);
+          }
+        }, i * perCard);
+      });
+      // Fallback: se non ci sono card, mostra solo il box
+      if (totalCards === 0) {
+        _scShowStudiesTextBox();
+      }
+    }, 100);
   } else {
     _scHideStudiesTextBox();
   }
@@ -15401,7 +15452,7 @@ function scBuildSectionContent(section) {
         if (isStudies) {
           // Studies: click apre lightbox bianco con navigazione (usa scCurrentImages)
           html += `
-            <div class="sc-cell-v" data-studies-idx="${idx}" style="cursor:pointer">
+            <div class="sc-cell-v sc-studies-card-hidden" data-studies-idx="${idx}" style="cursor:pointer">
               <div class="sc-img-wrap"><img src="${img.url}" alt="${img.caption || 'Study'}" loading="lazy"></div>
               ${capHtml}
             </div>
