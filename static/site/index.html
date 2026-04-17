@@ -14945,6 +14945,7 @@ function _scBuildArchivePage() {
       box-shadow: 1px 1px 4px rgba(0,0,0,0.35);
       transition: transform 0.18s ease, box-shadow 0.18s ease;
       position: relative;
+      overflow: hidden;
     }
     .sc-arc-text-thumb:hover {
       transform: scale(1.08);
@@ -14963,6 +14964,40 @@ function _scBuildArchivePage() {
       text-transform: none;
       letter-spacing: 0.01em;
       text-align: left;
+      pointer-events: none;
+      position: relative;
+      z-index: 2;
+    }
+    /* Thumb con immagine di sfondo */
+    .sc-arc-text-thumb--img {
+      padding: 0;
+      background-size: cover;
+      background-position: center top;
+      background-repeat: no-repeat;
+    }
+    /* Overlay hover con titolo */
+    .sc-arc-text-thumb--img .sc-arc-text-thumb-hover {
+      position: absolute;
+      inset: 0;
+      background: rgba(0,0,0,0.72);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      opacity: 0;
+      transition: opacity 0.2s ease;
+      padding: 3px;
+      z-index: 3;
+    }
+    .sc-arc-text-thumb--img:hover .sc-arc-text-thumb-hover {
+      opacity: 1;
+    }
+    .sc-arc-text-thumb--img .sc-arc-text-thumb-hover span {
+      font-family: Georgia, 'Times New Roman', serif;
+      font-size: 4.8px;
+      font-weight: bold;
+      color: #fff;
+      text-align: center;
+      line-height: 1.4;
       pointer-events: none;
     }
     </style>
@@ -15346,8 +15381,8 @@ function _scBuildArchivePage() {
       html += '<button class="sc-arc-text-thumb" onclick="_scArcTextOpen(\'conversation\')">';
       html += '<span class="sc-arc-text-thumb-label">Alessandro Rizzi<br>Conversation</span>';
       html += '</button>';
-       html += '<button class="sc-arc-text-thumb" onclick="_scArcTextOpen(\'love\')">'
-      html += '<span class="sc-arc-text-thumb-label">A Story of Love<br>&amp; Brotherhood</span>';
+       html += '<button class="sc-arc-text-thumb sc-arc-text-thumb--img" style="background-image:url(https://files.manuscdn.com/user_upload_by_module/session_file/310519663156367470/ySfYcvqPeVGfRPGR.png)" onclick="_scArcTextOpen(\'love\')">'
+      html += '<div class="sc-arc-text-thumb-hover"><span>A Story of Love<br>&amp; Brotherhood</span></div>';
       html += '</button>';
       html += '<button class="sc-arc-libretto-thumb" onclick="_scLibrettoOpen()" title="Libretto PDF">';
       html += '<span class="sc-arc-libretto-thumb-label">Libretto<br>Sculptures</span>';
