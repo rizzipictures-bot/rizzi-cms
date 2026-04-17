@@ -4767,6 +4767,28 @@
       padding: 4px 2px 8px !important;
       opacity: 0.6;
     }
+    /* ── Modalità Studies: sfondo e testi bianchi ── */
+    body.sc-studies-active #sculptures-page-title h1 {
+      background: #fff !important;
+      color: #000 !important;
+    }
+    body.sc-studies-active #sculptures-images-wrapper {
+      background-color: #fff !important;
+    }
+    body.sc-studies-active #sculptures-nav [data-sc-section],
+    body.sc-studies-active #sculptures-back {
+      color: #000 !important;
+    }
+    body.sc-studies-active #sculptures-nav [data-sc-section]:hover,
+    body.sc-studies-active #sculptures-back:hover {
+      color: rgba(0,0,0,0.5) !important;
+    }
+    body.sc-studies-active #sculptures-nav [data-sc-section].active {
+      color: #4c00fc !important;
+    }
+    body.sc-studies-active #sculptures-nav-sep {
+      border-top-color: rgba(0,0,0,0.18) !important;
+    }
     /* ── Animazione card Studies: entrano dal basso una a una ── */
     .sc-studies-card-hidden {
       opacity: 0;
@@ -15384,12 +15406,14 @@ function scBuildSectionContent(section) {
     el.style.background = '#fff';
     el.style.minHeight  = '100vh';
     el.classList.add('sc-studies-mode');
+    document.body.classList.add('sc-studies-active');
     const _vscStudies = document.getElementById('view-sculptures');
     if (_vscStudies) _vscStudies.style.backgroundColor = '#fff';
   } else {
     el.style.background = '';
     el.style.minHeight  = '';
     el.classList.remove('sc-studies-mode');
+    document.body.classList.remove('sc-studies-active');
     const _vscOther = document.getElementById('view-sculptures');
     if (_vscOther) _vscOther.style.backgroundColor = '';
   }
