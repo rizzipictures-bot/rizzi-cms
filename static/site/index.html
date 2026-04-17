@@ -4564,20 +4564,13 @@
     /* Video Archive: copre tutto il wrap, muto, autoplay, loop */
     #sculptures-grid [data-sc-section="archive"] .sc-archive-video {
       position: absolute;
-      top: 50%; left: 50%;
-      /* Ruotato 90°: width e height si invertono dopo la rotazione.
-         Per coprire completamente la cella (che può essere più alta che larga o viceversa),
-         usiamo min-width e min-height pari al 100% della dimensione opposta.
-         La formula: dopo rotate(-90deg), la "larghezza visiva" = height originale,
-         la "altezza visiva" = width originale.
-         Impostiamo entrambe al 150% per garantire copertura completa in ogni proporzione. */
-      width: 150%;
-      height: 150%;
+      top: 0; left: 0;
+      width: 100%;
+      height: 100%;
       object-fit: cover;
       object-position: center center;
       display: block;
       opacity: 0.88;
-      transform: translate(-50%, -50%) rotate(-90deg);
       transition: opacity 0.3s;
     }
     #sculptures-grid [data-sc-section="archive"]:hover .sc-archive-video {
