@@ -13474,35 +13474,32 @@ let scCurrentIndex   = 0;   // indice immagine nel carousel
     const label   = document.getElementById('sc-intro-label');
     if (!overlay || !player) return;
 
-    // Crea elementi img per ogni frame
-    _introImgEls = [];
-    player.querySelectorAll('img').forEach(el => el.remove());
-    INTRO_FRAMES.forEach(function(src) {
-      const img = document.createElement('img');
-      img.src = src;
-      img.draggable = false;
-      player.insertBefore(img, label);
-      _introImgEls.push(img);
-    });
+    // Pre-carica tutte le immagini in background
+    INTRO_FRAMES.forEach(function(src) { var i = new Image(); i.src = src; });
+
+    // Usa una singola immagine con src-swap (cross-browser, nessuna dipendenza da CSS opacity)
+    player.querySelectorAll('img.sc-intro-frame').forEach(function(el) { el.remove(); });
+    var frameImg = document.createElement('img');
+    frameImg.className = 'sc-intro-frame';
+    frameImg.draggable = false;
+    frameImg.style.cssText = 'position:absolute;top:0;left:0;width:100%;height:100%;object-fit:cover;display:block;';
+    player.insertBefore(frameImg, label);
 
     _introActive = true;
     _currentIdx = 0;
-    // Usa stili inline per garantire visibilità indipendentemente da stacking context
-    overlay.style.cssText = 'position:fixed;inset:0;background:rgba(120,120,120,0.40);z-index:99999;display:flex;align-items:center;justify-content:center;opacity:1;pointer-events:auto;';
-    player.style.cssText = 'position:relative;width:180px;height:320px;background:#000;overflow:hidden;box-shadow:0 8px 40px rgba(0,0,0,0.55);cursor:pointer;';
+
+    // Mostra overlay con stili inline (garantisce visibilita su tutti i browser)
+    overlay.style.cssText = 'position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(120,120,120,0.40);z-index:99999;display:flex;align-items:center;justify-content:center;opacity:1;pointer-events:auto;';
+    player.style.cssText = 'position:relative;width:180px;height:320px;background:#000;overflow:hidden;box-shadow:0 8px 40px rgba(0,0,0,0.55);cursor:pointer;flex-shrink:0;';
 
     function showFrame(idx) {
       if (!_introActive) return;
       if (idx >= INTRO_FRAMES.length) {
-        // Fine animazione
         _scIntroEnd();
         return;
       }
-      // Nascondi tutti, mostra solo idx
-      _introImgEls.forEach(function(el, i) {
-        el.classList.toggle('sc-intro-visible', i === idx);
-      });
-      // Aggiorna label se previsto
+      // Src-swap: cambia solo il src dell'unica immagine
+      frameImg.src = INTRO_FRAMES[idx];
       if (LABELS[idx] !== undefined && label) {
         label.textContent = LABELS[idx];
       }
