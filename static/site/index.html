@@ -8195,6 +8195,260 @@
   #view-sculptures #sc-synopsis-statement * {
     color: #000 !important;
   }
+
+    /* ════════════════════════════════════════════════════════════════
+       SCULPTURES — DATA PAGE: layout editoriale
+    ════════════════════════════════════════════════════════════════ */
+    .sc-data-page {
+      font-family: 'Times New Roman', Times, serif;
+      color: #1a1a1a;
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 52px 40px 80px;
+    }
+    .sc-data-page h2 {
+      font-family: 'Inter', sans-serif;
+      font-size: 32px;
+      font-weight: 900;
+      letter-spacing: -0.02em;
+      color: #000;
+      margin: 0 0 4px;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+    .sc-data-page h2 .title-sep {
+      display: inline-block;
+      width: 1px;
+      height: 1.1em;
+      background: #000;
+      vertical-align: middle;
+      flex-shrink: 0;
+    }
+    .sc-data-subtitle {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 10px;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: #888;
+      margin-bottom: 40px;
+    }
+    .sc-data-intro {
+      font-size: 15px;
+      line-height: 1.75;
+      color: #333;
+      max-width: 640px;
+      margin-bottom: 52px;
+      border-left: 2px solid #4c00fc;
+      padding-left: 20px;
+    }
+    /* Tabella dati annuali */
+    .sc-data-table-wrap {
+      margin-bottom: 56px;
+    }
+    .sc-data-section-title {
+      font-family: 'Inter', sans-serif;
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: #4c00fc;
+      margin-bottom: 12px;
+    }
+    .sc-data-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 11.5px;
+    }
+    .sc-data-table th {
+      font-family: 'Inter', sans-serif;
+      font-size: 9px;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: #888;
+      border-bottom: 1px solid #ddd;
+      padding: 6px 12px 6px 0;
+      text-align: left;
+    }
+    .sc-data-table td {
+      padding: 8px 12px 8px 0;
+      border-bottom: 1px solid #f0f0f0;
+      color: #1a1a1a;
+      vertical-align: top;
+    }
+    .sc-data-table tr:hover td {
+      background: #f8f7ff;
+    }
+    .sc-data-table .td-year {
+      font-weight: 700;
+      color: #000;
+      white-space: nowrap;
+    }
+    .sc-data-table .td-total {
+      font-weight: 700;
+      color: #000;
+    }
+    .sc-data-table .td-black {
+      color: #c00;
+      font-weight: 700;
+    }
+    .sc-data-table .td-note {
+      font-family: 'Times New Roman', Times, serif;
+      font-size: 11px;
+      color: #666;
+      font-style: italic;
+    }
+    /* Bar chart inline */
+    .sc-data-bar-row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 10px;
+    }
+    .sc-data-bar-label {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 10px;
+      color: #555;
+      width: 180px;
+      flex-shrink: 0;
+    }
+    .sc-data-bar-track {
+      flex: 1;
+      height: 6px;
+      background: #eee;
+      border-radius: 0;
+      overflow: hidden;
+    }
+    .sc-data-bar-fill {
+      height: 100%;
+      background: #4c00fc;
+      transition: width 1.2s cubic-bezier(0.4,0,0.2,1);
+    }
+    .sc-data-bar-fill.red {
+      background: #c00;
+    }
+    .sc-data-bar-value {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 10px;
+      color: #333;
+      width: 40px;
+      text-align: right;
+      flex-shrink: 0;
+    }
+    /* Blocco citazione studio */
+    .sc-data-study {
+      border-top: 1px solid #e0e0e0;
+      padding: 20px 0;
+      display: grid;
+      grid-template-columns: 1fr 2fr;
+      gap: 24px;
+      align-items: start;
+    }
+    .sc-data-study-meta {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 9.5px;
+      color: #888;
+      line-height: 1.6;
+    }
+    .sc-data-study-meta strong {
+      display: block;
+      font-family: 'Inter', sans-serif;
+      font-size: 9px;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: #4c00fc;
+      margin-bottom: 4px;
+    }
+    .sc-data-study-text {
+      font-size: 13px;
+      line-height: 1.7;
+      color: #333;
+    }
+    .sc-data-study-text a {
+      color: #4c00fc;
+      text-decoration: none;
+      border-bottom: 1px solid rgba(76,0,252,0.25);
+    }
+    .sc-data-study-text a:hover {
+      border-bottom-color: #4c00fc;
+    }
+    .sc-data-study-text em {
+      font-style: italic;
+    }
+    /* Grandi numeri */
+    .sc-data-stat-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1px;
+      background: #e0e0e0;
+      margin-bottom: 56px;
+    }
+    .sc-data-stat-cell {
+      background: #fff;
+      padding: 24px 20px;
+    }
+    .sc-data-stat-num {
+      font-family: 'Inter', sans-serif;
+      font-size: 36px;
+      font-weight: 900;
+      letter-spacing: -0.03em;
+      color: #000;
+      line-height: 1;
+      margin-bottom: 6px;
+    }
+    .sc-data-stat-num.red {
+      color: #c00;
+    }
+    .sc-data-stat-desc {
+      font-family: 'Times New Roman', Times, serif;
+      font-size: 12px;
+      line-height: 1.5;
+      color: #555;
+    }
+    /* Footer fonti */
+    .sc-data-sources {
+      border-top: 1px solid #e0e0e0;
+      padding-top: 24px;
+      margin-top: 40px;
+    }
+    .sc-data-sources-title {
+      font-family: 'Inter', sans-serif;
+      font-size: 9px;
+      font-weight: 700;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: #888;
+      margin-bottom: 12px;
+    }
+    .sc-data-sources ol {
+      margin: 0;
+      padding-left: 18px;
+    }
+    .sc-data-sources li {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 10px;
+      color: #888;
+      line-height: 1.7;
+      margin-bottom: 2px;
+    }
+    .sc-data-sources li a {
+      color: #4c00fc;
+      text-decoration: none;
+    }
+    .sc-data-sources li a:hover {
+      text-decoration: underline;
+    }
+    /* Responsive */
+    @media (max-width: 640px) {
+      .sc-data-page { padding: 40px 20px 60px; }
+      .sc-data-stat-grid { grid-template-columns: repeat(2, 1fr); }
+      .sc-data-study { grid-template-columns: 1fr; gap: 8px; }
+      .sc-data-bar-label { width: 120px; font-size: 9px; }
+    }
+
   </style>
 </head>
 <body>
@@ -8501,6 +8755,7 @@
         <span data-sc-section="synopsis">A Story of love and brotherhood</span>
         <span data-sc-section="mapping-lives">Mapping Lives</span>
         <span data-sc-section="archive">Archive</span>
+        <span data-sc-section="data">Data</span>
         <span data-sc-section="information">Information</span>
         <span data-sc-section="studies">Studies</span>
         <span id="sculptures-back" onclick="scGoBack()">&#8592; Back</span>
@@ -14623,6 +14878,28 @@ function scBuildSectionContent(section) {
   }
 
   // Mappa sezione -> titolo
+  // ── Pagina speciale: Data ──
+  if (section === 'data') {
+    el.style.background = '#faf9f6';
+    el.style.minHeight  = '100vh';
+    el.style.color      = '#1a1a1a';
+    el.style.padding    = '0';
+    el.style.overflowY  = 'auto';
+    const _vscData = document.getElementById('view-sculptures');
+    if (_vscData) _vscData.style.background = '#faf9f6';
+    document.body.classList.add('sc-archive-nav-mode');
+    el.innerHTML = _scBuildDataPage();
+    // Anima le barre dopo il render
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        document.querySelectorAll('.sc-data-bar-fill[data-w]').forEach(bar => {
+          bar.style.width = bar.getAttribute('data-w') + '%';
+        });
+      });
+    });
+    return;
+  }
+
   // ── Pagina speciale: Archive ──
   if (section === 'archive') {
     // Salva la sezione precedente per il bottone Back (usa il valore salvato prima dell'aggiornamento)
@@ -14849,6 +15126,265 @@ function scBuildSectionContent(section) {
       });
     }
   }
+}
+
+// ════════════════════════════════════════════════════════════════
+// SCULPTURES — DATA PAGE: contenuto editoriale
+// ════════════════════════════════════════════════════════════════
+function _scBuildDataPage() {
+  return `
+  <div class="sc-data-page">
+
+    <h2>Data<span class="title-sep"></span>Police Violence &amp; Race</h2>
+    <div class="sc-data-subtitle">United States &mdash; 2013&ndash;2025 &mdash; Sources: Mapping Police Violence, PNAS, The Lancet, Washington Post</div>
+
+    <p class="sc-data-intro">
+      Since the March for All Justice in Washington D.C. on December 13, 2014 &mdash; the day these photographs were taken &mdash;
+      police violence in the United States has been systematically documented by researchers, journalists and civil rights organizations.
+      The data below draws exclusively on peer-reviewed studies and verified databases. It is not opinion: it is record.
+    </p>
+
+    <!-- GRANDI NUMERI -->
+    <div class="sc-data-section-title">Key figures &mdash; 2024</div>
+    <div class="sc-data-stat-grid">
+      <div class="sc-data-stat-cell">
+        <div class="sc-data-stat-num red">1,365</div>
+        <div class="sc-data-stat-desc">people killed by U.S. law enforcement in 2024 &mdash; the deadliest year since records began in 2013</div>
+      </div>
+      <div class="sc-data-stat-cell">
+        <div class="sc-data-stat-num red">2.9&times;</div>
+        <div class="sc-data-stat-desc">more likely: Black people were killed by police at 2.9 times the rate of white people in 2024</div>
+      </div>
+      <div class="sc-data-stat-cell">
+        <div class="sc-data-stat-num">1 in 1,000</div>
+        <div class="sc-data-stat-desc">Black men face a 1-in-1,000 lifetime risk of being killed by police &mdash; the highest of any demographic group (PNAS, 2019)</div>
+      </div>
+      <div class="sc-data-stat-cell">
+        <div class="sc-data-stat-num">10</div>
+        <div class="sc-data-stat-desc">days in 2024 when U.S. law enforcement did not kill anyone. On average: one death every 6.44 hours</div>
+      </div>
+      <div class="sc-data-stat-cell">
+        <div class="sc-data-stat-num red">84</div>
+        <div class="sc-data-stat-desc">unarmed people killed by police in 2024. Of these, 25 were Black, 21 Hispanic, 29 white</div>
+      </div>
+      <div class="sc-data-stat-cell">
+        <div class="sc-data-stat-num">&lt;1%</div>
+        <div class="sc-data-stat-desc">of all police killings result in officers being charged with a crime (Police Violence Report, 2024)</div>
+      </div>
+    </div>
+
+    <!-- TABELLA ANNUALE -->
+    <div class="sc-data-table-wrap">
+      <div class="sc-data-section-title">Annual killings by U.S. law enforcement &mdash; 2013&ndash;2025</div>
+      <table class="sc-data-table">
+        <thead>
+          <tr>
+            <th>Year</th>
+            <th>Total killed</th>
+            <th>Black victims</th>
+            <th>% of total</th>
+            <th>Note</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td class="td-year">2013</td><td class="td-total">~1,100</td><td class="td-black">&mdash;</td><td>&mdash;</td><td class="td-note">First year of systematic tracking (MPV)</td></tr>
+          <tr><td class="td-year">2014</td><td class="td-total">~1,100</td><td class="td-black">&mdash;</td><td>&mdash;</td><td class="td-note">Michael Brown (Ferguson, Aug.), Eric Garner (N.Y., Jul.) &mdash; March for All Justice, Dec. 13</td></tr>
+          <tr><td class="td-year">2015</td><td class="td-total">1,146</td><td class="td-black">306</td><td>26.7%</td><td class="td-note">The Guardian: Black men 5&times; more likely to be killed than white men (The Counted)</td></tr>
+          <tr><td class="td-year">2016</td><td class="td-total">1,093</td><td class="td-black">266</td><td>24.3%</td><td class="td-note">Philando Castile (Jul.), Alton Sterling (Jul.)</td></tr>
+          <tr><td class="td-year">2017</td><td class="td-total">1,147</td><td class="td-black">~285</td><td>~25%</td><td class="td-note">&mdash;</td></tr>
+          <tr><td class="td-year">2018</td><td class="td-total">996</td><td class="td-black">&mdash;</td><td>&mdash;</td><td class="td-note">PMC/NCBI: 996 fatal police shootings (Alang et al., 2020)</td></tr>
+          <tr><td class="td-year">2019</td><td class="td-total">1,004</td><td class="td-black">&mdash;</td><td>&mdash;</td><td class="td-note">PNAS study (Edwards, Lee, Esposito): 1 in 1,000 lifetime risk for Black men</td></tr>
+          <tr><td class="td-year">2020</td><td class="td-total">1,127</td><td class="td-black">~279</td><td>~25%</td><td class="td-note">George Floyd (May 25) &mdash; global protests &mdash; 30+ states enact policing reforms (Brennan Center)</td></tr>
+          <tr><td class="td-year">2021</td><td class="td-total">1,136</td><td class="td-black">~280</td><td>~25%</td><td class="td-note">NYT: &ldquo;More than half of police killings are mislabeled&rdquo; (Sep. 2021)</td></tr>
+          <tr><td class="td-year">2022</td><td class="td-total">1,192</td><td class="td-black">&mdash;</td><td>&mdash;</td><td class="td-note">Washington Post: thousands of deaths unreported in FBI data (Dec. 2022)</td></tr>
+          <tr><td class="td-year">2023</td><td class="td-total">1,247</td><td class="td-black">&mdash;</td><td>&mdash;</td><td class="td-note">Deadliest year until 2024 (MPV)</td></tr>
+          <tr><td class="td-year">2024</td><td class="td-total" style="color:#c00">1,365</td><td class="td-black" style="color:#c00">~340</td><td style="color:#c00">~25%</td><td class="td-note">Deadliest year on record. Black people 2.9&times; more likely to be killed than white people (Campaign Zero, Feb. 2025)</td></tr>
+          <tr><td class="td-year">2025</td><td class="td-total">1,314</td><td class="td-black">&mdash;</td><td>&mdash;</td><td class="td-note">First decline in six years (&minus;5%). Rate of officers charged has nearly doubled since 2020 (MPV, Feb. 2026)</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- DISPARITÀ RAZZIALI -->
+    <div class="sc-data-table-wrap">
+      <div class="sc-data-section-title">Racial disparity in police killings &mdash; 2024 (rate per population vs. white people)</div>
+      <div class="sc-data-bar-row">
+        <div class="sc-data-bar-label">Black Americans</div>
+        <div class="sc-data-bar-track"><div class="sc-data-bar-fill red" data-w="38" style="width:0"></div></div>
+        <div class="sc-data-bar-value">2.9&times;</div>
+      </div>
+      <div class="sc-data-bar-row">
+        <div class="sc-data-bar-label">American Indian / Alaska Native</div>
+        <div class="sc-data-bar-track"><div class="sc-data-bar-fill red" data-w="41" style="width:0"></div></div>
+        <div class="sc-data-bar-value">3.1&times;</div>
+      </div>
+      <div class="sc-data-bar-row">
+        <div class="sc-data-bar-label">Native Hawaiian / Pacific Islander</div>
+        <div class="sc-data-bar-track"><div class="sc-data-bar-fill red" data-w="100" style="width:0"></div></div>
+        <div class="sc-data-bar-value">7.6&times;</div>
+      </div>
+      <div class="sc-data-bar-row">
+        <div class="sc-data-bar-label">Hispanic Americans</div>
+        <div class="sc-data-bar-track"><div class="sc-data-bar-fill" data-w="17" style="width:0"></div></div>
+        <div class="sc-data-bar-value">1.3&times;</div>
+      </div>
+      <div class="sc-data-bar-row">
+        <div class="sc-data-bar-label">White Americans</div>
+        <div class="sc-data-bar-track"><div class="sc-data-bar-fill" data-w="13" style="width:0"></div></div>
+        <div class="sc-data-bar-value">1.0&times;</div>
+      </div>
+      <div style="font-family:'IBM Plex Mono',monospace;font-size:9px;color:#aaa;margin-top:8px;">Source: Campaign Zero / Mapping Police Violence, 2024 Annual Report (Feb. 2025)</div>
+    </div>
+
+    <!-- STUDI E FONTI -->
+    <div class="sc-data-section-title">Studies &amp; sources</div>
+
+    <div class="sc-data-study">
+      <div class="sc-data-study-meta">
+        <strong>PNAS &mdash; 2019</strong>
+        Edwards, Lee &amp; Esposito<br>
+        <em>Proceedings of the National Academy of Sciences</em><br>
+        Vol. 116, No. 34
+      </div>
+      <div class="sc-data-study-text">
+        &ldquo;About 1 in every 1,000 Black men can expect to be killed by police over the life course. Risk is highest for Black men, who face about a 1-in-1,000 chance of being killed by police. For young men of color, police use of force is among the leading causes of death.&rdquo;
+        &mdash; <a href="https://www.pnas.org/doi/10.1073/pnas.1821204116" target="_blank" rel="noopener">pnas.org/doi/10.1073/pnas.1821204116</a>
+      </div>
+    </div>
+
+    <div class="sc-data-study">
+      <div class="sc-data-study-meta">
+        <strong>The Lancet &mdash; 2018</strong>
+        Bor, Venkataramani, Williams &amp; Tsai<br>
+        <em>The Lancet</em>, Vol. 392
+      </div>
+      <div class="sc-data-study-text">
+        Police killings of unarmed Black Americans have measurable adverse effects on the mental health of the entire Black American population. Each police killing of an unarmed Black person was associated with 1.7 additional poor mental health days among Black Americans in the following three months.
+        &mdash; <a href="https://www.thelancet.com/journals/lancet/article/PIIS0140-6736(18)31130-9/abstract" target="_blank" rel="noopener">thelancet.com</a>
+      </div>
+    </div>
+
+    <div class="sc-data-study">
+      <div class="sc-data-study-meta">
+        <strong>Race and Justice &mdash; 2024</strong>
+        DeAngelis<br>
+        <em>Race and Justice</em>, SAGE
+      </div>
+      <div class="sc-data-study-text">
+        Using the Mapping Police Violence database (2013&ndash;2021), this study finds that Black victims are significantly more likely to be unarmed, less likely to be alleged to be threatening someone, and more likely to be killed in low-crime areas than white victims &mdash; consistent with systemic racism in policing.
+        &mdash; <a href="https://journals.sagepub.com/doi/abs/10.1177/21533687211047943" target="_blank" rel="noopener">journals.sagepub.com</a>
+      </div>
+    </div>
+
+    <div class="sc-data-study">
+      <div class="sc-data-study-meta">
+        <strong>Johns Hopkins / Vanderbilt &mdash; 2024</strong>
+        Center for Gun Violence Solutions<br>
+        <em>American Journal of Public Health</em>
+      </div>
+      <div class="sc-data-study-text">
+        A study of fatal and non-fatal police shootings (2015&ndash;2020) reveals persistent racial disparities in both lethal and non-lethal use of force. Black and Hispanic individuals face disproportionate risk across all categories of police-involved shootings.
+        &mdash; <a href="https://publichealth.jhu.edu/2024/study-of-fatal-and-nonfatal-shootings-by-police-reveals-racial-disparities-dispatch-risks" target="_blank" rel="noopener">publichealth.jhu.edu</a>
+      </div>
+    </div>
+
+    <div class="sc-data-study">
+      <div class="sc-data-study-meta">
+        <strong>NYT &mdash; Sep. 2021</strong>
+        <em>The New York Times</em>
+      </div>
+      <div class="sc-data-study-text">
+        &ldquo;More Than Half of Police Killings Are Mislabeled, New Study Says.&rdquo; Researchers compared a federal database with independent tracking and found that more than 55% of police killings were not accurately recorded in official government data, disproportionately affecting Black and Hispanic victims.
+        &mdash; <a href="https://www.nytimes.com/2021/09/30/us/police-killings-undercounted-study.html" target="_blank" rel="noopener">nytimes.com</a>
+      </div>
+    </div>
+
+    <div class="sc-data-study">
+      <div class="sc-data-study-meta">
+        <strong>Washington Post &mdash; Dec. 2022</strong>
+        <em>The Washington Post</em>
+      </div>
+      <div class="sc-data-study-text">
+        &ldquo;As fatal police shootings increase, more go unreported.&rdquo; Flawed FBI data has left thousands of deaths uncounted and complicates efforts to hold troubled police departments accountable.
+        &mdash; <a href="https://www.washingtonpost.com/investigations/interactive/2022/fatal-police-shootings-unreported/" target="_blank" rel="noopener">washingtonpost.com</a>
+      </div>
+    </div>
+
+    <div class="sc-data-study">
+      <div class="sc-data-study-meta">
+        <strong>Campaign Zero &mdash; Feb. 2025</strong>
+        Mapping Police Violence<br>
+        <em>2024 Annual Report</em>
+      </div>
+      <div class="sc-data-study-text">
+        2024 was the deadliest year for police violence since tracking began in 2013, with 1,365 people killed. Despite a national decline in homicides and violent crime, police killings continued to rise. Black people were 2.9 times more likely to be killed than white people.
+        &mdash; <a href="https://campaignzero.org/research/mapping-police-violence-2024-was-the-deadliest-year-for-police-violence/" target="_blank" rel="noopener">campaignzero.org</a>
+      </div>
+    </div>
+
+    <div class="sc-data-study">
+      <div class="sc-data-study-meta">
+        <strong>Campaign Zero &mdash; Feb. 2026</strong>
+        Mapping Police Violence<br>
+        <em>2025 Annual Report</em>
+      </div>
+      <div class="sc-data-study-text">
+        For the first time in six years, police killings declined in 2025 (&minus;5%, to 1,314). The rate of officers charged after a fatality has nearly doubled since 2020. However, budget cuts to behavioral health and alternative crisis response units risk reversing this progress.
+        &mdash; <a href="https://campaignzero.org/research/mapping-police-violence-for-the-first-time-in-six-years-police-violence-declined-in-2025/" target="_blank" rel="noopener">campaignzero.org</a>
+      </div>
+    </div>
+
+    <div class="sc-data-study">
+      <div class="sc-data-study-meta">
+        <strong>The Guardian &mdash; Dec. 2015</strong>
+        <em>The Counted</em> database
+      </div>
+      <div class="sc-data-study-text">
+        &ldquo;Young Black men killed by US police at highest rate in 2015.&rdquo; Black men were more than twice as likely to be unarmed when killed during encounters with police as white men. The rate of killing of young Black men was five times higher than for white men of the same age.
+        &mdash; <a href="https://www.theguardian.com/us-news/2015/dec/31/the-counted-police-killings-2015-young-black-men" target="_blank" rel="noopener">theguardian.com</a>
+      </div>
+    </div>
+
+    <div class="sc-data-study">
+      <div class="sc-data-study-meta">
+        <strong>The Guardian &mdash; Apr. 2021</strong>
+        <em>The Guardian</em>
+      </div>
+      <div class="sc-data-study-text">
+        &ldquo;Police killings of Black Americans amount to crimes against humanity, UN experts say.&rdquo; A group of UN human rights experts called on the United States to address systemic racism in policing and called for reparations for descendants of enslaved people.
+        &mdash; <a href="https://www.theguardian.com/us-news/2021/apr/26/us-police-killings-black-americans-crimes-against-humanity" target="_blank" rel="noopener">theguardian.com</a>
+      </div>
+    </div>
+
+    <div class="sc-data-study">
+      <div class="sc-data-study-meta">
+        <strong>Brennan Center &mdash; May 2021</strong>
+        <em>Brennan Center for Justice</em>
+      </div>
+      <div class="sc-data-study-text">
+        Following George Floyd&rsquo;s murder in May 2020, at least 30 states and Washington D.C. enacted one or more statewide legislative policing reforms. Reforms included bans on chokeholds, mandatory body cameras, and new use-of-force standards.
+        &mdash; <a href="https://www.brennancenter.org/our-work/research-reports/state-policing-reforms-george-floyds-murder" target="_blank" rel="noopener">brennancenter.org</a>
+      </div>
+    </div>
+
+    <!-- FONTI -->
+    <div class="sc-data-sources">
+      <div class="sc-data-sources-title">Primary databases &amp; institutions</div>
+      <ol>
+        <li><a href="https://mappingpoliceviolence.us" target="_blank" rel="noopener">Mapping Police Violence</a> &mdash; mappingpoliceviolence.us &mdash; most comprehensive U.S. database of police killings (2013&ndash;present)</li>
+        <li><a href="https://policeviolencereport.org" target="_blank" rel="noopener">Police Violence Report</a> &mdash; policeviolencereport.org &mdash; annual reports with demographic breakdowns</li>
+        <li><a href="https://www.washingtonpost.com/graphics/investigations/police-shootings-database/" target="_blank" rel="noopener">Washington Post Fatal Force</a> &mdash; police shootings database 2015&ndash;2024</li>
+        <li><a href="https://campaignzero.org/research/" target="_blank" rel="noopener">Campaign Zero Research</a> &mdash; annual analyses and policy recommendations</li>
+        <li><a href="https://www.pnas.org/doi/10.1073/pnas.1821204116" target="_blank" rel="noopener">PNAS (2019)</a> &mdash; Edwards, Lee &amp; Esposito: lifetime risk of being killed by police by race, age, sex</li>
+        <li><a href="https://www.thelancet.com/journals/lancet/article/PIIS0140-6736(18)31130-9/abstract" target="_blank" rel="noopener">The Lancet (2018)</a> &mdash; Bor et al.: police killings and mental health of Black Americans</li>
+        <li><a href="https://journals.sagepub.com/doi/abs/10.1177/21533687211047943" target="_blank" rel="noopener">Race and Justice (2024)</a> &mdash; DeAngelis: systemic racism in police killings 2013&ndash;2021</li>
+        <li><a href="https://naacp.org/resources/criminal-justice-fact-sheet" target="_blank" rel="noopener">NAACP Criminal Justice Fact Sheet</a> &mdash; naacp.org</li>
+        <li><a href="https://www.sentencingproject.org/reports/one-in-five-disparities-in-crime-and-policing/" target="_blank" rel="noopener">The Sentencing Project (2023)</a> &mdash; One in Five: Disparities in Crime and Policing</li>
+        <li><a href="https://www.brennancenter.org/our-work/research-reports/state-policing-reforms-george-floyds-murder" target="_blank" rel="noopener">Brennan Center for Justice (2021)</a> &mdash; State Policing Reforms Since George Floyd&rsquo;s Murder</li>
+      </ol>
+    </div>
+
+  </div>
+  `;
 }
 
 // ════════════════════════════════════════════════════════════════
