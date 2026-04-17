@@ -13560,11 +13560,13 @@ let scCurrentIndex   = 0;   // indice immagine nel carousel
     // ── Fase 2: crea miniature flottanti che "volano" nelle celle ────────────
     // Posizione e dimensioni del player
     const playerRect = player.getBoundingClientRect();
-
-    // Nascondi il player e l'overlay gradualmente
-    overlay.style.transition = 'background 0.8s ease';
+    // Nascondi subito il player (non deve restare visibile durante il volo)
+    player.style.opacity = '0';
+    player.style.transition = 'opacity 0.3s ease';
+    // Nascondi l'overlay gradualmente
+    overlay.style.transition = 'background 1.0s ease';
     overlay.style.background = 'rgba(120,120,120,0)';
-    overlay.style.pointerEvents = 'none';
+    overlay.style.pointerEvents = 'none';;
 
     // Crea un contenitore per le miniature flottanti (sopra tutto)
     const floatContainer = document.createElement('div');
@@ -13592,24 +13594,23 @@ let scCurrentIndex   = 0;   // indice immagine nel carousel
       ].join('');
       floatContainer.appendChild(mini);
 
-      // Delay scaglionato per ogni miniatura
-      const delay = i * 140;
-
+      // Delay scaglionato per ogni miniatura (più lento e dolce)
+      const delay = 200 + i * 180;
       setTimeout(function() {
         // Forza reflow
         mini.offsetHeight;
-        // Animazione verso la cella di destinazione
-        mini.style.transition = 'left 1.3s cubic-bezier(0.4,0,0.2,1), top 1.3s cubic-bezier(0.4,0,0.2,1), width 1.3s cubic-bezier(0.4,0,0.2,1), height 1.3s cubic-bezier(0.4,0,0.2,1), opacity 1.3s ease';
+        // Animazione verso la cella di destinazione — ease-in-out per movimento dolce senza scatti
+        mini.style.transition = 'left 1.6s ease-in-out, top 1.6s ease-in-out, width 1.6s ease-in-out, height 1.6s ease-in-out, opacity 1.8s ease-in-out';
         mini.style.left   = td.rect.left + 'px';
         mini.style.top    = td.rect.top + 'px';
         mini.style.width  = td.rect.width + 'px';
         mini.style.height = td.rect.height + 'px';
         mini.style.opacity = '0';
-      }, delay);
+      }, delay);;
     });
 
     // Rimuovi tutto dopo che le animazioni sono finite
-    const totalDuration = thumbData.length * 140 + 1500;
+    const totalDuration = 200 + thumbData.length * 180 + 2000;
     setTimeout(function() {
       overlay.style.cssText = 'display:none;';
       if (floatContainer.parentNode) floatContainer.parentNode.removeChild(floatContainer);
