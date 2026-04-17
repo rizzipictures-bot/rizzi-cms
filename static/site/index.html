@@ -13500,25 +13500,26 @@ function setLightboxImg(idx, dir) {
   const el  = document.getElementById('lightbox-img');
   // Direzione: dir=1 avanti (entra da dx), dir=-1 indietro (entra da sx), dir=0 nessuna direzione
   if (dir === 1 || dir === -1) {
-    // 1. Fade-out + leggero spostamento nella direzione di uscita
-    el.style.transition = 'opacity 0.38s cubic-bezier(0.4, 0, 0.6, 1), transform 0.38s cubic-bezier(0.4, 0, 0.6, 1)';
+    // 1. La foto corrente esce velocemente verso il lato opposto
+    el.style.transition = 'opacity 0.25s ease-in, transform 0.25s ease-in';
     el.style.opacity = '0';
-    el.style.transform = dir === 1 ? 'translateX(-80px)' : 'translateX(80px)';
+    el.style.transform = dir === 1 ? 'translateX(-120px)' : 'translateX(120px)';
     setTimeout(function() {
-      // 2. Posiziona la nuova immagine fuori campo dal lato di entrata, senza transizione
+      // 2. La nuova foto parte dal bordo dello schermo (fuori campo)
+      var vw = window.innerWidth;
       el.style.transition = 'none';
-      el.style.opacity = '0';
-      el.style.transform = dir === 1 ? 'translateX(100px)' : 'translateX(-100px)';
+      el.style.opacity = '1';
+      el.style.transform = dir === 1 ? 'translateX(' + vw + 'px)' : 'translateX(-' + vw + 'px)';
       el.src = img.url;
-      // 3. Slide-in + fade-in elegante
+      // 3. Scivola lentamente al centro
       requestAnimationFrame(function() {
         requestAnimationFrame(function() {
-          el.style.transition = 'opacity 0.55s cubic-bezier(0.22, 1, 0.36, 1), transform 0.65s cubic-bezier(0.22, 1, 0.36, 1)';
+          el.style.transition = 'transform 1.1s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.4s ease-out';
           el.style.opacity = '1';
           el.style.transform = 'translateX(0)';
         });
       });
-    }, 400);
+    }, 280);
   } else {
     el.style.transition = 'opacity 0.35s';
     el.style.opacity = '0';
