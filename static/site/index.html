@@ -8595,37 +8595,34 @@
     }
     /* ── CTA Mapping Lives ── */
     .sc-data-mapping-cta {
-      display: flex;
-      flex-direction: column;
-      gap: 4px;
-      margin-top: 40px;
-      padding: 20px 24px;
-      background: #0a0a0a;
+      display: grid;
+      grid-template-columns: 180px 1fr;
+      gap: 0;
+      border-top: 1px solid var(--light, #e0e0e0);
+      margin-top: 24px;
+      align-items: center;
+      min-height: 36px;
       cursor: pointer;
-      transition: background 0.2s;
+      transition: background 0.15s;
     }
-    .sc-data-mapping-cta:hover { background: #1a1a1a; }
+    .sc-data-mapping-cta:hover { background: #f7f7f7; }
     .sc-data-mapping-cta-label {
-      font-family: 'IBM Plex Mono', monospace;
-      font-size: 9px;
-      letter-spacing: 0.12em;
-      text-transform: uppercase;
-      color: rgba(255,255,255,0.4);
+      font-family: var(--font-mono, 'IBM Plex Mono', monospace);
+      font-size: 11px;
+      letter-spacing: -0.02em;
+      color: #000;
+      padding: 8px 12px 8px 0;
     }
     .sc-data-mapping-cta-title {
-      font-family: 'Cormorant Garamond', Georgia, serif;
-      font-size: 28px;
-      font-weight: 600;
-      color: #fff;
-      letter-spacing: -0.01em;
-      line-height: 1;
+      font-family: var(--font-mono, 'IBM Plex Mono', monospace);
+      font-size: 11px;
+      font-weight: 400;
+      color: #000;
+      letter-spacing: -0.02em;
+      line-height: 1.4;
     }
     .sc-data-mapping-cta-sub {
-      font-family: 'IBM Plex Mono', monospace;
-      font-size: 10px;
-      color: #e63946;
-      letter-spacing: 0.04em;
-      margin-top: 2px;
+      display: none;
     }
     /* ── Animazioni sezione Data ── */
     /* Reveal progressivo: le righe entrano da sinistra */
@@ -15713,9 +15710,8 @@ function _scBuildDataPage() {
 
     <!-- MAPPING LIVES LINK -->
     <div class="sc-data-mapping-cta" onclick="scSwitchSection('mapping-lives')">
-      <span class="sc-data-mapping-cta-label">Explore the interactive map</span>
-      <span class="sc-data-mapping-cta-title">Mapping Lives &rarr;</span>
-      <span class="sc-data-mapping-cta-sub">3,171 Black Americans killed by police &middot; 2015&ndash;2025</span>
+      <span class="sc-data-mapping-cta-label">Mapping Lives &rarr;</span>
+      <span class="sc-data-mapping-cta-title">Explore the interactive map &mdash; 3,171 records &middot; 2015&ndash;2025</span>
     </div>
 
   </div>
