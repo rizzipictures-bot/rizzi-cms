@@ -10529,8 +10529,8 @@ function switchView(name) {
     scBuildGrid();
     // Avvia l'animazione reveal del menu
     scRevealMenu();
-    // Intro animazione: solo alla prima visita da sito esterno (una volta per sessione)
-    if (_comingFromOutside && !sessionStorage.getItem('sc_intro_seen')) {
+    // Intro animazione: una sola volta per sessione (indipendentemente da come si arriva)
+    if (!sessionStorage.getItem('sc_intro_seen')) {
       sessionStorage.setItem('sc_intro_seen', '1');
       setTimeout(function() { window._scIntroPlay && window._scIntroPlay(); }, 300);
     }
