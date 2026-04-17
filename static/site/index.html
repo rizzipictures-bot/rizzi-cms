@@ -8581,6 +8581,40 @@
        .sc-data-study-row { grid-template-columns: 1fr; }
       .sc-data-src-row { grid-template-columns: 1fr; }
     }
+    /* ── CTA Mapping Lives ── */
+    .sc-data-mapping-cta {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      margin-top: 40px;
+      padding: 20px 24px;
+      background: #0a0a0a;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    .sc-data-mapping-cta:hover { background: #1a1a1a; }
+    .sc-data-mapping-cta-label {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 9px;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: rgba(255,255,255,0.4);
+    }
+    .sc-data-mapping-cta-title {
+      font-family: 'Cormorant Garamond', Georgia, serif;
+      font-size: 28px;
+      font-weight: 600;
+      color: #fff;
+      letter-spacing: -0.01em;
+      line-height: 1;
+    }
+    .sc-data-mapping-cta-sub {
+      font-family: 'IBM Plex Mono', monospace;
+      font-size: 10px;
+      color: #e63946;
+      letter-spacing: 0.04em;
+      margin-top: 2px;
+    }
     /* ── Animazioni sezione Data ── */
     /* Reveal progressivo: le righe entrano da sinistra */
     @keyframes sc-data-slide-in {
@@ -15626,6 +15660,13 @@ function _scBuildDataPage() {
     <div class="sc-data-src-row"><div><a href="https://naacp.org/resources/criminal-justice-fact-sheet" target="_blank" rel="noopener">NAACP Criminal Justice Fact Sheet</a></div><div>naacp.org</div></div>
     <div class="sc-data-src-row"><div><a href="https://www.sentencingproject.org/reports/one-in-five-disparities-in-crime-and-policing/" target="_blank" rel="noopener">The Sentencing Project (2023)</a></div><div>One in Five: Disparities in Crime and Policing</div></div>
     <div class="sc-data-src-row"><div><a href="https://www.brennancenter.org/our-work/research-reports/state-policing-reforms-george-floyds-murder" target="_blank" rel="noopener">Brennan Center (2021)</a></div><div>State Policing Reforms Since George Floyd&rsquo;s Murder</div></div>
+
+    <!-- MAPPING LIVES LINK -->
+    <div class="sc-data-mapping-cta" onclick="scSwitchSection('mapping-lives')">
+      <span class="sc-data-mapping-cta-label">Explore the interactive map</span>
+      <span class="sc-data-mapping-cta-title">Mapping Lives &rarr;</span>
+      <span class="sc-data-mapping-cta-sub">3,171 Black Americans killed by police &middot; 2015&ndash;2025</span>
+    </div>
 
   </div>
   `;
