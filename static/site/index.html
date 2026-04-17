@@ -13542,6 +13542,11 @@ function scBuildGrid() {
     return;
   }
 
+  // Override thumbnail per synopsis (A Story of Love and Brotherhood) con screenshot
+  const synopsisEntry = scCurrentImages.find(img => img.sc_section === 'synopsis');
+  if (synopsisEntry) {
+    synopsisEntry.url = 'https://files.manuscdn.com/user_upload_by_module/session_file/310519663156367470/muAHmqVHKOBszqwr.png';
+  }
   // Aggiungi la thumb Archive hardcoded (fermo immagine video b/n ruotato in verticale)
   scCurrentImages.push({
     url: '/static/site/images/archive-thumb.jpg',
