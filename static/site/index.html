@@ -964,6 +964,9 @@
       font-weight: 400;
       letter-spacing: 0.08em;
     }
+    /* Hamburger e drawer: nascosti su desktop */
+    #mob-menu-btn { display: none; }
+    #mob-nav-drawer { display: none !important; }
     /* Pulsante Aggiorna — solo localhost */
     #btn-update {
       color: var(--accent) !important;
@@ -8163,6 +8166,117 @@
     }
 
   /* ══════════════════════════════════════════════════════════════
+     MOBILE — HAMBURGER MENU
+  ══════════════════════════════════════════════════════════════ */
+
+    /* Nascondi pill-nav su mobile, mostra hamburger */
+    nav.pill-nav#main-pill-nav {
+      display: none !important;
+    }
+    #ov-theme-toggle,
+    #archive-theme-toggle {
+      display: none !important;
+    }
+    /* Hamburger button */
+    #mob-menu-btn {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      gap: 5px;
+      width: 44px;
+      height: 44px;
+      padding: 10px 8px;
+      margin-left: auto;
+      background: none;
+      border: none;
+      cursor: pointer;
+      -webkit-tap-highlight-color: transparent;
+    }
+    #mob-menu-btn span {
+      display: block;
+      width: 22px;
+      height: 1.5px;
+      background: #111;
+      border-radius: 1px;
+      transition: transform 0.3s cubic-bezier(0.16,1,0.3,1),
+                  opacity 0.2s ease;
+      transform-origin: center;
+    }
+    [data-theme="dark"] #mob-menu-btn span { background: #fff; }
+    /* Hamburger aperto: X */
+    #mob-menu-btn.open span:nth-child(1) {
+      transform: translateY(6.5px) rotate(45deg);
+    }
+    #mob-menu-btn.open span:nth-child(2) {
+      opacity: 0;
+      transform: scaleX(0);
+    }
+    #mob-menu-btn.open span:nth-child(3) {
+      transform: translateY(-6.5px) rotate(-45deg);
+    }
+    /* Mobile nav drawer — overlay full screen */
+    #mob-nav-drawer {
+      display: none;
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(255,255,255,0.97);
+      z-index: 999;
+      opacity: 0;
+      transition: opacity 0.35s ease;
+    }
+    [data-theme="dark"] #mob-nav-drawer {
+      background: rgba(0,0,0,0.97);
+    }
+    #mob-nav-drawer.open {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    #mob-nav-drawer.visible {
+      opacity: 1;
+    }
+    #mob-nav-inner {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0;
+      width: 100%;
+    }
+    #mob-nav-inner button {
+      font-family: var(--font-nav);
+      font-size: clamp(28px, 8vw, 42px);
+      font-weight: 400;
+      letter-spacing: -0.01em;
+      color: #111;
+      background: none;
+      border: none;
+      padding: 14px 0;
+      cursor: pointer;
+      -webkit-tap-highlight-color: transparent;
+      transition: color 0.2s ease;
+      opacity: 0;
+      transform: translateY(12px);
+      transition: opacity 0.4s ease, transform 0.4s cubic-bezier(0.16,1,0.3,1), color 0.2s ease;
+    }
+    [data-theme="dark"] #mob-nav-inner button {
+      color: #fff;
+    }
+    #mob-nav-inner button.active {
+      color: #888;
+    }
+    #mob-nav-drawer.visible #mob-nav-inner button {
+      opacity: 1;
+      transform: translateY(0);
+    }
+    /* Stagger animazione voci */
+    #mob-nav-drawer.visible #mob-nav-inner button:nth-child(1) { transition-delay: 0.05s; }
+    #mob-nav-drawer.visible #mob-nav-inner button:nth-child(2) { transition-delay: 0.1s; }
+    #mob-nav-drawer.visible #mob-nav-inner button:nth-child(3) { transition-delay: 0.15s; }
+    #mob-nav-drawer.visible #mob-nav-inner button:nth-child(4) { transition-delay: 0.2s; }
+    #mob-nav-drawer.visible #mob-nav-inner button:nth-child(5) { transition-delay: 0.25s; }
+    #mob-nav-drawer.visible #mob-nav-inner button:nth-child(6) { transition-delay: 0.3s; }
+
+  /* ══════════════════════════════════════════════════════════════
      MOBILE — CORREZIONI UX: visibilità, touch target, pulizia
   ══════════════════════════════════════════════════════════════ */
 
@@ -9215,7 +9329,22 @@
       <!-- Voci dinamiche dal CMS inserite qui via JS -->
       <button id="btn-update" style="display:none" title="Aggiorna sito da GitHub">↻ Aggiorna</button>
     </nav>
+    <!-- Hamburger button — solo mobile -->
+    <button id="mob-menu-btn" aria-label="Menu" onclick="mobMenuToggle()">
+      <span></span><span></span><span></span>
+    </button>
   </header>
+  <!-- Mobile nav drawer -->
+  <div id="mob-nav-drawer" onclick="mobMenuClose()">
+    <nav id="mob-nav-inner">
+      <button data-view="index" onclick="mobNavGo('index')">Index</button>
+      <button data-view="home" onclick="mobNavGo('home')">Overview</button>
+      <button data-view="archive" onclick="mobNavGo('archive')">Archive</button>
+      <button data-view="cities-index" onclick="mobNavGo('cities-index')">Cities</button>
+      <button data-view="miscellanea" onclick="mobNavGo('miscellanea')">Miscellanea</button>
+      <button data-view="sculptures" onclick="mobNavGo('sculptures')">Sculptures</button>
+    </nav>
+  </div>
 
   <!-- Main -->
   <main>
@@ -21157,5 +21286,63 @@ loadFromCMS();
       <div id="sc-intro-skip">skip ×</div>
     </div>
   </div>
+
+  <script>
+  /* ══ MOBILE HAMBURGER MENU ══ */
+  (function() {
+    var drawer = document.getElementById('mob-nav-drawer');
+    var btn    = document.getElementById('mob-menu-btn');
+    if (!drawer || !btn) return;
+
+    window.mobMenuToggle = function() {
+      if (btn.classList.contains('open')) {
+        mobMenuClose();
+      } else {
+        mobMenuOpen();
+      }
+    };
+
+    window.mobMenuOpen = function() {
+      btn.classList.add('open');
+      drawer.classList.add('open');
+      // Aggiorna voci attive
+      var activeView = document.querySelector('.view.active');
+      var activeId = activeView ? activeView.id.replace('view-','') : '';
+      drawer.querySelectorAll('button[data-view]').forEach(function(b) {
+        b.classList.toggle('active', b.getAttribute('data-view') === activeId);
+      });
+      requestAnimationFrame(function() {
+        requestAnimationFrame(function() {
+          drawer.classList.add('visible');
+        });
+      });
+    };
+
+    window.mobMenuClose = function() {
+      drawer.classList.remove('visible');
+      btn.classList.remove('open');
+      setTimeout(function() {
+        drawer.classList.remove('open');
+      }, 350);
+    };
+
+    window.mobNavGo = function(viewId) {
+      mobMenuClose();
+      setTimeout(function() {
+        if (typeof switchView === 'function') switchView(viewId);
+        else if (typeof window['switchView'] === 'function') window['switchView'](viewId);
+      }, 200);
+    };
+
+    // Chiudi drawer con Escape
+    document.addEventListener('keydown', function(e) {
+      if (e.key === 'Escape' && drawer.classList.contains('open')) mobMenuClose();
+    });
+
+    // Impedisci propagazione click sul nav inner
+    var inner = document.getElementById('mob-nav-inner');
+    if (inner) inner.addEventListener('click', function(e) { e.stopPropagation(); });
+  })();
+  </script>
 </body>
 </html>
