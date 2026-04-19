@@ -9060,9 +9060,131 @@
       bottom: 16px !important;
       font-size: 12px !important;
     }
+    /* ── VAO griglia risultati: layout migliorato su mobile ── */
+    .vao-grid {
+      grid-template-columns: repeat(2, 1fr) !important;
+      gap: 3px !important;
+      padding: 4px !important;
+    }
+    .vao-grid-item {
+      aspect-ratio: 1 !important;
+      height: auto !important;
+      overflow: hidden !important;
+    }
+    .vao-grid-item img {
+      width: 100% !important;
+      height: 100% !important;
+      object-fit: cover !important;
+      display: block !important;
+    }
+    /* VAO header keyword: più compatto su mobile */
+    .vao-header,
+    .archive-viewall-header {
+      padding: 10px 12px !important;
+      font-size: 13px !important;
+      letter-spacing: 0.05em !important;
+    }
+    /* VAO overlay: usa tutto lo schermo */
+    #archive-viewall-overlay {
+      padding-top: 0 !important;
+    }
+    /* ── VAO griglia risultati: layout migliorato su mobile ── */
+    .vao-grid {
+      grid-template-columns: repeat(2, 1fr) !important;
+      gap: 3px !important;
+      padding: 4px !important;
+    }
+    .vao-grid-item {
+      aspect-ratio: 1 !important;
+      height: auto !important;
+      overflow: hidden !important;
+    }
+    .vao-grid-item img {
+      width: 100% !important;
+      height: 100% !important;
+      object-fit: cover !important;
+      display: block !important;
+    }
+    /* VAO header keyword: più compatto su mobile */
+    .vao-header,
+    .archive-viewall-header {
+      padding: 10px 12px !important;
+      font-size: 13px !important;
+      letter-spacing: 0.05em !important;
+    }
+    /* VAO overlay: usa tutto lo schermo */
+    #archive-viewall-overlay {
+      padding-top: 0 !important;
+    }
     /* ── 15. KW PANEL: nascondi pallino su mobile (solo touch, non c'è mousemove) ── */
     .archive-kw-dot {
       display: none !important;
+    }
+    /* ── KEYWORDS MOBILE: bottone toggle + pannello collassabile ── */
+    /* Su mobile la colonna kw-col è nascosta; usiamo un bottone dedicato */
+    .archive-expanded-kw-col {
+      display: none !important;
+    }
+    /* Bottone "Keywords ▾" — appare sotto le thumbs nel box espanso */
+    .ae-kw-mobile-toggle {
+      display: flex !important;
+      align-items: center;
+      gap: 8px;
+      width: 100%;
+      padding: 12px 16px;
+      background: none;
+      border: none;
+      border-top: 1px solid rgba(255,255,255,0.15);
+      color: rgba(255,255,255,0.85);
+      font-family: var(--font-mono);
+      font-size: 10px;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      cursor: pointer;
+      text-align: left;
+      box-sizing: border-box;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .archive-expanded.box-white .ae-kw-mobile-toggle {
+      border-top-color: rgba(0,0,0,0.12);
+      color: rgba(0,0,0,0.8);
+    }
+    .ae-kw-mobile-toggle .ae-kw-arrow {
+      display: inline-block;
+      transition: transform 0.25s ease;
+      font-size: 9px;
+      margin-left: auto;
+    }
+    .ae-kw-mobile-toggle.open .ae-kw-arrow {
+      transform: rotate(180deg);
+    }
+    /* Pannello keywords collassabile */
+    .ae-kw-mobile-panel {
+      overflow: hidden;
+      max-height: 0;
+      transition: max-height 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+      padding: 0 16px;
+      box-sizing: border-box;
+    }
+    .ae-kw-mobile-panel.open {
+      max-height: 400px;
+      padding: 0 16px 16px;
+    }
+    .ae-kw-mobile-panel .archive-kw-tag {
+      font-size: 11px !important;
+      line-height: 2.2 !important;
+      color: rgba(255,255,255,0.88) !important;
+    }
+    .archive-expanded.box-white .ae-kw-mobile-panel .archive-kw-tag {
+      color: rgba(0,0,0,0.82) !important;
+    }
+    .ae-kw-mobile-panel .archive-kw-tag-idx {
+      font-size: 9px !important;
+      color: rgba(255,255,255,0.5) !important;
+      min-width: 20px !important;
+    }
+    .archive-expanded.box-white .ae-kw-mobile-panel .archive-kw-tag-idx {
+      color: rgba(0,0,0,0.4) !important;
     }
   } /* fine @media mobile */
 
@@ -13530,6 +13652,8 @@ function buildArchive() {
             _updateHeroAr(images[_heroIndex].ar);
             // Aggiorna keywords della foto corrente
             if (typeof _updateKwPanel === 'function') _updateKwPanel(_heroIndex);
+            // Aggiorna anche il pannello keywords mobile
+            if (panel._mobileKwUpdate) panel._mobileKwUpdate(_heroIndex);
             // Aggiorna thumb attiva
             if (strip) {
               strip.querySelectorAll('.archive-expanded-thumb').forEach((el, i) => {
@@ -14226,6 +14350,55 @@ function buildArchive() {
 
         panel.appendChild(inner);
 
+        // ── KEYWORDS MOBILE: bottone toggle collassabile ──
+        if (window.innerWidth <= 768) {
+          const kwMobileToggle = document.createElement('button');
+          kwMobileToggle.className = 'ae-kw-mobile-toggle';
+          kwMobileToggle.innerHTML = '<span>Keywords</span><span class="ae-kw-arrow">&#9660;</span>';
+          const kwMobilePanel = document.createElement('div');
+          kwMobilePanel.className = 'ae-kw-mobile-panel';
+          // Popola il pannello con le keywords della foto corrente
+          function _buildMobileKwPanel(imgIdx) {
+            const img = images[imgIdx];
+            const kws = img && img.keywords
+              ? [...new Set(img.keywords.split(',').map(k => k.trim().toLowerCase()).filter(Boolean))].sort()
+              : [];
+            kwMobilePanel.innerHTML = '';
+            if (kws.length === 0) {
+              kwMobileToggle.style.display = 'none';
+              return;
+            }
+            kwMobileToggle.style.display = '';
+            kws.forEach((kw, i) => {
+              const tag = document.createElement('div');
+              tag.className = 'archive-kw-tag';
+              const idx = document.createElement('span');
+              idx.className = 'archive-kw-tag-idx';
+              idx.textContent = String(i + 1).padStart(2, '0');
+              const kwText = document.createElement('span');
+              kwText.textContent = kw;
+              tag.appendChild(idx);
+              tag.appendChild(kwText);
+              tag.addEventListener('click', e => {
+                e.stopPropagation();
+                const _isLight = panel.classList.contains('box-white');
+                window.openKeywordResults(kw, !_isLight);
+              });
+              kwMobilePanel.appendChild(tag);
+            });
+          }
+          _buildMobileKwPanel(0);
+          // Toggle apri/chiudi
+          kwMobileToggle.addEventListener('click', e => {
+            e.stopPropagation();
+            const isOpen = kwMobileToggle.classList.toggle('open');
+            kwMobilePanel.classList.toggle('open', isOpen);
+          });
+          panel.appendChild(kwMobileToggle);
+          panel.appendChild(kwMobilePanel);
+          // Esponi per aggiornamento da _setHeroImage
+          panel._mobileKwUpdate = _buildMobileKwPanel;
+        }
         // Inserisci: prima il testo, poi il box nero
         row.insertAdjacentElement('afterend', panel);
         row.insertAdjacentElement('afterend', textBlock);
@@ -14368,27 +14541,46 @@ function buildArchive() {
         }
 
         // Scroll alla riga: usa il container view-archive per non uscire dal viewport
-        // Su mobile: delay maggiore (aspetta inserimento panel espanso ~350ms)
-        // e offset per header + margine visivo
-        const _doScrollToRow = (delay) => {
+        // Su mobile: struttura DOM = [riga] → [textBlock] → [panel foto]
+        // Dobbiamo scrollare al PANEL (foto), non alla riga
+        const _doScrollToRow = (delay, targetEl) => {
           setTimeout(() => {
             const vArchive = document.getElementById('view-archive');
             if (!vArchive) return;
-            const rowRect = row.getBoundingClientRect();
+            const el = targetEl || row;
+            const elRect  = el.getBoundingClientRect();
             const vRect   = vArchive.getBoundingClientRect();
             const isMobile = window.innerWidth <= 768;
-            // Su mobile: offset header (36px) + margine visivo (16px)
+            // Su mobile: offset header (36px) + piccolo margine visivo (8px)
             // Su desktop: offset originale (8px)
-            const topMargin = isMobile ? 52 : 8;
-            const offset = rowRect.top - vRect.top + vArchive.scrollTop - topMargin;
+            const topMargin = isMobile ? 44 : 8;
+            const offset = elRect.top - vRect.top + vArchive.scrollTop - topMargin;
             vArchive.scrollTo({ top: Math.max(0, offset), behavior: 'smooth' });
           }, delay);
         };
         // Primo scroll: immediato (porta la riga in vista)
-        _doScrollToRow(50);
-        // Secondo scroll: dopo l'espansione del panel (garantisce visibilità della foto)
+        _doScrollToRow(50, row);
+        // Secondo scroll su mobile: dopo l'espansione, scrolla al PANEL (foto)
+        // Il panel è inserito dopo textBlock che è dopo la riga
         if (window.innerWidth <= 768) {
-          _doScrollToRow(420);
+          setTimeout(() => {
+            const vArchive = document.getElementById('view-archive');
+            if (!vArchive) return;
+            // Cerca il panel espanso attivo
+            const activePanel = vArchive.querySelector('.archive-expanded');
+            if (activePanel) {
+              const panelRect = activePanel.getBoundingClientRect();
+              const vRect = vArchive.getBoundingClientRect();
+              // Scrolla in modo che il panel sia visibile con la riga sopra
+              // Vogliamo vedere: [riga] + [textBlock] + [inizio panel foto]
+              // Quindi scrolliamo alla riga ma lasciando spazio per il panel
+              const rowRect = row.getBoundingClientRect();
+              const offset = rowRect.top - vRect.top + vArchive.scrollTop - 44;
+              vArchive.scrollTo({ top: Math.max(0, offset), behavior: 'smooth' });
+            } else {
+              _doScrollToRow(0, row);
+            }
+          }, 420);
         }
       });
 
