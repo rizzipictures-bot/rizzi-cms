@@ -7879,13 +7879,9 @@
       display: none !important;
     }
     /* Bottom-bar su mobile: visibile ma compatta, solo il bottone Thumbs */
+    /* Bottom-bar nascosta su mobile: bottone Thumbs non serve (vista Thumbs aperta direttamente) */
     .archive-expanded-bottom-bar {
-      display: flex !important;
-      position: absolute !important;
-      bottom: 8px !important;
-      right: 8px !important;
-      z-index: 510 !important;
-      background: transparent !important;
+      display: none !important;
     }
     /* Nascondi il toggle tema nella bottom-bar su mobile (solo Thumbs) */
     .archive-expanded-bottom-bar .archive-expanded-toggle {
@@ -8614,18 +8610,9 @@
     /* ── sc-interview-viewer-close: gestito nella round 2 ── */
 
     /* Bottone THUMBS su mobile: pill touch-friendly */
+    /* Bottone Thumbs nascosto su mobile: si apre direttamente la vista Thumbs al click sulla riga */
     .archive-expanded-viewall {
-      display: flex !important;
-      font-size: 9px !important;
-      letter-spacing: 0.10em !important;
-      padding: 7px 12px !important;
-      min-height: 32px !important;
-      min-width: 56px !important;
-      touch-action: manipulation !important;
-      -webkit-tap-highlight-color: transparent !important;
-      background: #000 !important;
-      color: #fff !important;
-      border-radius: 2px !important;
+      display: none !important;
     }
 
     /* ════════════════════════════════════════════════════════════
@@ -9345,6 +9332,21 @@
       -webkit-overflow-scrolling: touch !important;
       background: #fff !important;
       border-top: 1px solid rgba(0,0,0,0.08) !important;
+      margin-top: 0 !important;
+      flex: 0 0 80px !important;
+      gap: 5px !important;
+      align-items: center !important;
+    }
+    /* Thumbnails più quadrate su mobile */
+    .ae-thumbs-view .ae-thumbs-strip-item {
+      width: 72px !important;
+      height: 72px !important;
+      flex-shrink: 0 !important;
+    }
+    .ae-thumbs-view .ae-thumbs-strip-item img {
+      width: 100% !important;
+      height: 100% !important;
+      object-fit: cover !important;
     }
     /* Nasconde il kwPanel (keywords) nel ae-thumbs-view su mobile */
     .ae-thumbs-view .archive-kw-panel {
@@ -13740,6 +13742,8 @@ function buildArchive() {
       row.addEventListener('click', () => {
         // Blocca click se stiamo navigando dal VAO (evita race condition)
         if (window._vaoNavigating) return;
+        // Su mobile: apri sempre direttamente la vista Thumbs (nessuna modalità Index)
+        if (window.innerWidth <= 768) { row._openInThumbsMode = true; }
         // Se c'è già una espansione aperta, rimuovila
         if (activeExpanded) {
           if (activeExpanded._textBlock) activeExpanded._textBlock.remove();
