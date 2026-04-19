@@ -9078,11 +9078,15 @@
     .vao-theme-toggle {
       cursor: pointer !important;
       -webkit-tap-highlight-color: transparent !important;
+      touch-action: manipulation !important;
       padding: 6px 10px !important;
       font-size: 10px !important;
-      min-height: 36px !important;
+      min-height: 44px !important;
+      min-width: 80px !important;
       display: flex !important;
       align-items: center !important;
+      position: relative !important;
+      z-index: 2200 !important;
     }
     /* ── VAO griglia risultati: layout migliorato su mobile ── */
     .vao-grid {
@@ -21255,12 +21259,23 @@ loadFromCMS();
 
   // ── Toggle Light / Dark mode ──────────────────────────────────────
   if (vaoThemeBtn) {
-    vaoThemeBtn.addEventListener('click', e => {
+    // Funzione toggle condivisa (usata sia da click che da touchend)
+    function _doVaoThemeToggle(e) {
       e.stopPropagation();
+      e.preventDefault();
       const isDarkNow = overlay.classList.toggle('theme-dark');
       vaoThemeBtn.textContent = isDarkNow ? 'Light mode' : 'Dark mode';
       document.body.classList.toggle('vao-dark-mode', isDarkNow);
-    });
+    }
+    vaoThemeBtn.addEventListener('click', _doVaoThemeToggle);
+    // touchend elimina il 300ms delay su iOS Safari
+    vaoThemeBtn.addEventListener('touchend', function(e) {
+      e.stopPropagation();
+      e.preventDefault();
+      const isDarkNow = overlay.classList.toggle('theme-dark');
+      vaoThemeBtn.textContent = isDarkNow ? 'Light mode' : 'Dark mode';
+      document.body.classList.toggle('vao-dark-mode', isDarkNow);
+    }, { passive: false });
   }
 
   // ── Apri overlay: griglia diretta stile Overview ──────────────────
