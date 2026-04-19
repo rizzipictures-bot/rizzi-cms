@@ -7859,8 +7859,17 @@
     .ae-fab-zoom {
       display: none !important;
     }
-    /* Nascondi la bottom-bar del box espanso su mobile */
+    /* Bottom-bar su mobile: visibile ma compatta, solo il bottone Thumbs */
     .archive-expanded-bottom-bar {
+      display: flex !important;
+      position: absolute !important;
+      bottom: 8px !important;
+      right: 8px !important;
+      z-index: 510 !important;
+      background: transparent !important;
+    }
+    /* Nascondi il toggle tema nella bottom-bar su mobile (solo Thumbs) */
+    .archive-expanded-bottom-bar .archive-expanded-toggle {
       display: none !important;
     }
     /* Disabilita selezione testo su elementi interattivi (evita highlight blu/viola al tap) */
@@ -8579,9 +8588,19 @@
 
     /* ── sc-interview-viewer-close: gestito nella round 2 ── */
 
-    /* ── Nascondi bottone THUMBS nell'archive expanded su mobile ── */
+    /* Bottone THUMBS su mobile: pill touch-friendly */
     .archive-expanded-viewall {
-      display: none !important;
+      display: flex !important;
+      font-size: 9px !important;
+      letter-spacing: 0.10em !important;
+      padding: 7px 12px !important;
+      min-height: 32px !important;
+      min-width: 56px !important;
+      touch-action: manipulation !important;
+      -webkit-tap-highlight-color: transparent !important;
+      background: #000 !important;
+      color: #fff !important;
+      border-radius: 2px !important;
     }
 
     /* ════════════════════════════════════════════════════════════
