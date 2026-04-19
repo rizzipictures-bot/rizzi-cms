@@ -16393,6 +16393,14 @@ function scBuildGrid() {
     sc_section: 'conversation'
   });
 
+  // Aggiungi la thumb Data hardcoded (screenshot pagina dati statistici)
+  scCurrentImages.push({
+    url: 'https://files.manuscdn.com/user_upload_by_module/session_file/310519663156367470/venFVzbbttkUnptg.webp',
+    title: 'Data',
+    desc: 'Police Violence · Statistics',
+    sc_section: 'data'
+  });
+
   // Pattern misto Corboz: H-V-H-V (riga1) / V-H-V-V (riga2) — identico a Images Book
   const PATTERN = [true, false, true, false, false, true, false, false]; // true = orizzontale
   scCurrentImages.forEach((img, idx) => {
