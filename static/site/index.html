@@ -9214,29 +9214,105 @@
     .archive-expanded.box-white .ae-kw-mobile-panel .archive-kw-tag-idx {
       color: rgba(0,0,0,0.4) !important;
     }
-    /* ── FIX: ae-thumbs-view su mobile: altezza auto, foto grande ── */
+    /* ── FIX: ae-thumbs-view su mobile: lightbox position:fixed full-screen ── */
     .ae-thumbs-view {
-      height: auto !important;
+      position: fixed !important;
+      top: 0 !important;
+      left: 0 !important;
+      right: 0 !important;
+      bottom: 0 !important;
+      width: 100vw !important;
+      height: 100vh !important;
+      height: 100dvh !important;
+      z-index: 600 !important;
+      display: none;
+      flex-direction: column !important;
+      overflow: hidden !important;
+      background: #fff !important;
+    }
+    .ae-thumbs-view.ae-tv-open {
+      display: flex !important;
+    }
+    /* Info row: Back a sx, contatore a dx — in cima al lightbox */
+    .ae-thumbs-view .ae-thumbs-info {
+      flex-shrink: 0 !important;
+      padding: 12px 16px !important;
+      min-height: 48px !important;
+      display: flex !important;
+      align-items: center !important;
+      justify-content: space-between !important;
+      background: #fff !important;
+      border-bottom: 1px solid rgba(0,0,0,0.08) !important;
+    }
+    .ae-thumbs-view .ae-thumbs-back {
+      font-size: 13px !important;
+      letter-spacing: 0.08em !important;
+      padding: 8px 0 !important;
+      min-height: 44px !important;
+      min-width: 64px !important;
+      touch-action: manipulation !important;
+      color: #000 !important;
+      -webkit-tap-highlight-color: transparent !important;
+    }
+    .ae-thumbs-view .ae-thumbs-counter {
+      font-size: 11px !important;
+      color: rgba(0,0,0,0.5) !important;
+    }
+    /* Hero: occupa tutto lo spazio residuo */
+    .ae-thumbs-view .ae-thumbs-hero {
+      flex: 1 1 0 !important;
+      height: 0 !important;
       min-height: 0 !important;
+      display: flex !important;
+      align-items: center !important;
+      justify-content: center !important;
+      overflow: hidden !important;
+      padding: 8px !important;
+      background: #fff !important;
     }
-    .ae-thumbs-hero {
-      flex: 0 0 auto !important;
+    .ae-thumbs-view .ae-thumbs-hero img {
+      max-width: 100% !important;
+      max-height: 100% !important;
+      width: auto !important;
       height: auto !important;
-      min-height: 0 !important;
-      padding-bottom: 4px !important;
+      object-fit: contain !important;
     }
-    .ae-thumbs-hero img {
-      max-height: 60vw !important;
-      width: auto !important;
+    .ae-thumbs-view .ae-thumbs-img-wrap {
       max-width: 100% !important;
-    }
-    .ae-thumbs-img-wrap {
-      max-height: 60vw !important;
+      max-height: 100% !important;
       width: auto !important;
-      max-width: 100% !important;
+      height: auto !important;
+      display: flex !important;
+      align-items: center !important;
+      justify-content: center !important;
     }
-    .ae-thumbs-strip {
-      padding: 4px 0 !important;
+    /* Frecce prev/next: nascoste su mobile (si usa swipe) */
+    .ae-thumbs-view .ae-prev-btn,
+    .ae-thumbs-view .ae-next-btn {
+      display: none !important;
+    }
+    /* Strip thumbnails in fondo */
+    .ae-thumbs-view .ae-thumbs-strip {
+      flex-shrink: 0 !important;
+      padding: 6px 8px !important;
+      overflow-x: auto !important;
+      -webkit-overflow-scrolling: touch !important;
+      background: #fff !important;
+      border-top: 1px solid rgba(0,0,0,0.08) !important;
+    }
+    /* Nasconde il kwPanel (keywords) nel ae-thumbs-view su mobile */
+    .ae-thumbs-view .archive-kw-panel {
+      display: none !important;
+    }
+    /* Nasconde il zoom btn su mobile */
+    .ae-thumbs-view .ae-zoom-btn {
+      display: none !important;
+    }
+    /* Blocca scroll del body quando il lightbox è aperto */
+    body.ae-thumbs-open {
+      overflow: hidden !important;
+      position: fixed !important;
+      width: 100% !important;
     }
   } /* fine @media mobile */
 
@@ -13920,6 +13996,8 @@ function buildArchive() {
               const _m1ZoomBtnBack = hero ? hero.querySelector('.ae-zoom-btn') : null;
               if (_m1ZoomBtnBack) _m1ZoomBtnBack.style.display = '';
               _aeThumbsView.style.display = 'none';
+              _aeThumbsView.classList.remove('ae-tv-open');
+              document.body.classList.remove('ae-thumbs-open');
               // Nasconde il pannello keyword
               if (_aeThumbsView._kwPanel) _aeThumbsView._kwPanel.style.display = 'none';
               // Ripristina sfondo nero (Mode 1 è sempre scuro)
@@ -14176,6 +14254,8 @@ function buildArchive() {
             const _m1ZoomBtn = hero ? hero.querySelector('.ae-zoom-btn') : null;
             if (_m1ZoomBtn) _m1ZoomBtn.style.display = 'none';
             _aeThumbsView.style.display = 'flex';
+            _aeThumbsView.classList.add('ae-tv-open');
+            if (window.innerWidth <= 768) { document.body.classList.add('ae-thumbs-open'); }
             // In Mode 2 si parte sempre con sfondo bianco
             panel.classList.add('box-white');
             // Aggiorna l'icona del toggle TV originale (Mode 1) — usa la variabile 'toggle' diretta
