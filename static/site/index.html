@@ -7802,34 +7802,39 @@
     /* ── Archive box espanso ── */
     .archive-expanded {
       position: fixed !important;
-      inset: var(--nav-h) 0 0 0 !important;
+      top: var(--nav-h) !important;
+      left: 0 !important;
+      right: 0 !important;
+      bottom: 0 !important;
       width: 100% !important;
-      height: auto !important;
+      height: calc(100vh - var(--nav-h)) !important;
       max-height: calc(100vh - var(--nav-h)) !important;
       overflow-y: auto !important;
+      overflow-x: hidden !important;
       z-index: 500 !important;
       border-radius: 0 !important;
+      -webkit-overflow-scrolling: touch !important;
     }
     /* Layout verticale su mobile: hero sopra, info sotto */
     .archive-expanded-inner {
       flex-direction: column !important;
       height: auto !important;
+      padding-top: 0 !important;
     }
     .archive-expanded-hero {
       width: 100% !important;
       height: auto !important;
       max-height: none !important;
       aspect-ratio: auto !important;
-      display: flex !important;
-      justify-content: center !important;
-      align-items: flex-start !important;
-      background: #000 !important;
+      display: block !important;
+      background: transparent !important;
+      overflow: hidden !important;
     }
     .archive-expanded-hero img {
       width: 100% !important;
       height: auto !important;
-      max-height: 70vh !important;
-      object-fit: contain !important;
+      max-height: none !important;
+      object-fit: cover !important;
       display: block !important;
     }
     .archive-expanded-right {
@@ -7839,6 +7844,10 @@
     .archive-expanded-thumbs {
       grid-template-columns: repeat(3, 1fr) !important;
       gap: 3px !important;
+    }
+    /* Padding bottom del pannello per non tagliare il bottone Keywords */
+    .ae-kw-mobile-panel.open {
+      padding-bottom: 24px !important;
     }
     .archive-expanded-toggle {
       display: none !important;
@@ -9178,11 +9187,11 @@
       align-items: center;
       gap: 8px;
       width: 100%;
-      padding: 12px 16px;
+      padding: 14px 16px;
       background: none;
       border: none;
-      border-top: 1px solid rgba(255,255,255,0.15);
-      color: rgba(255,255,255,0.85);
+      border-top: 1px solid rgba(255,255,255,0.2);
+      color: rgba(255,255,255,0.9);
       font-family: var(--font-mono);
       font-size: 10px;
       letter-spacing: 0.18em;
@@ -9191,6 +9200,7 @@
       text-align: left;
       box-sizing: border-box;
       -webkit-tap-highlight-color: transparent;
+      min-height: 44px;
     }
     .archive-expanded.box-white .ae-kw-mobile-toggle {
       border-top-color: rgba(0,0,0,0.12);
@@ -14562,6 +14572,10 @@ function buildArchive() {
         row.insertAdjacentElement('afterend', panel);
         row.insertAdjacentElement('afterend', textBlock);
         activeExpanded = panel;
+        // Su mobile: reset scroll del pannello fixed a top (mostra la foto subito)
+        if (window.innerWidth <= 768) {
+          panel.scrollTop = 0;
+        }
         activeExpanded._textBlock = textBlock;
 
         // Box aperto: cursore bianco (rimuovi rosso)
@@ -14717,29 +14731,10 @@ function buildArchive() {
             vArchive.scrollTo({ top: Math.max(0, offset), behavior: 'smooth' });
           }, delay);
         };
-        // Primo scroll: immediato (porta la riga in vista)
-        _doScrollToRow(50, row);
-        // Secondo scroll su mobile: dopo l'espansione, scrolla al PANEL (foto)
-        // Il panel è inserito dopo textBlock che è dopo la riga
-        if (window.innerWidth <= 768) {
-          setTimeout(() => {
-            const vArchive = document.getElementById('view-archive');
-            if (!vArchive) return;
-            // Cerca il panel espanso attivo
-            const activePanel = vArchive.querySelector('.archive-expanded');
-            if (activePanel) {
-              const panelRect = activePanel.getBoundingClientRect();
-              const vRect = vArchive.getBoundingClientRect();
-              // Scrolla in modo che il panel sia visibile con la riga sopra
-              // Vogliamo vedere: [riga] + [textBlock] + [inizio panel foto]
-              // Quindi scrolliamo alla riga ma lasciando spazio per il panel
-              const rowRect = row.getBoundingClientRect();
-              const offset = rowRect.top - vRect.top + vArchive.scrollTop - 44;
-              vArchive.scrollTo({ top: Math.max(0, offset), behavior: 'smooth' });
-            } else {
-              _doScrollToRow(0, row);
-            }
-          }, 420);
+        // Su desktop: scrolla alla riga per tenerla in vista
+        // Su mobile: il pannello è position:fixed, non serve scrollare il view-archive
+        if (window.innerWidth > 768) {
+          _doScrollToRow(50, row);
         }
       });
 
