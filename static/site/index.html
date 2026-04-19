@@ -18676,8 +18676,8 @@ const _SC_LIBRETTO_PAGES = [
 ];
 // Ogni spread = una "apertura" del libro: { left: idx|null, right: idx|null, hasAudio: bool, audioSrc: string|null }
 const _SC_LIBRETTO_SPREADS = [
-  { left: 0, right: null, hasAudio: true,  audioSrc: '/static/site/audio/interview/conversation-gs.mp3' },
-  { left: 1, right: null, hasAudio: true,  audioSrc: '/static/site/audio/interview/conversation-ar.mp3' },
+  { left: 0, right: null, hasAudio: true,  audioSrc: '/static/site/audio/interview/AlleeGioUSA_ITA_clean.mp3' },
+  { left: 1, right: null, hasAudio: true,  audioSrc: '/static/site/audio/interview/AlleeGioUSA_ITA_clean.mp3' },
   { left: 2, right: null, hasAudio: false, audioSrc: null }
 ];
 let _scLibrettoCurrentSpread = 0;
@@ -18844,10 +18844,11 @@ function _scLibrettoToggleAudio() {
   if (_scLibrettoAudioPlaying) {
     mainPlayer.pause();
     _scLibrettoAudioPlaying = false;
+    scStopKaraoke();
   } else {
     // Usa l'audioSrc specifico dello spread corrente
     const spread = _SC_LIBRETTO_SPREADS[_scLibrettoCurrentSpread];
-    const interviewSrc = spread.audioSrc || '/static/site/audio/interview/conversation-gs.mp3';
+    const interviewSrc = spread.audioSrc || '/static/site/audio/interview/AlleeGioUSA_ITA_clean.mp3';
     // Cambia sorgente solo se diversa da quella corrente
     const currentSrc = mainPlayer.src ? mainPlayer.src.replace(window.location.origin, '') : '';
     if (currentSrc !== interviewSrc) {
@@ -18856,10 +18857,13 @@ function _scLibrettoToggleAudio() {
     mainPlayer.play().then(() => {
       _scLibrettoAudioPlaying = true;
       _scLibrettoUpdatePlayIcon();
+      // Avvia karaoke sincronizzato con l'audio ITA
+      scStartKaraokeFrom(interviewSrc, mainPlayer.currentTime || 0);
     }).catch(() => {});
     mainPlayer.onended = function() {
       _scLibrettoAudioPlaying = false;
       _scLibrettoUpdatePlayIcon();
+      scStopKaraoke();
     };
   }
   _scLibrettoUpdatePlayIcon();
