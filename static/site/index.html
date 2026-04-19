@@ -8984,6 +8984,40 @@
       overflow: hidden !important;
     }
 
+    /* ── 14. VAO VIEWER: foto a pieno schermo su mobile ── */
+    #vao-viewer-img {
+      max-width: 90vw !important;
+      max-height: 72vh !important;
+      width: auto !important;
+      height: auto !important;
+    }
+    .vao-viewer {
+      inset: 0 !important;
+      padding-top: 0 !important;
+      align-items: center !important;
+      justify-content: center !important;
+    }
+    .vao-viewer-nav {
+      font-size: 22px !important;
+      padding: 16px 20px !important;
+      color: rgba(255,255,255,0.85) !important;
+      background: rgba(0,0,0,0.25) !important;
+      border-radius: 4px !important;
+      top: 50% !important;
+      transform: translateY(-50%) !important;
+    }
+    #archive-viewall-overlay:not(.theme-dark) .vao-viewer-nav {
+      color: rgba(0,0,0,0.7) !important;
+      background: rgba(255,255,255,0.3) !important;
+    }
+    .vao-viewer-counter {
+      bottom: 16px !important;
+      font-size: 12px !important;
+    }
+    /* ── 15. KW PANEL: nascondi pallino su mobile (solo touch, non c'è mousemove) ── */
+    .archive-kw-dot {
+      display: none !important;
+    }
   } /* fine @media mobile */
 
   /* ══════════════════════════════════════════════════════════════
@@ -13825,6 +13859,36 @@ function buildArchive() {
               clearTimeout(_aeKwPulseTimer);
               aeKwDot.classList.remove('pulsing');
             });
+            // Touch: muovi il pallino con il dito (mobile)
+            aeKwInner.addEventListener('touchmove', ev => {
+              if (ev.touches.length === 0) return;
+              const touch = ev.touches[0];
+              const rect = aeKwInner.getBoundingClientRect();
+              const relY = touch.clientY - rect.top;
+              const clampedY = Math.max(0, Math.min(rect.height - 8, relY - 4));
+              aeKwDot.style.top = clampedY + 'px';
+              aeKwDot.style.display = 'block';
+              aeKwDot.classList.remove('pulsing');
+              clearTimeout(_aeKwPulseTimer);
+              _aeKwPulseTimer = setTimeout(() => {
+                const tags = aeKwInner.querySelectorAll('.archive-kw-tag');
+                for (const tag of tags) {
+                  const tr = tag.getBoundingClientRect();
+                  const tagMidY = tr.top + tr.height / 2;
+                  if (Math.abs(touch.clientY - tagMidY) < 18) {
+                    aeKwDot.classList.remove('pulsing');
+                    void aeKwDot.offsetWidth;
+                    aeKwDot.classList.add('pulsing');
+                    break;
+                  }
+                }
+              }, 120);
+            }, { passive: true });
+            aeKwInner.addEventListener('touchend', () => {
+              clearTimeout(_aeKwPulseTimer);
+              aeKwDot.classList.remove('pulsing');
+              aeKwDot.style.display = '';
+            }, { passive: true });
 
             // Funzione posiziona il pannello accanto alla foto (fixed)
             function _aePositionKwPanel() {
@@ -14042,6 +14106,36 @@ function buildArchive() {
               clearTimeout(_kwPulseTimer);
               kwDot.classList.remove('pulsing');
             });
+            // Touch: muovi il pallino con il dito (mobile)
+            kwCol.addEventListener('touchmove', ev => {
+              if (ev.touches.length === 0) return;
+              const touch = ev.touches[0];
+              const rect = kwCol.getBoundingClientRect();
+              const relY = touch.clientY - rect.top;
+              const clampedY = Math.max(10, Math.min(rect.height - 10 - 8, relY - 4));
+              kwDot.style.top = clampedY + 'px';
+              kwDot.style.display = 'block';
+              kwDot.classList.remove('pulsing');
+              clearTimeout(_kwPulseTimer);
+              _kwPulseTimer = setTimeout(() => {
+                const tags = kwCol.querySelectorAll('.archive-kw-tag');
+                for (const tag of tags) {
+                  const tr = tag.getBoundingClientRect();
+                  const tagMidY = tr.top + tr.height / 2;
+                  if (Math.abs(touch.clientY - tagMidY) < 18) {
+                    kwDot.classList.remove('pulsing');
+                    void kwDot.offsetWidth;
+                    kwDot.classList.add('pulsing');
+                    break;
+                  }
+                }
+              }, 120);
+            }, { passive: true });
+            kwCol.addEventListener('touchend', () => {
+              clearTimeout(_kwPulseTimer);
+              kwDot.classList.remove('pulsing');
+              kwDot.style.display = '';
+            }, { passive: true });
 
             kwCol.appendChild(kwPanel);
           }
@@ -21029,6 +21123,22 @@ loadFromCMS();
   // Frecce cliccabili
   if (vaoViewerPrev) vaoViewerPrev.addEventListener('click', e => { e.stopPropagation(); _svNav(-1); });
   if (vaoViewerNext) vaoViewerNext.addEventListener('click', e => { e.stopPropagation(); _svNav(1); });
+  // Swipe touch per navigare nel viewer (mobile)
+  if (vaoViewer) {
+    let _vaoTouchStartX = null;
+    vaoViewer.addEventListener('touchstart', e => {
+      _vaoTouchStartX = e.touches[0].clientX;
+    }, { passive: true });
+    vaoViewer.addEventListener('touchend', e => {
+      if (_vaoTouchStartX === null) return;
+      const dx = e.changedTouches[0].clientX - _vaoTouchStartX;
+      _vaoTouchStartX = null;
+      if (Math.abs(dx) > 40) {
+        // Swipe sinistra → avanti, swipe destra → indietro
+        _svNav(dx < 0 ? 1 : -1);
+      }
+    }, { passive: true });
+  }
 
   // Click sul viewer: click sulla FOTO naviga al progetto archivio; click sui lati naviga
   if (vaoViewer) {
