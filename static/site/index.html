@@ -9658,7 +9658,7 @@
     #sc-libretto-close-btn {
       position: absolute;
       top: -18px;
-      right: -18px;
+      right: -10px;  /* spostato 8px a destra rispetto al bordo del viewer */
       width: 36px;
       height: 36px;
       border-radius: 50%;
@@ -9675,7 +9675,7 @@
     }
     #sc-libretto-close-btn:hover {
       background: #6a20ff;
-      transform: scale(1.12);
+      transform: scale(1.12) rotate(90deg);
     }
     #sc-libretto-close-btn svg {
       width: 14px;
@@ -9685,7 +9685,7 @@
     #sc-libretto-download-btn {
       position: absolute;
       top: -18px;
-      right: 28px;
+      right: 36px;  /* 8px gap dal close (right:-10px + 36px width + 10px gap) */
       width: 36px;
       height: 36px;
       border-radius: 50%;
