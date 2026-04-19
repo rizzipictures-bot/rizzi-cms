@@ -8892,21 +8892,36 @@
     }
 
     /* ── 6. INTERVIEW: titolo e meta non troncano su mobile ── */
+    /* interview: titolo sopra, meta sotto (grid 1 colonna) */
+    .interview-item {
+      position: relative !important;
+    }
+    .interview-item-head {
+      grid-template-columns: 1fr !important;
+      gap: 4px !important;
+      padding: 10px 0 !important;
+      min-height: auto !important;
+      cursor: auto !important;
+      align-items: flex-start !important;
+    }
     .interview-item-head .iw-title {
       white-space: normal !important;
       word-break: break-word !important;
+      font-size: 12px !important;
+      line-height: 1.4 !important;
+      padding-right: 28px !important;
     }
     .interview-item-head .iw-meta {
+      display: flex !important;
       flex-wrap: wrap !important;
-      gap: 4px 12px !important;
+      gap: 0 12px !important;
       font-size: 10px !important;
+      align-items: center !important;
     }
-    .interview-item-head {
-      grid-template-columns: 1fr auto !important;
-      gap: 8px !important;
-      padding: 8px 0 !important;
-      min-height: 44px !important;
-      cursor: auto !important;
+    .interview-item-head .iw-expand {
+      position: absolute !important;
+      right: 0 !important;
+      top: 10px !important;
     }
 
     /* ── 7. HAMBURGER MENU: voce attiva più visibile su mobile ── */
@@ -8952,19 +8967,21 @@
       min-height: auto !important;
     }
 
-    /* ── 13. CITIES TABELLA: colonne non si sovrappongono ── */
+    /* ── 13. CITIES TABELLA: grid compatto su mobile ── */
     #cities-list-view .cities-row {
-      display: flex !important;
-      flex-direction: column !important;
-      padding: 10px 0 !important;
-      gap: 2px !important;
+      display: grid !important;
+      grid-template-columns: 40px 1fr 1fr 40px !important;
+      padding: 8px 0 !important;
+      gap: 4px !important;
       border-bottom: 1px solid var(--light) !important;
+      align-items: start !important;
     }
-    #cities-list-view .cities-row > div {
-      font-size: 12px !important;
+    #cities-list-view .cities-row > * {
+      font-size: 11px !important;
       padding: 0 !important;
       white-space: normal !important;
       word-break: break-word !important;
+      overflow: hidden !important;
     }
 
   } /* fine @media mobile */
