@@ -9925,12 +9925,12 @@
       gap: 4px;
       cursor: pointer;
     }
-    /* Pillola ovale verticale */
+    /* Pillola ovale verticale — dimensione ridotta del 40% rispetto all'originale */
     .sc-libretto-qblock {
-      width: 9px;
-      height: 22px;
+      width: 5px;
+      height: 13px;
       border-radius: 999px;
-      background: rgba(255,255,255,0.55);
+      background: rgba(255,255,255,0.85);
       cursor: pointer;
       border: none;
       padding: 0;
@@ -9939,19 +9939,19 @@
       display: block;
     }
     .sc-libretto-qblock:hover {
-      background: rgba(255,255,255,0.9);
+      background: #fff;
       transform: scaleY(1.12);
     }
     .sc-libretto-qblock.active {
       background: #4c00fc;
-      box-shadow: 0 0 8px rgba(76,0,252,0.7);
+      box-shadow: 0 0 6px rgba(76,0,252,0.7);
       transform: scaleY(1.08);
     }
     /* Etichetta min:sec sotto ogni pillola */
     .sc-libretto-qblock-label {
       font-family: 'Courier New', Courier, monospace;
-      font-size: 8px;
-      color: rgba(255,255,255,0.45);
+      font-size: 7px;
+      color: rgba(255,255,255,0.8);
       letter-spacing: 0.03em;
       line-height: 1;
       white-space: nowrap;
@@ -9959,7 +9959,7 @@
     }
     .sc-libretto-qblock-wrap:hover .sc-libretto-qblock-label,
     .sc-libretto-qblock-wrap.active .sc-libretto-qblock-label {
-      color: rgba(255,255,255,0.85);
+      color: #fff;
     }
 
   /* ── Statement autore Synopsis — overlay fisso centrato nella viewport ── */
