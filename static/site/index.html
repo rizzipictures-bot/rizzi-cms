@@ -22985,11 +22985,32 @@ loadFromCMS();
       // Sessione valida o token corretto — nessun gate
       if (alreadyAuth) sessionStorage.setItem(SESSION_KEY, '1');
       if (isSculpturesToken) {
+        // Salva modalità preview in sessionStorage
+        sessionStorage.setItem('ar_sculptures_preview', '1');
         // Apri direttamente Sculptures dopo il caricamento
         document.addEventListener('DOMContentLoaded', function() {
           setTimeout(function() {
             if (typeof scSwitchSection === 'function') scSwitchSection('overview');
           }, 300);
+          // Nascondi il link "Site" che porta al sito principale
+          var siteLink = document.getElementById('sculptures-site-link');
+          if (siteLink) siteLink.style.display = 'none';
+          // Nascondi anche il separatore dopo Site
+          var sep = document.getElementById('sculptures-nav-sep');
+          if (sep) sep.style.display = 'none';
+          // Blocca scGoBack per impedire l'uscita dal sito Sculptures
+          window._scGoBackOriginal = window.scGoBack;
+          window.scGoBack = function() { /* bloccato in modalità preview */ };
+        });
+      } else if (sessionStorage.getItem('ar_sculptures_preview') === '1') {
+        // Sessione già autenticata via token — mantieni modalità preview
+        document.addEventListener('DOMContentLoaded', function() {
+          var siteLink = document.getElementById('sculptures-site-link');
+          if (siteLink) siteLink.style.display = 'none';
+          var sep = document.getElementById('sculptures-nav-sep');
+          if (sep) sep.style.display = 'none';
+          window._scGoBackOriginal = window.scGoBack;
+          window.scGoBack = function() { /* bloccato in modalità preview */ };
         });
       }
       return; // nessun gate
