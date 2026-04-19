@@ -16377,9 +16377,9 @@ function scBuildGrid() {
     sc_section: 'archive'
   });
 
-  // Aggiungi la thumb Mapping Lives hardcoded (mappa animata con punti rossi)
+  // Aggiungi la thumb Mapping Lives hardcoded (screenshot mappa reale — orizzontale)
   scCurrentImages.push({
-    url: null,
+    url: 'https://files.manuscdn.com/user_upload_by_module/session_file/310519663156367470/TkKKYARArdSFPztz.webp',
     title: 'Mapping Lives',
     desc: 'Police Violence · USA',
     sc_section: 'mapping-lives'
@@ -16401,14 +16401,21 @@ function scBuildGrid() {
     sc_section: 'data'
   });
 
+  // Swap: Archive (idx 6) ↔ Synopsis/A Story (idx 4) — Archive diventa 5ª, Synopsis diventa 7ª
+  if (scCurrentImages[4] && scCurrentImages[6]) {
+    const _tmp = scCurrentImages[4];
+    scCurrentImages[4] = scCurrentImages[6];
+    scCurrentImages[6] = _tmp;
+  }
+
   // Pattern misto Corboz: H-V-H-V (riga1) / V-H-V-V (riga2) — identico a Images Book
   const PATTERN = [true, false, true, false, false, true, false, false]; // true = orizzontale
   scCurrentImages.forEach((img, idx) => {
     const cell = document.createElement('div');
     cell.style.cursor = 'pointer';
     // Assegna classe orizzontale secondo il pattern (si ripete ogni 8)
-    // La cella synopsis è sempre verticale (non orizzontale)
-    if (PATTERN[idx % 8] && img.sc_section !== 'synopsis') cell.classList.add('sc-cell-h');
+    // La cella synopsis è sempre verticale; mapping-lives è sempre orizzontale
+    if ((PATTERN[idx % 8] || img.sc_section === 'mapping-lives') && img.sc_section !== 'synopsis') cell.classList.add('sc-cell-h');
     // Usa il campo sc_section del progetto come destinazione;
     // se non impostato, apre il lightbox
     const targetSection = img.sc_section || null;
