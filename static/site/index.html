@@ -9831,33 +9831,43 @@
       transition: opacity 0.18s;
     }
 
-  /* ── Karaoke dentro il Libretto viewer ── */
+  /* ── Karaoke multi-riga dentro il Libretto viewer ── */
     #sc-libretto-karaoke {
       position: absolute;
       bottom: 44px;
       left: 16px;
-      right: 16px;
+      width: calc(50% - 30px); /* occupa la metà sinistra del viewer */
       z-index: 10;
       pointer-events: none;
       overflow: hidden;
-      height: 52px;
+      max-height: 120px; /* circa 5 righe */
       display: none;
-      align-items: flex-end;
+      flex-direction: column;
+      justify-content: flex-end;
+      gap: 4px;
     }
     #sc-libretto-karaoke.active { display: flex; }
     #sc-libretto-karaoke-line {
       display: flex;
-      flex-wrap: nowrap;
-      gap: 0.35em;
+      flex-wrap: wrap;
+      gap: 0.3em 0.35em;
       align-items: baseline;
       overflow: hidden;
-      max-width: 100%;
+      width: 100%;
     }
     #sc-libretto-karaoke .sc-kword {
       font-family: 'Courier New', Courier, 'Lucida Console', monospace;
-      font-size: clamp(9.9px, 1.08vw, 13px);
+      font-size: clamp(9px, 0.9vw, 12px);
       font-weight: 400;
-      color: #333;
+      color: #222;
+      line-height: 1.4;
+    }
+    /* Parole libretto: nessuna animazione typewriter, solo fade-in */
+    .sc-kword-libretto {
+      max-width: none !important;
+      overflow: visible !important;
+      animation: none !important;
+      display: inline !important;
     }
 
   /* ── Statement autore Synopsis — overlay fisso centrato nella viewport ── */
@@ -20373,14 +20383,14 @@ function _scKaraokeStep() {
 // Aggiunge una parola con effetto macchina da scrivere (lettera per lettera)
 // Scrive in parallelo su tutti i target karaoke attivi
 function _scKaraokeShowWord(word) {
-  const targets = [
+  // Target standard con animazione typewriter
+  const standardTargets = [
     { lineId: 'sc-karaoke-line', wordsArr: _scKaraokeLineWords },
     { lineId: 'sc-karaoke-viewer-line', wordsArr: _scKaraokeViewerWords },
-    { lineId: 'sc-karaoke-zoom-line', wordsArr: _scKaraokeZoomWords },
-    { lineId: 'sc-libretto-karaoke-line', wordsArr: _scKaraokeLibrettoWords }
+    { lineId: 'sc-karaoke-zoom-line', wordsArr: _scKaraokeZoomWords }
   ];
 
-  targets.forEach(({ lineId, wordsArr }) => {
+  standardTargets.forEach(({ lineId, wordsArr }) => {
     const line = document.getElementById(lineId);
     if (!line) return;
 
@@ -20413,6 +20423,28 @@ function _scKaraokeShowWord(word) {
     span.style.setProperty('--tw-dur', totalMs + 'ms');
     span.classList.add('typing');
   });
+
+  // Target Libretto: multi-riga con fade-in semplice, max 30 parole visibili
+  const librettoLine = document.getElementById('sc-libretto-karaoke-line');
+  if (librettoLine) {
+    const SC_LIBRETTO_MAX_WORDS = 30;
+    if (_scKaraokeLibrettoWords.length >= SC_LIBRETTO_MAX_WORDS) {
+      const oldest = _scKaraokeLibrettoWords.shift();
+      if (oldest) {
+        oldest.classList.add('fade-out');
+        setTimeout(() => { if (oldest.parentNode) oldest.parentNode.removeChild(oldest); }, 400);
+      }
+    }
+    const span = document.createElement('span');
+    span.className = 'sc-kword sc-kword-libretto';
+    span.textContent = word;
+    span.style.opacity = '0';
+    span.style.transition = 'opacity 0.3s ease';
+    librettoLine.appendChild(span);
+    _scKaraokeLibrettoWords.push(span);
+    // Fade-in
+    requestAnimationFrame(() => { span.style.opacity = '1'; });
+  }
 }
 
 // Ferma il karaoke e pulisce la riga (entrambi i target)
