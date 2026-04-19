@@ -9856,13 +9856,16 @@
   /* ── Karaoke dentro il Libretto viewer ── */
     #sc-libretto-karaoke {
       position: absolute;
-      bottom: 56px;
-      left: 16px;
-      right: 16px;
-      z-index: 10;
+      /* Alzato per stare visibilmente sopra il bordo inferiore del libro
+         Il viewer è flex-column: book occupa flex:1, poi dots ~28px, poi qnav ~48px.
+         bottom calcolato: 28px(dots) + 14px(margin) + 48px(qnav) + 24px(margine) = ~114px */
+      bottom: 120px;
+      left: 60px;
+      right: 60px;
+      z-index: 20;
       pointer-events: none;
       overflow: visible;
-      height: 28px;
+      height: 32px;
       display: none;
       align-items: center;
     }
@@ -19109,22 +19112,33 @@ function _scLibrettoJumpToQA(idx) {
   const t = _SC_LIBRETTO_QA_TIMES[idx];
   if (t === undefined) return;
   const interviewSrc = '/static/site/audio/interview/AlleeGioUSA_ITA_clean.mp3';
-  // Imposta sorgente se necessario
   const currentSrc = mainPlayer.src ? mainPlayer.src.replace(window.location.origin, '') : '';
-  if (currentSrc !== interviewSrc) {
-    mainPlayer.src = interviewSrc;
-  }
-  mainPlayer.currentTime = t;
-  mainPlayer.play().then(() => {
-    _scLibrettoAudioPlaying = true;
-    _scLibrettoUpdatePlayIcon();
-    scStartKaraokeFrom(interviewSrc, t);
-    mainPlayer.onended = function() {
-      _scLibrettoAudioPlaying = false;
+
+  function _doJump() {
+    mainPlayer.currentTime = t;
+    mainPlayer.play().then(() => {
+      _scLibrettoAudioPlaying = true;
       _scLibrettoUpdatePlayIcon();
-      scStopKaraoke();
-    };
-  }).catch(() => {});
+      scStartKaraokeFrom(interviewSrc, t);
+      mainPlayer.onended = function() {
+        _scLibrettoAudioPlaying = false;
+        _scLibrettoUpdatePlayIcon();
+        scStopKaraoke();
+      };
+    }).catch(() => {});
+  }
+
+  if (currentSrc !== interviewSrc) {
+    // Nuova sorgente: aspetta loadedmetadata prima di impostare currentTime
+    mainPlayer.src = interviewSrc;
+    mainPlayer.load();
+    mainPlayer.addEventListener('loadedmetadata', function _onMeta() {
+      mainPlayer.removeEventListener('loadedmetadata', _onMeta);
+      _doJump();
+    });
+  } else {
+    _doJump();
+  }
   _scLibrettoUpdateQNav(idx);
 }
 
