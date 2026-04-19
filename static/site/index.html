@@ -10396,9 +10396,18 @@
         // Blocca scGoBack
         window._scGoBackOrig = window.scGoBack;
         window.scGoBack = function() {};
+        // Salta l'intro animazione
+        window._scIntroShownThisLoad = true;
+        // Nascondi il menu principale del sito
+        var menuOverlay = document.getElementById('menu-overlay');
+        if (menuOverlay) menuOverlay.style.display = 'none';
+        var mobMenuBtn = document.getElementById('mob-menu-btn');
+        if (mobMenuBtn) mobMenuBtn.style.display = 'none';
         // Apri Sculptures: prima entra nel contesto Sculptures, poi apri Overview
         if (isSculptToken) {
           setTimeout(function() {
+            // Imposta flag prima di switchView per bloccare l'intro
+            window._scIntroShownThisLoad = true;
             if (typeof switchView === 'function') switchView('sculptures');
             setTimeout(function() {
               if (typeof scSwitchSection === 'function') scSwitchSection('overview');
