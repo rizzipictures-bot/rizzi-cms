@@ -22956,5 +22956,105 @@ loadFromCMS();
     if (inner) inner.addEventListener('click', function(e) { e.stopPropagation(); });
   })();
   </script>
+
+  <!-- ═══════════════════════════════════════════════════════════
+       GATE PASSWORD — protegge il sito; bypass con token segreto
+       per la sezione Sculptures
+  ═══════════════════════════════════════════════════════════ -->
+  <script>
+  (function() {
+    // ── Configurazione ──────────────────────────────────────────
+    var SITE_PASSWORD   = 'AnnalunA_2023';          // password accesso completo
+    var SCULPTURES_TOKEN_S = 'sculptures';           // ?s=
+    var SCULPTURES_TOKEN_K = 'ar2015scx9';          // ?k= (token segreto)
+    var SESSION_KEY     = 'ar_gate_ok';             // chiave sessionStorage
+    // ────────────────────────────────────────────────────────────
+
+    // Leggi parametri URL
+    var params = new URLSearchParams(window.location.search);
+    var pS = params.get('s');
+    var pK = params.get('k');
+
+    // Controlla se già autenticato in questa sessione
+    var alreadyAuth = sessionStorage.getItem(SESSION_KEY) === '1';
+
+    // Bypass token Sculptures: link diretto alla sezione Sculptures
+    var isSculpturesToken = (pS === SCULPTURES_TOKEN_S && pK === SCULPTURES_TOKEN_K);
+
+    if (alreadyAuth || isSculpturesToken) {
+      // Sessione valida o token corretto — nessun gate
+      if (alreadyAuth) sessionStorage.setItem(SESSION_KEY, '1');
+      if (isSculpturesToken) {
+        // Apri direttamente Sculptures dopo il caricamento
+        document.addEventListener('DOMContentLoaded', function() {
+          setTimeout(function() {
+            if (typeof scSwitchSection === 'function') scSwitchSection('overview');
+          }, 300);
+        });
+      }
+      return; // nessun gate
+    }
+
+    // ── Costruisci il gate ───────────────────────────────────────
+    var gate = document.createElement('div');
+    gate.id = 'ar-gate';
+    gate.style.cssText = [
+      'position:fixed', 'inset:0', 'z-index:99999',
+      'background:#000',
+      'display:flex', 'flex-direction:column',
+      'align-items:center', 'justify-content:center',
+      'font-family:"Courier New",monospace'
+    ].join(';');
+
+    gate.innerHTML = [
+      '<div style="color:#fff;font-size:11px;letter-spacing:0.18em;text-transform:uppercase;margin-bottom:32px;opacity:0.45;">alessandrorizzi.com</div>',
+      '<form id="ar-gate-form" autocomplete="off" style="display:flex;flex-direction:column;align-items:center;gap:14px;">',
+        '<input id="ar-gate-pwd" type="password" placeholder="password" autocomplete="current-password"',
+          'style="background:transparent;border:none;border-bottom:1px solid rgba(255,255,255,0.35);',
+          'color:#fff;font-family:inherit;font-size:13px;letter-spacing:0.12em;',
+          'padding:6px 2px;width:220px;outline:none;text-align:center;" />',
+        '<div id="ar-gate-err" style="color:#e63946;font-size:10px;letter-spacing:0.1em;min-height:14px;"></div>',
+        '<button type="submit"',
+          'style="background:transparent;border:1px solid rgba(255,255,255,0.3);color:#fff;',
+          'font-family:inherit;font-size:10px;letter-spacing:0.2em;text-transform:uppercase;',
+          'padding:8px 28px;cursor:pointer;">Entra</button>',
+      '</form>'
+    ].join('');
+
+    // Mostra il gate solo dopo che il DOM è pronto
+    function showGate() {
+      document.body.appendChild(gate);
+      document.body.style.overflow = 'hidden';
+      setTimeout(function() {
+        var inp = document.getElementById('ar-gate-pwd');
+        if (inp) inp.focus();
+      }, 100);
+    }
+
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', showGate);
+    } else {
+      showGate();
+    }
+
+    // Gestione submit
+    document.addEventListener('submit', function(e) {
+      if (e.target.id !== 'ar-gate-form') return;
+      e.preventDefault();
+      var inp = document.getElementById('ar-gate-pwd');
+      var err = document.getElementById('ar-gate-err');
+      if (inp && inp.value === SITE_PASSWORD) {
+        sessionStorage.setItem(SESSION_KEY, '1');
+        gate.style.transition = 'opacity 0.4s';
+        gate.style.opacity = '0';
+        document.body.style.overflow = '';
+        setTimeout(function() { gate.remove(); }, 420);
+      } else {
+        if (err) { err.textContent = 'password errata'; }
+        if (inp) { inp.value = ''; inp.focus(); }
+      }
+    });
+  })();
+  </script>
 </body>
 </html>
