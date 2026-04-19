@@ -9291,16 +9291,16 @@
       font-size: 11px !important;
       color: rgba(0,0,0,0.5) !important;
     }
-    /* Hero: occupa tutto lo spazio residuo */
+    /* Hero: occupa tutto lo spazio residuo, foto allineata in basso verso la strip */
     .ae-thumbs-view .ae-thumbs-hero {
       flex: 1 1 0 !important;
       height: 0 !important;
       min-height: 0 !important;
       display: flex !important;
-      align-items: center !important;
+      align-items: flex-end !important;
       justify-content: center !important;
       overflow: hidden !important;
-      padding: 8px !important;
+      padding: 8px 8px 0 8px !important;
       background: #fff !important;
     }
     .ae-thumbs-view .ae-thumbs-hero img {
@@ -9389,6 +9389,49 @@
     #ae-zoom-white-next svg {
       width: 28px !important;
       height: 18px !important;
+    }
+    /* ── Keywords nel ae-thumbs-view (mobile) ── */
+    .ae-thumbs-kw-toggle {
+      background: transparent;
+      border: none;
+      border-top: 1px solid rgba(0,0,0,0.08);
+      color: rgba(0,0,0,0.55);
+      font-family: inherit;
+      font-size: 10px;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      cursor: pointer;
+      padding: 10px 12px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      width: 100%;
+      flex-shrink: 0;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .ae-thumbs-kw-arrow {
+      display: inline-block;
+      transition: transform 0.2s ease;
+      font-size: 9px;
+    }
+    .ae-thumbs-kw-panel-inline {
+      display: none;
+      flex-wrap: wrap;
+      gap: 6px;
+      padding: 8px 12px;
+      background: #f5f5f5;
+      border-top: 1px solid #e0e0e0;
+      flex-shrink: 0;
+    }
+    .ae-thumbs-kw-tag {
+      background: #000;
+      color: #fff;
+      font-size: 10px;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      padding: 3px 8px;
+      border-radius: 2px;
+      cursor: default;
     }
   } /* fine @media mobile */
 
@@ -13297,6 +13340,8 @@ function buildCitiesIndex() {
     const citiesPreviewImg = document.getElementById('cities-cursor-preview-img');
 
     row.addEventListener('mouseenter', () => {
+      // Su dispositivi touch, ignora il mouseenter simulato
+      if (document.body.classList.contains('is-touch')) return;
       // Se il box 2 è già aperto via click, blocca tutto l'hover su altre righe
       if (_cipPhotoViewer && _cipPhotoViewer.classList.contains('open')) return;
       // Suono click identico ad Archive
@@ -13363,8 +13408,21 @@ function buildCitiesIndex() {
         closeCityInfoPanel();
         return;
       }
-
-      // 1° click: apre box 2 con la prima foto
+      // Su mobile: se box 1 non è ancora aperto → aprilo e fermati (non aprire box 2)
+      if (document.body.classList.contains('is-touch') && _cipanel && !_cipanel.classList.contains('open')) {
+        document.querySelectorAll('.cities-list-row.cit-active').forEach(r => r.classList.remove('cit-active'));
+        row.classList.add('cit-active');
+        const projectForPanel0 = isTokyoProject && TOKYO_CMS ? TOKYO_CMS : p;
+        populateCityInfoPanel(projectForPanel0, previewImages);
+        _cipanel._activeProject = projectForPanel0;
+        _cipanel.classList.add('open');
+        window._citLock = true;
+        document.body.classList.add('cursor-on-dark');
+        const _cipBodyTouch = _cipanel.querySelector('.cip-body');
+        if (_cipBodyTouch) _cipBodyTouch.scrollTop = 0;
+        return; // Fermati qui — il secondo tap aprirà il box 2
+      }
+      // 1° click desktop (o 2° tap mobile): apre box 2 con la prima foto
       // Il box 1 è già aperto (gestito dall'hover + delay 300ms)
       // Se per qualche motivo non fosse ancora aperto, lo apriamo ora
       const projectForPanel = isTokyoProject && TOKYO_CMS ? TOKYO_CMS : p;
@@ -14344,6 +14402,42 @@ function buildArchive() {
             if (_tlBtn) _tlBtn.style.display = '';
             // Mostra il pannello keyword e lo posiziona
             if (_aeThumbsView._kwPanel) {
+              if (window.innerWidth <= 768) {
+                // Su mobile: nascondi il pannello fixed, usa pannello inline SOTTO la strip
+                _aeThumbsView._kwPanel.style.display = 'none';
+                // Aggiungi bottone Keywords e pannello sotto la strip (solo la prima volta)
+                const _aeStrip = _aeThumbsView.querySelector('.ae-thumbs-strip');
+                if (_aeStrip && !_aeThumbsView.querySelector('.ae-thumbs-kw-toggle')) {
+                  const _aeKwInline = document.createElement('div');
+                  _aeKwInline.className = 'ae-thumbs-kw-panel-inline';
+                  _aeKwInline.style.display = 'none';
+                  const _aeKwToggleMobile = document.createElement('button');
+                  _aeKwToggleMobile.className = 'ae-thumbs-kw-toggle';
+                  _aeKwToggleMobile.innerHTML = 'Keywords <span class="ae-thumbs-kw-arrow">&#9660;</span>';
+                  const _aeUpdateKwInline = (imgIdx) => {
+                    const _img = images[imgIdx];
+                    const _kws = _img && _img.keywords
+                      ? [...new Set(_img.keywords.split(',').map(k => k.trim().toLowerCase()).filter(Boolean))].sort()
+                      : [];
+                    _aeKwInline.innerHTML = _kws.map(kw => `<span class="ae-thumbs-kw-tag">${kw}</span>`).join('');
+                    _aeKwToggleMobile.style.display = _kws.length > 0 ? 'flex' : 'none';
+                  };
+                  _aeKwToggleMobile.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    const _isOpen = _aeKwInline.style.display === 'flex';
+                    _aeKwInline.style.display = _isOpen ? 'none' : 'flex';
+                    const _arr = _aeKwToggleMobile.querySelector('.ae-thumbs-kw-arrow');
+                    if (_arr) _arr.style.transform = _isOpen ? '' : 'rotate(180deg)';
+                  });
+                  // Inserisci bottone e pannello DOPO la strip
+                  _aeStrip.insertAdjacentElement('afterend', _aeKwInline);
+                  _aeKwInline.insertAdjacentElement('beforebegin', _aeKwToggleMobile);
+                  // Aggiorna keywords al cambio foto
+                  const _origShowIdxKw = _aeShowIdx;
+                  _aeShowIdx = function(idx) { _origShowIdxKw(idx); _aeUpdateKwInline(idx); };
+                  _aeUpdateKwInline(_aeThumbsIdx);
+                }
+              } else {
               // Sempre light in Mode 2 (sfondo bianco)
               _aeThumbsView._kwPanel.classList.add('light');
               // Mostra PRIMA il pannello, poi posiziona (evita il return precoce per display:none)
@@ -14368,6 +14462,7 @@ function buildArchive() {
               setTimeout(_doPosition, 400);
               // Fallback lungo: per immagini molto pesanti o connessioni lente
               setTimeout(_doPosition, 1500);
+              } // fine else desktop
             }
             // Sposta la fabBar fuori dal panel (che ha overflow:hidden) e la appende a body
             // così position:fixed funziona correttamente senza essere clippata
@@ -14739,8 +14834,43 @@ function buildArchive() {
           if (_tdBtn) _tdBtn.style.display = 'none';
           if (_tlBtn) _tlBtn.style.display = '';
           if (_aeThumbsView._kwPanel) {
-            _aeThumbsView._kwPanel.classList.add('light');
-            _aeThumbsView._kwPanel.style.display = 'flex';
+            if (window.innerWidth <= 768) {
+              // Su mobile: nascondi il pannello fixed, usa pannello inline SOTTO la strip
+              _aeThumbsView._kwPanel.style.display = 'none';
+              // Aggiungi bottone Keywords e pannello sotto la strip (solo la prima volta)
+              const _aeStrip2 = _aeThumbsView.querySelector('.ae-thumbs-strip');
+              if (_aeStrip2 && !_aeThumbsView.querySelector('.ae-thumbs-kw-toggle')) {
+                const _aeKwInline2 = document.createElement('div');
+                _aeKwInline2.className = 'ae-thumbs-kw-panel-inline';
+                _aeKwInline2.style.display = 'none';
+                const _aeKwToggle2 = document.createElement('button');
+                _aeKwToggle2.className = 'ae-thumbs-kw-toggle';
+                _aeKwToggle2.innerHTML = 'Keywords <span class="ae-thumbs-kw-arrow">&#9660;</span>';
+                const _aeUpdateKw2 = (imgIdx) => {
+                  const _img2 = images[imgIdx];
+                  const _kws2 = _img2 && _img2.keywords
+                    ? [...new Set(_img2.keywords.split(',').map(k => k.trim().toLowerCase()).filter(Boolean))].sort()
+                    : [];
+                  _aeKwInline2.innerHTML = _kws2.map(kw => `<span class="ae-thumbs-kw-tag">${kw}</span>`).join('');
+                  _aeKwToggle2.style.display = _kws2.length > 0 ? 'flex' : 'none';
+                };
+                _aeKwToggle2.addEventListener('click', (e) => {
+                  e.stopPropagation();
+                  const _isOpen2 = _aeKwInline2.style.display === 'flex';
+                  _aeKwInline2.style.display = _isOpen2 ? 'none' : 'flex';
+                  const _arr2 = _aeKwToggle2.querySelector('.ae-thumbs-kw-arrow');
+                  if (_arr2) _arr2.style.transform = _isOpen2 ? '' : 'rotate(180deg)';
+                });
+                _aeStrip2.insertAdjacentElement('afterend', _aeKwInline2);
+                _aeKwInline2.insertAdjacentElement('beforebegin', _aeKwToggle2);
+                const _origShowIdxKw2 = _aeShowIdx;
+                _aeShowIdx = function(idx) { _origShowIdxKw2(idx); _aeUpdateKw2(idx); };
+                _aeUpdateKw2(_aeThumbsIdx);
+              }
+            } else {
+              _aeThumbsView._kwPanel.classList.add('light');
+              _aeThumbsView._kwPanel.style.display = 'flex';
+            }
           }
         } else {
           // Box nero (dark mode): imposta la foto specifica se passata da VAO
@@ -14780,9 +14910,16 @@ function buildArchive() {
           }, delay);
         };
         // Su desktop: scrolla alla riga per tenerla in vista
-        // Su mobile: il pannello è position:fixed, non serve scrollare il view-archive
+        // Su mobile: scroll smooth verso il top con delay per permettere al pannello di aprirsi
         if (window.innerWidth > 768) {
           _doScrollToRow(50, row);
+        } else {
+          setTimeout(() => {
+            const vArchiveMob = document.getElementById('view-archive');
+            if (vArchiveMob && vArchiveMob.scrollTop > 50) {
+              vArchiveMob.scrollTo({ top: 0, behavior: 'smooth' });
+            }
+          }, 80);
         }
       });
 
