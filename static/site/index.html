@@ -8814,6 +8814,159 @@
       max-height: calc(100vh - 120px) !important;
     }
 
+    /* ══════════════════════════════════════════════════════════════
+       CORREZIONI MOBILE — ROUND 3 (Apr 2026)
+       Audit completo: 13 problemi trovati e corretti
+    ══════════════════════════════════════════════════════════════ */
+
+    /* ── 1. FOOTER: nascosto su mobile (era barra nera vuota) ── */
+    footer {
+      display: none !important;
+    }
+
+    /* ── 2. CONTACT: layout 3 colonne → 1 colonna su mobile ── */
+    .contact-page {
+      grid-template-columns: 1fr !important;
+      padding: 24px 16px 60px !important;
+      gap: 0 !important;
+      min-height: auto !important;
+    }
+    .contact-col {
+      border-right: none !important;
+      border-bottom: 1px solid #333 !important;
+      padding: 0 0 24px 0 !important;
+      margin-bottom: 24px !important;
+    }
+    .contact-col:last-child {
+      border-bottom: none !important;
+      padding-left: 0 !important;
+      margin-bottom: 0 !important;
+    }
+    .contact-col:first-child {
+      padding-left: 0 !important;
+      padding-right: 0 !important;
+    }
+    .contact-col:nth-child(2) {
+      padding-left: 0 !important;
+      padding-right: 0 !important;
+    }
+
+    /* ── 3. BIOGRAPHY: layout 2 colonne → 1 colonna su mobile ── */
+    .bio-wrap {
+      grid-template-columns: 1fr !important;
+      gap: 24px !important;
+      padding: 20px 16px 40px !important;
+    }
+    .bio-portrait {
+      max-width: 200px !important;
+    }
+    .bio-empty {
+      white-space: normal !important;
+      word-break: break-word !important;
+    }
+
+    /* ── 4. ARCHIVE ORDER-CTRL: position static su mobile (JS allinea su colonna nascosta) ── */
+    #archive-order-ctrl {
+      position: static !important;
+      display: flex !important;
+      flex-wrap: wrap !important;
+      align-items: center !important;
+      gap: 8px !important;
+      padding: 6px 0 10px !important;
+      width: 100% !important;
+    }
+
+    /* ── 5. CITIES ORDER-CTRL: position static su mobile ── */
+    #cities-order-ctrl {
+      position: static !important;
+      display: flex !important;
+      flex-wrap: wrap !important;
+      align-items: center !important;
+      gap: 8px !important;
+      margin-left: 8px !important;
+    }
+    .cities-view-toggle {
+      flex-wrap: wrap !important;
+      gap: 4px !important;
+      align-items: center !important;
+    }
+
+    /* ── 6. INTERVIEW: titolo e meta non troncano su mobile ── */
+    .interview-item-head .iw-title {
+      white-space: normal !important;
+      word-break: break-word !important;
+    }
+    .interview-item-head .iw-meta {
+      flex-wrap: wrap !important;
+      gap: 4px 12px !important;
+      font-size: 10px !important;
+    }
+    .interview-item-head {
+      grid-template-columns: 1fr auto !important;
+      gap: 8px !important;
+      padding: 8px 0 !important;
+      min-height: 44px !important;
+      cursor: auto !important;
+    }
+
+    /* ── 7. HAMBURGER MENU: voce attiva più visibile su mobile ── */
+    #mob-nav-inner button.active {
+      color: #aaa !important;
+    }
+    [data-theme="dark"] #mob-nav-inner button.active {
+      color: #666 !important;
+    }
+
+    /* ── 8. PAGINE VUOTE: min-height ridotto (biography, books, miscellanea) ── */
+    #view-biography,
+    #view-books,
+    #view-miscellanea,
+    #view-information {
+      min-height: auto !important;
+    }
+
+    /* ── 9. BOOKS/MISCELLANEA: testo placeholder non va a capo ogni parola ── */
+    .books-empty,
+    .miscellanea-empty,
+    .contact-empty {
+      white-space: normal !important;
+      word-break: break-word !important;
+      font-size: 12px !important;
+      padding: 20px 0 !important;
+    }
+
+    /* ── 10. SCULPTURES CHILD CLOSE: posizione corretta in alto (non in basso) ── */
+    #sculptures-child-close {
+      top: calc(var(--nav-h) + 8px) !important;
+      right: 12px !important;
+      bottom: auto !important;
+    }
+
+    /* ── 11. LANDING: safe area inset per notch iPhone ── */
+    #landing {
+      padding-top: env(safe-area-inset-top, 0px) !important;
+    }
+
+    /* ── 12. ARCHIVE EXPANDED: area nera vuota ridotta ── */
+    .archive-expanded-inner {
+      min-height: auto !important;
+    }
+
+    /* ── 13. CITIES TABELLA: colonne non si sovrappongono ── */
+    #cities-list-view .cities-row {
+      display: flex !important;
+      flex-direction: column !important;
+      padding: 10px 0 !important;
+      gap: 2px !important;
+      border-bottom: 1px solid var(--light) !important;
+    }
+    #cities-list-view .cities-row > div {
+      font-size: 12px !important;
+      padding: 0 !important;
+      white-space: normal !important;
+      word-break: break-word !important;
+    }
+
   } /* fine @media mobile */
 
   /* ══════════════════════════════════════════════════════════════
