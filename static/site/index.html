@@ -9831,36 +9831,36 @@
       transition: opacity 0.18s;
     }
 
-  /* ── Karaoke multi-riga dentro il Libretto viewer ── */
+  /* ── Karaoke multi-riga dentro la pagina sinistra del Libretto ── */
     #sc-libretto-karaoke {
       position: absolute;
-      bottom: 44px;
-      left: 16px;
-      width: calc(50% - 30px); /* occupa la metà sinistra del viewer */
+      /* Ancorato in basso nella pagina sinistra, sopra il bordo inferiore */
+      bottom: 6%;
+      left: 8%;
+      right: 8%;
       z-index: 10;
       pointer-events: none;
       overflow: hidden;
-      max-height: 120px; /* circa 5 righe */
+      /* Altezza massima = circa 5 righe, proporzionale alla pagina */
+      max-height: 22%;
       display: none;
       flex-direction: column;
       justify-content: flex-end;
-      gap: 4px;
     }
     #sc-libretto-karaoke.active { display: flex; }
     #sc-libretto-karaoke-line {
       display: flex;
       flex-wrap: wrap;
-      gap: 0.3em 0.35em;
+      gap: 0.2em 0.4em;
       align-items: baseline;
-      overflow: hidden;
       width: 100%;
     }
     #sc-libretto-karaoke .sc-kword {
-      font-family: 'Courier New', Courier, 'Lucida Console', monospace;
-      font-size: clamp(9px, 0.9vw, 12px);
+      font-family: Helvetica, Arial, sans-serif;
+      font-size: clamp(7px, 0.85vw, 11px);
       font-weight: 400;
-      color: #222;
-      line-height: 1.4;
+      color: #1a1a1a;
+      line-height: 1.5;
     }
     /* Parole libretto: nessuna animazione typewriter, solo fade-in */
     .sc-kword-libretto {
@@ -9868,6 +9868,7 @@
       overflow: visible !important;
       animation: none !important;
       display: inline !important;
+      white-space: normal !important;
     }
 
   /* ── Statement autore Synopsis — overlay fisso centrato nella viewport ── */
@@ -18764,6 +18765,7 @@ function _scLibrettoOpen() {
       <div id="sc-libretto-book">
         <div class="sc-libretto-page" id="sc-libretto-page-left">
           <img id="sc-libretto-img-left" src="" alt="Pagina libretto">
+          <div id="sc-libretto-karaoke"><div id="sc-libretto-karaoke-line"></div></div>
         </div>
         <div id="sc-libretto-spine"></div>
         <div class="sc-libretto-page" id="sc-libretto-page-right">
@@ -18781,7 +18783,6 @@ function _scLibrettoOpen() {
         <div id="sc-libretto-page-num"></div>
       </div>
       <div id="sc-libretto-dots"></div>
-      <div id="sc-libretto-karaoke"><div id="sc-libretto-karaoke-line"></div></div>
     `;
     document.body.appendChild(viewer);
     document.addEventListener('keydown', _scLibrettoKeydown);
