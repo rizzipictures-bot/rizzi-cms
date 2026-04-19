@@ -10381,13 +10381,7 @@
   if (isSculptToken) {
     sessionStorage.setItem(PREVIEW_KEY, '1');
     previewMode = true;
-    // Imposta subito il flag per saltare l'intro — DEVE essere prima del DOMContentLoaded
-    window._scIntroShownThisLoad = true;
-  }
-
-  if (previewMode && !isSculptToken) {
-    // Sessione preview già attiva (navigazione interna)
-    window._scIntroShownThisLoad = true;
+    // NON impostare _scIntroShownThisLoad qui: l'intro di Sculptures deve restare
   }
 
   // Se autenticato con password o token valido: nessun gate
@@ -10403,8 +10397,6 @@
         // Blocca scGoBack
         window._scGoBackOrig = window.scGoBack;
         window.scGoBack = function() {};
-        // Salta l'intro animazione
-        window._scIntroShownThisLoad = true;
         // Nascondi il menu principale del sito
         var menuOverlay = document.getElementById('menu-overlay');
         if (menuOverlay) menuOverlay.style.display = 'none';
@@ -10413,8 +10405,7 @@
         // Apri Sculptures: prima entra nel contesto Sculptures, poi apri Overview
         // Si attiva sia al primo accesso con token che alle navigazioni successive (previewMode)
         setTimeout(function() {
-          // Imposta flag prima di switchView per bloccare l'intro
-          window._scIntroShownThisLoad = true;
+          // NON impostare _scIntroShownThisLoad: l'intro di Sculptures deve girare
           if (typeof switchView === 'function') switchView('sculptures');
           setTimeout(function() {
             if (typeof scSwitchSection === 'function') scSwitchSection('overview');
