@@ -10396,10 +10396,13 @@
         // Blocca scGoBack
         window._scGoBackOrig = window.scGoBack;
         window.scGoBack = function() {};
-        // Apri Sculptures
+        // Apri Sculptures: prima entra nel contesto Sculptures, poi apri Overview
         if (isSculptToken) {
           setTimeout(function() {
-            if (typeof scSwitchSection === 'function') scSwitchSection('overview');
+            if (typeof switchView === 'function') switchView('sculptures');
+            setTimeout(function() {
+              if (typeof scSwitchSection === 'function') scSwitchSection('overview');
+            }, 200);
           }, 300);
         }
       });
