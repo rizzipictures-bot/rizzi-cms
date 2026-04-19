@@ -7814,6 +7814,11 @@
       z-index: 500 !important;
       border-radius: 0 !important;
       -webkit-overflow-scrolling: touch !important;
+      background: transparent !important;
+    }
+    /* Su mobile: il background nero è sull'inner, non sul pannello */
+    .archive-expanded-inner {
+      background: #000 !important;
     }
     /* Layout verticale su mobile: hero sopra, info sotto */
     .archive-expanded-inner {
@@ -7850,6 +7855,11 @@
       padding-bottom: 24px !important;
     }
     .archive-expanded-toggle {
+      display: none !important;
+    }
+    /* Nascondi il textBlock su mobile: il pannello fixed copre tutto lo schermo
+       e il textBlock nel DOM causa scroll automatico indesiderato del view-archive */
+    .archive-expanded-text {
       display: none !important;
     }
     /* FAB bar (bottoni + e X viola): posizionati in alto a destra del box */
@@ -8212,11 +8222,17 @@
       object-fit: contain !important;
     }
     .lightbox-nav {
-      padding: 16px 12px;
-      font-size: 13px;
+      padding: 20px 16px;
+      font-size: 16px;
+      background: rgba(0,0,0,0.25) !important;
+      min-width: 48px;
+      min-height: 80px;
+      display: flex !important;
+      align-items: center;
+      justify-content: center;
     }
-    .lightbox-nav.prev { left: 0; }
-    .lightbox-nav.next { right: 0; }
+    .lightbox-nav.prev { left: 0; border-radius: 0 4px 4px 0; }
+    .lightbox-nav.next { right: 0; border-radius: 4px 0 0 4px; }
     .lightbox-close {
       top: 12px;
       right: 12px;
@@ -9188,7 +9204,7 @@
       gap: 8px;
       width: 100%;
       padding: 14px 16px;
-      background: none;
+      background: #000;
       border: none;
       border-top: 1px solid rgba(255,255,255,0.2);
       color: rgba(255,255,255,0.9);
@@ -9222,6 +9238,7 @@
       transition: max-height 0.35s cubic-bezier(0.4, 0, 0.2, 1);
       padding: 0 16px;
       box-sizing: border-box;
+      background: #000;
     }
     .ae-kw-mobile-panel.open {
       max-height: 400px;
@@ -9347,6 +9364,29 @@
     /* Il bottone Back nel lightbox è sufficiente per tornare indietro */
     body.ae-thumbs-open .ae-fab-bar {
       display: none !important;
+    }
+    /* ── ae-zoom-white: frecce più grandi e distanziate su mobile ── */
+    #ae-zoom-white-img {
+      max-width: calc(100vw - 96px) !important;
+      max-height: calc(100vh - 80px) !important;
+      height: auto !important;
+      width: auto !important;
+    }
+    #ae-zoom-white-prev,
+    #ae-zoom-white-next {
+      padding: 24px 14px !important;
+      min-height: 100px !important;
+      min-width: 44px !important;
+      background: rgba(255,255,255,0.0) !important;
+      top: 50% !important;
+      transform: translateY(-50%) !important;
+    }
+    #ae-zoom-white-prev { left: 0 !important; }
+    #ae-zoom-white-next { right: 0 !important; }
+    #ae-zoom-white-prev svg,
+    #ae-zoom-white-next svg {
+      width: 28px !important;
+      height: 18px !important;
     }
   } /* fine @media mobile */
 
@@ -14569,11 +14609,15 @@ function buildArchive() {
           panel._mobileKwUpdate = _buildMobileKwPanel;
         }
         // Inserisci: prima il testo, poi il box nero
+        // Su mobile: blocca lo scroll del view-archive (il browser fa scroll automatico)
+        const _vArchive = document.getElementById('view-archive');
+        const _savedScrollTop = _vArchive ? _vArchive.scrollTop : 0;
         row.insertAdjacentElement('afterend', panel);
         row.insertAdjacentElement('afterend', textBlock);
         activeExpanded = panel;
-        // Su mobile: reset scroll del pannello fixed a top (mostra la foto subito)
+        // Su mobile: ripristina lo scroll del view-archive e resetta il pannello
         if (window.innerWidth <= 768) {
+          if (_vArchive) _vArchive.scrollTop = _savedScrollTop;
           panel.scrollTop = 0;
         }
         activeExpanded._textBlock = textBlock;
