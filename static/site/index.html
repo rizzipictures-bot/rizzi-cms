@@ -9856,15 +9856,15 @@
   /* ── Karaoke dentro il Libretto viewer ── */
     #sc-libretto-karaoke {
       position: absolute;
-      bottom: 44px;
+      bottom: 56px;
       left: 16px;
       right: 16px;
       z-index: 10;
       pointer-events: none;
-      overflow: hidden;
-      height: 52px;
+      overflow: visible;
+      height: 28px;
       display: none;
-      align-items: flex-end;
+      align-items: center;
     }
     #sc-libretto-karaoke.active { display: flex; }
     #sc-libretto-karaoke-line {
@@ -9892,51 +9892,74 @@
   /* ── Barra navigazione Q/A nel Libretto viewer ── */
     #sc-libretto-qnav {
       width: calc(100% - 120px);
-      margin-top: 12px;
+      margin-top: 14px;
       position: relative;
       display: flex;
-      align-items: center;
-      height: 20px;
+      align-items: flex-start;
       flex-shrink: 0;
     }
-    /* Linea orizzontale bianca */
+    /* Linea orizzontale bianca sottile */
     #sc-libretto-qnav::before {
       content: '';
       position: absolute;
       left: 0;
       right: 0;
-      top: 50%;
-      height: 1.5px;
-      background: rgba(255,255,255,0.55);
-      transform: translateY(-50%);
+      top: 13px;  /* centrata sulle pillole (metà di 26px) */
+      height: 1px;
+      background: rgba(255,255,255,0.3);
     }
-    /* Contenitore blocchetti: distribuiti uniformemente sulla linea */
+    /* Contenitore pillole: distribuiti uniformemente sulla linea */
     #sc-libretto-qnav-blocks {
       display: flex;
       justify-content: space-between;
-      align-items: center;
+      align-items: flex-start;
       width: 100%;
       position: relative;
       z-index: 1;
     }
-    /* Singolo blocchetto */
+    /* Wrapper singola pillola + etichetta */
+    .sc-libretto-qblock-wrap {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
+      cursor: pointer;
+    }
+    /* Pillola ovale verticale */
     .sc-libretto-qblock {
-      width: 8px;
-      height: 14px;
-      background: rgba(255,255,255,0.7);
+      width: 9px;
+      height: 22px;
+      border-radius: 999px;
+      background: rgba(255,255,255,0.55);
       cursor: pointer;
       border: none;
       padding: 0;
       flex-shrink: 0;
       transition: background 0.18s, transform 0.18s;
+      display: block;
     }
     .sc-libretto-qblock:hover {
-      background: rgba(255,255,255,1);
-      transform: scaleY(1.25);
+      background: rgba(255,255,255,0.9);
+      transform: scaleY(1.12);
     }
     .sc-libretto-qblock.active {
       background: #4c00fc;
-      transform: scaleY(1.3);
+      box-shadow: 0 0 8px rgba(76,0,252,0.7);
+      transform: scaleY(1.08);
+    }
+    /* Etichetta min:sec sotto ogni pillola */
+    .sc-libretto-qblock-label {
+      font-family: 'Courier New', Courier, monospace;
+      font-size: 8px;
+      color: rgba(255,255,255,0.45);
+      letter-spacing: 0.03em;
+      line-height: 1;
+      white-space: nowrap;
+      pointer-events: none;
+    }
+    .sc-libretto-qblock-wrap:hover .sc-libretto-qblock-label,
+    .sc-libretto-qblock-wrap.active .sc-libretto-qblock-label {
+      color: rgba(255,255,255,0.85);
     }
 
   /* ── Statement autore Synopsis — overlay fisso centrato nella viewport ── */
@@ -18897,14 +18920,25 @@ function _scLibrettoOpen() {
     // 10 coppie GS/AR con timestamp di inizio (secondi) nell'audio ITA
     // (usa la variabile globale _SC_LIBRETTO_QA_TIMES definita sotto)
     _SC_LIBRETTO_QA_TIMES.forEach(function(t, i) {
+      const wrap = document.createElement('div');
+      wrap.className = 'sc-libretto-qblock-wrap' + (i === 0 ? ' active' : '');
+      wrap.setAttribute('title', 'Q/A ' + (i + 1));
+      // Pillola
       const btn = document.createElement('button');
       btn.className = 'sc-libretto-qblock' + (i === 0 ? ' active' : '');
       btn.setAttribute('aria-label', 'Coppia ' + (i + 1));
-      btn.title = 'Q/A ' + (i + 1);
-      btn.addEventListener('click', function() {
+      // Etichetta min:sec
+      const label = document.createElement('span');
+      label.className = 'sc-libretto-qblock-label';
+      const mm = Math.floor(t / 60);
+      const ss = String(t % 60).padStart(2, '0');
+      label.textContent = mm + ':' + ss;
+      wrap.appendChild(btn);
+      wrap.appendChild(label);
+      wrap.addEventListener('click', function() {
         _scLibrettoJumpToQA(i);
       });
-      qblocks.appendChild(btn);
+      qblocks.appendChild(wrap);
     });
     qnav.appendChild(qblocks);
     viewer.appendChild(qnav);
@@ -19095,9 +19129,15 @@ function _scLibrettoJumpToQA(idx) {
 }
 
 function _scLibrettoUpdateQNav(activeIdx) {
+  // Aggiorna pillole
   const blocks = document.querySelectorAll('.sc-libretto-qblock');
   blocks.forEach(function(b, i) {
     b.classList.toggle('active', i === activeIdx);
+  });
+  // Aggiorna wrapper (per hover label)
+  const wraps = document.querySelectorAll('.sc-libretto-qblock-wrap');
+  wraps.forEach(function(w, i) {
+    w.classList.toggle('active', i === activeIdx);
   });
 }
 
