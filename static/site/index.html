@@ -9681,6 +9681,28 @@
       width: 14px;
       height: 14px;
     }
+    /* Bottone download PDF libretto */
+    #sc-libretto-download-btn {
+      position: absolute;
+      top: -18px;
+      right: 28px;
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.15);
+      border: 1.5px solid rgba(255,255,255,0.5);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 10;
+      text-decoration: none;
+      transition: background 0.18s, transform 0.18s;
+    }
+    #sc-libretto-download-btn:hover {
+      background: rgba(255,255,255,0.3);
+      transform: scale(1.12);
+    }
     /* Contenitore libro (doppie pagine) */
     #sc-libretto-book {
       position: relative;
@@ -18769,6 +18791,12 @@ function _scLibrettoOpen() {
           <line x1="16" y1="4" x2="4" y2="16"/>
         </svg>
       </button>
+      <a id="sc-libretto-download-btn" href="/static/site/Libretto.pdf" download="Libretto_Sculptures.pdf" aria-label="Scarica Libretto PDF" title="Download PDF">
+        <svg viewBox="0 0 20 20" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="18" height="18">
+          <path d="M10 3v10M6 9l4 4 4-4"/>
+          <path d="M3 16h14"/>
+        </svg>
+      </a>
       <div id="sc-libretto-book">
         <div class="sc-libretto-page" id="sc-libretto-page-left">
           <img id="sc-libretto-img-left" src="" alt="Pagina libretto">
