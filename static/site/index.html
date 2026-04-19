@@ -8283,7 +8283,7 @@
       position: fixed;
       top: 0; left: 0; right: 0; bottom: 0;
       background: rgba(255,255,255,0.97);
-      z-index: 999;
+      z-index: 9999;
       opacity: 0;
       transition: opacity 0.35s ease;
     }
@@ -8291,7 +8291,7 @@
       background: rgba(0,0,0,0.97);
     }
     #mob-nav-drawer.open {
-      display: flex;
+      display: flex !important;
       align-items: center;
       justify-content: center;
     }
@@ -8571,14 +8571,7 @@
       padding: 3px 8px !important;
     }
 
-    /* ── sc-interview-viewer-close: più grande su mobile ── */
-    #sc-interview-viewer-close {
-      font-size: 13px !important;
-      padding: 12px 16px !important;
-      min-height: 44px !important;
-      display: flex !important;
-      align-items: center !important;
-    }
+    /* ── sc-interview-viewer-close: gestito nella round 2 ── */
 
     /* ── Nascondi bottone THUMBS nell'archive expanded su mobile ── */
     .archive-expanded-viewall {
@@ -8589,16 +8582,43 @@
        CORREZIONI MOBILE — ROUND 2 (Apr 2026)
     ════════════════════════════════════════════════════════════ */
 
-    /* ── 1. Bottone "× close" (pillola): spostato in alto a destra, non sovrapposto ── */
+    /* ── 1. Bottone "× close" (pillola): nascosto per default, visibile solo quando viewer aperto ── */
     #sc-interview-viewer-close {
+      display: none !important;
       position: fixed !important;
-      top: 12px !important;
+      top: calc(var(--nav-h) + 8px) !important;
       right: 12px !important;
       left: auto !important;
       z-index: 3000 !important;
       font-size: 11px !important;
       padding: 10px 14px !important;
       min-height: 44px !important;
+    }
+    #sc-interview-viewer.sc-iv-open #sc-interview-viewer-close {
+      display: flex !important;
+    }
+
+    /* ── Cerchio viola (overview-overlay-fab-close): nascosto su mobile ── */
+    #overview-overlay-fab-close {
+      display: none !important;
+    }
+
+    /* ── Cerchio viola sculptures-child-close: nascosto su mobile per default ── */
+    #sculptures-child-close {
+      display: none !important;
+    }
+    /* Mostrato solo quando il pannello sculptures è attivo */
+    #sculptures-child.active #sculptures-child-close {
+      display: flex !important;
+    }
+
+    /* ── Cerchio bianco expand (sculptures-child-expand): sempre nascosto su mobile ── */
+    #sculptures-child-expand {
+      display: none !important;
+    }
+    /* ── Celle vuote (thumb-blank): nascoste su mobile ── */
+    #view-home .thumbs-grid .thumb-blank {
+      display: none !important;
     }
 
     /* ── 2. Griglia Overview (sculptures-grid): 1 colonna su mobile ── */
