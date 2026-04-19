@@ -9856,10 +9856,8 @@
   /* ── Karaoke dentro il Libretto viewer ── */
     #sc-libretto-karaoke {
       position: absolute;
-      /* Alzato per stare visibilmente sopra il bordo inferiore del libro
-         Il viewer è flex-column: book occupa flex:1, poi dots ~28px, poi qnav ~48px.
-         bottom calcolato: 28px(dots) + 14px(margin) + 48px(qnav) + 24px(margine) = ~114px */
-      bottom: 120px;
+      /* Posizionato sopra i dots, circa dove l'utente ha indicato con il crocino */
+      bottom: 50px;
       left: 60px;
       right: 60px;
       z-index: 20;
@@ -9901,21 +9899,21 @@
       align-items: flex-start;
       flex-shrink: 0;
     }
-    /* Linea orizzontale bianca sottile */
+    /* Linea orizzontale bianca sottilissima — centrata sulla pillola (metà di 13px = 6.5px) */
     #sc-libretto-qnav::before {
       content: '';
       position: absolute;
       left: 0;
       right: 0;
-      top: 13px;  /* centrata sulle pillole (metà di 26px) */
-      height: 1px;
-      background: rgba(255,255,255,0.3);
+      top: 6.5px;
+      height: 0.5px;
+      background: rgba(255,255,255,0.75);
     }
     /* Contenitore pillole: distribuiti uniformemente sulla linea */
     #sc-libretto-qnav-blocks {
       display: flex;
       justify-content: space-between;
-      align-items: flex-start;
+      align-items: center;  /* centrati verticalmente = centrati sulla linea */
       width: 100%;
       position: relative;
       z-index: 1;
