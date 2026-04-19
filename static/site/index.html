@@ -9831,6 +9831,35 @@
       transition: opacity 0.18s;
     }
 
+  /* ── Karaoke dentro il Libretto viewer ── */
+    #sc-libretto-karaoke {
+      position: absolute;
+      bottom: 44px;
+      left: 16px;
+      right: 16px;
+      z-index: 10;
+      pointer-events: none;
+      overflow: hidden;
+      height: 52px;
+      display: none;
+      align-items: flex-end;
+    }
+    #sc-libretto-karaoke.active { display: flex; }
+    #sc-libretto-karaoke-line {
+      display: flex;
+      flex-wrap: nowrap;
+      gap: 0.35em;
+      align-items: baseline;
+      overflow: hidden;
+      max-width: 100%;
+    }
+    #sc-libretto-karaoke .sc-kword {
+      font-family: 'Courier New', Courier, 'Lucida Console', monospace;
+      font-size: clamp(9.9px, 1.08vw, 13px);
+      font-weight: 400;
+      color: #333;
+    }
+
   /* ── Statement autore Synopsis — overlay fisso centrato nella viewport ── */
   #view-sculptures .sc-synopsis-statement,
   #sc-synopsis-statement {
@@ -18742,6 +18771,7 @@ function _scLibrettoOpen() {
         <div id="sc-libretto-page-num"></div>
       </div>
       <div id="sc-libretto-dots"></div>
+      <div id="sc-libretto-karaoke"><div id="sc-libretto-karaoke-line"></div></div>
     `;
     document.body.appendChild(viewer);
     document.addEventListener('keydown', _scLibrettoKeydown);
@@ -20255,6 +20285,7 @@ let _scKaraokeIdx = 0;     // indice della prossima parola da mostrare
 let _scKaraokeLineWords = []; // parole attualmente visibili nella riga (overview)
 let _scKaraokeViewerWords = []; // parole attualmente visibili nel viewer Sculptures
 let _scKaraokeZoomWords = []; // parole attualmente visibili nel popup zoom
+let _scKaraokeLibrettoWords = []; // parole attualmente visibili nel Libretto viewer
 const SC_KARAOKE_MAX_WORDS = 10; // max parole visibili contemporaneamente
 
 // Carica subtitles.json una sola volta
@@ -20303,6 +20334,12 @@ function scStartKaraokeFrom(filename, currentTimeSec) {
     if (zbox) zbox.classList.add('active');
     if (zline) zline.innerHTML = '';
     _scKaraokeZoomWords = [];
+    // Attiva anche il karaoke nel Libretto viewer se è aperto
+    const lbox = document.getElementById('sc-libretto-karaoke');
+    const lline = document.getElementById('sc-libretto-karaoke-line');
+    if (lbox) lbox.classList.add('active');
+    if (lline) lline.innerHTML = '';
+    _scKaraokeLibrettoWords = [];
     _scKaraokeTimer = setInterval(_scKaraokeStep, 80);
   });
 }
@@ -20339,7 +20376,8 @@ function _scKaraokeShowWord(word) {
   const targets = [
     { lineId: 'sc-karaoke-line', wordsArr: _scKaraokeLineWords },
     { lineId: 'sc-karaoke-viewer-line', wordsArr: _scKaraokeViewerWords },
-    { lineId: 'sc-karaoke-zoom-line', wordsArr: _scKaraokeZoomWords }
+    { lineId: 'sc-karaoke-zoom-line', wordsArr: _scKaraokeZoomWords },
+    { lineId: 'sc-libretto-karaoke-line', wordsArr: _scKaraokeLibrettoWords }
   ];
 
   targets.forEach(({ lineId, wordsArr }) => {
@@ -20398,6 +20436,11 @@ function scStopKaraoke() {
   const zline = document.getElementById('sc-karaoke-zoom-line');
   if (zbox) zbox.classList.remove('active');
   if (zline) zline.innerHTML = '';
+  const lbox = document.getElementById('sc-libretto-karaoke');
+  const lline = document.getElementById('sc-libretto-karaoke-line');
+  if (lbox) lbox.classList.remove('active');
+  if (lline) lline.innerHTML = '';
+  _scKaraokeLibrettoWords = [];
 }
 
 // ════════════════════════════════════════════════════════════════
