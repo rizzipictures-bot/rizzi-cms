@@ -9831,36 +9831,33 @@
       transition: opacity 0.18s;
     }
 
-  /* ── Karaoke multi-riga dentro la pagina sinistra del Libretto ── */
+  /* ── Karaoke dentro il Libretto viewer ── */
     #sc-libretto-karaoke {
       position: absolute;
-      /* Ancorato in basso nella pagina sinistra, sopra il bordo inferiore */
-      bottom: 6%;
-      left: 8%;
-      right: 8%;
+      bottom: 44px;
+      left: 16px;
+      right: 16px;
       z-index: 10;
       pointer-events: none;
       overflow: hidden;
-      /* Altezza massima = circa 5 righe, proporzionale alla pagina */
-      max-height: 22%;
+      height: 52px;
       display: none;
-      flex-direction: column;
-      justify-content: flex-end;
+      align-items: flex-end;
     }
     #sc-libretto-karaoke.active { display: flex; }
     #sc-libretto-karaoke-line {
       display: flex;
-      flex-wrap: wrap;
-      gap: 0.2em 0.4em;
+      flex-wrap: nowrap;
+      gap: 0.35em;
       align-items: baseline;
-      width: 100%;
+      overflow: hidden;
+      max-width: 100%;
     }
     #sc-libretto-karaoke .sc-kword {
-      font-family: Helvetica, Arial, sans-serif;
-      font-size: clamp(7px, 0.85vw, 11px);
+      font-family: 'Courier New', Courier, 'Lucida Console', monospace;
+      font-size: clamp(9.9px, 1.08vw, 13px);
       font-weight: 400;
-      color: #1a1a1a;
-      line-height: 1.5;
+      color: #333;
     }
     /* Parole libretto: nessuna animazione typewriter, solo fade-in */
     .sc-kword-libretto {
@@ -9868,7 +9865,6 @@
       overflow: visible !important;
       animation: none !important;
       display: inline !important;
-      white-space: normal !important;
     }
 
   /* ── Statement autore Synopsis — overlay fisso centrato nella viewport ── */
@@ -10580,6 +10576,7 @@
         <span id="sculptures-site-link" onclick="scGoBack()">Site</span>
         <hr id="sculptures-nav-sep" />
         <span data-sc-section="overview" class="active">Overview</span>
+        <span data-sc-section="conversation">Conversation</span>
         <span data-sc-section="images-book">Images</span>
         <span data-sc-section="diary">Testimonial Diary</span>
         <span data-sc-section="recordings">Recordings</span>
@@ -16081,6 +16078,16 @@ function scSwitchSection(section) {
   } else if (section === 'information') {
     // Apri info panel
     scOpenInfo();
+  } else if (section === 'conversation') {
+    // Apri direttamente il Libretto Sculptures
+    if (typeof _scLibrettoOpen === 'function') {
+      // Torna a overview nel nav (conversation è solo un trigger, non una sezione stabile)
+      scCurrentSection = 'overview';
+      document.querySelectorAll('#sculptures-nav [data-sc-section]').forEach(el => {
+        el.classList.toggle('active', el.dataset.scSection === 'overview');
+      });
+      _scLibrettoOpen();
+    }
   } else {
     // Mostra sezione testuale con eventuali immagini
     if (wrapper) wrapper.style.display = 'none';
@@ -18765,7 +18772,6 @@ function _scLibrettoOpen() {
       <div id="sc-libretto-book">
         <div class="sc-libretto-page" id="sc-libretto-page-left">
           <img id="sc-libretto-img-left" src="" alt="Pagina libretto">
-          <div id="sc-libretto-karaoke"><div id="sc-libretto-karaoke-line"></div></div>
         </div>
         <div id="sc-libretto-spine"></div>
         <div class="sc-libretto-page" id="sc-libretto-page-right">
@@ -18783,6 +18789,7 @@ function _scLibrettoOpen() {
         <div id="sc-libretto-page-num"></div>
       </div>
       <div id="sc-libretto-dots"></div>
+      <div id="sc-libretto-karaoke"><div id="sc-libretto-karaoke-line"></div></div>
     `;
     document.body.appendChild(viewer);
     document.addEventListener('keydown', _scLibrettoKeydown);
@@ -20425,11 +20432,10 @@ function _scKaraokeShowWord(word) {
     span.classList.add('typing');
   });
 
-  // Target Libretto: multi-riga con fade-in semplice, max 30 parole visibili
+  // Target Libretto: usa lo stesso sistema typewriter degli altri target
   const librettoLine = document.getElementById('sc-libretto-karaoke-line');
   if (librettoLine) {
-    const SC_LIBRETTO_MAX_WORDS = 30;
-    if (_scKaraokeLibrettoWords.length >= SC_LIBRETTO_MAX_WORDS) {
+    if (_scKaraokeLibrettoWords.length >= SC_KARAOKE_MAX_WORDS) {
       const oldest = _scKaraokeLibrettoWords.shift();
       if (oldest) {
         oldest.classList.add('fade-out');
@@ -20437,14 +20443,19 @@ function _scKaraokeShowWord(word) {
       }
     }
     const span = document.createElement('span');
-    span.className = 'sc-kword sc-kword-libretto';
+    span.className = 'sc-kword';
     span.textContent = word;
-    span.style.opacity = '0';
-    span.style.transition = 'opacity 0.3s ease';
     librettoLine.appendChild(span);
     _scKaraokeLibrettoWords.push(span);
-    // Fade-in
-    requestAnimationFrame(() => { span.style.opacity = '1'; });
+    void span.offsetWidth;
+    const naturalWidth = span.scrollWidth;
+    const letters = word.length;
+    const msPerChar = 55;
+    const totalMs = Math.max(80, letters * msPerChar);
+    span.style.setProperty('--tw-width', naturalWidth + 'px');
+    span.style.setProperty('--tw-steps', letters);
+    span.style.setProperty('--tw-dur', totalMs + 'ms');
+    span.classList.add('typing');
   }
 }
 
