@@ -9333,6 +9333,11 @@
       position: fixed !important;
       width: 100% !important;
     }
+    /* Nascondi la fab-bar (X viola) quando il ae-thumbs-view è aperto su mobile */
+    /* Il bottone Back nel lightbox è sufficiente per tornare indietro */
+    body.ae-thumbs-open .ae-fab-bar {
+      display: none !important;
+    }
   } /* fine @media mobile */
 
   /* ══════════════════════════════════════════════════════════════
