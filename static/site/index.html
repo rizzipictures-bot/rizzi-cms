@@ -10381,6 +10381,13 @@
   if (isSculptToken) {
     sessionStorage.setItem(PREVIEW_KEY, '1');
     previewMode = true;
+    // Imposta subito il flag per saltare l'intro — DEVE essere prima del DOMContentLoaded
+    window._scIntroShownThisLoad = true;
+  }
+
+  if (previewMode && !isSculptToken) {
+    // Sessione preview già attiva (navigazione interna)
+    window._scIntroShownThisLoad = true;
   }
 
   // Se autenticato con password o token valido: nessun gate
@@ -10404,16 +10411,15 @@
         var mobMenuBtn = document.getElementById('mob-menu-btn');
         if (mobMenuBtn) mobMenuBtn.style.display = 'none';
         // Apri Sculptures: prima entra nel contesto Sculptures, poi apri Overview
-        if (isSculptToken) {
+        // Si attiva sia al primo accesso con token che alle navigazioni successive (previewMode)
+        setTimeout(function() {
+          // Imposta flag prima di switchView per bloccare l'intro
+          window._scIntroShownThisLoad = true;
+          if (typeof switchView === 'function') switchView('sculptures');
           setTimeout(function() {
-            // Imposta flag prima di switchView per bloccare l'intro
-            window._scIntroShownThisLoad = true;
-            if (typeof switchView === 'function') switchView('sculptures');
-            setTimeout(function() {
-              if (typeof scSwitchSection === 'function') scSwitchSection('overview');
-            }, 200);
-          }, 300);
-        }
+            if (typeof scSwitchSection === 'function') scSwitchSection('overview');
+          }, 200);
+        }, 300);
       });
     }
     return;
@@ -21799,6 +21805,16 @@ loadFromCMS();
   const landingPhoto = document.getElementById('landing-photo');
   const cursorEl     = document.getElementById('cursor');
   if (!landing) return;
+
+  // Se siamo in modalità preview token (Sculptures-only), salta la landing
+  var _previewSkip = (sessionStorage.getItem('ar_sculptures_preview') === '1' &&
+                     sessionStorage.getItem('ar_gate_ok') !== '1');
+  if (_previewSkip) {
+    landing.style.display = 'none';
+    document.body.classList.remove('landing-active');
+    if (cursorEl) cursorEl.style.display = '';
+    return;
+  }
 
   let bandUp  = false;
   let exiting = false;
