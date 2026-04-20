@@ -6455,9 +6455,13 @@
     #sc-diary-bg-overlay.active {
       background: rgba(255,255,255,0.82) !important;
     }
-    /* In modalità synopsis: overlay completamente opaco per nascondere il testo di sfondo */
+    /* In modalità synopsis: overlay al valore originale (grigio 82%) — il typewriter wrap viene nascosto via CSS */
     .sc-synopsis-mode #sc-diary-bg-overlay.active {
-      background: rgba(255,255,255,1.0) !important;
+      background: rgba(255,255,255,0.82) !important;
+    }
+    /* Nasconde il testo typewriter di sfondo in synopsis mode (le scritte nere/bianche) */
+    .sc-synopsis-mode .sc-synopsis-typewriter-wrap {
+      visibility: hidden;
     }
     /* Effetto grana: pseudo-elemento SVG noise sopra il background */
     #sc-diary-bg-grain {
