@@ -815,6 +815,68 @@
     #landing-cursor-label { display: none; }
 
     /* ══════════════════════════════════════════════════════════════
+       LANDING SCULPTURES (token preview)
+    ══════════════════════════════════════════════════════════════ */
+    #sc-token-landing {
+      position: fixed; inset: 0;
+      z-index: 1000;
+      background: #000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      opacity: 0;
+      transition: opacity 0.6s ease;
+    }
+    #sc-token-landing.sctl-visible {
+      opacity: 1;
+    }
+    #sc-token-landing.sctl-exit {
+      opacity: 0;
+      pointer-events: none;
+    }
+    .sctl-inner {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0;
+      text-align: center;
+    }
+    .sctl-label {
+      font-family: 'Courier New', monospace;
+      font-size: 11px;
+      letter-spacing: 0.22em;
+      text-transform: uppercase;
+      color: rgba(255,255,255,0.38);
+      margin-bottom: 18px;
+    }
+    .sctl-title {
+      font-family: 'Courier New', monospace;
+      font-size: clamp(28px, 6vw, 52px);
+      font-weight: 300;
+      letter-spacing: 0.28em;
+      text-transform: uppercase;
+      color: #fff;
+      margin-bottom: 48px;
+    }
+    .sctl-btn {
+      background: transparent;
+      border: 1px solid rgba(255,255,255,0.45);
+      color: rgba(255,255,255,0.75);
+      font-family: 'Courier New', monospace;
+      font-size: 11px;
+      letter-spacing: 0.22em;
+      text-transform: uppercase;
+      padding: 10px 28px;
+      cursor: pointer;
+      transition: border-color 0.25s, color 0.25s, background 0.25s;
+    }
+    .sctl-btn:hover {
+      border-color: rgba(255,255,255,0.9);
+      color: #fff;
+      background: rgba(255,255,255,0.06);
+    }
+
+    /* ══════════════════════════════════════════════════════════════
        LAYOUT SHELL
     ══════════════════════════════════════════════════════════════ */
     #app {
@@ -10402,22 +10464,42 @@
         if (menuOverlay) menuOverlay.style.display = 'none';
         var mobMenuBtn = document.getElementById('mob-menu-btn');
         if (mobMenuBtn) mobMenuBtn.style.display = 'none';
-        // Apri Sculptures: aspetta che il CMS abbia caricato i dati (audio, immagini)
-        // poi chiama switchView('sculptures') — così audio e karaoke funzionano
+
+        // Mostra la landing Sculptures con fade-in
+        var scLanding = document.getElementById('sc-token-landing');
+        if (scLanding) {
+          scLanding.style.display = 'flex';
+          requestAnimationFrame(function() {
+            requestAnimationFrame(function() {
+              scLanding.classList.add('sctl-visible');
+            });
+          });
+        }
+
+        // Funzione che apre Sculptures (chiamata al click del bottone)
         function _doOpenSculptures() {
+          // Fade-out landing Sculptures
+          if (scLanding) {
+            scLanding.classList.add('sctl-exit');
+            setTimeout(function() { scLanding.style.display = 'none'; }, 700);
+          }
           if (typeof switchView === 'function') switchView('sculptures');
           setTimeout(function() {
             if (typeof scSwitchSection === 'function') scSwitchSection('overview');
           }, 200);
         }
-        if (window._cmsReady) {
-          // CMS già pronto (navigazione interna o caricamento veloce)
-          setTimeout(_doOpenSculptures, 100);
-        } else {
-          // Aspetta il segnale di completamento CMS
-          window._cmsReadyCallbacks = window._cmsReadyCallbacks || [];
-          window._cmsReadyCallbacks.push(function() {
-            setTimeout(_doOpenSculptures, 100);
+
+        // Collega il bottone Entra — il click sblocca l'autoplay audio
+        var enterBtn = document.getElementById('sctl-enter-btn');
+        if (enterBtn) {
+          enterBtn.addEventListener('click', function() {
+            if (window._cmsReady) {
+              _doOpenSculptures();
+            } else {
+              // CMS non ancora pronto: aspetta e poi apri
+              window._cmsReadyCallbacks = window._cmsReadyCallbacks || [];
+              window._cmsReadyCallbacks.push(_doOpenSculptures);
+            }
           });
         }
       });
@@ -10492,6 +10574,15 @@
   </div>
   <!-- Banda nera — schermo intero, poi sale automaticamente -->
   <div id="landing-band"></div>
+</div>
+
+<!-- Landing Sculptures — mostrata solo con token preview -->
+<div id="sc-token-landing" style="display:none">
+  <div class="sctl-inner">
+    <div class="sctl-label">Alessandro Rizzi</div>
+    <div class="sctl-title">Sculptures</div>
+    <button class="sctl-btn" id="sctl-enter-btn">Entra</button>
+  </div>
 </div>
 
 <!-- Menu overlay — griglia 4 colonne -->
