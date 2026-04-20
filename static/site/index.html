@@ -10402,15 +10402,24 @@
         if (menuOverlay) menuOverlay.style.display = 'none';
         var mobMenuBtn = document.getElementById('mob-menu-btn');
         if (mobMenuBtn) mobMenuBtn.style.display = 'none';
-        // Apri Sculptures: prima entra nel contesto Sculptures, poi apri Overview
-        // Si attiva sia al primo accesso con token che alle navigazioni successive (previewMode)
-        setTimeout(function() {
-          // NON impostare _scIntroShownThisLoad: l'intro di Sculptures deve girare
+        // Apri Sculptures: aspetta che il CMS abbia caricato i dati (audio, immagini)
+        // poi chiama switchView('sculptures') — così audio e karaoke funzionano
+        function _doOpenSculptures() {
           if (typeof switchView === 'function') switchView('sculptures');
           setTimeout(function() {
             if (typeof scSwitchSection === 'function') scSwitchSection('overview');
           }, 200);
-        }, 300);
+        }
+        if (window._cmsReady) {
+          // CMS già pronto (navigazione interna o caricamento veloce)
+          setTimeout(_doOpenSculptures, 100);
+        } else {
+          // Aspetta il segnale di completamento CMS
+          window._cmsReadyCallbacks = window._cmsReadyCallbacks || [];
+          window._cmsReadyCallbacks.push(function() {
+            setTimeout(_doOpenSculptures, 100);
+          });
+        }
       });
     }
     return;
@@ -21778,6 +21787,13 @@ async function loadFromCMS() {
   }
 
   updateFooter();
+
+  // Notifica i listener che il CMS è pronto (usato dal gate preview)
+  window._cmsReady = true;
+  if (window._cmsReadyCallbacks) {
+    window._cmsReadyCallbacks.forEach(function(cb) { try { cb(); } catch(e) {} });
+    window._cmsReadyCallbacks = [];
+  }
 }
 
 loadFromCMS();
