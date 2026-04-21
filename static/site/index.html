@@ -7672,16 +7672,31 @@
       opacity: 1;
       pointer-events: all;
     }
-    #sc-images1-img {
+    #sc-images1-img, #sc-images1-img-next {
       position: absolute;
       inset: 0;
       width: 100%;
       height: 100%;
       object-fit: cover;
       display: block;
-      transition: opacity 0.4s cubic-bezier(0.22, 1, 0.36, 1);
+      will-change: transform;
     }
-    #sc-images1-img.fade { opacity: 0; }
+    #sc-images1-img {
+      transform: translateX(0);
+      transition: transform 0.65s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+      z-index: 2;
+    }
+    #sc-images1-img.slide-out-left {
+      transform: translateX(-100%);
+    }
+    #sc-images1-img-next {
+      transform: translateX(100%);
+      transition: transform 0.65s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+      z-index: 1;
+    }
+    #sc-images1-img-next.slide-in {
+      transform: translateX(0);
+    }
     #sc-images1-close {
       position: absolute;
       top: 22px; right: 22px;
@@ -11563,6 +11578,7 @@
 <!-- Viewer fullscreen Images-1 -->
 <div id="sc-images1-viewer">
   <img id="sc-images1-img" src="" alt="">
+  <img id="sc-images1-img-next" src="" alt="">
   <button id="sc-images1-close" class="ae-fab-btn ae-fab-close btn-circle-close" onclick="_scImages1Close()" aria-label="Chiudi"><svg viewBox="0 0 20 20" width="12" height="12" fill="none" stroke-width="1.5" stroke-linecap="round"><line x1="2.5" y1="2.5" x2="17.5" y2="17.5"/><line x1="17.5" y1="2.5" x2="2.5" y2="17.5"/></svg></button>
   <button id="sc-images1-prev" onclick="_scImages1Nav(-1)">&#8592;</button>
   <button id="sc-images1-next" onclick="_scImages1Nav(1)">&#8594;</button>
@@ -15868,17 +15884,37 @@ function lbUpdateCursor() {
     scSwitchSection('images');
   };
 
+  let _imgs1NavLocked = false;
   window._scImages1Nav = function(dir) {
-    if (_imgs1.length === 0) return;
+    if (_imgs1.length === 0 || _imgs1NavLocked) return;
+    _imgs1NavLocked = true;
     _idx1 = (_idx1 + dir + _imgs1.length) % _imgs1.length;
-    const imgEl = document.getElementById('sc-images1-img');
-    const count = document.getElementById('sc-images1-count');
-    imgEl.classList.add('fade');
+    const imgCur  = document.getElementById('sc-images1-img');
+    const imgNext = document.getElementById('sc-images1-img-next');
+    const count   = document.getElementById('sc-images1-count');
+    // Precarica la nuova immagine nell'elemento secondario
+    imgNext.src = _imgs1[_idx1];
+    // Forza reflow per garantire la posizione iniziale translateX(100%)
+    imgNext.getBoundingClientRect();
+    // Avvia entrambe le animazioni: corrente esce a sx, nuova entra da dx
+    imgCur.classList.add('slide-out-left');
+    imgNext.style.zIndex = '3';
+    imgNext.classList.add('slide-in');
+    count.textContent = String(_idx1 + 1).padStart(2, '0') + ' / ' + String(_imgs1.length).padStart(2, '0');
     setTimeout(() => {
-      imgEl.src = _imgs1[_idx1];
-      imgEl.classList.remove('fade');
-      count.textContent = String(_idx1 + 1).padStart(2, '0') + ' / ' + String(_imgs1.length).padStart(2, '0');
-    }, 400);
+      // Swap: la nuova diventa quella corrente
+      imgCur.src = _imgs1[_idx1];
+      imgCur.classList.remove('slide-out-left');
+      imgCur.style.transform = 'translateX(0)';
+      imgNext.classList.remove('slide-in');
+      imgNext.style.zIndex = '1';
+      imgNext.style.transform = 'translateX(100%)';
+      imgNext.src = '';
+      // Rimuovi inline transform per tornare al CSS
+      imgCur.style.transform = '';
+      imgNext.style.transform = '';
+      _imgs1NavLocked = false;
+    }, 680);
   };
 
   function _scImages1Key(e) {
