@@ -23490,24 +23490,35 @@ loadFromCMS();
   }
 
   document.addEventListener('mousemove', function(e) {
-    if (pinned) return;
     var row = getExpandableAncestor(e.target);
     if (row) {
-      if (row !== currentEl) {
-        clearTimeout(hoverTimer);
-        currentEl = row;
-        var savedE = { clientX: e.clientX, clientY: e.clientY };
-        hoverTimer = setTimeout(function() {
-          showBox(row, savedE);
-        }, 700);
-      } else if (box.classList.contains('visible')) {
-        positionBox(e);
+      // Se pinnato su una riga diversa, unpin e segui la nuova riga
+      if (pinned && row !== currentEl) {
+        pinned = false;
+        box.classList.remove('pinned');
+      }
+      if (!pinned) {
+        if (row !== currentEl) {
+          clearTimeout(hoverTimer);
+          currentEl = row;
+          box.classList.remove('visible');
+          var savedE = { clientX: e.clientX, clientY: e.clientY };
+          hoverTimer = setTimeout(function() {
+            showBox(row, savedE);
+          }, 700);
+        } else if (box.classList.contains('visible')) {
+          positionBox(e);
+        }
       }
     } else {
-      if (currentEl) {
+      if (pinned) {
+        // Uscito da tutte le righe: unpin e nascondi
+        unpinBox();
+        currentEl = null;
+      } else if (currentEl) {
         clearTimeout(hoverTimer);
         currentEl = null;
-        if (!pinned) box.classList.remove('visible');
+        box.classList.remove('visible');
       }
     }
   });
