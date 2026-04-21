@@ -13188,9 +13188,13 @@ function buildOverviewGrid() {
   const COLS = 9;
 
   // ── Mescolamento creativo: alterna progetti e anni diversi ──────────────
-  // Raggruppa le immagini per progetto
+  // Separa A Life Beside (va sempre per ultima) dal pool principale
+  const lifeImages = ALL_IMAGES.filter(img => img.project.sc_section === 'life');
+  const mainImages = ALL_IMAGES.filter(img => img.project.sc_section !== 'life');
+
+  // Raggruppa le immagini per progetto (solo pool principale)
   const byProject = {};
-  ALL_IMAGES.forEach(img => {
+  mainImages.forEach(img => {
     const key = img.project.title;
     if (!byProject[key]) byProject[key] = { year: img.project.year || 0, imgs: [] };
     byProject[key].imgs.push(img);
@@ -13226,6 +13230,9 @@ function buildOverviewGrid() {
     imgs.push(img);
     lastYear = chosen.year;
   }
+  // Aggiunge A Life Beside in fondo (sempre per ultima)
+  shuffleArr(lifeImages);
+  lifeImages.forEach(img => imgs.push(img));
   // ─────────────────────────────────────────────────────────────────────────
 
   // Costruiamo la sequenza di celle: foto + blank sparsi
