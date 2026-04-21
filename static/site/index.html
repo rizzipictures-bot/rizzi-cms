@@ -6721,7 +6721,8 @@
       display: flex;
       flex-direction: row;
       gap: 10px;
-      align-items: flex-end;
+      align-items: flex-end; /* portrait e landscape allineati in basso */
+      flex-wrap: nowrap;
     }
     /* Ogni cella thumb */
     .sc-diary-cell {
@@ -17090,71 +17091,73 @@ function scBuildSectionContent(section) {
     const viewEl = document.getElementById('view-sculptures');
     if (viewEl) viewEl.classList.add('sc-diary-mode');
 
-    // ── Griglia stile Jack Davison: 26 thumbs hardcoded, mix portrait+landscape, righe irregolari ──
-    // Prima le 12 originali (in sequenza), poi riempimento con duplicate
-    // Ogni riga ha 8 thumbs base + 1 thumb extra nell'ultima colonna a destra
-    const DIARY_THUMBS = [
-      // ── RIGA 1: verticale, orizzontale, verticale, vuota, orizzontale, verticale, orizzontale, verticale ──
-      { file: 'diary-01-thumb.jpg',   idx: 0,  w: 115, h: 195 },
-      { file: 'diary-03-thumb-h.jpg', idx: 2,  w: 210, h: 140 },
-      { file: 'diary-02-thumb.jpg',   idx: 1,  w: 115, h: 195 },
-      { file: null,                            w: 60,  h: 195 },
-      { file: 'diary-06-thumb-h.jpg', idx: 5,  w: 205, h: 140 },
-      { file: 'diary-04-thumb.jpg',   idx: 3,  w: 115, h: 195 },
-      { file: 'diary-07-thumb-h.jpg', idx: 6,  w: 210, h: 140 },
-      { file: 'diary-05-thumb.jpg',   idx: 4,  w: 115, h: 195 },
-      // ── RIGA 2: orizzontale, verticale, orizzontale, verticale, vuota, verticale, orizzontale ──
-      { file: 'diary-10-thumb-h.jpg', idx: 9,  w: 210, h: 140 },
-      { file: 'diary-07-thumb.jpg',   idx: 6,  w: 115, h: 190 },
-      { file: 'diary-04-thumb-h.jpg', idx: 3,  w: 205, h: 140 },
-      { file: 'diary-08-thumb.jpg',   idx: 7,  w: 115, h: 190 },
-      { file: null,                            w: 55,  h: 190 },
-      { file: 'diary-09-thumb.jpg',   idx: 8,  w: 115, h: 190 },
-      { file: 'diary-12-thumb-h.jpg', idx: 11, w: 205, h: 140 },
-      { file: 'diary-06-thumb.jpg',   idx: 5,  w: 115, h: 190 },
-      // ── RIGA 3: verticale, vuota, orizzontale, verticale, orizzontale, verticale, verticale ──
-      { file: 'diary-10-thumb.jpg',   idx: 9,  w: 120, h: 195 },
-      { file: null,                            w: 75,  h: 195 },
-      { file: 'diary-03-thumb-h.jpg', idx: 2,  w: 210, h: 140 },
-      { file: 'diary-11-thumb.jpg',   idx: 10, w: 115, h: 195 },
-      { file: 'diary-07-thumb-h.jpg', idx: 6,  w: 205, h: 140 },
-      { file: 'diary-12-thumb.jpg',   idx: 11, w: 120, h: 195 },
-      { file: 'diary-01-thumb-b.jpg', idx: 0,  w: 115, h: 195 },
-      { file: 'diary-02-thumb-b.jpg', idx: 1,  w: 120, h: 195 },
-      // ── RIGA 4: orizzontale, verticale, vuota, orizzontale, verticale, orizzontale, verticale ──
-      { file: 'diary-06-thumb-h.jpg', idx: 5,  w: 210, h: 140 },
-      { file: 'diary-05-thumb-b.jpg', idx: 4,  w: 115, h: 190 },
-      { file: null,                            w: 65,  h: 190 },
-      { file: 'diary-10-thumb-h.jpg', idx: 9,  w: 205, h: 140 },
-      { file: 'diary-08-thumb-b.jpg', idx: 7,  w: 115, h: 190 },
-      { file: 'diary-04-thumb-h.jpg', idx: 3,  w: 205, h: 140 },
-      { file: 'diary-11-thumb-b.jpg', idx: 10, w: 115, h: 190 },
-      { file: 'diary-03-thumb.jpg',   idx: 2,  w: 120, h: 190 },
-      // ── RIGA 5: verticale, orizzontale, verticale, orizzontale, vuota, orizzontale, verticale ──
-      { file: 'diary-09-thumb.jpg',   idx: 8,  w: 115, h: 185 },
-      { file: 'diary-12-thumb-h.jpg', idx: 11, w: 210, h: 135 },
-      { file: 'diary-05-thumb.jpg',   idx: 4,  w: 115, h: 185 },
-      { file: 'diary-03-thumb-h.jpg', idx: 2,  w: 205, h: 135 },
-      { file: null,                            w: 60,  h: 185 },
-      { file: 'diary-07-thumb-h.jpg', idx: 6,  w: 210, h: 135 },
-      { file: 'diary-02-thumb-b.jpg', idx: 1,  w: 115, h: 185 },
-      { file: 'diary-06-thumb.jpg',   idx: 5,  w: 120, h: 185 },
+    // ── Griglia Testimonial Diary: thumbnail scalate al viewport, una sola cella vuota per riga in posizione casuale ──
+    // Le proporzioni delle thumb sono fisse (portrait ≈ 115:195, landscape ≈ 210:140).
+    // Al runtime si calcola un fattore di scala basato sulla larghezza disponibile,
+    // poi lo spazio residuo di ogni riga viene concentrato in una singola cella vuota
+    // posizionata in modo casuale — eliminando gli spazi irregolari tra le thumbnail.
+
+    // Definizione delle righe: ogni riga è un array di thumb (senza celle vuote — le aggiungiamo noi)
+    const DIARY_ROWS = [
+      // Riga 1
+      [
+        { file: 'diary-01-thumb.jpg',   idx: 0,  portrait: true  },
+        { file: 'diary-03-thumb-h.jpg', idx: 2,  portrait: false },
+        { file: 'diary-02-thumb.jpg',   idx: 1,  portrait: true  },
+        { file: 'diary-06-thumb-h.jpg', idx: 5,  portrait: false },
+        { file: 'diary-04-thumb.jpg',   idx: 3,  portrait: true  },
+        { file: 'diary-07-thumb-h.jpg', idx: 6,  portrait: false },
+        { file: 'diary-05-thumb.jpg',   idx: 4,  portrait: true  },
+      ],
+      // Riga 2
+      [
+        { file: 'diary-10-thumb-h.jpg', idx: 9,  portrait: false },
+        { file: 'diary-07-thumb.jpg',   idx: 6,  portrait: true  },
+        { file: 'diary-04-thumb-h.jpg', idx: 3,  portrait: false },
+        { file: 'diary-08-thumb.jpg',   idx: 7,  portrait: true  },
+        { file: 'diary-09-thumb.jpg',   idx: 8,  portrait: true  },
+        { file: 'diary-12-thumb-h.jpg', idx: 11, portrait: false },
+        { file: 'diary-06-thumb.jpg',   idx: 5,  portrait: true  },
+      ],
+      // Riga 3
+      [
+        { file: 'diary-10-thumb.jpg',   idx: 9,  portrait: true  },
+        { file: 'diary-03-thumb-h.jpg', idx: 2,  portrait: false },
+        { file: 'diary-11-thumb.jpg',   idx: 10, portrait: true  },
+        { file: 'diary-07-thumb-h.jpg', idx: 6,  portrait: false },
+        { file: 'diary-12-thumb.jpg',   idx: 11, portrait: true  },
+        { file: 'diary-01-thumb-b.jpg', idx: 0,  portrait: true  },
+        { file: 'diary-02-thumb-b.jpg', idx: 1,  portrait: true  },
+      ],
+      // Riga 4
+      [
+        { file: 'diary-06-thumb-h.jpg', idx: 5,  portrait: false },
+        { file: 'diary-05-thumb-b.jpg', idx: 4,  portrait: true  },
+        { file: 'diary-10-thumb-h.jpg', idx: 9,  portrait: false },
+        { file: 'diary-08-thumb-b.jpg', idx: 7,  portrait: true  },
+        { file: 'diary-04-thumb-h.jpg', idx: 3,  portrait: false },
+        { file: 'diary-11-thumb-b.jpg', idx: 10, portrait: true  },
+        { file: 'diary-03-thumb.jpg',   idx: 2,  portrait: true  },
+      ],
+      // Riga 5
+      [
+        { file: 'diary-09-thumb.jpg',   idx: 8,  portrait: true  },
+        { file: 'diary-12-thumb-h.jpg', idx: 11, portrait: false },
+        { file: 'diary-05-thumb.jpg',   idx: 4,  portrait: true  },
+        { file: 'diary-03-thumb-h.jpg', idx: 2,  portrait: false },
+        { file: 'diary-07-thumb-h.jpg', idx: 6,  portrait: false },
+        { file: 'diary-02-thumb-b.jpg', idx: 1,  portrait: true  },
+        { file: 'diary-06-thumb.jpg',   idx: 5,  portrait: true  },
+      ],
     ];
 
     // ── Ultima colonna destra: 4 sequenze di orientamento (H=orizzontale, V=verticale) ──
-    // Ogni sequenza definisce l'orientamento per le 5 righe.
-    // Si alternano ciclicamente ad ogni apertura della sezione diary.
-    // Sequenza 0: H,V,H,V,H  (prima volta: orizzontale riga1, verticale riga2, ecc.)
-    // Sequenza 1: V,H,V,H,V  (invertita)
-    // Sequenza 2: H,H,V,V,H  (mix)
-    // Sequenza 3: V,V,H,H,V  (mix invertito)
     const DIARY_LAST_COL_SEQUENCES = [
       ['h','v','h','v','h'],
       ['v','h','v','h','v'],
       ['h','h','v','v','h'],
       ['v','v','h','h','v'],
     ];
-    // Pool di thumb per l'ultima colonna (file disponibili per V e H)
     const DIARY_LAST_COL_POOL_V = [
       { file: 'diary-09-thumb-b.jpg', idx: 8  },
       { file: 'diary-08-thumb-b.jpg', idx: 7  },
@@ -17169,47 +17172,87 @@ function scBuildSectionContent(section) {
       { file: 'diary-04-thumb-h.jpg', idx: 3  },
       { file: 'diary-07-thumb-h.jpg', idx: 6  },
     ];
-    // Recupera e avanza il contatore di sequenza (ciclico)
     let _diarySeqIdx = parseInt(localStorage.getItem('sc_diary_last_col_seq') || '0', 10);
     _diarySeqIdx = (_diarySeqIdx + 1) % DIARY_LAST_COL_SEQUENCES.length;
     localStorage.setItem('sc_diary_last_col_seq', String(_diarySeqIdx));
     const _diaryLastColSeq = DIARY_LAST_COL_SEQUENCES[_diarySeqIdx];
-    // Altezze delle righe per allineare l'ultima colonna
-    const DIARY_ROW_HEIGHTS = [195, 190, 195, 190, 185];
 
-    // Definizione righe: quante thumbs per riga (8 base)
-    const DIARY_ROW_SIZES = [8, 8, 8, 8, 8];
+    // ── Proporzioni base delle thumbnail (a 1x) ──
+    // Portrait: 115 × 195  →  ratio larghezza/altezza = 115/195
+    // Landscape: 210 × 140 →  ratio larghezza/altezza = 210/140
+    const THUMB_P_W = 115, THUMB_P_H = 195;  // portrait base
+    const THUMB_L_W = 210, THUMB_L_H = 140;  // landscape base
+    const GAP = 10; // gap tra celle in px
+    const PADDING_H = 28; // padding orizzontale totale del contenitore (14px × 2)
+
+    // Larghezza disponibile al momento del rendering
+    const availW = (el.offsetWidth || window.innerWidth) - PADDING_H;
+
+    // ── Calcolo fattore di scala: vogliamo che le thumb riempiano ~90% della larghezza
+    // su ogni schermo, con la cella vuota che assorbe il residuo.
+    // Prendiamo la riga più "densa" (riga 3: 5 portrait + 2 landscape + 1 ultima col) come riferimento.
+    // Numero di thumb per riga (senza cella vuota): 7 base + 1 ultima colonna = 8
+    // Larghezza base a 1x per riga di riferimento (riga 3, mix portrait+landscape):
+    //   portrait × 5 + landscape × 2 + portrait ultima col (conservativo) = 115*5 + 210*2 + 115 = 1110px
+    // Target: le thumb occupino availW - una cella vuota minima (≥ 20px)
+    // Quindi: scale = (availW - GAP*8 - 20) / 1110
+    // Clamp: min 0.55 (iPad), max 1.6 (32")
+    const BASE_ROW_W = THUMB_P_W * 5 + THUMB_L_W * 2 + THUMB_P_W; // 1110px
+    const scale = Math.min(1.6, Math.max(0.55, (availW - GAP * 8 - 20) / BASE_ROW_W));
+
+    // Dimensioni scalate
+    const pW = Math.round(THUMB_P_W * scale);
+    const pH = Math.round(THUMB_P_H * scale);
+    const lW = Math.round(THUMB_L_W * scale);
+    const lH = Math.round(THUMB_L_H * scale);
+
     let html = '<h2>Testimonial Diary</h2>';
     html += '<div class="sc-section-diary-grid" id="sc-diary-grid">';
-    let tIdx = 0;
-    for (let rowNum = 0; rowNum < DIARY_ROW_SIZES.length; rowNum++) {
-      const rowSize = DIARY_ROW_SIZES[rowNum];
-      const rowH = DIARY_ROW_HEIGHTS[rowNum];
-      html += '<div class="sc-diary-row">';
-      for (let c = 0; c < rowSize; c++) {
-        if (tIdx >= DIARY_THUMBS.length) break;
-        const t = DIARY_THUMBS[tIdx++];
-        if (!t.file) {
-          html += `<div class="sc-diary-cell sc-diary-empty" style="width:${t.w}px;height:${t.h}px;"></div>`;
-        } else {
-          html += `<div class="sc-diary-cell" data-idx="${t.idx}" onclick="scOpenChild(${t.idx}, 'diary')" style="width:${t.w}px;height:${t.h}px;">
-        <div class="sc-diary-img-wrap"><img src="/static/site/images/diary/${t.file}" alt="Diary" loading="lazy"></div>
-      </div>`;
-        }
-      }
-      // ── Ultima colonna destra: thumb con orientamento dalla sequenza corrente ──
-      const orient = _diaryLastColSeq[rowNum]; // 'h' o 'v'
+
+    for (let rowNum = 0; rowNum < DIARY_ROWS.length; rowNum++) {
+      const rowThumbs = DIARY_ROWS[rowNum];
+      const rowH = rowThumbs.some(t => t.portrait) ? pH : lH; // altezza riga = altezza portrait se presente
+
+      // ── Ultima colonna per questa riga ──
+      const orient = _diaryLastColSeq[rowNum];
       let lcThumb, lcW, lcH;
       if (orient === 'h') {
         lcThumb = DIARY_LAST_COL_POOL_H[rowNum % DIARY_LAST_COL_POOL_H.length];
-        lcW = 205; lcH = 140;
+        lcW = lW; lcH = lH;
       } else {
         lcThumb = DIARY_LAST_COL_POOL_V[rowNum % DIARY_LAST_COL_POOL_V.length];
-        lcW = 115; lcH = rowH;
+        lcW = pW; lcH = pH;
       }
-      html += `<div class="sc-diary-cell sc-diary-last-col" data-idx="${lcThumb.idx}" onclick="scOpenChild(${lcThumb.idx}, 'diary')" style="width:${lcW}px;height:${lcH}px;">
-        <div class="sc-diary-img-wrap"><img src="/static/site/images/diary/${lcThumb.file}" alt="Diary" loading="lazy"></div>
+
+      // ── Costruisci array di celle (thumb + ultima col), senza cella vuota ──
+      const cells = rowThumbs.map(t => ({
+        file: t.file, idx: t.idx,
+        w: t.portrait ? pW : lW,
+        h: t.portrait ? pH : lH,
+        empty: false
+      }));
+      cells.push({ file: lcThumb.file, idx: lcThumb.idx, w: lcW, h: lcH, empty: false, lastCol: true });
+
+      // ── Calcola larghezza residua e inserisci cella vuota in posizione casuale ──
+      const totalThumbW = cells.reduce((s, c) => s + c.w, 0);
+      const totalGaps = GAP * cells.length; // gap tra tutte le celle inclusa la vuota
+      const emptyW = Math.max(8, availW - totalThumbW - totalGaps);
+      const emptyH = rowH;
+      // Posizione casuale: tra 0 e cells.length (esclusa ultima posizione per non spostare l'ultima col)
+      const emptyPos = Math.floor(Math.random() * cells.length);
+      cells.splice(emptyPos, 0, { empty: true, w: emptyW, h: emptyH });
+
+      // ── Genera HTML della riga ──
+      html += '<div class="sc-diary-row">';
+      for (const c of cells) {
+        if (c.empty) {
+          html += `<div class="sc-diary-cell sc-diary-empty" style="width:${c.w}px;height:${c.h}px;"></div>`;
+        } else {
+          html += `<div class="sc-diary-cell" data-idx="${c.idx}" onclick="scOpenChild(${c.idx}, 'diary')" style="width:${c.w}px;height:${c.h}px;">
+        <div class="sc-diary-img-wrap"><img src="/static/site/images/diary/${c.file}" alt="Diary" loading="lazy"></div>
       </div>`;
+        }
+      }
       html += '</div>';
     }
     html += '</div>';
