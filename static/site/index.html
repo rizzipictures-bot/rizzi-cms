@@ -7739,34 +7739,35 @@
     #sc-images1-viewer.portrait #sc-images1-bg {
       display: block;
     }
-    #sc-images1-viewer.portrait #sc-images1-img {
-      position: absolute;
-      inset: auto;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      width: auto;
-      height: 50vh;
-      object-fit: contain;
-      z-index: 2;
-    }
-    #sc-images1-viewer.portrait #sc-images1-img.slide-out-left {
-      transform: translate(calc(-50% - 100vw), -50%);
-    }
+    /* Foto piccola portrait: posizione base — viene sovrascritta da .pos-right/.pos-left/.pos-center */
+    #sc-images1-viewer.portrait #sc-images1-img,
     #sc-images1-viewer.portrait #sc-images1-img-next {
       position: absolute;
       inset: auto;
       top: 50%;
-      left: 50%;
-      transform: translate(calc(-50% + 100vw), -50%);
       width: auto;
       height: 50vh;
       object-fit: contain;
-      z-index: 1;
+      transition: transform 0.65s cubic-bezier(0.25, 0.46, 0.45, 0.94);
     }
-    #sc-images1-viewer.portrait #sc-images1-img-next.slide-in {
-      transform: translate(-50%, -50%);
-    }
+    #sc-images1-viewer.portrait #sc-images1-img { z-index: 2; }
+    #sc-images1-viewer.portrait #sc-images1-img-next { z-index: 1; }
+    /* Posizioni orizzontali della foto piccola */
+    #sc-images1-viewer.portrait #sc-images1-img.pos-right  { left: 75%; transform: translate(-50%, -50%); }
+    #sc-images1-viewer.portrait #sc-images1-img.pos-left   { left: 25%; transform: translate(-50%, -50%); }
+    #sc-images1-viewer.portrait #sc-images1-img.pos-center { left: 50%; transform: translate(-50%, -50%); }
+    /* Slide out: esce verso sinistra */
+    #sc-images1-viewer.portrait #sc-images1-img.slide-out-left.pos-right  { transform: translate(calc(-50% - 100vw), -50%); }
+    #sc-images1-viewer.portrait #sc-images1-img.slide-out-left.pos-left   { transform: translate(calc(-50% - 100vw), -50%); }
+    #sc-images1-viewer.portrait #sc-images1-img.slide-out-left.pos-center { transform: translate(calc(-50% - 100vw), -50%); }
+    /* Posizioni del next (arriva da destra) */
+    #sc-images1-viewer.portrait #sc-images1-img-next.pos-right  { left: 75%; transform: translate(calc(-50% + 100vw), -50%); }
+    #sc-images1-viewer.portrait #sc-images1-img-next.pos-left   { left: 25%; transform: translate(calc(-50% + 100vw), -50%); }
+    #sc-images1-viewer.portrait #sc-images1-img-next.pos-center { left: 50%; transform: translate(calc(-50% + 100vw), -50%); }
+    /* Slide in: arriva nella posizione finale */
+    #sc-images1-viewer.portrait #sc-images1-img-next.slide-in.pos-right  { transform: translate(-50%, -50%); }
+    #sc-images1-viewer.portrait #sc-images1-img-next.slide-in.pos-left   { transform: translate(-50%, -50%); }
+    #sc-images1-viewer.portrait #sc-images1-img-next.slide-in.pos-center { transform: translate(-50%, -50%); }
     /* ── Viewer fullscreen Images-4 (identico a images-1) ── */
     #sc-images4-viewer {
       position: fixed; inset: 0;
@@ -15995,7 +15996,15 @@ function lbUpdateCursor() {
     document.addEventListener('keydown', _scImages1Key);
   };
 
-  function _scImages1SetPortrait(imgEl, src, viewer) {
+  // Ciclo posizioni portrait: right → left → center → right ...
+  const _PORTRAIT_POSITIONS = ['pos-right', 'pos-left', 'pos-center'];
+  let _portrait1PosIdx = 0;
+
+  function _scImages1GetPos() {
+    return _PORTRAIT_POSITIONS[_portrait1PosIdx % 3];
+  }
+
+  function _scImages1SetPortrait(imgEl, src, viewer, advancePos) {
     const tmp = new Image();
     tmp.onload = function() {
       const isPortrait = tmp.naturalHeight > tmp.naturalWidth;
@@ -16003,9 +16012,13 @@ function lbUpdateCursor() {
       if (isPortrait) {
         viewer.classList.add('portrait');
         bg.src = src;
+        // Rimuovi vecchie classi posizione e applica quella corrente
+        imgEl.classList.remove('pos-right', 'pos-left', 'pos-center');
+        imgEl.classList.add(_scImages1GetPos());
       } else {
         viewer.classList.remove('portrait');
         bg.src = '';
+        imgEl.classList.remove('pos-right', 'pos-left', 'pos-center');
       }
     };
     tmp.src = src;
@@ -16030,7 +16043,14 @@ function lbUpdateCursor() {
     const count   = document.getElementById('sc-images1-count');
     // Precarica la nuova immagine nell'elemento secondario
     imgNext.src = _imgs1[_idx1];
-    // Forza reflow per garantire la posizione iniziale translateX(100%)
+    // Calcola la prossima posizione portrait (senza avanzare ancora il contatore)
+    const viewer = document.getElementById('sc-images1-viewer');
+    if (viewer.classList.contains('portrait')) {
+      const nextPos = _PORTRAIT_POSITIONS[(_portrait1PosIdx + 1) % 3];
+      imgNext.classList.remove('pos-right', 'pos-left', 'pos-center');
+      imgNext.classList.add(nextPos);
+    }
+    // Forza reflow per garantire la posizione iniziale
     imgNext.getBoundingClientRect();
     // Avvia entrambe le animazioni: corrente esce a sx, nuova entra da dx
     imgCur.classList.add('slide-out-left');
@@ -16043,10 +16063,10 @@ function lbUpdateCursor() {
       imgNext.style.transition = 'none';
       // Swap: aggiorna src e posizione del corrente
       imgCur.src = _imgs1[_idx1];
-      imgCur.classList.remove('slide-out-left');
+      imgCur.classList.remove('slide-out-left', 'pos-right', 'pos-left', 'pos-center');
       imgCur.style.transform = '';
       // Reset del next fuori schermo a destra
-      imgNext.classList.remove('slide-in');
+      imgNext.classList.remove('slide-in', 'pos-right', 'pos-left', 'pos-center');
       imgNext.style.zIndex = '1';
       imgNext.style.transform = '';
       imgNext.src = '';
@@ -16054,7 +16074,8 @@ function lbUpdateCursor() {
       imgCur.getBoundingClientRect();
       imgCur.style.transition = '';
       imgNext.style.transition = '';
-      // Aggiorna portrait/landscape per la nuova immagine
+      // Avanza il ciclo di posizione portrait e aggiorna
+      _portrait1PosIdx++;
       const viewer = document.getElementById('sc-images1-viewer');
       _scImages1SetPortrait(imgCur, _imgs1[_idx1], viewer);
       _imgs1NavLocked = false;
