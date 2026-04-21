@@ -16845,7 +16845,13 @@ function scBuildGrid() {
 }
 
 // ── Dati hardcoded Testimonial Diary ──
+// Ogni voce rappresenta un GRUPPO di pagine con testimonianze uniche.
+// Le pagine fisicamente diverse (tagli diversi) che condividono le stesse testimonianze
+// sono raggruppate: la navigazione next/prev scorre solo queste 6 voci, senza ripetizioni.
+// La griglia mostra tutti i tagli visivi, ma ogni thumbnail apre il viewer
+// sull'indice del suo gruppo tramite SC_DIARY_IDX_MAP.
 const SC_DIARY_IMAGES = [
+  // idx 0 — Cover
   {
     file: '/static/site/images/diary/diary-cover.jpg',
     cover: true,
@@ -16853,132 +16859,78 @@ const SC_DIARY_IMAGES = [
     testimonies: null,
     intro: 'The black diary is a Notebook that I decided to buy in Washington D.C on December 12th 2014, the day before the march for all Justice that took place in the capital after the fatal shooting and civil unrest originating in Ferguson. I asked to the people arrived in Washington to leave a personal witness of their presence to collect a sign of their physical and emotional presence in these specific topic moment of the American Histories.'
   },
+  // idx 1 — Gruppo A: diary-01 (testimonianze uniche)
   {
     file: '/static/site/images/diary/diary-01.jpg',
-    cellClass: 'sc-cell-v',
     title: 'Washington, 13-12-2014',
     testimonies: [
-      { author: 'Jeffrey Johnson · Baltimore, MD', text: '\u201cNo Justice, No Peace\u201d' },
-      { author: 'Amefika Browk · Houston St. Suitland, MD', text: '\u201cAll the world is searching for Truth\u201d' },
-      { author: 'Sheik Alex Prather-El', text: '\u201cLove instead of Hate\u201d' },
-      { author: 'Grand Shiek · Darrel Johnson-Bey · Balt. MD', text: '\u201cUplifting\u201d' }
+      { author: 'Jeffrey Johnson · Baltimore, MD', text: '“No Justice, No Peace”' },
+      { author: 'Amefika Browk · Houston St. Suitland, MD', text: '“All the world is searching for Truth”' },
+      { author: 'Sheik Alex Prather-El', text: '“Love instead of Hate”' },
+      { author: 'Grand Shiek · Darrel Johnson-Bey · Balt. MD', text: '“Uplifting”' }
     ]
   },
+  // idx 2 — Gruppo B: diary-02, diary-03, diary-04 (stesse testimonianze)
   {
     file: '/static/site/images/diary/diary-02.jpg',
-    cellClass: 'sc-cell-h',
     title: 'Washington, 13-12-2014',
     testimonies: [
-      { author: 'Andre Williams · San Diego, CA', text: '\u201cI am Here for Action\u201d' },
-      { author: 'Theodora Lomax · Red Bank, NJ', text: '\u201cNO Justice NO Peace Only RIGHT Prevail \u2014 we will march on to victory\u201d' },
-      { author: 'Elliott Lomax · Bowie, MD', text: '\u201cI came because I fear for my life, and my son\u2019s life and my father\u2019s life and my brother\u2019s life at the hands of the public servants who are sworn to serve and protect us.\u201d' },
-      { author: 'Rachel Bards · Washington DC', text: '\u201cI came out of fear for my brothers and future sons.\u201d' },
-      { author: 'Greg Booker Jr.', text: '\u201cThis day as other days are significant to our tomorrows. Always stand for what is right in your heart.\u201d' }
+      { author: 'Andre Williams · San Diego, CA', text: '“I am Here for Action”' },
+      { author: 'Theodora Lomax · Red Bank, NJ', text: '“NO Justice NO Peace Only RIGHT Prevail — we will march on to victory”' },
+      { author: 'Elliott Lomax · Bowie, MD', text: '“I came because I fear for my life, and my son’s life and my father’s life and my brother’s life at the hands of the public servants who are sworn to serve and protect us.”' },
+      { author: 'Rachel Bards · Washington DC', text: '“I came out of fear for my brothers and future sons.”' },
+      { author: 'Greg Booker Jr.', text: '“This day as other days are significant to our tomorrows. Always stand for what is right in your heart.”' }
     ]
   },
-  {
-    file: '/static/site/images/diary/diary-03.jpg',
-    cellClass: 'sc-cell-v',
-    title: 'Washington, 13-12-2014',
-    testimonies: [
-      { author: 'Andre Williams · San Diego, CA', text: '\u201cI am Here for Action\u201d' },
-      { author: 'Theodora Lomax · Red Bank, NJ', text: '\u201cNO Justice NO Peace Only RIGHT Prevail \u2014 we will march on to victory\u201d' },
-      { author: 'Elliott Lomax · Bowie, MD', text: '\u201cI came because I fear for my life, and my son\u2019s life and my father\u2019s life and my brother\u2019s life at the hands of the public servants who are sworn to serve and protect us.\u201d' },
-      { author: 'Rachel Bards · Washington DC', text: '\u201cI came out of fear for my brothers and future sons.\u201d' },
-      { author: 'Greg Booker Jr.', text: '\u201cThis day as other days are significant to our tomorrows. Always stand for what is right in your heart.\u201d' }
-    ]
-  },
-  {
-    file: '/static/site/images/diary/diary-04.jpg',
-    cellClass: 'sc-cell-v',
-    title: 'Washington, 13-12-2014',
-    testimonies: [
-      { author: 'Andre Williams · San Diego, CA', text: '\u201cI am Here for Action\u201d' },
-      { author: 'Theodora Lomax · Red Bank, NJ', text: '\u201cNO Justice NO Peace Only RIGHT Prevail \u2014 we will march on to victory\u201d' },
-      { author: 'Elliott Lomax · Bowie, MD', text: '\u201cI came because I fear for my life, and my son\u2019s life and my father\u2019s life and my brother\u2019s life at the hands of the public servants who are sworn to serve and protect us.\u201d' },
-      { author: 'Rachel Bards · Washington DC', text: '\u201cI came out of fear for my brothers and future sons.\u201d' },
-      { author: 'Greg Booker Jr.', text: '\u201cThis day as other days are significant to our tomorrows. Always stand for what is right in your heart.\u201d' }
-    ]
-  },
+  // idx 3 — Gruppo C: diary-05, diary-06, diary-07 (stesse testimonianze)
   {
     file: '/static/site/images/diary/diary-05.jpg',
-    cellClass: 'sc-cell-h',
     title: 'Washington, 13-12-2014',
     testimonies: [
-      { author: 'Paul Braham · Washington DC', text: '\u201cAs a black man I had to be here bc I\u2019ve been harassed and stopped by police. I love the crowd energy. I hope this will lead to widespread and long lasting change.\u201d' },
-      { author: 'Saba Ahmed & Allegra O\u2019Donoghue · Oakland, CA', text: '\u201c#blacklivesmatter. We\u2019re standing in solidarity as allies.\u201d' },
-      { author: 'Beverly Carter · Luke 17', text: '\u201cWrong doers will be accountable. Christians Rebuke wrong in Love hoping for God\u2019s will to be done, we will forgive. Have Faith in God!\u201d' },
-      { author: 'Cedric Lamar · NYC', text: '\u201cToday, I saw people of ALL colors standing up for the Red, White, & Blue. It\u2019s time to join the fight. How about you?\u201d' }
+      { author: 'Paul Braham · Washington DC', text: '“As a black man I had to be here bc I’ve been harassed and stopped by police. I love the crowd energy. I hope this will lead to widespread and long lasting change.”' },
+      { author: 'Saba Ahmed & Allegra O’Donoghue · Oakland, CA', text: '“#blacklivesmatter. We’re standing in solidarity as allies.”' },
+      { author: 'Beverly Carter · Luke 17', text: '“Wrong doers will be accountable. Christians Rebuke wrong in Love hoping for God’s will to be done, we will forgive. Have Faith in God!”' },
+      { author: 'Cedric Lamar · NYC', text: '“Today, I saw people of ALL colors standing up for the Red, White, & Blue. It’s time to join the fight. How about you?”' }
     ]
   },
-  {
-    file: '/static/site/images/diary/diary-06.jpg',
-    cellClass: 'sc-cell-v',
-    title: 'Washington, 13-12-2014',
-    testimonies: [
-      { author: 'Paul Braham · Washington DC', text: '\u201cAs a black man I had to be here bc I\u2019ve been harassed and stopped by police. I love the crowd energy. I hope this will lead to widespread and long lasting change.\u201d' },
-      { author: 'Saba Ahmed & Allegra O\u2019Donoghue · Oakland, CA', text: '\u201c#blacklivesmatter. We\u2019re standing in solidarity as allies.\u201d' },
-      { author: 'Beverly Carter · Luke 17', text: '\u201cWrong doers will be accountable. Christians Rebuke wrong in Love hoping for God\u2019s will to be done, we will forgive. Have Faith in God!\u201d' },
-      { author: 'Cedric Lamar · NYC', text: '\u201cToday, I saw people of ALL colors standing up for the Red, White, & Blue. It\u2019s time to join the fight. How about you?\u201d' }
-    ]
-  },
-  {
-    file: '/static/site/images/diary/diary-07.jpg',
-    cellClass: 'sc-cell-v',
-    title: 'Washington, 13-12-2014',
-    testimonies: [
-      { author: 'Paul Braham · Washington DC', text: '\u201cAs a black man I had to be here bc I\u2019ve been harassed and stopped by police. I love the crowd energy. I hope this will lead to widespread and long lasting change.\u201d' },
-      { author: 'Saba Ahmed & Allegra O\u2019Donoghue · Oakland, CA', text: '\u201c#blacklivesmatter. We\u2019re standing in solidarity as allies.\u201d' },
-      { author: 'Beverly Carter · Luke 17', text: '\u201cWrong doers will be accountable. Christians Rebuke wrong in Love hoping for God\u2019s will to be done, we will forgive. Have Faith in God!\u201d' },
-      { author: 'Cedric Lamar · NYC', text: '\u201cToday, I saw people of ALL colors standing up for the Red, White, & Blue. It\u2019s time to join the fight. How about you?\u201d' }
-    ]
-  },
+  // idx 4 — Gruppo D: diary-08, diary-09, diary-10 (stesse testimonianze)
   {
     file: '/static/site/images/diary/diary-08.jpg',
-    cellClass: 'sc-cell-h',
     title: 'Washington, 13-12-2014',
     testimonies: [
-      { author: 'Ann Robinson · Port Washington, MD', text: '\u201cWE THE PEOPLE \u2014 All the people, not just some of the people!!\u201d' },
-      { author: 'Dree · New York', text: '\u201cInternational solidarity and justice. Power.\u201d \u2014 \u201cMy feeling is that of both hope and despair. I will continue the fight until justice is served!\u201d' }
+      { author: 'Ann Robinson · Port Washington, MD', text: '“WE THE PEOPLE — All the people, not just some of the people!!”' },
+      { author: 'Dree · New York', text: '“International solidarity and justice. Power.” — “My feeling is that of both hope and despair. I will continue the fight until justice is served!”' }
     ]
   },
-  {
-    file: '/static/site/images/diary/diary-09.jpg',
-    cellClass: 'sc-cell-v',
-    title: 'Washington, 13-12-2014',
-    testimonies: [
-      { author: 'Ann Robinson · Port Washington, MD', text: '\u201cWE THE PEOPLE \u2014 All the people, not just some of the people!!\u201d' },
-      { author: 'Dree · New York', text: '\u201cInternational solidarity and justice. Power.\u201d \u2014 \u201cMy feeling is that of both hope and despair. I will continue the fight until justice is served!\u201d' }
-    ]
-  },
-  {
-    file: '/static/site/images/diary/diary-10.jpg',
-    cellClass: 'sc-cell-v',
-    title: 'Washington, 13-12-2014',
-    testimonies: [
-      { author: 'Ann Robinson · Port Washington, MD', text: '\u201cWE THE PEOPLE \u2014 All the people, not just some of the people!!\u201d' },
-      { author: 'Dree · New York', text: '\u201cInternational solidarity and justice. Power.\u201d \u2014 \u201cMy feeling is that of both hope and despair. I will continue the fight until justice is served!\u201d' }
-    ]
-  },
+  // idx 5 — Gruppo E: diary-11, diary-12 (stesse testimonianze)
   {
     file: '/static/site/images/diary/diary-11.jpg',
-    cellClass: 'sc-cell-h',
     title: 'Washington, 13-12-2014',
     testimonies: [
-      { author: 'Carlos Wilkins · Alexandria, VA', text: '\u201cToday the comradery and sense of unity was very empowering. The support from people of all colors was uplifting and we will use it to propel ourselves to higher heights as a people. God was here today.\u201d' },
-      { author: 'Debbie Allen · Englewood, NJ', text: '\u201cToday gives Me a feeling of Hope. Particularly I\u2019m seeing the faces of people from all Races and Ethnic groups. This is not a problem for Black People. This is a problem for all People and It is Clearly Seen in the group standing here today.\u201d' }
-    ]
-  },
-  {
-    file: '/static/site/images/diary/diary-12.jpg',
-    cellClass: 'sc-cell-v',
-    title: 'Washington, 13-12-2014',
-    testimonies: [
-      { author: 'Carlos Wilkins · Alexandria, VA', text: '\u201cToday the comradery and sense of unity was very empowering. The support from people of all colors was uplifting and we will use it to propel ourselves to higher heights as a people. God was here today.\u201d' },
-      { author: 'Debbie Allen · Englewood, NJ', text: '\u201cToday gives Me a feeling of Hope. Particularly I\u2019m seeing the faces of people from all Races and Ethnic groups. This is not a problem for Black People. This is a problem for all People and It is Clearly Seen in the group standing here today.\u201d' }
+      { author: 'Carlos Wilkins · Alexandria, VA', text: '“Today the comradery and sense of unity was very empowering. The support from people of all colors was uplifting and we will use it to propel ourselves to higher heights as a people. God was here today.”' },
+      { author: 'Debbie Allen · Englewood, NJ', text: '“Today gives Me a feeling of Hope. Particularly I’m seeing the faces of people from all Races and Ethnic groups. This is not a problem for Black People. This is a problem for all People and It is Clearly Seen in the group standing here today.”' }
     ]
   }
 ];
+
+// Mappa: indice originale (0–12) → indice nel nuovo SC_DIARY_IMAGES (0–5)
+// Usata dalle thumbnail della griglia per aprire il viewer sull'indice corretto del gruppo.
+// 0=cover, 1=diary-01, 2=diary-02/03/04, 3=diary-05/06/07, 4=diary-08/09/10, 5=diary-11/12
+const SC_DIARY_IDX_MAP = {
+  0:  0,  // cover
+  1:  1,  // diary-01 (Gruppo A)
+  2:  2,  // diary-02 (Gruppo B)
+  3:  2,  // diary-03 (Gruppo B)
+  4:  2,  // diary-04 (Gruppo B) — nota: idx 4 era diary-05 nel vecchio schema
+  5:  3,  // diary-05 (Gruppo C) — nota: idx 5 era diary-06 nel vecchio schema
+  6:  3,  // diary-06 (Gruppo C)
+  7:  3,  // diary-07 (Gruppo C)
+  8:  4,  // diary-08 (Gruppo D)
+  9:  4,  // diary-09 (Gruppo D)
+  10: 4,  // diary-10 (Gruppo D)
+  11: 5,  // diary-11 (Gruppo E)
+  12: 5,  // diary-12 (Gruppo E)
+};
 
 // Costruisce il contenuto di una sezione non-Overview
 function scBuildSectionContent(section) {
@@ -17098,56 +17050,58 @@ function scBuildSectionContent(section) {
     // posizionata in modo casuale — eliminando gli spazi irregolari tra le thumbnail.
 
     // Definizione delle righe: ogni riga è un array di thumb (senza celle vuote — le aggiungiamo noi)
+    // Gli idx corrispondono ai nuovi indici di SC_DIARY_IMAGES (0–5):
+    // 0=cover, 1=diary-01, 2=diary-02/03/04, 3=diary-05/06/07, 4=diary-08/09/10, 5=diary-11/12
     const DIARY_ROWS = [
       // Riga 1
       [
-        { file: 'diary-01-thumb.jpg',   idx: 0,  portrait: true  },
-        { file: 'diary-03-thumb-h.jpg', idx: 2,  portrait: false },
-        { file: 'diary-02-thumb.jpg',   idx: 1,  portrait: true  },
-        { file: 'diary-06-thumb-h.jpg', idx: 5,  portrait: false },
-        { file: 'diary-04-thumb.jpg',   idx: 3,  portrait: true  },
-        { file: 'diary-07-thumb-h.jpg', idx: 6,  portrait: false },
-        { file: 'diary-05-thumb.jpg',   idx: 4,  portrait: true  },
+        { file: 'diary-01-thumb.jpg',   idx: 1,  portrait: true  },  // diary-01 → gruppo 1
+        { file: 'diary-03-thumb-h.jpg', idx: 2,  portrait: false },  // diary-03 → gruppo 2
+        { file: 'diary-02-thumb.jpg',   idx: 2,  portrait: true  },  // diary-02 → gruppo 2
+        { file: 'diary-06-thumb-h.jpg', idx: 3,  portrait: false },  // diary-06 → gruppo 3
+        { file: 'diary-04-thumb.jpg',   idx: 2,  portrait: true  },  // diary-04 → gruppo 2
+        { file: 'diary-07-thumb-h.jpg', idx: 3,  portrait: false },  // diary-07 → gruppo 3
+        { file: 'diary-05-thumb.jpg',   idx: 3,  portrait: true  },  // diary-05 → gruppo 3
       ],
       // Riga 2
       [
-        { file: 'diary-10-thumb-h.jpg', idx: 9,  portrait: false },
-        { file: 'diary-07-thumb.jpg',   idx: 6,  portrait: true  },
-        { file: 'diary-04-thumb-h.jpg', idx: 3,  portrait: false },
-        { file: 'diary-08-thumb.jpg',   idx: 7,  portrait: true  },
-        { file: 'diary-09-thumb.jpg',   idx: 8,  portrait: true  },
-        { file: 'diary-12-thumb-h.jpg', idx: 11, portrait: false },
-        { file: 'diary-06-thumb.jpg',   idx: 5,  portrait: true  },
+        { file: 'diary-10-thumb-h.jpg', idx: 4,  portrait: false },  // diary-10 → gruppo 4
+        { file: 'diary-07-thumb.jpg',   idx: 3,  portrait: true  },  // diary-07 → gruppo 3
+        { file: 'diary-04-thumb-h.jpg', idx: 2,  portrait: false },  // diary-04 → gruppo 2
+        { file: 'diary-08-thumb.jpg',   idx: 4,  portrait: true  },  // diary-08 → gruppo 4
+        { file: 'diary-09-thumb.jpg',   idx: 4,  portrait: true  },  // diary-09 → gruppo 4
+        { file: 'diary-12-thumb-h.jpg', idx: 5,  portrait: false },  // diary-12 → gruppo 5
+        { file: 'diary-06-thumb.jpg',   idx: 3,  portrait: true  },  // diary-06 → gruppo 3
       ],
       // Riga 3
       [
-        { file: 'diary-10-thumb.jpg',   idx: 9,  portrait: true  },
-        { file: 'diary-03-thumb-h.jpg', idx: 2,  portrait: false },
-        { file: 'diary-11-thumb.jpg',   idx: 10, portrait: true  },
-        { file: 'diary-07-thumb-h.jpg', idx: 6,  portrait: false },
-        { file: 'diary-12-thumb.jpg',   idx: 11, portrait: true  },
-        { file: 'diary-01-thumb-b.jpg', idx: 0,  portrait: true  },
-        { file: 'diary-02-thumb-b.jpg', idx: 1,  portrait: true  },
+        { file: 'diary-10-thumb.jpg',   idx: 4,  portrait: true  },  // diary-10 → gruppo 4
+        { file: 'diary-03-thumb-h.jpg', idx: 2,  portrait: false },  // diary-03 → gruppo 2
+        { file: 'diary-11-thumb.jpg',   idx: 5,  portrait: true  },  // diary-11 → gruppo 5
+        { file: 'diary-07-thumb-h.jpg', idx: 3,  portrait: false },  // diary-07 → gruppo 3
+        { file: 'diary-12-thumb.jpg',   idx: 5,  portrait: true  },  // diary-12 → gruppo 5
+        { file: 'diary-01-thumb-b.jpg', idx: 1,  portrait: true  },  // diary-01 → gruppo 1
+        { file: 'diary-02-thumb-b.jpg', idx: 2,  portrait: true  },  // diary-02 → gruppo 2
       ],
       // Riga 4
       [
-        { file: 'diary-06-thumb-h.jpg', idx: 5,  portrait: false },
-        { file: 'diary-05-thumb-b.jpg', idx: 4,  portrait: true  },
-        { file: 'diary-10-thumb-h.jpg', idx: 9,  portrait: false },
-        { file: 'diary-08-thumb-b.jpg', idx: 7,  portrait: true  },
-        { file: 'diary-04-thumb-h.jpg', idx: 3,  portrait: false },
-        { file: 'diary-11-thumb-b.jpg', idx: 10, portrait: true  },
-        { file: 'diary-03-thumb.jpg',   idx: 2,  portrait: true  },
+        { file: 'diary-06-thumb-h.jpg', idx: 3,  portrait: false },  // diary-06 → gruppo 3
+        { file: 'diary-05-thumb-b.jpg', idx: 3,  portrait: true  },  // diary-05 → gruppo 3
+        { file: 'diary-10-thumb-h.jpg', idx: 4,  portrait: false },  // diary-10 → gruppo 4
+        { file: 'diary-08-thumb-b.jpg', idx: 4,  portrait: true  },  // diary-08 → gruppo 4
+        { file: 'diary-04-thumb-h.jpg', idx: 2,  portrait: false },  // diary-04 → gruppo 2
+        { file: 'diary-11-thumb-b.jpg', idx: 5,  portrait: true  },  // diary-11 → gruppo 5
+        { file: 'diary-03-thumb.jpg',   idx: 2,  portrait: true  },  // diary-03 → gruppo 2
       ],
       // Riga 5
       [
-        { file: 'diary-09-thumb.jpg',   idx: 8,  portrait: true  },
-        { file: 'diary-12-thumb-h.jpg', idx: 11, portrait: false },
-        { file: 'diary-05-thumb.jpg',   idx: 4,  portrait: true  },
-        { file: 'diary-03-thumb-h.jpg', idx: 2,  portrait: false },
-        { file: 'diary-07-thumb-h.jpg', idx: 6,  portrait: false },
-        { file: 'diary-02-thumb-b.jpg', idx: 1,  portrait: true  },
-        { file: 'diary-06-thumb.jpg',   idx: 5,  portrait: true  },
+        { file: 'diary-09-thumb.jpg',   idx: 4,  portrait: true  },  // diary-09 → gruppo 4
+        { file: 'diary-12-thumb-h.jpg', idx: 5,  portrait: false },  // diary-12 → gruppo 5
+        { file: 'diary-05-thumb.jpg',   idx: 3,  portrait: true  },  // diary-05 → gruppo 3
+        { file: 'diary-03-thumb-h.jpg', idx: 2,  portrait: false },  // diary-03 → gruppo 2
+        { file: 'diary-07-thumb-h.jpg', idx: 3,  portrait: false },  // diary-07 → gruppo 3
+        { file: 'diary-02-thumb-b.jpg', idx: 2,  portrait: true  },  // diary-02 → gruppo 2
+        { file: 'diary-06-thumb.jpg',   idx: 3,  portrait: true  },  // diary-06 → gruppo 3
       ],
     ];
 
@@ -17159,18 +17113,18 @@ function scBuildSectionContent(section) {
       ['v','v','h','h','v'],
     ];
     const DIARY_LAST_COL_POOL_V = [
-      { file: 'diary-09-thumb-b.jpg', idx: 8  },
-      { file: 'diary-08-thumb-b.jpg', idx: 7  },
-      { file: 'diary-05-thumb-b.jpg', idx: 4  },
-      { file: 'diary-11-thumb-b.jpg', idx: 10 },
-      { file: 'diary-01-thumb-b.jpg', idx: 0  },
+      { file: 'diary-09-thumb-b.jpg', idx: 4  },  // diary-09 → gruppo 4
+      { file: 'diary-08-thumb-b.jpg', idx: 4  },  // diary-08 → gruppo 4
+      { file: 'diary-05-thumb-b.jpg', idx: 3  },  // diary-05 → gruppo 3
+      { file: 'diary-11-thumb-b.jpg', idx: 5  },  // diary-11 → gruppo 5
+      { file: 'diary-01-thumb-b.jpg', idx: 1  },  // diary-01 → gruppo 1
     ];
     const DIARY_LAST_COL_POOL_H = [
-      { file: 'diary-10-thumb-h.jpg', idx: 9  },
-      { file: 'diary-06-thumb-h.jpg', idx: 5  },
-      { file: 'diary-12-thumb-h.jpg', idx: 11 },
-      { file: 'diary-04-thumb-h.jpg', idx: 3  },
-      { file: 'diary-07-thumb-h.jpg', idx: 6  },
+      { file: 'diary-10-thumb-h.jpg', idx: 4  },  // diary-10 → gruppo 4
+      { file: 'diary-06-thumb-h.jpg', idx: 3  },  // diary-06 → gruppo 3
+      { file: 'diary-12-thumb-h.jpg', idx: 5  },  // diary-12 → gruppo 5
+      { file: 'diary-04-thumb-h.jpg', idx: 2  },  // diary-04 → gruppo 2
+      { file: 'diary-07-thumb-h.jpg', idx: 3  },  // diary-07 → gruppo 3
     ];
     let _diarySeqIdx = parseInt(localStorage.getItem('sc_diary_last_col_seq') || '0', 10);
     _diarySeqIdx = (_diarySeqIdx + 1) % DIARY_LAST_COL_SEQUENCES.length;
