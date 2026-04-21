@@ -7726,6 +7726,73 @@
       letter-spacing: 0.4px;
       pointer-events: none;
     }
+    /* ── Viewer fullscreen Images-4 (identico a images-1) ── */
+    #sc-images4-viewer {
+      position: fixed; inset: 0;
+      background: #000;
+      z-index: 1200;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.5s cubic-bezier(0.22, 1, 0.36, 1);
+    }
+    #sc-images4-viewer.open {
+      opacity: 1;
+      pointer-events: all;
+    }
+    #sc-images4-img, #sc-images4-img-next {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+      will-change: transform;
+    }
+    #sc-images4-img {
+      transform: translateX(0);
+      transition: transform 0.65s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+      z-index: 2;
+    }
+    #sc-images4-img.slide-out-left {
+      transform: translateX(-100%);
+    }
+    #sc-images4-img-next {
+      transform: translateX(100%);
+      transition: transform 0.65s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+      z-index: 1;
+    }
+    #sc-images4-img-next.slide-in {
+      transform: translateX(0);
+    }
+    #sc-images4-close {
+      position: absolute;
+      top: 22px; right: 22px;
+      z-index: 10;
+    }
+    #sc-images4-prev, #sc-images4-next {
+      position: absolute;
+      top: 50%; transform: translateY(-50%);
+      z-index: 10;
+      background: none;
+      border: none;
+      color: rgba(255,255,255,0.6);
+      font-size: 28px;
+      cursor: none;
+      padding: 20px;
+      transition: color 0.2s;
+    }
+    #sc-images4-prev:hover, #sc-images4-next:hover { color: #fff; }
+    #sc-images4-prev { left: 10px; }
+    #sc-images4-next { right: 10px; }
+    #sc-images4-count {
+      position: absolute;
+      bottom: 18px; left: 50%;
+      transform: translateX(-50%);
+      font-size: 10px;
+      color: rgba(255,255,255,0.35);
+      letter-spacing: 0.4px;
+      pointer-events: none;
+    }
 
     #lightbox {
       position: fixed; inset: 0;
@@ -11583,6 +11650,16 @@
   <button id="sc-images1-prev" onclick="_scImages1Nav(-1)">&#8592;</button>
   <button id="sc-images1-next" onclick="_scImages1Nav(1)">&#8594;</button>
   <div id="sc-images1-count"></div>
+</div>
+
+<!-- Viewer fullscreen Images-4 -->
+<div id="sc-images4-viewer">
+  <img id="sc-images4-img" src="" alt="">
+  <img id="sc-images4-img-next" src="" alt="">
+  <button id="sc-images4-close" class="ae-fab-btn ae-fab-close btn-circle-close" onclick="_scImages4Close()" aria-label="Chiudi"><svg viewBox="0 0 20 20" width="12" height="12" fill="none" stroke-width="1.5" stroke-linecap="round"><line x1="2.5" y1="2.5" x2="17.5" y2="17.5"/><line x1="17.5" y1="2.5" x2="2.5" y2="17.5"/></svg></button>
+  <button id="sc-images4-prev" onclick="_scImages4Nav(-1)">&#8592;</button>
+  <button id="sc-images4-next" onclick="_scImages4Nav(1)">&#8594;</button>
+  <div id="sc-images4-count"></div>
 </div>
 
 <div id="lightbox">
@@ -15924,6 +16001,66 @@ function lbUpdateCursor() {
   }
 })();
 
+// ── Viewer fullscreen Images-4 ──
+(function() {
+  let _imgs4 = [], _idx4 = 0, _imgs4NavLocked = false;
+
+  window._scImages4Open = function() {
+    const _projs = (typeof PROJECTS !== 'undefined' ? PROJECTS : []);
+    const proj = _projs.find(p => p.sc_section === 'images-4');
+    _imgs4 = proj && proj.images ? proj.images.map(img => img.url || img.thumb).filter(Boolean) : [];
+    if (_imgs4.length === 0) return;
+    _idx4 = 0;
+    const viewer = document.getElementById('sc-images4-viewer');
+    const imgEl  = document.getElementById('sc-images4-img');
+    const count  = document.getElementById('sc-images4-count');
+    imgEl.src = _imgs4[0];
+    count.textContent = '01 / ' + String(_imgs4.length).padStart(2, '0');
+    viewer.classList.add('open');
+    document.body.classList.add('sc-images4-open');
+    document.addEventListener('keydown', _scImages4Key);
+  };
+
+  window._scImages4Close = function() {
+    const viewer = document.getElementById('sc-images4-viewer');
+    viewer.classList.remove('open');
+    document.body.classList.remove('sc-images4-open');
+    document.removeEventListener('keydown', _scImages4Key);
+    scSwitchSection('images');
+  };
+
+  window._scImages4Nav = function(dir) {
+    if (_imgs4.length === 0 || _imgs4NavLocked) return;
+    _imgs4NavLocked = true;
+    _idx4 = (_idx4 + dir + _imgs4.length) % _imgs4.length;
+    const imgCur  = document.getElementById('sc-images4-img');
+    const imgNext = document.getElementById('sc-images4-img-next');
+    const count   = document.getElementById('sc-images4-count');
+    imgNext.src = _imgs4[_idx4];
+    imgNext.getBoundingClientRect();
+    imgCur.classList.add('slide-out-left');
+    imgNext.style.zIndex = '3';
+    imgNext.classList.add('slide-in');
+    count.textContent = String(_idx4 + 1).padStart(2, '0') + ' / ' + String(_imgs4.length).padStart(2, '0');
+    setTimeout(() => {
+      imgCur.src = _imgs4[_idx4];
+      imgCur.classList.remove('slide-out-left');
+      imgNext.classList.remove('slide-in');
+      imgNext.style.zIndex = '1';
+      imgNext.style.transform = '';
+      imgCur.style.transform = '';
+      imgNext.src = '';
+      _imgs4NavLocked = false;
+    }, 680);
+  };
+
+  function _scImages4Key(e) {
+    if (e.key === 'ArrowRight' || e.key === 'ArrowDown') _scImages4Nav(1);
+    else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') _scImages4Nav(-1);
+    else if (e.key === 'Escape') _scImages4Close();
+  }
+})();
+
 function openLightbox(idx) {
   lightboxIndex = idx;
   const lb = document.getElementById('lightbox');
@@ -16755,6 +16892,13 @@ function scSwitchSection(section) {
     const igw2 = document.getElementById('sc-images-grid-wrapper');
     if (igw2) igw2.style.display = 'none';
     if (typeof _scImages1Open === 'function') _scImages1Open();
+  } else if (section === 'images-4') {
+    // Apri viewer fullscreen Images-4 (dalla griglia Images)
+    if (wrapper) wrapper.style.display = 'none';
+    if (pageTitle) pageTitle.style.display = 'none';
+    const igw4 = document.getElementById('sc-images-grid-wrapper');
+    if (igw4) igw4.style.display = 'none';
+    if (typeof _scImages4Open === 'function') _scImages4Open();
   } else if (section === 'information') {
     // Apri info panel
     scOpenInfo();
