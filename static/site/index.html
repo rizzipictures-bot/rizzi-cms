@@ -6042,7 +6042,7 @@
 
     /* ── Box Text (Editor's Note) nel viewer Video Book ── */
     #sc-vb-text-box {
-      background: #fff;
+      background: #000;
       border-radius: 10px;
       position: absolute;
       bottom: 3.5vw;
@@ -6052,13 +6052,13 @@
       transform: translate(-50%, 200px);
       opacity: 0;
       pointer-events: none;
-      /* Stato chiuso: larghezza più ampia per area cliccabile più grande */
-      width: 192px;
-      max-height: 45px;
+      /* Stato chiuso: ridotto del 30% */
+      width: 134px;
+      max-height: 31px;
       overflow: hidden;
-      box-shadow: rgba(0,0,0,0.12) 0px 2px 15px 3px;
-      /* padding verticale maggiore per area di click più comoda */
-      padding: 14px 0;
+      box-shadow: rgba(0,0,0,0.25) 0px 2px 15px 3px;
+      /* padding verticale ridotto */
+      padding: 10px 0;
       text-align: center;
       cursor: pointer;
       transition: transform 0.7s cubic-bezier(0.77, 0, 0.175, 1),
@@ -6085,18 +6085,18 @@
       transform: translateX(-50%);
       width: 40px;
       height: 3px;
-      background: rgb(220,220,220);
+      background: rgb(80,80,80);
       border-radius: 5px;
       cursor: pointer;
       transition: 0.3s;
     }
-    #sc-vb-text-drag:hover { background: rgb(180,180,180); }
+    #sc-vb-text-drag:hover { background: rgb(120,120,120); }
     #sc-vb-text-label {
       cursor: pointer;
       font-family: Arial, sans-serif;
       font-size: 9px;
       font-weight: bold;
-      color: #000;
+      color: #fff;
       line-height: 1;
       user-select: none;
       /* Occupa tutta la larghezza e altezza del box chiuso per massimizzare l'area cliccabile */
@@ -6114,7 +6114,7 @@
       font-family: Arial, sans-serif;
       font-size: 11px;
       line-height: 1.6;
-      color: #000;
+      color: #fff;
       margin-top: 12px;
     }
     #sc-vb-text-box.sc-vb-text-open #sc-vb-text-content {
