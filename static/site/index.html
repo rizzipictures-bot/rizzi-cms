@@ -16744,43 +16744,34 @@ function scBuildGrid() {
   if (synopsisEntry) {
     synopsisEntry.url = 'https://files.manuscdn.com/user_upload_by_module/session_file/310519663156367470/ySfYcvqPeVGfRPGR.png';
   }
-  // Aggiungi la thumb Archive hardcoded (fermo immagine video b/n ruotato in verticale)
-  scCurrentImages.push({
-    url: '/static/site/images/archive-thumb.jpg',
-    title: 'Archive',
-    desc: 'Sculptures Records',
-    sc_section: 'archive'
+  // Ordine fisso della griglia Sculptures Overview:
+  // Riga 1: images-book, recordings, video, diary
+  // Riga 2: archive, studies, synopsis, mapping-lives
+  // Riga 3: life, conversation, data
+  const FIXED_ORDER = [
+    'images-book', 'recordings', 'video', 'diary',
+    'archive', 'studies', 'synopsis', 'mapping-lives',
+    'life', 'conversation', 'data'
+  ];
+  const HARDCODED_THUMBS = {
+    'archive': { url: '/static/site/images/archive-thumb.jpg', title: 'Archive', desc: 'Sculptures Records', sc_section: 'archive' },
+    'mapping-lives': { url: 'https://files.manuscdn.com/user_upload_by_module/session_file/310519663156367470/TkKKYARArdSFPztz.webp', title: 'Mapping Lives', desc: 'Police Violence · USA', sc_section: 'mapping-lives' },
+    'conversation': { url: 'https://files.manuscdn.com/user_upload_by_module/session_file/310519663156367470/WakQbJoPslRJCFAs.png', title: 'Conversation', desc: 'Giovanni Spadaccini · Alessandro Rizzi', sc_section: 'conversation' },
+    'data': { url: 'https://files.manuscdn.com/user_upload_by_module/session_file/310519663156367470/venFVzbbttkUnptg.webp', title: 'Data', desc: 'Police Violence · Statistics', sc_section: 'data' }
+  };
+  // Costruisci mappa sc_section -> entry da CMS
+  const cmsMap = {};
+  scCurrentImages.forEach(img => { if (img.sc_section) cmsMap[img.sc_section] = img; });
+  // Ricostruisci scCurrentImages nell'ordine fisso
+  scCurrentImages = [];
+  FIXED_ORDER.forEach(sec => {
+    if (cmsMap[sec]) scCurrentImages.push(cmsMap[sec]);
+    else if (HARDCODED_THUMBS[sec]) scCurrentImages.push(HARDCODED_THUMBS[sec]);
   });
-
-  // Aggiungi la thumb Mapping Lives hardcoded (screenshot mappa reale — orizzontale)
-  scCurrentImages.push({
-    url: 'https://files.manuscdn.com/user_upload_by_module/session_file/310519663156367470/TkKKYARArdSFPztz.webp',
-    title: 'Mapping Lives',
-    desc: 'Police Violence · USA',
-    sc_section: 'mapping-lives'
+  // Aggiungi eventuali sezioni CMS non presenti nell'ordine fisso
+  Object.keys(cmsMap).forEach(sec => {
+    if (!FIXED_ORDER.includes(sec)) scCurrentImages.push(cmsMap[sec]);
   });
-
-  // Aggiungi la thumb Conversation hardcoded (prima pagina libretto + bottone play viola)
-  scCurrentImages.push({
-    url: 'https://files.manuscdn.com/user_upload_by_module/session_file/310519663156367470/WakQbJoPslRJCFAs.png',
-    title: 'Conversation',
-    desc: 'Giovanni Spadaccini · Alessandro Rizzi',
-    sc_section: 'conversation'
-  });
-
-  // Aggiungi la thumb Data hardcoded (screenshot pagina dati statistici)
-  scCurrentImages.push({
-    url: 'https://files.manuscdn.com/user_upload_by_module/session_file/310519663156367470/venFVzbbttkUnptg.webp',
-    title: 'Data',
-    desc: 'Police Violence · Statistics',
-    sc_section: 'data'
-  });
-
-  // Swap: Archive (idx 6) ↔ Synopsis/A Story (idx 4) — Archive diventa 5ª, Synopsis diventa 7ª
-  if (scCurrentImages[4] && scCurrentImages[6]) {
-    const _tmp = scCurrentImages[4];
-    scCurrentImages[4] = scCurrentImages[6];
-    scCurrentImages[6] = _tmp;
   }
 
   // Pattern misto Corboz: H-V-H-V (riga1) / V-H-V-V (riga2) — identico a Images Book
