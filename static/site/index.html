@@ -2993,6 +2993,34 @@
     #ae-zoom-white-popup.single-img #ae-zoom-white-prev,
     #ae-zoom-white-popup.single-img #ae-zoom-white-next { display: none; }
 
+    /* ── Karaoke diary nel lightbox bianco ── */
+    #ae-zoom-white-karaoke {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      z-index: 3002;
+      pointer-events: none;
+      overflow: hidden;
+      height: 48px;
+      display: none;
+      align-items: flex-end;
+      padding: 0 50px 10px 50px;
+    }
+    #ae-zoom-white-karaoke.active { display: flex; }
+    #ae-zoom-white-karaoke-line {
+      display: flex;
+      flex-wrap: nowrap;
+      gap: 0.35em;
+      align-items: baseline;
+      overflow: hidden;
+      max-width: 100%;
+    }
+    /* Parole karaoke: testo scuro su sfondo bianco */
+    #ae-zoom-white-karaoke .sc-kword {
+      color: #222 !important;
+    }
+
     #ae-zoom-popup {
       position: fixed;
       inset: 0;
@@ -11423,6 +11451,8 @@
       <line x1="12" y1="4" x2="4" y2="12" stroke="white" stroke-width="1.4" stroke-linecap="round"/>
     </svg>
   </button>
+  <!-- Karaoke diary dentro il lightbox bianco -->
+  <div id="ae-zoom-white-karaoke"><div id="ae-zoom-white-karaoke-line"></div></div>
 </div>
 
 <!-- Popup zoom immagine Archive -->
@@ -19835,6 +19865,15 @@ function scOpenChild(idx, section) {
           }
           document.documentElement.appendChild(_wp);
           _wp.classList.add('open');
+          // Se il TTS diary è già in corso, attiva il karaoke nel lightbox bianco
+          const _wbox  = document.getElementById('ae-zoom-white-karaoke');
+          const _wline = document.getElementById('ae-zoom-white-karaoke-line');
+          const _diaryPlayer = document.getElementById('sc-diary-audio');
+          if (_wbox && _diaryPlayer && !_diaryPlayer.paused) {
+            if (_wline) _wline.innerHTML = '';
+            _scDiaryKaraokeWhiteWords = [];
+            _wbox.classList.add('active');
+          }
         }
       } else {
         scToggleFullscreen();
@@ -20973,7 +21012,8 @@ const SC_DIARY_KARAOKE_TEXTS = {
 let _scDiaryKaraokeTimer = null;
 let _scDiaryKaraokeWords = [];   // array di parole da mostrare
 let _scDiaryKaraokeIdx  = 0;     // prossima parola da mostrare
-let _scDiaryKaraokeLineWords = []; // span attualmente visibili
+let _scDiaryKaraokeLineWords = []; // span attualmente visibili (viewer normale)
+let _scDiaryKaraokeWhiteWords = []; // span attualmente visibili (lightbox bianco)
 
 // Flag: il player principale era in riproduzione quando è partito il TTS diary
 let _scDiaryMainWasPlaying = false;
@@ -21008,11 +21048,17 @@ function _scStartDiaryAudio(pageFile) {
   player.volume = 0.85;
   player.load();
   player.play().then(() => {
-    // Attiva il karaoke box
+    // Attiva il karaoke box (viewer normale)
     const kbox  = document.getElementById('sc-diary-karaoke');
     const kline = document.getElementById('sc-diary-karaoke-line');
     if (kbox)  kbox.classList.add('active');
     if (kline) kline.innerHTML = '';
+    // Attiva il karaoke nel lightbox bianco
+    const wbox  = document.getElementById('ae-zoom-white-karaoke');
+    const wline = document.getElementById('ae-zoom-white-karaoke-line');
+    if (wbox)  wbox.classList.add('active');
+    if (wline) wline.innerHTML = '';
+    _scDiaryKaraokeWhiteWords = [];
     // Avvia il timer del karaoke (ogni 80ms controlla il currentTime)
     _scDiaryKaraokeTimer = setInterval(_scDiaryKaraokeStep, 80);
   }).catch(() => {});
@@ -21029,12 +21075,18 @@ function _scStopDiaryAudio(resumeMain) {
   _scDiaryKaraokeWords = [];
   _scDiaryKaraokeIdx = 0;
   _scDiaryKaraokeLineWords = [];
+  _scDiaryKaraokeWhiteWords = [];
   const player = document.getElementById('sc-diary-audio');
   if (player) { player.pause(); player.src = ''; }
   const kbox  = document.getElementById('sc-diary-karaoke');
   const kline = document.getElementById('sc-diary-karaoke-line');
   if (kbox)  kbox.classList.remove('active');
   if (kline) kline.innerHTML = '';
+  // Reset karaoke lightbox bianco
+  const wbox  = document.getElementById('ae-zoom-white-karaoke');
+  const wline = document.getElementById('ae-zoom-white-karaoke-line');
+  if (wbox)  wbox.classList.remove('active');
+  if (wline) wline.innerHTML = '';
   // Riprende il player principale solo se era in play e la lettura è finita naturalmente
   if (resumeMain && _scDiaryMainWasPlaying) {
     const mainPlayer = document.getElementById('sc-audio-player');
@@ -21065,35 +21117,41 @@ function _scDiaryKaraokeStep() {
 }
 
 // Aggiunge una parola al diary karaoke con effetto typewriter
+// Scrive sia nel viewer normale che nel lightbox bianco (se aperto)
 function _scDiaryKaraokeShowWord(word) {
-  const line = document.getElementById('sc-diary-karaoke-line');
-  if (!line) return;
-
-  // Rimuovi la parola più vecchia se la riga è piena
-  if (_scDiaryKaraokeLineWords.length >= SC_KARAOKE_MAX_WORDS) {
-    const oldest = _scDiaryKaraokeLineWords.shift();
-    if (oldest) {
-      oldest.classList.add('fade-out');
-      setTimeout(() => { if (oldest.parentNode) oldest.parentNode.removeChild(oldest); }, 400);
+  // Helper: aggiunge la parola a una specifica line e array di parole
+  function _addWordToLine(line, wordsArr) {
+    if (!line) return;
+    if (wordsArr.length >= SC_KARAOKE_MAX_WORDS) {
+      const oldest = wordsArr.shift();
+      if (oldest) {
+        oldest.classList.add('fade-out');
+        setTimeout(() => { if (oldest.parentNode) oldest.parentNode.removeChild(oldest); }, 400);
+      }
     }
+    const span = document.createElement('span');
+    span.className = 'sc-kword';
+    span.textContent = word;
+    line.appendChild(span);
+    wordsArr.push(span);
+    void span.offsetWidth;
+    const naturalWidth = span.scrollWidth;
+    const letters = word.length;
+    const msPerChar = 55;
+    const totalMs = Math.max(80, letters * msPerChar);
+    span.style.setProperty('--tw-width', naturalWidth + 'px');
+    span.style.setProperty('--tw-steps', letters);
+    span.style.setProperty('--tw-dur', totalMs + 'ms');
+    span.classList.add('typing');
   }
 
-  const span = document.createElement('span');
-  span.className = 'sc-kword';
-  span.textContent = word;
-  line.appendChild(span);
-  _scDiaryKaraokeLineWords.push(span);
+  // Viewer normale
+  const line = document.getElementById('sc-diary-karaoke-line');
+  _addWordToLine(line, _scDiaryKaraokeLineWords);
 
-  void span.offsetWidth;
-  const naturalWidth = span.scrollWidth;
-  const letters = word.length;
-  const msPerChar = 55;
-  const totalMs = Math.max(80, letters * msPerChar);
-
-  span.style.setProperty('--tw-width', naturalWidth + 'px');
-  span.style.setProperty('--tw-steps', letters);
-  span.style.setProperty('--tw-dur', totalMs + 'ms');
-  span.classList.add('typing');
+  // Lightbox bianco (se aperto)
+  const whiteLine = document.getElementById('ae-zoom-white-karaoke-line');
+  _addWordToLine(whiteLine, _scDiaryKaraokeWhiteWords);
 }
 
 // Toggle play/pause
