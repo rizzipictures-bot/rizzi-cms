@@ -15736,7 +15736,12 @@ function lbUpdateCursor() {
   window._scImages1Open = function() {
     // Raccoglie le immagini del progetto images-1 dal CMS
     const proj = (window.PROJECTS || []).find(p => p.sc_section === 'images-1');
-    _imgs1 = proj && proj.images ? proj.images.map(img => img.url).filter(Boolean) : [];
+    _imgs1 = proj && proj.images ? proj.images.map(img => img.url || img.thumb).filter(Boolean) : [];
+    // Fallback: usa images-book come segnaposto finché non ci sono immagini proprie
+    if (_imgs1.length === 0) {
+      const fallback = (window.PROJECTS || []).find(p => p.sc_section === 'images-book');
+      _imgs1 = fallback && fallback.images ? fallback.images.map(img => img.url || img.thumb).filter(Boolean) : [];
+    }
     if (_imgs1.length === 0) return;
     _idx1 = 0;
     const viewer = document.getElementById('sc-images1-viewer');
@@ -15769,7 +15774,7 @@ function lbUpdateCursor() {
       imgEl.src = _imgs1[_idx1];
       imgEl.classList.remove('fade');
       count.textContent = String(_idx1 + 1).padStart(2, '0') + ' / ' + String(_imgs1.length).padStart(2, '0');
-    }, 200);
+    }, 400);
   };
 
   function _scImages1Key(e) {
@@ -16838,6 +16843,7 @@ function scBuildGrid() {
       'life', 'conversation', 'data'
     ];
     const HARDCODED_THUMBS = {
+      'images-1':     { url: '/uploads/thumbs/thumb_6447b86a-637.jpg', title: 'Images', desc: '', sc_section: 'images-1' },
       'archive':      { url: '/static/site/images/archive-thumb.jpg', title: 'Archive', desc: 'Sculptures Records', sc_section: 'archive' },
       'mapping-lives':{ url: 'https://files.manuscdn.com/user_upload_by_module/session_file/310519663156367470/TkKKYARArdSFPztz.webp', title: 'Mapping Lives', desc: 'Police Violence · USA', sc_section: 'mapping-lives' },
       'conversation': { url: 'https://files.manuscdn.com/user_upload_by_module/session_file/310519663156367470/WakQbJoPslRJCFAs.png', title: 'Conversation', desc: 'Giovanni Spadaccini · Alessandro Rizzi', sc_section: 'conversation' },
