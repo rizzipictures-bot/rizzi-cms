@@ -17652,7 +17652,7 @@ function scBuildSectionContent(section) {
           card.classList.add('sc-studies-card-visible');
           // Dopo l'ultima card, mostra e apre il box testo
           if (i === totalCards - 1) {
-            var delay = 600; // attendi che l'ultima card finisca l'animazione
+            var delay = 0; // box testo appare subito dopo l'ultima card
             setTimeout(function() {
               _scShowStudiesTextBox();
               // Apri il box automaticamente
@@ -17666,7 +17666,7 @@ function scBuildSectionContent(section) {
                     }
                   }, 7000);
                 }
-              }, 400);
+              }, 0);
             }, delay);
           }
         }, i * perCard);
