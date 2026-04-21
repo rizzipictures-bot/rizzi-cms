@@ -7726,6 +7726,47 @@
       letter-spacing: 0.4px;
       pointer-events: none;
     }
+    /* Modalità portrait: sfondo + foto centrata al 50% altezza */
+    #sc-images1-bg {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: none;
+      z-index: 0;
+    }
+    #sc-images1-viewer.portrait #sc-images1-bg {
+      display: block;
+    }
+    #sc-images1-viewer.portrait #sc-images1-img {
+      position: absolute;
+      inset: auto;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: auto;
+      height: 50vh;
+      object-fit: contain;
+      z-index: 2;
+    }
+    #sc-images1-viewer.portrait #sc-images1-img.slide-out-left {
+      transform: translate(calc(-50% - 100vw), -50%);
+    }
+    #sc-images1-viewer.portrait #sc-images1-img-next {
+      position: absolute;
+      inset: auto;
+      top: 50%;
+      left: 50%;
+      transform: translate(calc(-50% + 100vw), -50%);
+      width: auto;
+      height: 50vh;
+      object-fit: contain;
+      z-index: 1;
+    }
+    #sc-images1-viewer.portrait #sc-images1-img-next.slide-in {
+      transform: translate(-50%, -50%);
+    }
     /* ── Viewer fullscreen Images-4 (identico a images-1) ── */
     #sc-images4-viewer {
       position: fixed; inset: 0;
@@ -11644,6 +11685,7 @@
 <!-- Lightbox esistente -->
 <!-- Viewer fullscreen Images-1 -->
 <div id="sc-images1-viewer">
+  <img id="sc-images1-bg" src="" alt="">
   <img id="sc-images1-img" src="" alt="">
   <img id="sc-images1-img-next" src="" alt="">
   <button id="sc-images1-close" class="ae-fab-btn ae-fab-close btn-circle-close" onclick="_scImages1Close()" aria-label="Chiudi"><svg viewBox="0 0 20 20" width="12" height="12" fill="none" stroke-width="1.5" stroke-linecap="round"><line x1="2.5" y1="2.5" x2="17.5" y2="17.5"/><line x1="17.5" y1="2.5" x2="2.5" y2="17.5"/></svg></button>
@@ -15948,9 +15990,26 @@ function lbUpdateCursor() {
     count.textContent = '01 / ' + String(_imgs1.length).padStart(2, '0');
     viewer.classList.add('open');
     document.body.classList.add('sc-images1-open');
-    // Tastiera
+    // Rileva portrait e imposta modalità
+    _scImages1SetPortrait(imgEl, _imgs1[0], viewer);
     document.addEventListener('keydown', _scImages1Key);
   };
+
+  function _scImages1SetPortrait(imgEl, src, viewer) {
+    const tmp = new Image();
+    tmp.onload = function() {
+      const isPortrait = tmp.naturalHeight > tmp.naturalWidth;
+      const bg = document.getElementById('sc-images1-bg');
+      if (isPortrait) {
+        viewer.classList.add('portrait');
+        bg.src = src;
+      } else {
+        viewer.classList.remove('portrait');
+        bg.src = '';
+      }
+    };
+    tmp.src = src;
+  }
 
   window._scImages1Close = function() {
     const viewer = document.getElementById('sc-images1-viewer');
@@ -15985,16 +16044,19 @@ function lbUpdateCursor() {
       // Swap: aggiorna src e posizione del corrente
       imgCur.src = _imgs1[_idx1];
       imgCur.classList.remove('slide-out-left');
-      imgCur.style.transform = 'translateX(0)';
+      imgCur.style.transform = '';
       // Reset del next fuori schermo a destra
       imgNext.classList.remove('slide-in');
       imgNext.style.zIndex = '1';
-      imgNext.style.transform = 'translateX(100%)';
+      imgNext.style.transform = '';
       imgNext.src = '';
       // Forza reflow prima di riabilitare la transizione
       imgCur.getBoundingClientRect();
       imgCur.style.transition = '';
       imgNext.style.transition = '';
+      // Aggiorna portrait/landscape per la nuova immagine
+      const viewer = document.getElementById('sc-images1-viewer');
+      _scImages1SetPortrait(imgCur, _imgs1[_idx1], viewer);
       _imgs1NavLocked = false;
     }, 680);
   };
