@@ -15979,17 +15979,22 @@ function lbUpdateCursor() {
     imgNext.classList.add('slide-in');
     count.textContent = String(_idx1 + 1).padStart(2, '0') + ' / ' + String(_imgs1.length).padStart(2, '0');
     setTimeout(() => {
-      // Swap: la nuova diventa quella corrente
+      // Disabilita transizione per il reset istantaneo
+      imgCur.style.transition = 'none';
+      imgNext.style.transition = 'none';
+      // Swap: aggiorna src e posizione del corrente
       imgCur.src = _imgs1[_idx1];
       imgCur.classList.remove('slide-out-left');
       imgCur.style.transform = 'translateX(0)';
+      // Reset del next fuori schermo a destra
       imgNext.classList.remove('slide-in');
       imgNext.style.zIndex = '1';
       imgNext.style.transform = 'translateX(100%)';
       imgNext.src = '';
-      // Rimuovi inline transform per tornare al CSS
-      imgCur.style.transform = '';
-      imgNext.style.transform = '';
+      // Forza reflow prima di riabilitare la transizione
+      imgCur.getBoundingClientRect();
+      imgCur.style.transition = '';
+      imgNext.style.transition = '';
       _imgs1NavLocked = false;
     }, 680);
   };
@@ -16043,13 +16048,18 @@ function lbUpdateCursor() {
     imgNext.classList.add('slide-in');
     count.textContent = String(_idx4 + 1).padStart(2, '0') + ' / ' + String(_imgs4.length).padStart(2, '0');
     setTimeout(() => {
+      imgCur.style.transition = 'none';
+      imgNext.style.transition = 'none';
       imgCur.src = _imgs4[_idx4];
       imgCur.classList.remove('slide-out-left');
+      imgCur.style.transform = 'translateX(0)';
       imgNext.classList.remove('slide-in');
       imgNext.style.zIndex = '1';
-      imgNext.style.transform = '';
-      imgCur.style.transform = '';
+      imgNext.style.transform = 'translateX(100%)';
       imgNext.src = '';
+      imgCur.getBoundingClientRect();
+      imgCur.style.transition = '';
+      imgNext.style.transition = '';
       _imgs4NavLocked = false;
     }, 680);
   };
