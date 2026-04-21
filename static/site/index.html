@@ -20119,6 +20119,15 @@ function scCloseChild() {
 
 // Toggle fullscreen (Stato 2 ↔ Stato 3)
 function scToggleFullscreen() {
+  // In A Life Beside: il + apre il lightbox bianco invece di espandere il viewer
+  if (scCurrentSection === 'life') {
+    const urls = (scCurrentImages || []).map(img => img.url).filter(Boolean);
+    if (urls.length > 0) {
+      const idx = typeof scCurrentIndex === 'number' ? scCurrentIndex : 0;
+      _scStudiesOpenLightbox(idx, urls);
+    }
+    return;
+  }
   const child = document.getElementById('sculptures-child');
   if (!child) return;
   const isFullscreen = child.classList.toggle('sc-fullscreen');
