@@ -16610,6 +16610,13 @@ function scTopicsNavigate(section) {
   scSwitchSection(section);
 }
 
+// Apre il lightbox bianco per A Life Beside (click sulla thumbnail)
+function _scLifeOpenLightbox(idx) {
+  const urls = (scCurrentImages || []).map(img => img.url).filter(Boolean);
+  if (urls.length === 0) return;
+  _scStudiesOpenLightbox(idx, urls);
+}
+
 // Apre il lightbox bianco per la sezione Studies
 function _scStudiesOpenLightbox(idx, urlList) {
   const popup = document.getElementById('ae-zoom-white-popup');
@@ -17857,9 +17864,10 @@ function scBuildSectionContent(section) {
           `;
         } else if (isLife) {
           // A Life Beside: pattern Corboz misto con animazione card
+          // Click sulla thumbnail → lightbox bianco
           const lifeCellClass = cellType === 'h' ? 'sc-cell-h' : 'sc-cell-v';
           html += `
-            <div class="${lifeCellClass} sc-life-card-hidden" onclick="scOpenChild(${idx}, 'life')" style="cursor:pointer">
+            <div class="${lifeCellClass} sc-life-card-hidden" onclick="_scLifeOpenLightbox(${idx})" style="cursor:pointer">
               <div class="sc-img-wrap"><img src="${img.url}" alt="${img.caption || 'A Life Beside'}" loading="lazy"></div>
               ${capHtml}
             </div>
@@ -20119,15 +20127,6 @@ function scCloseChild() {
 
 // Toggle fullscreen (Stato 2 ↔ Stato 3)
 function scToggleFullscreen() {
-  // In A Life Beside: il + apre il lightbox bianco invece di espandere il viewer
-  if (scCurrentSection === 'life') {
-    const urls = (scCurrentImages || []).map(img => img.url).filter(Boolean);
-    if (urls.length > 0) {
-      const idx = typeof scCurrentIndex === 'number' ? scCurrentIndex : 0;
-      _scStudiesOpenLightbox(idx, urls);
-    }
-    return;
-  }
   const child = document.getElementById('sculptures-child');
   if (!child) return;
   const isFullscreen = child.classList.toggle('sc-fullscreen');
