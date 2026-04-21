@@ -7603,6 +7603,58 @@
        LIGHTBOX
     ══════════════════════════════════════════════════════════════ */
     /* ── Viewer fullscreen Images-1 ── */
+    /* ── Griglia Images (8 cartelle) ── */
+    #sc-images-grid-wrapper {
+      width: 100%;
+      height: 100%;
+      overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
+      scrollbar-width: none;
+    }
+    #sc-images-grid-wrapper::-webkit-scrollbar { display: none; }
+    #sc-images-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 15px;
+      padding: 15px 21px 50px;
+      background: #000;
+      animation: scFadeIn 1s;
+    }
+    #sc-images-grid > div {
+      cursor: pointer;
+      position: relative;
+    }
+    #sc-images-grid .sc-img-thumb {
+      width: 100%;
+      height: 200px;
+      object-fit: cover;
+      display: block;
+      transition: opacity .4s;
+    }
+    #sc-images-grid > div:hover .sc-img-thumb { opacity: 0.85; }
+    #sc-images-grid .sc-img-placeholder {
+      width: 100%;
+      height: 200px;
+      background: #111;
+      display: block;
+    }
+    #sc-images-grid .sc-caption {
+      color: #fff;
+      padding: 6px 0 0;
+    }
+    #sc-images-grid .sc-caption p {
+      font-family: 'Times New Roman', Times, serif;
+      font-size: 10px;
+      font-weight: 400;
+      letter-spacing: 0.4px;
+      margin: 0;
+      line-height: 1.5;
+    }
+    #sc-images-grid .sc-caption p.sc-desc {
+      color: #aaa;
+      font-style: italic;
+    }
+    /* ── Viewer fullscreen Images-1 ── */
     #sc-images1-viewer {
       position: fixed; inset: 0;
       background: #000;
@@ -11011,7 +11063,7 @@
         <hr id="sculptures-nav-sep" />
         <span data-sc-section="overview" class="active">Overview</span>
         <span data-sc-section="conversation">Conversation</span>
-        <span data-sc-section="images-1">Images</span>
+        <span data-sc-section="images">Images</span>
         <span data-sc-section="diary">Testimonial Diary</span>
         <span data-sc-section="recordings">Recordings</span>
         <span data-sc-section="video">Video Book</span>
@@ -11077,6 +11129,12 @@
         </div>
       </div>
 
+      <!-- Griglia Images (8 cartelle) -->
+      <div id="sc-images-grid-wrapper" style="display:none;">
+        <div id="sc-images-grid">
+          <!-- Generata via JS -->
+        </div>
+      </div>
       <!-- Contenuto sezioni non-Overview -->
       <div id="sculptures-section-content">
         <!-- Generata via JS -->
@@ -15733,6 +15791,46 @@ function lbUpdateCursor() {
   let _imgs1 = [];  // array di URL immagini
   let _idx1 = 0;
 
+  // Costruisce la griglia delle 8 cartelle Images
+  window.scBuildImagesGrid = function() {
+    const grid = document.getElementById('sc-images-grid');
+    if (!grid) return;
+    grid.innerHTML = '';
+    const _projs = (typeof PROJECTS !== 'undefined' ? PROJECTS : []);
+    for (let i = 1; i <= 8; i++) {
+      const sec = 'images-' + i;
+      const proj = _projs.find(p => p.sc_section === sec);
+      const cell = document.createElement('div');
+      cell.setAttribute('data-images-section', sec);
+      // Thumbnail
+      const thumbUrl = proj && proj.images && proj.images.length > 0
+        ? (proj.images[0].url || proj.images[0].thumb)
+        : null;
+      if (thumbUrl) {
+        const img = document.createElement('img');
+        img.className = 'sc-img-thumb';
+        img.src = thumbUrl;
+        img.alt = proj ? proj.title : String(i);
+        img.loading = 'lazy';
+        cell.appendChild(img);
+      } else {
+        const ph = document.createElement('div');
+        ph.className = 'sc-img-placeholder';
+        cell.appendChild(ph);
+      }
+      // Caption
+      const cap = document.createElement('div');
+      cap.className = 'sc-caption';
+      const t = document.createElement('p');
+      t.textContent = proj && proj.title ? proj.title : String(i);
+      cap.appendChild(t);
+      cell.appendChild(cap);
+      // Click: apri viewer della cartella
+      cell.addEventListener('click', (function(s){ return function(){ scSwitchSection(s); }; })(sec));
+      grid.appendChild(cell);
+    }
+  };
+
   window._scImages1Open = function() {
     // Raccoglie le immagini del progetto images-1 dal CMS
     const _projs = (typeof PROJECTS !== 'undefined' ? PROJECTS : []);
@@ -15761,8 +15859,8 @@ function lbUpdateCursor() {
     viewer.classList.remove('open');
     document.body.classList.remove('sc-images1-open');
     document.removeEventListener('keydown', _scImages1Key);
-    // Torna all'overview di Sculptures
-    scSwitchSection('overview');
+    // Torna alla griglia Images
+    scSwitchSection('images');
   };
 
   window._scImages1Nav = function(dir) {
@@ -16597,12 +16695,24 @@ function scSwitchSection(section) {
     if (window._scSynopsisCascadeTimer) { clearTimeout(window._scSynopsisCascadeTimer); window._scSynopsisCascadeTimer = null; }
     if (window._scDiaryCascadeTimer) { clearTimeout(window._scDiaryCascadeTimer); window._scDiaryCascadeTimer = null; }
     ['sc-diary-bg-img','sc-diary-bg-overlay','sc-diary-bg-grain','sc-synopsis-bg-overlay'].forEach(function(id){ var e=document.getElementById(id); if(e) e.remove(); });
+    // Nascondi griglia Images se visibile
+    const _igwOv = document.getElementById('sc-images-grid-wrapper');
+    if (_igwOv) _igwOv.style.display = 'none';
     scBuildGrid();
     // Auto-show box information: gestito nell'entrata a Sculptures (showView), non qui
+  } else if (section === 'images') {
+    // Mostra griglia delle 8 cartelle Images
+    if (wrapper) wrapper.style.display = 'none';
+    if (sectionContent) sectionContent.classList.remove('active');
+    if (pageTitle) pageTitle.style.display = 'none';
+    const igw = document.getElementById('sc-images-grid-wrapper');
+    if (igw) { igw.style.display = 'block'; scBuildImagesGrid(); }
   } else if (section === 'images-1') {
-    // Apri viewer fullscreen Images-1
+    // Apri viewer fullscreen Images-1 (dalla griglia Images)
     if (wrapper) wrapper.style.display = 'none';
     if (pageTitle) pageTitle.style.display = 'none';
+    const igw2 = document.getElementById('sc-images-grid-wrapper');
+    if (igw2) igw2.style.display = 'none';
     if (typeof _scImages1Open === 'function') _scImages1Open();
   } else if (section === 'information') {
     // Apri info panel
@@ -16839,12 +16949,12 @@ function scBuildGrid() {
   // Riga 3: life, conversation, data
   {
     const FIXED_ORDER = [
-      'images-1', 'recordings', 'video', 'diary',
+      'images', 'recordings', 'video', 'diary',
       'archive', 'studies', 'synopsis', 'mapping-lives',
       'life', 'conversation', 'data'
     ];
     const HARDCODED_THUMBS = {
-      'images-1':     { url: '/uploads/thumbs/thumb_6447b86a-637.jpg', title: 'Images', desc: '', sc_section: 'images-1' },
+      'images':        { url: '/uploads/thumbs/thumb_6447b86a-637.jpg', title: 'Images', desc: '', sc_section: 'images' },
       'archive':      { url: '/static/site/images/archive-thumb.jpg', title: 'Archive', desc: 'Sculptures Records', sc_section: 'archive' },
       'mapping-lives':{ url: 'https://files.manuscdn.com/user_upload_by_module/session_file/310519663156367470/TkKKYARArdSFPztz.webp', title: 'Mapping Lives', desc: 'Police Violence · USA', sc_section: 'mapping-lives' },
       'conversation': { url: 'https://files.manuscdn.com/user_upload_by_module/session_file/310519663156367470/WakQbJoPslRJCFAs.png', title: 'Conversation', desc: 'Giovanni Spadaccini · Alessandro Rizzi', sc_section: 'conversation' },
