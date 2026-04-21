@@ -13200,7 +13200,7 @@ function buildOverviewGrid() {
     byProject[key].imgs.push(img);
   });
 
-  // Shuffle interno di ogni gruppo (Fisher-Yates)
+    // Shuffle interno di ogni gruppo (Fisher-Yates)
   function shuffleArr(arr) {
     for (let i = arr.length - 1; i > 0; i--) {
       const j = Math.floor(Math.random() * (i + 1));
@@ -13208,27 +13208,30 @@ function buildOverviewGrid() {
     }
     return arr;
   }
-
-  // Converti in array di bucket, ognuno già mescolato internamente
-  let buckets = Object.values(byProject).map(b => ({ year: b.year, imgs: shuffleArr(b.imgs) }));
-  // Mescola anche l'ordine dei bucket
-  shuffleArr(buckets);
-
-  // Interleave: prendi una foto alla volta da ogni bucket, evitando
-  // due anni identici consecutivi quando possibile
+  // Ordine fisso dei progetti per sezione (come da screenshot)
+  const SC_SECTION_ORDER = ['images-book', 'recordings', 'video', 'diary', 'synopsis', 'studies'];
+  // Raggruppa per sc_section
+  const bySection = {};
+  mainImages.forEach(img => {
+    const sec = img.project.sc_section || img.project.title;
+    if (!bySection[sec]) bySection[sec] = [];
+    bySection[sec].push(img);
+  });
+  // Mescola internamente ogni gruppo
+  Object.values(bySection).forEach(arr => shuffleArr(arr));
+  // Interleave: prendi una foto alla volta da ogni bucket nell'ordine fisso
+  // (round-robin ciclico sull'ordine fisso)
+  const orderedBuckets = SC_SECTION_ORDER.map(sec => bySection[sec] ? [...bySection[sec]] : []);
   const imgs = [];
-  let lastYear = null;
-  while (buckets.some(b => b.imgs.length > 0)) {
-    // Filtra bucket non vuoti
-    let available = buckets.filter(b => b.imgs.length > 0);
-    // Preferisci bucket con anno diverso dall'ultimo
-    let preferred = available.filter(b => b.year !== lastYear);
-    if (preferred.length === 0) preferred = available; // fallback
-    // Scegli casualmente tra i preferred
-    const chosen = preferred[Math.floor(Math.random() * preferred.length)];
-    const img = chosen.imgs.shift();
-    imgs.push(img);
-    lastYear = chosen.year;
+  let hasMore = true;
+  while (hasMore) {
+    hasMore = false;
+    for (const bucket of orderedBuckets) {
+      if (bucket.length > 0) {
+        imgs.push(bucket.shift());
+        hasMore = true;
+      }
+    }
   }
   // Aggiunge A Life Beside in fondo (sempre per ultima)
   shuffleArr(lifeImages);
