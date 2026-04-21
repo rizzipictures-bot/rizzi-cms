@@ -17864,10 +17864,10 @@ function scBuildSectionContent(section) {
           `;
         } else if (isLife) {
           // A Life Beside: pattern Corboz misto con animazione card
-          // Click sulla thumbnail → lightbox bianco
+          // Click sulla thumbnail → scOpenChild (viewer normale)
           const lifeCellClass = cellType === 'h' ? 'sc-cell-h' : 'sc-cell-v';
           html += `
-            <div class="${lifeCellClass} sc-life-card-hidden" onclick="_scLifeOpenLightbox(${idx})" style="cursor:pointer">
+            <div class="${lifeCellClass} sc-life-card-hidden" onclick="scOpenChild(${idx}, 'life')" style="cursor:pointer">
               <div class="sc-img-wrap"><img src="${img.url}" alt="${img.caption || 'A Life Beside'}" loading="lazy"></div>
               ${capHtml}
             </div>
@@ -19994,7 +19994,7 @@ function scOpenChild(idx, section) {
   const _img = document.getElementById('sculptures-carousel-img');
   if (_img) {
     _img._scClickHandler = function() {
-      if (section === 'diary') {
+      if (section === 'diary' || section === 'life') {
         // Apri il lightbox bianco con la foto corrente
         const _wp = document.getElementById('ae-zoom-white-popup');
         const _wi = document.getElementById('ae-zoom-white-img');
