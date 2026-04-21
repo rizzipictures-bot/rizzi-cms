@@ -16370,6 +16370,7 @@ let scCurrentIndex   = 0;   // indice immagine nel carousel
 })();
 
 function scGoBack() {
+  _scHideStudiesTextBox();
   switchView('index');
 }
 
@@ -16392,6 +16393,8 @@ function scSwitchSection(section) {
     if (wrapper) wrapper.style.display = 'block';
     if (sectionContent) sectionContent.classList.remove('active');
     if (pageTitle) pageTitle.style.display = 'block';
+    // Nascondi box testo Studies se visibile
+    _scHideStudiesTextBox();
     // Rimuovi modalità diary (menu torna bianco)
     document.body.classList.remove('sc-diary-nav-mode');
     document.body.classList.remove('sc-synopsis-mode');
@@ -16429,6 +16432,8 @@ function scSwitchSection(section) {
     // Mostra sezione testuale con eventuali immagini
     if (wrapper) wrapper.style.display = 'none';
     if (pageTitle) pageTitle.style.display = 'none';
+    // Nascondi box testo Studies se si naviga fuori da Studies
+    if (section !== 'studies') _scHideStudiesTextBox();
     if (sectionContent) {
       sectionContent.classList.add('active');
       scBuildSectionContent(section);
