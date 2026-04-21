@@ -17038,10 +17038,13 @@ function scSwitchSection(section) {
     // Mostra sezione testuale con eventuali immagini
     if (wrapper) wrapper.style.display = 'none';
     if (pageTitle) pageTitle.style.display = 'none';
+    // Nascondi la griglia Images se si naviga su una sottosezione
+    const _igw3 = document.getElementById('sc-images-grid-wrapper');
+    if (_igw3) _igw3.style.display = 'none';
     // Nascondi box testo Studies se si naviga fuori da Studies
     if (section !== 'studies') _scHideStudiesTextBox();
     // Nascondi box testo Life Beside se si naviga fuori da Life Beside
-    if (section !== 'life') _scHideLifeTextBox();
+    if (section !== 'life' && section !== 'images-3') _scHideLifeTextBox();
     if (sectionContent) {
       sectionContent.classList.add('active');
       scBuildSectionContent(section);
@@ -18227,6 +18230,7 @@ function scBuildSectionContent(section) {
     'studies': 'Studies',
     'diary': 'Testimonial Diary',
     'life': 'A Life Beside',
+    'images-3': '3',
     'video': 'Video Book',
     'synopsis': 'Synopsis',
     'recordings': 'Recordings',
@@ -18247,7 +18251,7 @@ function scBuildSectionContent(section) {
   // Per images-book usa titolo "IMAGES" e sfondo nero
   const isImagesBook = (section === 'images-book');
   const isStudies = (section === 'studies');
-  const isLife = (section === 'life');
+  const isLife = (section === 'life' || section === 'images-3');
   const displayTitle = isImagesBook ? 'Images' : title;
   let html = `<h2>${displayTitle}</h2>`;
   if (isImagesBook) {
@@ -18369,12 +18373,13 @@ function scBuildSectionContent(section) {
             </div>
           `;
         } else if (isLife) {
-          // A Life Beside: pattern Corboz misto con animazione card
+          // A Life Beside / images-3: pattern Corboz misto con animazione card
           // Click sulla thumbnail → scOpenChild (viewer normale)
           const lifeCellClass = cellType === 'h' ? 'sc-cell-h' : 'sc-cell-v';
+          const _lifeSection = section;
           html += `
-            <div class="${lifeCellClass} sc-life-card-hidden" onclick="scOpenChild(${idx}, 'life')" style="cursor:pointer">
-              <div class="sc-img-wrap"><img src="${img.url}" alt="${img.caption || 'A Life Beside'}" loading="lazy"></div>
+            <div class="${lifeCellClass} sc-life-card-hidden" onclick="scOpenChild(${idx}, '${_lifeSection}')" style="cursor:pointer">
+              <div class="sc-img-wrap"><img src="${img.url}" alt="${img.caption || ''}" loading="lazy"></div>
               ${capHtml}
             </div>
           `;
