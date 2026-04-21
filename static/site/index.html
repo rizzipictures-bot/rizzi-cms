@@ -4884,18 +4884,100 @@
     body.sc-studies-active #sculptures-nav-sep {
       border-top-color: rgba(0,0,0,0.18) !important;
     }
+    /* ── Animazione card Life Beside: entrano una a una ── */
+    .sc-life-card-hidden {
+      opacity: 0;
+      transform: translateY(50px) scale(0.96);
+      transition: none;
+    }
+    .sc-life-card-visible {
+      opacity: 1;
+      transform: translateY(0) scale(1);
+      transition: opacity 1.1s cubic-bezier(0.22, 1, 0.36, 1),
+                  transform 1.1s cubic-bezier(0.22, 1, 0.36, 1);
+    }
     /* ── Animazione card Studies: entrano dal basso una a una ── */
     .sc-studies-card-hidden {
       opacity: 0;
       transform: translateY(50px) scale(0.96);
       transition: none;
     }
-    .sc-studies-card-visible {
-      opacity: 1;
-      transform: translateY(0) scale(1);
-      transition: opacity 1.1s cubic-bezier(0.22, 1, 0.36, 1),
-                  transform 1.1s cubic-bezier(0.22, 1, 0.36, 1);
+    /* Box testo A Life Beside — popup bianco dal basso */
+    #sc-life-text-box {
+      background: #fff;
+      border-radius: 10px;
+      position: fixed;
+      bottom: 3.5vw;
+      left: 50%;
+      z-index: 1295;
+      width: 320px;
+      box-shadow: rgba(0,0,0,0.10) 0px 4px 24px 4px;
+      padding: 0 14px;
+      text-align: center;
+      overflow: hidden;
+      max-height: 39px;
+      transform: translate(-50%, 200px);
+      opacity: 0;
+      pointer-events: none;
+      transition: transform 0.85s cubic-bezier(0.22, 1, 0.36, 1),
+                  opacity 0.55s cubic-bezier(0.22, 1, 0.36, 1),
+                  max-height 2.2s cubic-bezier(0.16, 1, 0.3, 1),
+                  padding 1.8s cubic-bezier(0.16, 1, 0.3, 1);
     }
+    #sc-life-text-box.sc-life-text-visible {
+      transform: translate(-50%, 0);
+      opacity: 1;
+      pointer-events: auto;
+      padding: 11px 14px;
+    }
+    #sc-life-text-box.sc-life-text-open {
+      max-height: 70vh;
+      overflow-y: auto;
+      padding: 14px 18px;
+    }
+    #sc-life-text-drag {
+      position: absolute;
+      top: 10px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 60px;
+      height: 3px;
+      background: rgb(230,230,230);
+      border-radius: 5px;
+      cursor: pointer;
+      transition: 0.3s;
+    }
+    #sc-life-text-drag:hover { width: 50px; background: rgb(200,200,200); }
+    #sc-life-text-label {
+      position: relative;
+      cursor: pointer;
+      font-family: Arial, sans-serif;
+      font-size: 13.6px;
+      font-weight: bold;
+      color: #000;
+      line-height: 1;
+      user-select: none;
+      padding-top: 2px;
+    }
+    #sc-life-text-content {
+      text-align: left;
+      padding: 14px 4px 6px;
+      opacity: 0;
+      transition: opacity 0.3s cubic-bezier(0.77, 0, 0.175, 1);
+      pointer-events: none;
+    }
+    #sc-life-text-box.sc-life-text-open #sc-life-text-content {
+      opacity: 1;
+      pointer-events: auto;
+    }
+    #sc-life-text-content p {
+      font-family: 'Times New Roman', Times, serif;
+      font-size: 13px;
+      color: #222;
+      line-height: 1.7;
+      margin-bottom: 10px;
+    }
+
     /* Box testo Studies — popup bianco dal basso */
     #sc-studies-text-box {
       background: #fff;
@@ -11014,6 +11096,15 @@
         </ul>
       </div>
 
+      <!-- Box testo A Life Beside — popup bianco dal basso -->
+      <div id="sc-life-text-box">
+        <div id="sc-life-text-drag" onclick="scToggleLifeText()"></div>
+        <div id="sc-life-text-label" onclick="scToggleLifeText()">Text</div>
+        <div id="sc-life-text-content">
+          <p>Alongside major public demonstrations or struggles for civil rights, everything seems to be drawn into a different kind of energy. A flow of humanity&mdash;only apparently fragmented or disoriented&mdash;moves according to the rhythm of its own existence and desires, yet remains inseparable from the event itself, sharing with it the same dignity and belonging to the same world.</p>
+        </div>
+      </div>
+
       <!-- Box testo Studies — popup bianco dal basso -->
       <div id="sc-studies-text-box">
         <div id="sc-studies-text-drag" onclick="scToggleStudiesText()"></div>
@@ -16371,6 +16462,7 @@ let scCurrentIndex   = 0;   // indice immagine nel carousel
 
 function scGoBack() {
   _scHideStudiesTextBox();
+  _scHideLifeTextBox();
   switchView('index');
 }
 
@@ -16393,8 +16485,9 @@ function scSwitchSection(section) {
     if (wrapper) wrapper.style.display = 'block';
     if (sectionContent) sectionContent.classList.remove('active');
     if (pageTitle) pageTitle.style.display = 'block';
-    // Nascondi box testo Studies se visibile
+    // Nascondi box testo Studies e Life Beside se visibili
     _scHideStudiesTextBox();
+    _scHideLifeTextBox();
     // Rimuovi modalità diary (menu torna bianco)
     document.body.classList.remove('sc-diary-nav-mode');
     document.body.classList.remove('sc-synopsis-mode');
@@ -16434,6 +16527,8 @@ function scSwitchSection(section) {
     if (pageTitle) pageTitle.style.display = 'none';
     // Nascondi box testo Studies se si naviga fuori da Studies
     if (section !== 'studies') _scHideStudiesTextBox();
+    // Nascondi box testo Life Beside se si naviga fuori da Life Beside
+    if (section !== 'life') _scHideLifeTextBox();
     if (sectionContent) {
       sectionContent.classList.add('active');
       scBuildSectionContent(section);
@@ -16572,6 +16667,26 @@ function _scHideStudiesTextBox() {
   if (box) {
     box.classList.remove('sc-studies-text-visible');
     box.classList.remove('sc-studies-text-open');
+  }
+}
+function scToggleLifeText() {
+  const box = document.getElementById('sc-life-text-box');
+  if (!box) return;
+  if (box._autoCloseTimer) {
+    clearTimeout(box._autoCloseTimer);
+    box._autoCloseTimer = null;
+  }
+  box.classList.toggle('sc-life-text-open');
+}
+function _scShowLifeTextBox() {
+  const box = document.getElementById('sc-life-text-box');
+  if (box) box.classList.add('sc-life-text-visible');
+}
+function _scHideLifeTextBox() {
+  const box = document.getElementById('sc-life-text-box');
+  if (box) {
+    box.classList.remove('sc-life-text-visible');
+    box.classList.remove('sc-life-text-open');
   }
 }
 
@@ -17619,6 +17734,7 @@ function scBuildSectionContent(section) {
   // Per images-book usa titolo "IMAGES" e sfondo nero
   const isImagesBook = (section === 'images-book');
   const isStudies = (section === 'studies');
+  const isLife = (section === 'life');
   const displayTitle = isImagesBook ? 'Images' : title;
   let html = `<h2>${displayTitle}</h2>`;
   if (isImagesBook) {
@@ -17628,8 +17744,8 @@ function scBuildSectionContent(section) {
     el.classList.remove('sc-studies-mode');
     const _vscImgBook = document.getElementById('view-sculptures');
     if (_vscImgBook) _vscImgBook.style.backgroundColor = '';
-  } else if (isStudies) {
-    // Sfondo bianco per Studies — anche il contenitore padre
+  } else if (isStudies || isLife) {
+    // Sfondo bianco per Studies e A Life Beside — anche il contenitore padre
     el.style.background = '#fff';
     el.style.minHeight  = '100vh';
     el.classList.add('sc-studies-mode');
@@ -17643,6 +17759,40 @@ function scBuildSectionContent(section) {
     document.body.classList.remove('sc-studies-active');
     const _vscOther = document.getElementById('view-sculptures');
     if (_vscOther) _vscOther.style.backgroundColor = '';
+  }
+  // Mostra/nasconde box testo Life Beside
+  if (isLife) {
+    _scHideStudiesTextBox();
+    setTimeout(function() {
+      const cards = el.querySelectorAll('.sc-life-card-hidden');
+      const totalCards = cards.length;
+      const perCard = 280;
+      cards.forEach(function(card, i) {
+        setTimeout(function() {
+          card.classList.remove('sc-life-card-hidden');
+          card.classList.add('sc-life-card-visible');
+          if (i === totalCards - 1) {
+            setTimeout(function() {
+              _scShowLifeTextBox();
+              setTimeout(function() {
+                var box = document.getElementById('sc-life-text-box');
+                if (box && !box.classList.contains('sc-life-text-open')) {
+                  box.classList.add('sc-life-text-open');
+                  box._autoCloseTimer = setTimeout(function() {
+                    if (box.classList.contains('sc-life-text-open')) {
+                      box.classList.remove('sc-life-text-open');
+                    }
+                  }, 7000);
+                }
+              }, 0);
+            }, 0);
+          }
+        }, i * perCard);
+      });
+      if (totalCards === 0) _scShowLifeTextBox();
+    }, 100);
+  } else {
+    _scHideLifeTextBox();
   }
   // Mostra/nasconde box testo Studies
   if (isStudies) {
@@ -17694,7 +17844,7 @@ function scBuildSectionContent(section) {
       sectionImages.forEach((img, idx) => {
         const posInPattern = idx % 8;
         const cellType = corbozPattern[posInPattern];
-        // Studies: tutte le celle sono verticali (sc-cell-v)
+        // Studies: tutte le celle sono verticali (sc-cell-v); Life: pattern Corboz misto
         const cellClass = isStudies ? 'sc-cell-v' : (cellType === 'h' ? 'sc-cell-h' : 'sc-cell-v');
         const capHtml = img.caption ? `<div class="sc-img-caption">${img.caption}</div>` : '';
         if (isStudies) {
@@ -17702,6 +17852,15 @@ function scBuildSectionContent(section) {
           html += `
             <div class="sc-cell-v sc-studies-card-hidden" data-studies-idx="${idx}" style="cursor:pointer">
               <div class="sc-img-wrap"><img src="${img.url}" alt="${img.caption || 'Study'}" loading="lazy"></div>
+              ${capHtml}
+            </div>
+          `;
+        } else if (isLife) {
+          // A Life Beside: pattern Corboz misto con animazione card
+          const lifeCellClass = cellType === 'h' ? 'sc-cell-h' : 'sc-cell-v';
+          html += `
+            <div class="${lifeCellClass} sc-life-card-hidden" onclick="scOpenChild(${idx}, 'life')" style="cursor:pointer">
+              <div class="sc-img-wrap"><img src="${img.url}" alt="${img.caption || 'A Life Beside'}" loading="lazy"></div>
               ${capHtml}
             </div>
           `;
