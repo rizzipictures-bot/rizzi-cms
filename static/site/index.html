@@ -15735,11 +15735,12 @@ function lbUpdateCursor() {
 
   window._scImages1Open = function() {
     // Raccoglie le immagini del progetto images-1 dal CMS
-    const proj = (window.PROJECTS || []).find(p => p.sc_section === 'images-1');
+    const _projs = (typeof PROJECTS !== 'undefined' ? PROJECTS : []);
+    const proj = _projs.find(p => p.sc_section === 'images-1');
     _imgs1 = proj && proj.images ? proj.images.map(img => img.url || img.thumb).filter(Boolean) : [];
     // Fallback: usa images-book come segnaposto finché non ci sono immagini proprie
     if (_imgs1.length === 0) {
-      const fallback = (window.PROJECTS || []).find(p => p.sc_section === 'images-book');
+      const fallback = _projs.find(p => p.sc_section === 'images-book');
       _imgs1 = fallback && fallback.images ? fallback.images.map(img => img.url || img.thumb).filter(Boolean) : [];
     }
     if (_imgs1.length === 0) return;
