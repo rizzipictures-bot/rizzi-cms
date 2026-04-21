@@ -23186,6 +23186,285 @@ loadFromCMS();
     if (inner) inner.addEventListener('click', function(e) { e.stopPropagation(); });
   })();
   </script>
+<!-- ═══════════════════════════════════════════════════════════
+     SC-DATA EXPAND BOX — hover (1s delay) + click
+     Applies to: .sc-data-kv-row, .sc-data-row, .sc-data-bar-row,
+                 .sc-data-study-row, .sc-data-src-row
+═══════════════════════════════════════════════════════════ -->
+<style>
+  #sc-data-expand-box {
+    position: fixed;
+    z-index: 99999;
+    background: #0a0a0a;
+    border: 1px solid #e63946;
+    color: #f1f1f1;
+    font-family: 'Courier New', Courier, monospace;
+    font-size: 12px;
+    line-height: 1.65;
+    padding: 18px 22px 16px;
+    max-width: 480px;
+    min-width: 260px;
+    pointer-events: none;
+    opacity: 0;
+    transform: translateY(6px);
+    transition: opacity 0.22s ease, transform 0.22s ease;
+    box-shadow: 0 4px 32px rgba(230,57,70,0.18), 0 1px 8px rgba(0,0,0,0.7);
+  }
+  #sc-data-expand-box.visible {
+    opacity: 1;
+    transform: translateY(0);
+    pointer-events: none;
+  }
+  #sc-data-expand-box.pinned {
+    pointer-events: auto;
+    border-color: #fff;
+  }
+  #sc-data-expand-box .sde-label {
+    font-size: 9px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: #e63946;
+    margin-bottom: 8px;
+    font-family: 'Helvetica Neue', Arial, sans-serif;
+  }
+  #sc-data-expand-box .sde-title {
+    font-size: 14px;
+    font-weight: 700;
+    color: #fff;
+    margin-bottom: 6px;
+    font-family: Georgia, serif;
+    line-height: 1.3;
+  }
+  #sc-data-expand-box .sde-body {
+    color: #ccc;
+    font-size: 12px;
+    line-height: 1.65;
+  }
+  #sc-data-expand-box .sde-body a {
+    color: #e63946;
+    text-decoration: none;
+    border-bottom: 1px solid rgba(230,57,70,0.4);
+  }
+  #sc-data-expand-box .sde-body a:hover {
+    border-bottom-color: #e63946;
+  }
+  #sc-data-expand-box .sde-close {
+    position: absolute;
+    top: 8px;
+    right: 10px;
+    font-size: 11px;
+    color: #666;
+    cursor: pointer;
+    font-family: 'Helvetica Neue', Arial, sans-serif;
+    letter-spacing: 0.05em;
+    padding: 2px 4px;
+  }
+  #sc-data-expand-box .sde-close:hover { color: #fff; }
+  #sc-data-expand-box .sde-hint {
+    margin-top: 10px;
+    font-size: 10px;
+    color: #444;
+    font-family: 'Helvetica Neue', Arial, sans-serif;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+  #sc-data-expand-box.pinned .sde-hint { display: none; }
+</style>
+<div id="sc-data-expand-box">
+  <div class="sde-close" id="sc-data-expand-close">&#x2715; close</div>
+  <div class="sde-label" id="sc-deb-label"></div>
+  <div class="sde-title" id="sc-deb-title"></div>
+  <div class="sde-body" id="sc-deb-body"></div>
+  <div class="sde-hint">click to pin &middot; esc to close</div>
+</div>
+<script>
+(function() {
+  var box = document.getElementById('sc-data-expand-box');
+  var debLabel = document.getElementById('sc-deb-label');
+  var debTitle = document.getElementById('sc-deb-title');
+  var debBody  = document.getElementById('sc-deb-body');
+  var closeBtn = document.getElementById('sc-data-expand-close');
+  var hoverTimer = null;
+  var pinned = false;
+  var currentEl = null;
 
+  function getExpandData(el) {
+    var cls = el.className || '';
+    // KEY FIGURES row
+    if (cls.indexOf('sc-data-kv-row') !== -1) {
+      var num = el.querySelector('.sc-data-kv-num');
+      var desc = el.querySelector('.sc-data-kv-desc');
+      return {
+        label: 'Key Figure',
+        title: num ? num.textContent.trim() : '',
+        body: desc ? desc.innerHTML : ''
+      };
+    }
+    // ANNUAL KILLINGS row
+    if (cls.indexOf('sc-data-row') !== -1 && cls.indexOf('sc-data-bar') === -1 && cls.indexOf('sc-data-study') === -1 && cls.indexOf('sc-data-src') === -1) {
+      var year  = el.querySelector('.dr-year');
+      var total = el.querySelector('.dr-total');
+      var black = el.querySelector('.dr-black');
+      var pct   = el.querySelector('.dr-pct');
+      var note  = el.querySelector('.dr-note');
+      var titleTxt = (year ? year.textContent.trim() : '') + (total ? ' &mdash; ' + total.textContent.trim() + ' killed' : '');
+      var bodyParts = [];
+      if (black && black.textContent.trim() && black.textContent.trim() !== '—') bodyParts.push('<strong>Black victims:</strong> ' + black.textContent.trim());
+      if (pct && pct.textContent.trim() && pct.textContent.trim() !== '—') bodyParts.push('<strong>% of total:</strong> ' + pct.textContent.trim());
+      if (note && note.textContent.trim() && note.textContent.trim() !== '—') bodyParts.push(note.innerHTML);
+      return {
+        label: 'Annual Data',
+        title: titleTxt,
+        body: bodyParts.join('<br>')
+      };
+    }
+    // RACIAL DISPARITY BAR row
+    if (cls.indexOf('sc-data-bar-row') !== -1) {
+      var label = el.querySelector('.sc-data-bar-label');
+      var val   = el.querySelector('.sc-data-bar-value');
+      return {
+        label: 'Racial Disparity',
+        title: (label ? label.textContent.trim() : '') + (val ? ' &mdash; ' + val.textContent.trim() + ' more likely to be killed than white Americans' : ''),
+        body: 'Rate of police killings per population relative to white Americans (1.0&times; baseline). Source: Campaign Zero, 2025 Annual Report.'
+      };
+    }
+    // STUDY row
+    if (cls.indexOf('sc-data-study-row') !== -1) {
+      var meta = el.querySelector('.sc-data-study-meta');
+      var text = el.querySelector('.sc-data-study-text');
+      return {
+        label: 'Peer-Reviewed Study',
+        title: meta ? meta.innerHTML : '',
+        body: text ? text.innerHTML : ''
+      };
+    }
+    // PRIMARY DATABASE row
+    if (cls.indexOf('sc-data-src-row') !== -1) {
+      var cols = el.querySelectorAll('div');
+      var srcName = cols[0] ? cols[0].innerHTML : '';
+      var srcDesc = cols[1] ? cols[1].innerHTML : '';
+      return {
+        label: 'Primary Source',
+        title: srcName,
+        body: srcDesc
+      };
+    }
+    return null;
+  }
+
+  function positionBox(e) {
+    var vw = window.innerWidth;
+    var vh = window.innerHeight;
+    var bw = 500; // approx box width
+    var bh = 160; // approx box height
+    var x = e.clientX + 18;
+    var y = e.clientY - 20;
+    if (x + bw > vw - 12) x = e.clientX - bw - 12;
+    if (y + bh > vh - 12) y = vh - bh - 12;
+    if (y < 8) y = 8;
+    box.style.left = x + 'px';
+    box.style.top  = y + 'px';
+  }
+
+  function showBox(el, e) {
+    var data = getExpandData(el);
+    if (!data) return;
+    debLabel.innerHTML = data.label;
+    debTitle.innerHTML = data.title;
+    debBody.innerHTML  = data.body;
+    positionBox(e);
+    box.classList.remove('pinned');
+    box.classList.add('visible');
+  }
+
+  function hideBox() {
+    if (pinned) return;
+    box.classList.remove('visible');
+    clearTimeout(hoverTimer);
+    hoverTimer = null;
+  }
+
+  function pinBox() {
+    pinned = true;
+    box.classList.add('pinned');
+  }
+
+  function unpinBox() {
+    pinned = false;
+    box.classList.remove('pinned', 'visible');
+  }
+
+  // Close button
+  closeBtn.addEventListener('click', function(e) {
+    e.stopPropagation();
+    unpinBox();
+  });
+
+  // ESC to close
+  document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') unpinBox();
+  });
+
+  // Delegate events on sc-data-page
+  var SELECTORS = [
+    '.sc-data-kv-row',
+    '.sc-data-row',
+    '.sc-data-bar-row',
+    '.sc-data-study-row',
+    '.sc-data-src-row'
+  ];
+
+  function matchesExpandable(el) {
+    if (!el || !el.classList) return false;
+    return SELECTORS.some(function(sel) {
+      return el.matches(sel);
+    });
+  }
+
+  function getExpandableAncestor(el) {
+    while (el && el !== document.body) {
+      if (matchesExpandable(el)) return el;
+      el = el.parentElement;
+    }
+    return null;
+  }
+
+  document.addEventListener('mousemove', function(e) {
+    if (pinned) return;
+    var row = getExpandableAncestor(e.target);
+    if (row) {
+      if (row !== currentEl) {
+        clearTimeout(hoverTimer);
+        currentEl = row;
+        var savedE = { clientX: e.clientX, clientY: e.clientY };
+        hoverTimer = setTimeout(function() {
+          showBox(row, savedE);
+        }, 1000);
+      } else if (box.classList.contains('visible')) {
+        positionBox(e);
+      }
+    } else {
+      if (currentEl) {
+        clearTimeout(hoverTimer);
+        currentEl = null;
+        if (!pinned) box.classList.remove('visible');
+      }
+    }
+  });
+
+  document.addEventListener('click', function(e) {
+    if (e.target === closeBtn || closeBtn.contains(e.target)) return;
+    var row = getExpandableAncestor(e.target);
+    if (row) {
+      clearTimeout(hoverTimer);
+      showBox(row, e);
+      pinBox();
+    } else if (pinned && !box.contains(e.target)) {
+      unpinBox();
+    }
+  });
+
+})();
+</script>
 </body>
 </html>
