@@ -7738,7 +7738,6 @@
     }
     #sc-images1-viewer.portrait #sc-images1-bg {
       display: block;
-      filter: blur(3px) brightness(0.95);
     }
     /* Foto piccola portrait: posizione base — viene sovrascritta da .pos-right/.pos-left/.pos-center */
     #sc-images1-viewer.portrait #sc-images1-img,
@@ -16011,11 +16010,16 @@ function lbUpdateCursor() {
       const isPortrait = tmp.naturalHeight > tmp.naturalWidth;
       const bg = document.getElementById('sc-images1-bg');
       if (isPortrait) {
+        // Disabilita transizione per evitare il movimento dal basso all'apertura
+        imgEl.style.transition = 'none';
         viewer.classList.add('portrait');
         bg.src = src;
         // Rimuovi vecchie classi posizione e applica quella corrente
         imgEl.classList.remove('pos-right', 'pos-left', 'pos-center');
         imgEl.classList.add(_scImages1GetPos());
+        // Forza reflow, poi riabilita la transizione
+        imgEl.getBoundingClientRect();
+        imgEl.style.transition = '';
       } else {
         viewer.classList.remove('portrait');
         bg.src = '';
