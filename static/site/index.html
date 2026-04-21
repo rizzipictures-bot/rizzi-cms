@@ -6045,7 +6045,7 @@
       background: #000;
       border-radius: 10px;
       position: absolute;
-      bottom: 3.5vw;
+      bottom: calc(3.5vw + 40px);
       left: 50%;
       z-index: 10;
       /* Stato nascosto: fuori viewport */
@@ -6079,6 +6079,10 @@
       padding: 14px 18px; /* ripristina padding laterale quando aperto */
     }
     #sc-vb-text-drag {
+      display: none;
+    }
+    #sc-vb-text-box.sc-vb-text-open #sc-vb-text-drag {
+      display: block;
       position: absolute;
       top: 8px;
       left: 50%;
@@ -6090,7 +6094,7 @@
       cursor: pointer;
       transition: 0.3s;
     }
-    #sc-vb-text-drag:hover { background: rgb(120,120,120); }
+    #sc-vb-text-box.sc-vb-text-open #sc-vb-text-drag:hover { background: rgb(120,120,120); }
     #sc-vb-text-label {
       cursor: pointer;
       font-family: Arial, sans-serif;
