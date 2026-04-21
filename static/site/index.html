@@ -7781,6 +7781,9 @@
       opacity: 1;
       pointer-events: all;
     }
+    /* Fix: i bottoni dei viewer non aperti NON devono catturare click */
+    #sc-images1-viewer:not(.open) button,
+    #sc-images4-viewer:not(.open) button { pointer-events: none !important; }
     #sc-images4-img, #sc-images4-img-next {
       position: absolute;
       inset: 0;
@@ -15986,14 +15989,35 @@ function lbUpdateCursor() {
     _idx1 = 0;
     const viewer = document.getElementById('sc-images1-viewer');
     const imgEl  = document.getElementById('sc-images1-img');
+    const bg     = document.getElementById('sc-images1-bg');
     const count  = document.getElementById('sc-images1-count');
-    imgEl.src = _imgs1[0];
     count.textContent = '01 / ' + String(_imgs1.length).padStart(2, '0');
-    viewer.classList.add('open');
-    document.body.classList.add('sc-images1-open');
-    // Rileva portrait e imposta modalità
-    _scImages1SetPortrait(imgEl, _imgs1[0], viewer);
-    document.addEventListener('keydown', _scImages1Key);
+    // Precarica l'immagine per rilevare portrait PRIMA di aprire il viewer
+    const tmp = new Image();
+    tmp.onload = function() {
+      const isPortrait = tmp.naturalHeight > tmp.naturalWidth;
+      // Disabilita transizioni per il setup iniziale
+      imgEl.style.transition = 'none';
+      if (isPortrait) {
+        viewer.classList.add('portrait');
+        bg.src = _imgs1[0];
+        imgEl.classList.remove('pos-right', 'pos-left', 'pos-center');
+        imgEl.classList.add(_scImages1GetPos());
+      } else {
+        viewer.classList.remove('portrait');
+        bg.src = '';
+        imgEl.classList.remove('pos-right', 'pos-left', 'pos-center');
+      }
+      imgEl.src = _imgs1[0];
+      // Forza reflow per applicare il layout senza animazione
+      imgEl.getBoundingClientRect();
+      imgEl.style.transition = '';
+      // Ora apri il viewer — la foto è già nella posizione corretta
+      viewer.classList.add('open');
+      document.body.classList.add('sc-images1-open');
+      document.addEventListener('keydown', _scImages1Key);
+    };
+    tmp.src = _imgs1[0];
   };
 
   // Ciclo posizioni portrait: right → left → center → right ...
