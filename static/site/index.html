@@ -16300,7 +16300,13 @@ function lbUpdateCursor() {
     const viewer = document.getElementById('sc-images5-viewer');
     const imgEl  = document.getElementById('sc-images5-img');
     const count  = document.getElementById('sc-images5-count');
+    const prevBtn = document.getElementById('sc-images5-prev');
+    const nextBtn = document.getElementById('sc-images5-next');
     count.textContent = String(idx + 1).padStart(2, '0') + ' / ' + String(_imgs5.length).padStart(2, '0');
+    // Nascondi frecce se c'è una sola foto
+    const showNav = _imgs5.length > 1;
+    if (prevBtn) prevBtn.style.display = showNav ? '' : 'none';
+    if (nextBtn) nextBtn.style.display = showNav ? '' : 'none';
     imgEl.style.transition = 'none';
     imgEl.src = _imgs5[idx];
     imgEl.getBoundingClientRect();
