@@ -7694,7 +7694,7 @@
       inset: 0;
       width: 100%;
       height: 100%;
-      object-fit: contain;
+      object-fit: cover;
       display: block;
       will-change: transform;
     }
@@ -21273,6 +21273,11 @@ function scVbStop() {
 
 // Naviga nel carousel del popup
 function scCarouselNav(dir) {
+  // images-1: delega a _scImages1Nav che gestisce il passaggio landscape↔portrait
+  if (typeof _scCurrentSection !== 'undefined' && _scCurrentSection === 'images-1' && typeof window._scImages1Nav === 'function') {
+    window._scImages1Nav(dir);
+    return;
+  }
   if (!scCurrentImages.length) return;
   scCurrentIndex = (scCurrentIndex + dir + scCurrentImages.length) % scCurrentImages.length;
   scUpdateCarousel();
