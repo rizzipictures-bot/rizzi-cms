@@ -2552,9 +2552,12 @@ async function applyAdjust() {
     if (data.errors && data.errors.length > 0) console.warn('Adjust errors:', data.errors);
     toast(`Correzioni applicate a ${data.updated?.length || 0} foto ✔`);
     resetLivePreview();
-    // Forza reload thumbnail aggiungendo timestamp
+    // Forza reload thumbnail bypassando la cache del browser
+    const ts = Date.now();
     document.querySelectorAll('.image-cell img').forEach(img => {
-      img.src = img.src.split('?')[0] + '?t=' + Date.now();
+      const base = img.src.split('?')[0];
+      img.src = '';  // svuota prima per forzare il browser a ricaricare
+      setTimeout(() => { img.src = base + '?t=' + ts; }, 30);
     });
     resetSliders();
   } catch(e) { console.error('Adjust fetch error:', e); toast('Errore elaborazione — controlla la connessione'); }
@@ -3924,9 +3927,12 @@ async function applyPhotographerPreset(presetName, btnEl) {
       console.warn('Preset errors:', data.errors);
     }
     toast(`Preset ${btnEl.dataset.preset.replace(/_/g,' ')}${pctLabel} applicato a ${data.updated?.length || 0} foto ✔`);
-    // Ricarica le thumbnail
+    // Ricarica le thumbnail bypassando la cache del browser
+    const ts2 = Date.now();
     document.querySelectorAll('.image-cell img').forEach(img => {
-      img.src = img.src.split('?')[0] + '?t=' + Date.now();
+      const base = img.src.split('?')[0];
+      img.src = '';
+      setTimeout(() => { img.src = base + '?t=' + ts2; }, 30);
     });
     resetLivePreview();
   } catch(e) {
