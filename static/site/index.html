@@ -17247,7 +17247,8 @@ let scCurrentIndex   = 0;   // indice immagine nel carousel
 function scGoBack() {
   _scHideStudiesTextBox();
   _scHideLifeTextBox();
-  switchView('index');
+  // Torna all'overview di Sculptures (non a view-index che è la lista fotografica)
+  scSwitchSection('overview');
 }
 
 // Naviga tra le sezioni del menu Sculptures
