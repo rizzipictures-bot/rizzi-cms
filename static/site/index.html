@@ -16014,35 +16014,35 @@ function lbUpdateCursor() {
     }
     if (_imgs1.length === 0) return;
     _idx1 = 0;
-    const viewer = document.getElementById('sc-images1-viewer');
-    const imgEl  = document.getElementById('sc-images1-img');
-    const bg     = document.getElementById('sc-images1-bg');
-    const count  = document.getElementById('sc-images1-count');
-    count.textContent = '01 / ' + String(_imgs1.length).padStart(2, '0');
-    // Precarica l'immagine per rilevare portrait PRIMA di aprire il viewer
+    // Precarica la prima immagine per rilevare se è portrait
     const tmp = new Image();
     tmp.onload = function() {
       const isPortrait = tmp.naturalHeight > tmp.naturalWidth;
-      // Disabilita transizioni per il setup iniziale
-      imgEl.style.transition = 'none';
       if (isPortrait) {
-        viewer.classList.add('portrait');
-        bg.src = _imgs1[0];
-        imgEl.classList.remove('pos-right', 'pos-left', 'pos-center');
-        imgEl.classList.add(_scImages1GetPos());
+        // Foto portrait: usa il viewer scOpenChild (identico a images-3)
+        // Popola scCurrentImages con tutte le immagini di images-1
+        scCurrentImages = _imgs1.map(function(url) {
+          return { url: url, title: '', desc: '', caption: '' };
+        });
+        scOpenChild(0, 'images-1');
       } else {
+        // Foto landscape: usa il viewer fullscreen dedicato di images-1
+        const viewer = document.getElementById('sc-images1-viewer');
+        const imgEl  = document.getElementById('sc-images1-img');
+        const bg     = document.getElementById('sc-images1-bg');
+        const count  = document.getElementById('sc-images1-count');
+        count.textContent = '01 / ' + String(_imgs1.length).padStart(2, '0');
+        imgEl.style.transition = 'none';
         viewer.classList.remove('portrait');
         bg.src = '';
         imgEl.classList.remove('pos-right', 'pos-left', 'pos-center');
+        imgEl.src = _imgs1[0];
+        imgEl.getBoundingClientRect();
+        imgEl.style.transition = '';
+        viewer.classList.add('open');
+        document.body.classList.add('sc-images1-open');
+        document.addEventListener('keydown', _scImages1Key);
       }
-      imgEl.src = _imgs1[0];
-      // Forza reflow per applicare il layout senza animazione
-      imgEl.getBoundingClientRect();
-      imgEl.style.transition = '';
-      // Ora apri il viewer — la foto è già nella posizione corretta
-      viewer.classList.add('open');
-      document.body.classList.add('sc-images1-open');
-      document.addEventListener('keydown', _scImages1Key);
     };
     tmp.src = _imgs1[0];
   };
