@@ -17581,9 +17581,11 @@ function scBuildGrid() {
       if (cmsMap[sec]) scCurrentImages.push(cmsMap[sec]);
       else if (HARDCODED_THUMBS[sec]) scCurrentImages.push(HARDCODED_THUMBS[sec]);
     });
-    // Aggiungi eventuali sezioni CMS non presenti nell'ordine fisso
+    // Sezioni che appartengono a Images e non devono apparire nell'overview
+    const IMAGES_SECTIONS = ['images-1','images-2','images-3','images-4','images-5','images-6','images-7','images-8'];
+    // Aggiungi eventuali sezioni CMS non presenti nell'ordine fisso e non in Images
     Object.keys(cmsMap).forEach(sec => {
-      if (!FIXED_ORDER.includes(sec)) scCurrentImages.push(cmsMap[sec]);
+      if (!FIXED_ORDER.includes(sec) && !IMAGES_SECTIONS.includes(sec)) scCurrentImages.push(cmsMap[sec]);
     });
   }
 
