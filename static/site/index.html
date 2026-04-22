@@ -16002,6 +16002,62 @@ function lbUpdateCursor() {
     }
   };
 
+  // Apre il viewer scOpenChild in modalità fullscreen per una foto portrait di images-1
+  function _scImages1OpenPortraitViewer(idx) {
+    scCurrentImages = _imgs1.map(function(url) {
+      return { url: url, title: '', desc: '', caption: '' };
+    });
+    scCurrentIndex = idx;
+    _scCurrentSection = 'images-1';
+    const child = document.getElementById('sculptures-child');
+    if (!child) return;
+    // Rimuovi fullscreen residuo e apri
+    child.classList.remove('sc-fullscreen');
+    _scResetExpandIcon();
+    child.classList.add('active');
+    document.body.classList.add('sc-viewer-active');
+    document.body.classList.remove('sc-diary-viewer-active');
+    scUpdateCarousel();
+    // Forza fullscreen subito dopo l'apertura
+    requestAnimationFrame(function() {
+      child.classList.add('sc-fullscreen');
+      const expandIcon   = document.getElementById('sc-expand-icon');
+      const collapseIcon = document.getElementById('sc-collapse-icon');
+      if (expandIcon)   expandIcon.style.display   = 'none';
+      if (collapseIcon) collapseIcon.style.display = 'block';
+    });
+    document.addEventListener('keydown', _scImages1Key);
+  }
+
+  // Apre il viewer fullscreen dedicato di images-1 per una foto landscape
+  function _scImages1OpenLandscapeViewer(idx) {
+    const viewer = document.getElementById('sc-images1-viewer');
+    const imgEl  = document.getElementById('sc-images1-img');
+    const bg     = document.getElementById('sc-images1-bg');
+    const count  = document.getElementById('sc-images1-count');
+    count.textContent = String(idx + 1).padStart(2, '0') + ' / ' + String(_imgs1.length).padStart(2, '0');
+    imgEl.style.transition = 'none';
+    viewer.classList.remove('portrait');
+    bg.src = '';
+    imgEl.classList.remove('pos-right', 'pos-left', 'pos-center');
+    imgEl.src = _imgs1[idx];
+    imgEl.getBoundingClientRect();
+    imgEl.style.transition = '';
+    viewer.classList.add('open');
+    document.body.classList.add('sc-images1-open');
+    document.addEventListener('keydown', _scImages1Key);
+  }
+
+  // Chiude il viewer portrait (scOpenChild) se aperto da images-1
+  function _scImages1ClosePortraitViewer() {
+    const child = document.getElementById('sculptures-child');
+    if (child && child.classList.contains('active')) {
+      child.classList.remove('active', 'sc-fullscreen');
+      _scResetExpandIcon();
+      document.body.classList.remove('sc-viewer-active', 'sc-diary-viewer-active');
+    }
+  }
+
   window._scImages1Open = function() {
     // Raccoglie le immagini del progetto images-1 dal CMS
     const _projs = (typeof PROJECTS !== 'undefined' ? PROJECTS : []);
@@ -16014,34 +16070,13 @@ function lbUpdateCursor() {
     }
     if (_imgs1.length === 0) return;
     _idx1 = 0;
-    // Precarica la prima immagine per rilevare se è portrait
+    // Precarica la prima immagine per rilevare portrait/landscape
     const tmp = new Image();
     tmp.onload = function() {
-      const isPortrait = tmp.naturalHeight > tmp.naturalWidth;
-      if (isPortrait) {
-        // Foto portrait: usa il viewer scOpenChild (identico a images-3)
-        // Popola scCurrentImages con tutte le immagini di images-1
-        scCurrentImages = _imgs1.map(function(url) {
-          return { url: url, title: '', desc: '', caption: '' };
-        });
-        scOpenChild(0, 'images-1');
+      if (tmp.naturalHeight > tmp.naturalWidth) {
+        _scImages1OpenPortraitViewer(0);
       } else {
-        // Foto landscape: usa il viewer fullscreen dedicato di images-1
-        const viewer = document.getElementById('sc-images1-viewer');
-        const imgEl  = document.getElementById('sc-images1-img');
-        const bg     = document.getElementById('sc-images1-bg');
-        const count  = document.getElementById('sc-images1-count');
-        count.textContent = '01 / ' + String(_imgs1.length).padStart(2, '0');
-        imgEl.style.transition = 'none';
-        viewer.classList.remove('portrait');
-        bg.src = '';
-        imgEl.classList.remove('pos-right', 'pos-left', 'pos-center');
-        imgEl.src = _imgs1[0];
-        imgEl.getBoundingClientRect();
-        imgEl.style.transition = '';
-        viewer.classList.add('open');
-        document.body.classList.add('sc-images1-open');
-        document.addEventListener('keydown', _scImages1Key);
+        _scImages1OpenLandscapeViewer(0);
       }
     };
     tmp.src = _imgs1[0];
@@ -16094,48 +16129,64 @@ function lbUpdateCursor() {
     if (_imgs1.length === 0 || _imgs1NavLocked) return;
     _imgs1NavLocked = true;
     _idx1 = (_idx1 + dir + _imgs1.length) % _imgs1.length;
-    const imgCur  = document.getElementById('sc-images1-img');
-    const imgNext = document.getElementById('sc-images1-img-next');
-    const count   = document.getElementById('sc-images1-count');
-    // Precarica la nuova immagine nell'elemento secondario
-    imgNext.src = _imgs1[_idx1];
-    // Calcola la prossima posizione portrait (senza avanzare ancora il contatore)
-    const viewer = document.getElementById('sc-images1-viewer');
-    if (viewer.classList.contains('portrait')) {
-      const nextPos = _PORTRAIT_POSITIONS[(_portrait1PosIdx + 1) % 3];
-      imgNext.classList.remove('pos-right', 'pos-left', 'pos-center');
-      imgNext.classList.add(nextPos);
-    }
-    // Forza reflow per garantire la posizione iniziale
-    imgNext.getBoundingClientRect();
-    // Avvia entrambe le animazioni: corrente esce a sx, nuova entra da dx
-    imgCur.classList.add('slide-out-left');
-    imgNext.style.zIndex = '3';
-    imgNext.classList.add('slide-in');
-    count.textContent = String(_idx1 + 1).padStart(2, '0') + ' / ' + String(_imgs1.length).padStart(2, '0');
-    setTimeout(() => {
-      // Disabilita transizione per il reset istantaneo
-      imgCur.style.transition = 'none';
-      imgNext.style.transition = 'none';
-      // Swap: aggiorna src e posizione del corrente
-      imgCur.src = _imgs1[_idx1];
-      imgCur.classList.remove('slide-out-left', 'pos-right', 'pos-left', 'pos-center');
-      imgCur.style.transform = '';
-      // Reset del next fuori schermo a destra
-      imgNext.classList.remove('slide-in', 'pos-right', 'pos-left', 'pos-center');
-      imgNext.style.zIndex = '1';
-      imgNext.style.transform = '';
-      imgNext.src = '';
-      // Forza reflow prima di riabilitare la transizione
-      imgCur.getBoundingClientRect();
-      imgCur.style.transition = '';
-      imgNext.style.transition = '';
-      // Avanza il ciclo di posizione portrait e aggiorna
-      _portrait1PosIdx++;
-      const viewer = document.getElementById('sc-images1-viewer');
-      _scImages1SetPortrait(imgCur, _imgs1[_idx1], viewer);
+    const newUrl = _imgs1[_idx1];
+    // Precarica per rilevare portrait/landscape della nuova foto
+    const tmp = new Image();
+    tmp.onload = function() {
+      const newIsPortrait = tmp.naturalHeight > tmp.naturalWidth;
+      const viewer1 = document.getElementById('sc-images1-viewer');
+      const child   = document.getElementById('sculptures-child');
+      const viewer1Open = viewer1 && viewer1.classList.contains('open');
+      const childOpen   = child   && child.classList.contains('active') && _scCurrentSection === 'images-1';
+      if (newIsPortrait) {
+        // Nuova foto portrait → usa scOpenChild fullscreen
+        if (viewer1Open) {
+          // Chiudi il viewer landscape senza tornare alla griglia
+          viewer1.classList.remove('open');
+          document.body.classList.remove('sc-images1-open');
+        }
+        _scImages1OpenPortraitViewer(_idx1);
+      } else {
+        // Nuova foto landscape → usa viewer fullscreen dedicato
+        if (childOpen) {
+          // Chiudi il viewer portrait senza tornare alla griglia
+          _scImages1ClosePortraitViewer();
+        }
+        if (viewer1Open) {
+          // Già nel viewer landscape: aggiorna solo la foto con slide
+          const imgCur  = document.getElementById('sc-images1-img');
+          const imgNext = document.getElementById('sc-images1-img-next');
+          const count   = document.getElementById('sc-images1-count');
+          imgNext.src = newUrl;
+          imgNext.getBoundingClientRect();
+          imgCur.classList.add('slide-out-left');
+          imgNext.style.zIndex = '3';
+          imgNext.classList.add('slide-in');
+          count.textContent = String(_idx1 + 1).padStart(2, '0') + ' / ' + String(_imgs1.length).padStart(2, '0');
+          setTimeout(() => {
+            imgCur.style.transition = 'none';
+            imgNext.style.transition = 'none';
+            imgCur.src = newUrl;
+            imgCur.classList.remove('slide-out-left');
+            imgCur.style.transform = '';
+            imgNext.classList.remove('slide-in');
+            imgNext.style.zIndex = '1';
+            imgNext.style.transform = '';
+            imgNext.src = '';
+            imgCur.getBoundingClientRect();
+            imgCur.style.transition = '';
+            imgNext.style.transition = '';
+            _imgs1NavLocked = false;
+          }, 680);
+          return; // esce prima di sbloccare sotto
+        } else {
+          // Arrivo da portrait → apri il viewer landscape
+          _scImages1OpenLandscapeViewer(_idx1);
+        }
+      }
       _imgs1NavLocked = false;
-    }, 680);
+    };
+    tmp.src = newUrl;
   };
 
   function _scImages1Key(e) {
