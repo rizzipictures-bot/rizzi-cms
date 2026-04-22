@@ -5,6 +5,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Rizzi CMS</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.2/cropper.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.2/cropper.min.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@300;400;500&family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400;1,600&display=swap" rel="stylesheet">
 <style>
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -930,6 +932,103 @@
     color: rgba(255,255,255,0.5); text-align: center;
   }
 
+  /* ── CROP POPUP ── */
+  #crop-popup {
+    display: none; position: fixed; inset: 0;
+    background: rgba(0,0,0,0.92); z-index: 9100;
+    align-items: center; justify-content: center;
+    flex-direction: column; gap: 0;
+  }
+  #crop-popup.open { display: flex; }
+  #crop-popup-header {
+    width: 100%; max-width: 900px;
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 12px 16px;
+    background: rgba(255,255,255,0.06);
+    border-radius: 10px 10px 0 0;
+    flex-shrink: 0;
+  }
+  #crop-popup-title {
+    font-family: var(--font); font-size: 12px; font-weight: 500;
+    color: rgba(255,255,255,0.85); letter-spacing: 0.2px;
+  }
+  #crop-popup-close {
+    background: none; border: none; color: rgba(255,255,255,0.5);
+    font-size: 18px; cursor: pointer; font-family: var(--font); line-height: 1; padding: 4px;
+  }
+  #crop-popup-close:hover { color: #fff; }
+  #crop-popup-body {
+    width: 100%; max-width: 900px;
+    background: #111;
+    display: flex; align-items: stretch;
+    border-radius: 0 0 10px 10px;
+    overflow: hidden;
+    flex: 1; min-height: 0; max-height: calc(100vh - 140px);
+  }
+  #crop-container {
+    flex: 1; min-width: 0;
+    position: relative; overflow: hidden;
+    background: #000;
+  }
+  #crop-container img {
+    display: block; max-width: 100%; max-height: 100%;
+  }
+  #crop-sidebar {
+    width: 180px; flex-shrink: 0;
+    background: rgba(255,255,255,0.04);
+    border-left: 1px solid rgba(255,255,255,0.08);
+    display: flex; flex-direction: column;
+    padding: 16px 12px; gap: 10px;
+    overflow-y: auto;
+  }
+  .crop-sidebar-label {
+    font-family: var(--font); font-size: 10px; font-weight: 600;
+    letter-spacing: 0.4px; text-transform: uppercase;
+    color: rgba(255,255,255,0.4); margin-bottom: 2px;
+  }
+  .crop-ratio-btn {
+    background: rgba(255,255,255,0.07);
+    border: 1px solid rgba(255,255,255,0.12);
+    border-radius: 5px;
+    font-family: var(--font); font-size: 11px; font-weight: 400;
+    color: rgba(255,255,255,0.7);
+    padding: 6px 10px; cursor: pointer; text-align: left;
+    transition: background .15s, color .15s;
+  }
+  .crop-ratio-btn:hover { background: rgba(255,255,255,0.13); color: #fff; }
+  .crop-ratio-btn.active {
+    background: rgba(255,255,255,0.18); color: #fff;
+    border-color: rgba(255,255,255,0.3);
+    font-weight: 500;
+  }
+  .crop-divider {
+    border: none; border-top: 1px solid rgba(255,255,255,0.08);
+    margin: 4px 0;
+  }
+  #crop-apply-btn {
+    background: #fff; color: #111;
+    border: none; border-radius: 6px;
+    font-family: var(--font); font-size: 12px; font-weight: 600;
+    padding: 9px 14px; cursor: pointer;
+    transition: opacity .15s; margin-top: auto;
+  }
+  #crop-apply-btn:hover { opacity: .85; }
+  #crop-apply-btn:disabled { opacity: .35; cursor: default; }
+  #crop-reset-btn {
+    background: rgba(255,255,255,0.07);
+    border: 1px solid rgba(255,255,255,0.12);
+    border-radius: 6px;
+    font-family: var(--font); font-size: 11px; font-weight: 400;
+    color: rgba(255,255,255,0.6);
+    padding: 7px 14px; cursor: pointer;
+    transition: background .15s;
+  }
+  #crop-reset-btn:hover { background: rgba(255,255,255,0.13); color: #fff; }
+  #crop-info {
+    font-family: var(--font-mono); font-size: 9px;
+    color: rgba(255,255,255,0.3); text-align: center;
+    line-height: 1.5;
+  }
   /* Toolbar sopra la griglia foto */
   .images-toolbar {
     display: flex;
@@ -1672,6 +1771,7 @@
             <button class="proc-apply-btn" onclick="applyAdjust()" id="btn-apply-adjust">Applica correzioni</button>
             <button class="proc-apply-btn secondary" onclick="applyAutoBalance()">✾ Auto-balance AI</button>
             <button class="proc-apply-btn secondary" onclick="openProcZoom()">⚬ Zoom preview</button>
+            <button class="proc-apply-btn secondary" onclick="openCropPopup()" id="btn-open-crop">&#9999; Crop</button>
             <button class="proc-apply-btn secondary" onclick="resetAllCorrections()">Reset tutto</button>
           </div>
           </div><!-- /img-proc-panel-inner -->
@@ -3721,6 +3821,131 @@ init();
 })();
 
 // ════════════════════════════════════════════════════════════════
+// CROP POPUP
+// ════════════════════════════════════════════════════════════════
+(function() {
+  let _cropperInstance = null;
+  let _cropPhotoId = null;
+  let _cropPhotoFile = null;
+
+  window.openCropPopup = function() {
+    // Prendi la foto selezionata o la prima disponibile
+    const cell = document.querySelector('.image-cell.selected') || document.querySelector('.image-cell');
+    if (!cell) { toast('Nessuna foto disponibile per il crop'); return; }
+    _cropPhotoId = cell.dataset.imgId;
+    const photo = (currentProject && currentProject.images || []).find(function(i) { return i.id === _cropPhotoId; });
+    if (!photo) { toast('Foto non trovata'); return; }
+    _cropPhotoFile = photo.file;
+
+    // Aggiorna titolo popup
+    const titleEl = document.getElementById('crop-popup-title');
+    if (titleEl) titleEl.textContent = 'Crop — ' + (_cropPhotoFile || _cropPhotoId);
+
+    const popup = document.getElementById('crop-popup');
+    const img   = document.getElementById('crop-img');
+
+    function _initCropper() {
+      if (_cropperInstance) { _cropperInstance.destroy(); _cropperInstance = null; }
+      _cropperInstance = new Cropper(img, {
+        viewMode: 1,
+        dragMode: 'crop',
+        autoCropArea: 1,
+        responsive: true,
+        restore: false,
+        guides: true,
+        center: true,
+        highlight: false,
+        cropBoxMovable: true,
+        cropBoxResizable: true,
+        toggleDragModeOnDblclick: false,
+        crop: function(event) {
+          var d = event.detail;
+          var infoEl = document.getElementById('crop-info');
+          if (infoEl) infoEl.textContent = Math.round(d.width) + ' × ' + Math.round(d.height) + ' px\nX: ' + Math.round(d.x) + ', Y: ' + Math.round(d.y);
+        }
+      });
+    }
+
+    // Prova prima l'originale, poi il file normale
+    img.onerror = function() {
+      img.onerror = null;
+      img.src = '/uploads/' + _cropPhotoFile;
+      img.onload = _initCropper;
+    };
+    img.onload = _initCropper;
+    img.src = '/uploads/originals/' + _cropPhotoFile;
+
+    // Reset pulsanti ratio
+    document.querySelectorAll('.crop-ratio-btn').forEach(function(b) { b.classList.remove('active'); });
+    var freeBtn = document.querySelector('.crop-ratio-btn[data-ratio="0"]');
+    if (freeBtn) freeBtn.classList.add('active');
+
+    popup.classList.add('open');
+    document.addEventListener('keydown', _cropKeyClose);
+  };
+
+  window.closeCropPopup = function() {
+    if (_cropperInstance) { _cropperInstance.destroy(); _cropperInstance = null; }
+    document.getElementById('crop-popup').classList.remove('open');
+    document.removeEventListener('keydown', _cropKeyClose);
+  };
+
+  function _cropKeyClose(e) {
+    if (e.key === 'Escape') window.closeCropPopup();
+  }
+
+  window.setCropRatio = function(ratio, btn) {
+    document.querySelectorAll('.crop-ratio-btn').forEach(function(b) { b.classList.remove('active'); });
+    if (btn) btn.classList.add('active');
+    if (_cropperInstance) {
+      _cropperInstance.setAspectRatio(ratio === 0 || ratio === '0' ? NaN : parseFloat(ratio));
+    }
+  };
+
+  window.resetCrop = function() {
+    if (_cropperInstance) _cropperInstance.reset();
+  };
+
+  window.applyCrop = function() {
+    if (!_cropperInstance || !_cropPhotoId) return;
+    var data = _cropperInstance.getData(true); // true = arrotonda agli interi
+    var btn = document.getElementById('crop-apply-btn');
+    if (btn) { btn.disabled = true; btn.textContent = 'Applicando…'; }
+
+    fetch(API + '/projects/' + currentProject.id + '/images/crop', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        ids: [_cropPhotoId],
+        x: data.x, y: data.y,
+        width: data.width, height: data.height,
+        rotate: data.rotate, scale_x: data.scaleX, scale_y: data.scaleY
+      })
+    })
+    .then(function(r) { return r.json(); })
+    .then(function(d) {
+      if (d.errors && d.errors.length > 0) {
+        toast('Errore crop: ' + d.errors[0].error);
+      } else {
+        toast('Crop applicato ✔');
+        window.closeCropPopup();
+        // Ricarica le thumbnail nella griglia
+        var ts = Date.now();
+        document.querySelectorAll('.image-cell img').forEach(function(imgEl) {
+          var base = imgEl.src.split('?')[0];
+          imgEl.src = '';
+          setTimeout(function() { imgEl.src = base + '?t=' + ts; }, 30);
+        });
+      }
+    })
+    .catch(function() { toast('Errore di rete durante il crop'); })
+    .finally(function() {
+      if (btn) { btn.disabled = false; btn.textContent = 'Applica crop'; }
+    });
+  };
+})();
+
+// ════════════════════════════════════════════════════════════════
 // HELPER: costruisce il filtro CSS completo (sliders + wheels)
 // ════════════════════════════════════════════════════════════════
 function _buildCssFilter() {
@@ -4534,6 +4759,35 @@ function copyToClipboard(id) {
 </script>
 
 <!-- Popup Live Preview Zoom -->
+<!-- CROP POPUP -->
+<div id="crop-popup">
+  <div id="crop-popup-header">
+    <span id="crop-popup-title">Crop foto</span>
+    <button id="crop-popup-close" onclick="closeCropPopup()">&#x2715;</button>
+  </div>
+  <div id="crop-popup-body">
+    <div id="crop-container">
+      <img id="crop-img" src="" alt="">
+    </div>
+    <div id="crop-sidebar">
+      <div class="crop-sidebar-label">Proporzioni</div>
+      <button class="crop-ratio-btn active" data-ratio="0" onclick="setCropRatio(0, this)">Libero</button>
+      <button class="crop-ratio-btn" data-ratio="1" onclick="setCropRatio(1, this)">1 : 1</button>
+      <button class="crop-ratio-btn" data-ratio="1.3333" onclick="setCropRatio(1.3333, this)">4 : 3</button>
+      <button class="crop-ratio-btn" data-ratio="1.5" onclick="setCropRatio(1.5, this)">3 : 2</button>
+      <button class="crop-ratio-btn" data-ratio="1.7778" onclick="setCropRatio(1.7778, this)">16 : 9</button>
+      <button class="crop-ratio-btn" data-ratio="0.6667" onclick="setCropRatio(0.6667, this)">2 : 3 (V)</button>
+      <button class="crop-ratio-btn" data-ratio="0.75" onclick="setCropRatio(0.75, this)">3 : 4 (V)</button>
+      <hr class="crop-divider">
+      <div class="crop-sidebar-label">Info</div>
+      <div id="crop-info">Trascina per selezionare<br>l'area da ritagliare</div>
+      <hr class="crop-divider">
+      <button id="crop-reset-btn" onclick="resetCrop()">&#8635; Reset</button>
+      <button id="crop-apply-btn" onclick="applyCrop()">Applica crop</button>
+    </div>
+  </div>
+</div>
+
 <div id="proc-zoom-popup">
   <button id="proc-zoom-popup-close" onclick="closeProcZoom()">&#x2715;</button>
   <img id="proc-zoom-popup-img" src="" alt="">

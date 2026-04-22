@@ -1607,6 +1607,7 @@ def adjust_images(pid):
     curve_preset     = data.get('curve_preset', None)  # nome preset fotografo
     preset_intensity = _f('preset_intensity', 1.0)  # 0.0-1.0 intensità preset
     mf_acutance      = _f('mf_acutance', 0.0)  # 0.0-1.0 acutanza medio formato
+    curves_data      = data.get('curves', None)  # punti curva personalizzati {rgb, r, g, b, lab-l, lab-a, lab-b}
 
     targets = [i for i in p.get('images', []) if not image_ids or i['id'] in image_ids]
     updated = []
@@ -1648,6 +1649,10 @@ def adjust_images(pid):
                 # Curve preset fotografo: lavora SOLO su PIL, zero numpy
                 if curve_preset:
                     im = _apply_photographer_curve(im, curve_preset, preset_intensity)
+
+                # Curve personalizzate dall'editor grafico
+                if curves_data:
+                    im = _apply_custom_curves(im, curves_data)
 
                 # Correzioni avanzate con numpy: temperatura, tinta, ombre, luci
                 needs_arr = (abs(temp_shift) > 0.5 or abs(tint_shift) > 0.5 or
@@ -1697,6 +1702,71 @@ def adjust_images(pid):
 
     save_db(db)
     return jsonify({'ok': True, 'updated': updated, 'errors': errors})
+
+
+@app.route('/api/projects/<pid>/images/crop', methods=['POST'])
+def crop_images(pid):
+    """Applica un crop fisico a una o più foto del progetto.
+    Body JSON: { ids: [id], x, y, width, height, rotate?, scale_x?, scale_y? }
+    """
+    import shutil
+    db   = load_db()
+    proj = next((p for p in db['projects'] if p['id'] == pid), None)
+    if not proj:
+        return jsonify({'error': 'project not found'}), 404
+
+    body = request.get_json() or {}
+    ids  = body.get('ids', [])
+    x    = int(body.get('x', 0))
+    y    = int(body.get('y', 0))
+    w    = int(body.get('width', 0))
+    h    = int(body.get('height', 0))
+
+    if not ids or w <= 0 or h <= 0:
+        return jsonify({'error': 'Parametri crop non validi (width/height devono essere > 0)'}), 400
+
+    updated = []
+    errors  = []
+
+    for img_id in ids:
+        try:
+            photo = next((i for i in proj.get('images', []) if i['id'] == img_id), None)
+            if not photo:
+                errors.append({'id': img_id, 'error': 'foto non trovata nel progetto'})
+                continue
+
+            file_path = UPLOAD / photo['file']
+            orig_path = UPLOAD / 'originals' / photo['file']
+
+            if not file_path.exists():
+                errors.append({'id': img_id, 'error': 'file non trovato su disco'})
+                continue
+
+            # Backup dell'originale (solo la prima volta)
+            if not orig_path.exists():
+                orig_path.parent.mkdir(parents=True, exist_ok=True)
+                shutil.copy2(str(file_path), str(orig_path))
+
+            # Applica il crop
+            with Image.open(str(file_path)) as img:
+                img_rgb = img.convert('RGB')
+                cropped = img_rgb.crop((x, y, x + w, y + h))
+                cropped.save(str(file_path), 'JPEG', quality=95, optimize=True)
+
+            # Rigenera la thumbnail
+            thumb_name = 'thumb_' + photo['file']
+            thumb_path = UPLOAD / 'thumbs' / thumb_name
+            thumb_path.parent.mkdir(parents=True, exist_ok=True)
+            with Image.open(str(file_path)) as img:
+                img.thumbnail((400, 400), Image.LANCZOS)
+                img.save(str(thumb_path), 'JPEG', quality=85, optimize=True)
+
+            updated.append(img_id)
+
+        except Exception as e:
+            errors.append({'id': img_id, 'error': str(e)})
+
+    return jsonify({'updated': updated, 'errors': errors})
 
 
 @app.route('/api/projects/<pid>/images/reset', methods=['POST'])
