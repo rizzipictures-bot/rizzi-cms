@@ -7798,9 +7798,73 @@
       opacity: 1;
       pointer-events: all;
     }
+    /* ── Viewer fullscreen Images-5 (identico a images-1: landscape + portrait scOpenChild) ── */
+    #sc-images5-viewer {
+      position: fixed; inset: 0;
+      background: #000;
+      z-index: 1200;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.5s cubic-bezier(0.22, 1, 0.36, 1);
+    }
+    #sc-images5-viewer.open {
+      opacity: 1;
+      pointer-events: all;
+    }
+    #sc-images5-img, #sc-images5-img-next {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+      will-change: transform;
+    }
+    #sc-images5-img {
+      transform: translateX(0);
+      transition: transform 0.65s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+      z-index: 2;
+    }
+    #sc-images5-img.slide-out-left { transform: translateX(-100%); }
+    #sc-images5-img-next {
+      transform: translateX(100%);
+      transition: transform 0.65s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+      z-index: 1;
+    }
+    #sc-images5-img-next.slide-in { transform: translateX(0); }
+    #sc-images5-close {
+      position: absolute;
+      top: 22px; right: 22px;
+      z-index: 10;
+    }
+    #sc-images5-prev, #sc-images5-next {
+      position: absolute;
+      top: 50%; transform: translateY(-50%);
+      z-index: 10;
+      background: none;
+      border: none;
+      color: rgba(255,255,255,0.6);
+      font-size: 28px;
+      cursor: none;
+      padding: 20px;
+      transition: color 0.2s;
+    }
+    #sc-images5-prev:hover, #sc-images5-next:hover { color: #fff; }
+    #sc-images5-prev { left: 10px; }
+    #sc-images5-next { right: 10px; }
+    #sc-images5-count {
+      position: absolute;
+      bottom: 18px; left: 50%;
+      transform: translateX(-50%);
+      font-size: 10px;
+      color: rgba(255,255,255,0.35);
+      letter-spacing: 0.4px;
+      pointer-events: none;
+    }
     /* Fix: i bottoni dei viewer non aperti NON devono catturare click */
     #sc-images1-viewer:not(.open) button,
-    #sc-images4-viewer:not(.open) button { pointer-events: none !important; }
+    #sc-images4-viewer:not(.open) button,
+    #sc-images5-viewer:not(.open) button { pointer-events: none !important; }
     #sc-images4-img, #sc-images4-img-next {
       position: absolute;
       inset: 0;
@@ -11711,6 +11775,16 @@
   <button id="sc-images1-prev" onclick="_scImages1Nav(-1)">&#8592;</button>
   <button id="sc-images1-next" onclick="_scImages1Nav(1)">&#8594;</button>
   <div id="sc-images1-count"></div>
+</div>
+
+<!-- Viewer fullscreen Images-5 -->
+<div id="sc-images5-viewer">
+  <img id="sc-images5-img" src="" alt="">
+  <img id="sc-images5-img-next" src="" alt="">
+  <button id="sc-images5-close" class="ae-fab-btn ae-fab-close btn-circle-close" onclick="_scImages5Close()" aria-label="Chiudi"><svg viewBox="0 0 20 20" width="12" height="12" fill="none" stroke-width="1.5" stroke-linecap="round"><line x1="2.5" y1="2.5" x2="17.5" y2="17.5"/><line x1="17.5" y1="2.5" x2="2.5" y2="17.5"/></svg></button>
+  <button id="sc-images5-prev" onclick="_scImages5Nav(-1)">&#8592;</button>
+  <button id="sc-images5-next" onclick="_scImages5Nav(1)">&#8594;</button>
+  <div id="sc-images5-count"></div>
 </div>
 
 <!-- Viewer fullscreen Images-4 -->
@@ -16194,6 +16268,145 @@ function lbUpdateCursor() {
   }
 })();
 
+// ── Viewer fullscreen Images-5 (identico a images-1: landscape fullscreen + portrait scOpenChild) ──
+(function() {
+  let _imgs5 = [], _idx5 = 0;
+
+  function _scImages5OpenPortraitViewer(idx) {
+    scCurrentImages = _imgs5.map(function(url) {
+      return { url: url, title: '', desc: '', caption: '' };
+    });
+    scCurrentIndex = idx;
+    _scCurrentSection = 'images-5';
+    const child = document.getElementById('sculptures-child');
+    if (!child) return;
+    child.classList.remove('sc-fullscreen');
+    _scResetExpandIcon();
+    child.classList.add('active');
+    document.body.classList.add('sc-viewer-active');
+    document.body.classList.remove('sc-diary-viewer-active');
+    scUpdateCarousel();
+    requestAnimationFrame(function() {
+      child.classList.add('sc-fullscreen');
+      const expandIcon   = document.getElementById('sc-expand-icon');
+      const collapseIcon = document.getElementById('sc-collapse-icon');
+      if (expandIcon)   expandIcon.style.display   = 'none';
+      if (collapseIcon) collapseIcon.style.display = 'block';
+    });
+    document.addEventListener('keydown', _scImages5Key);
+  }
+
+  function _scImages5OpenLandscapeViewer(idx) {
+    const viewer = document.getElementById('sc-images5-viewer');
+    const imgEl  = document.getElementById('sc-images5-img');
+    const count  = document.getElementById('sc-images5-count');
+    count.textContent = String(idx + 1).padStart(2, '0') + ' / ' + String(_imgs5.length).padStart(2, '0');
+    imgEl.style.transition = 'none';
+    imgEl.src = _imgs5[idx];
+    imgEl.getBoundingClientRect();
+    imgEl.style.transition = '';
+    viewer.classList.add('open');
+    document.body.classList.add('sc-images5-open');
+    document.addEventListener('keydown', _scImages5Key);
+  }
+
+  function _scImages5ClosePortraitViewer() {
+    const child = document.getElementById('sculptures-child');
+    if (child && child.classList.contains('active')) {
+      child.classList.remove('active', 'sc-fullscreen');
+      _scResetExpandIcon();
+      document.body.classList.remove('sc-viewer-active', 'sc-diary-viewer-active');
+    }
+  }
+
+  window._scImages5Open = function() {
+    const _projs = (typeof PROJECTS !== 'undefined' ? PROJECTS : []);
+    const proj = _projs.find(p => p.sc_section === 'images-5');
+    _imgs5 = proj && proj.images ? proj.images.map(img => img.url || img.thumb).filter(Boolean) : [];
+    if (_imgs5.length === 0) return;
+    _idx5 = 0;
+    const tmp = new Image();
+    tmp.onload = function() {
+      if (tmp.naturalHeight > tmp.naturalWidth) {
+        _scImages5OpenPortraitViewer(0);
+      } else {
+        _scImages5OpenLandscapeViewer(0);
+      }
+    };
+    tmp.src = _imgs5[0];
+  };
+
+  window._scImages5Close = function() {
+    const viewer = document.getElementById('sc-images5-viewer');
+    viewer.classList.remove('open');
+    document.body.classList.remove('sc-images5-open');
+    document.removeEventListener('keydown', _scImages5Key);
+    scSwitchSection('images');
+  };
+
+  let _imgs5NavLocked = false;
+  window._scImages5Nav = function(dir) {
+    if (_imgs5.length === 0 || _imgs5NavLocked) return;
+    _imgs5NavLocked = true;
+    _idx5 = (_idx5 + dir + _imgs5.length) % _imgs5.length;
+    const newUrl = _imgs5[_idx5];
+    const tmp = new Image();
+    tmp.onload = function() {
+      const newIsPortrait = tmp.naturalHeight > tmp.naturalWidth;
+      const viewer5 = document.getElementById('sc-images5-viewer');
+      const child   = document.getElementById('sculptures-child');
+      const viewer5Open = viewer5 && viewer5.classList.contains('open');
+      const childOpen   = child   && child.classList.contains('active') && _scCurrentSection === 'images-5';
+      if (newIsPortrait) {
+        if (viewer5Open) {
+          viewer5.classList.remove('open');
+          document.body.classList.remove('sc-images5-open');
+        }
+        _scImages5OpenPortraitViewer(_idx5);
+      } else {
+        if (childOpen) _scImages5ClosePortraitViewer();
+        if (viewer5Open) {
+          const imgCur  = document.getElementById('sc-images5-img');
+          const imgNext = document.getElementById('sc-images5-img-next');
+          const count   = document.getElementById('sc-images5-count');
+          imgNext.src = newUrl;
+          imgNext.getBoundingClientRect();
+          imgCur.classList.add('slide-out-left');
+          imgNext.style.zIndex = '3';
+          imgNext.classList.add('slide-in');
+          count.textContent = String(_idx5 + 1).padStart(2, '0') + ' / ' + String(_imgs5.length).padStart(2, '0');
+          setTimeout(() => {
+            imgCur.style.transition = 'none';
+            imgNext.style.transition = 'none';
+            imgCur.src = newUrl;
+            imgCur.classList.remove('slide-out-left');
+            imgCur.style.transform = '';
+            imgNext.classList.remove('slide-in');
+            imgNext.style.zIndex = '1';
+            imgNext.style.transform = '';
+            imgNext.src = '';
+            imgCur.getBoundingClientRect();
+            imgCur.style.transition = '';
+            imgNext.style.transition = '';
+            _imgs5NavLocked = false;
+          }, 680);
+          return;
+        } else {
+          _scImages5OpenLandscapeViewer(_idx5);
+        }
+      }
+      _imgs5NavLocked = false;
+    };
+    tmp.src = newUrl;
+  };
+
+  function _scImages5Key(e) {
+    if (e.key === 'ArrowRight' || e.key === 'ArrowDown') _scImages5Nav(1);
+    else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') _scImages5Nav(-1);
+    else if (e.key === 'Escape') _scImages5Close();
+  }
+})();
+
 // ── Viewer fullscreen Images-4 ──
 (function() {
   let _imgs4 = [], _idx4 = 0, _imgs4NavLocked = false;
@@ -17097,6 +17310,13 @@ function scSwitchSection(section) {
     const igw4 = document.getElementById('sc-images-grid-wrapper');
     if (igw4) igw4.style.display = 'none';
     if (typeof _scImages4Open === 'function') _scImages4Open();
+  } else if (section === 'images-5') {
+    // Apri viewer fullscreen Images-5 (landscape) o scOpenChild fullscreen (portrait)
+    if (wrapper) wrapper.style.display = 'none';
+    if (pageTitle) pageTitle.style.display = 'none';
+    const igw5 = document.getElementById('sc-images-grid-wrapper');
+    if (igw5) igw5.style.display = 'none';
+    if (typeof _scImages5Open === 'function') _scImages5Open();
   } else if (section === 'information') {
     // Apri info panel
     scOpenInfo();
