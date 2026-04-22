@@ -11216,7 +11216,6 @@
         <span data-sc-section="diary">Testimonial Diary</span>
         <span data-sc-section="recordings">Recordings</span>
         <span data-sc-section="video">Video Book</span>
-        <span data-sc-section="life">A Life Beside</span>
         <span data-sc-section="synopsis">A Story of love and brotherhood</span>
         <span data-sc-section="mapping-lives">Mapping Lives</span>
         <span data-sc-section="archive">Archive</span>
@@ -11313,7 +11312,6 @@
           <li onclick="scTopicsNavigate('images-book')" class="sc-topics-active">All</li>
           <li onclick="scTopicsNavigate('video')">Video Book</li>
           <li onclick="scTopicsNavigate('diary')">Testimonial Diary</li>
-          <li onclick="scTopicsNavigate('life')">A Life Beside</li>
           <li onclick="scTopicsNavigate('studies')">Studies</li>
           <li onclick="scTopicsNavigate('synopsis')">A Story of love and brotherhood</li>
           <li onclick="scTopicsNavigate('recordings')">Recordings</li>
@@ -13435,8 +13433,8 @@ function buildOverviewGrid() {
 
   // ── Mescolamento creativo: alterna progetti e anni diversi ──────────────
   // Separa A Life Beside (va sempre per ultima) dal pool principale
-  const lifeImages = ALL_IMAGES.filter(img => img.project.sc_section === 'life');
-  const mainImages = ALL_IMAGES.filter(img => img.project.sc_section !== 'life');
+  const lifeImages = [];  // A Life Beside rimossa
+  const mainImages = ALL_IMAGES.slice();
 
   // Raggruppa le immagini per progetto (solo pool principale)
   const byProject = {};
@@ -17122,7 +17120,7 @@ function scSwitchSection(section) {
     // Nascondi box testo Studies se si naviga fuori da Studies
     if (section !== 'studies') _scHideStudiesTextBox();
     // Nascondi box testo Life Beside se si naviga fuori da Life Beside
-    if (section !== 'life' && section !== 'images-3') _scHideLifeTextBox();
+    if (section !== 'images-3') _scHideLifeTextBox();
     if (sectionContent) {
       sectionContent.classList.add('active');
       scBuildSectionContent(section);
@@ -17339,7 +17337,7 @@ function scBuildGrid() {
     const FIXED_ORDER = [
       'images', 'recordings', 'video', 'diary',
       'archive', 'studies', 'synopsis', 'mapping-lives',
-      'life', 'conversation', 'data'
+      'conversation', 'data'
     ];
     const HARDCODED_THUMBS = {
       'images':        { url: '/uploads/thumbs/thumb_dcca154b-39b.jpg', title: 'Images', desc: '', sc_section: 'images' },
@@ -18329,7 +18327,7 @@ function scBuildSectionContent(section) {
   // Per images-book usa titolo "IMAGES" e sfondo nero
   const isImagesBook = (section === 'images-book');
   const isStudies = (section === 'studies');
-  const isLife = (section === 'life' || section === 'images-3');
+  const isLife = (section === 'images-3');  // images-3 usa lo stesso layout di A Life Beside
   const displayTitle = isImagesBook ? 'Images' : title;
   let html = `<h2>${displayTitle}</h2>`;
   if (isImagesBook) {
@@ -20583,7 +20581,7 @@ function scOpenChild(idx, section) {
   const _img = document.getElementById('sculptures-carousel-img');
   if (_img) {
     _img._scClickHandler = function() {
-      if (section === 'diary' || section === 'life') {
+      if (section === 'diary') {
         // Apri il lightbox bianco con la foto corrente
         const _wp = document.getElementById('ae-zoom-white-popup');
         const _wi = document.getElementById('ae-zoom-white-img');
