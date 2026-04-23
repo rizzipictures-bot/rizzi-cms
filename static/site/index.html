@@ -16262,7 +16262,9 @@ function lbUpdateCursor() {
       const cap = document.createElement('div');
       cap.className = 'sc-caption';
       const t = document.createElement('p');
-      t.textContent = proj && proj.title ? proj.title : String(i);
+      // Titoli personalizzati per le celle della griglia images
+      const _imgGridTitles = { 'images-2': 'Images from the broader archive' };
+      t.textContent = _imgGridTitles[sec] || (proj && proj.title ? proj.title : String(i));
       cap.appendChild(t);
       cell.appendChild(cap);
       // Click: apri viewer della cartella
