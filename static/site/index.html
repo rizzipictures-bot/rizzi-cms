@@ -8013,6 +8013,8 @@
       position: absolute;
       top: 22px; right: 22px;
       z-index: 10;
+      width: 40px !important;
+      height: 40px !important;
     }
     #sc-images2-prev, #sc-images2-next {
       position: absolute;
@@ -11992,7 +11994,7 @@
 <div id="sc-images2-viewer">
   <img id="sc-images2-img" src="" alt="">
   <img id="sc-images2-img-next" src="" alt="">
-  <button id="sc-images2-close-viewer" class="ae-fab-btn ae-fab-close btn-circle-close" onclick="_scImages2ViewerClose()" aria-label="Chiudi"><svg viewBox="0 0 20 20" width="12" height="12" fill="none" stroke-width="1.5" stroke-linecap="round"><line x1="2.5" y1="2.5" x2="17.5" y2="17.5"/><line x1="17.5" y1="2.5" x2="2.5" y2="17.5"/></svg></button>
+  <button id="sc-images2-close-viewer" class="ae-fab-btn ae-fab-close btn-circle-close" onclick="_scImages2ViewerClose()" aria-label="Chiudi"></button>
   <button id="sc-images2-prev" onclick="_scImages2Nav(-1)">&#8592;</button>
   <button id="sc-images2-next" onclick="_scImages2Nav(1)">&#8594;</button>
   <div id="sc-images2-count"></div>
@@ -16246,7 +16248,7 @@ function lbUpdateCursor() {
       const wrap = document.createElement('div');
       wrap.className = 'sc-img-wrap';
       // Thumb personalizzate per celle specifiche
-      const _customThumbs = { 'images-2': '/sc-i2-thumb.webp' };
+      const _customThumbs = { 'images-2': '/site/sc-i2-thumb.webp' };
       const thumbUrl = _customThumbs[sec] ||
         (proj && proj.images && proj.images.length > 0
           ? (proj.images[0].url || proj.images[0].thumb)
@@ -16713,7 +16715,7 @@ function lbUpdateCursor() {
     var heroImg = document.getElementById('sc-images2-hero-img');
     var grid    = document.getElementById('sc-images2-grid');
     if (!wrapper || !heroImg || !grid) return;
-    heroImg.src = _imgs2[0];
+    heroImg.src = '/site/sc-i2-thumb.webp';
     grid.innerHTML = '';
     _imgs2.forEach(function(url, idx) {
       var item = document.createElement('div');
