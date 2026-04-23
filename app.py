@@ -8,7 +8,7 @@ Avvio: python3 app.py  →  http://localhost:5151
   http://localhost:5151/api/  → API REST
 """
 
-import os, json, uuid, shutil, base64, threading, time
+import os, json, uuid, shutil, base64, threading, time, sqlite3 as _sqlite3
 from pathlib import Path
 from flask import Flask, request, jsonify, send_from_directory, send_file
 from PIL import Image
@@ -346,6 +346,33 @@ DATA.mkdir(exist_ok=True)
 UPLOAD.mkdir(exist_ok=True)
 
 DB_FILE = DATA / 'db.json'
+# ─── Analytics DB ───────────────────────────────────────────────────────────
+ANALYTICS_DB = DATA / 'analytics.db'
+def _analytics_init():
+    """Crea la tabella visits se non esiste."""
+    conn = _sqlite3.connect(str(ANALYTICS_DB))
+    conn.execute("""
+        CREATE TABLE IF NOT EXISTS visits (
+            id        INTEGER PRIMARY KEY AUTOINCREMENT,
+            ts        TEXT    NOT NULL,
+            ip        TEXT,
+            country   TEXT,
+            country_code TEXT,
+            city      TEXT,
+            region    TEXT,
+            lat       REAL,
+            lon       REAL,
+            device    TEXT,
+            os        TEXT,
+            browser   TEXT,
+            section   TEXT,
+            referrer  TEXT,
+            ua        TEXT
+        )
+    """)
+    conn.commit()
+    conn.close()
+_analytics_init()
 
 # ─────────────────────────────────────────────
 # DB helpers
@@ -2292,6 +2319,124 @@ def get_corpus():
             return jsonify(json.load(f))
     return jsonify({'corpus': []})
 
+
+# ─── Analytics: track + read ────────────────────────────────────────────────
+@app.route('/api/track', methods=['POST', 'OPTIONS'])
+def analytics_track():
+    """Riceve una visita dal sito pubblico e la salva nel DB analytics."""
+    if request.method == 'OPTIONS':
+        return '', 204
+    import datetime, re
+    try:
+        data = request.get_json(silent=True) or {}
+        # IP reale (gestisce proxy Render/Cloudflare)
+        ip = (request.headers.get('X-Forwarded-For', '') or '').split(',')[0].strip()
+        if not ip:
+            ip = request.remote_addr or ''
+        # Geolocalizzazione via ip-api.com (gratuito, no key)
+        country = country_code = city = region = ''
+        lat = lon = None
+        try:
+            import urllib.request as _ur
+            _geo_url = f'http://ip-api.com/json/{ip}?fields=status,country,countryCode,regionName,city,lat,lon'
+            with _ur.urlopen(_geo_url, timeout=3) as _resp:
+                _geo = json.loads(_resp.read().decode())
+            if _geo.get('status') == 'success':
+                country      = _geo.get('country', '')
+                country_code = _geo.get('countryCode', '')
+                city         = _geo.get('city', '')
+                region       = _geo.get('regionName', '')
+                lat          = _geo.get('lat')
+                lon          = _geo.get('lon')
+        except Exception:
+            pass
+        # User-Agent parsing
+        ua = request.headers.get('User-Agent', '')
+        device = 'desktop'
+        if re.search(r'Mobile|Android|iPhone|iPad', ua, re.I):
+            device = 'mobile'
+        elif re.search(r'Tablet|iPad', ua, re.I):
+            device = 'tablet'
+        # OS
+        os_name = 'Unknown'
+        if re.search(r'Windows', ua): os_name = 'Windows'
+        elif re.search(r'Mac OS X', ua): os_name = 'macOS'
+        elif re.search(r'Android', ua): os_name = 'Android'
+        elif re.search(r'iPhone|iPad', ua): os_name = 'iOS'
+        elif re.search(r'Linux', ua): os_name = 'Linux'
+        # Browser
+        browser = 'Other'
+        if re.search(r'Chrome', ua) and not re.search(r'Chromium|Edg', ua): browser = 'Chrome'
+        elif re.search(r'Safari', ua) and not re.search(r'Chrome', ua): browser = 'Safari'
+        elif re.search(r'Firefox', ua): browser = 'Firefox'
+        elif re.search(r'Edg', ua): browser = 'Edge'
+        ts = datetime.datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S')
+        conn = _sqlite3.connect(str(ANALYTICS_DB))
+        conn.execute("""
+            INSERT INTO visits (ts,ip,country,country_code,city,region,lat,lon,device,os,browser,section,referrer,ua)
+            VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)
+        """, (ts, ip, country, country_code, city, region, lat, lon,
+                device, os_name, browser,
+                data.get('section',''), data.get('referrer',''), ua[:512]))
+        conn.commit()
+        conn.close()
+        return jsonify({'ok': True})
+    except Exception as e:
+        return jsonify({'ok': False, 'error': str(e)}), 500
+
+@app.route('/api/analytics', methods=['GET'])
+def analytics_read():
+    """Restituisce le visite per il CMS analytics."""
+    try:
+        limit  = int(request.args.get('limit', 500))
+        offset = int(request.args.get('offset', 0))
+        days   = request.args.get('days', '')  # '' = tutti
+        conn   = _sqlite3.connect(str(ANALYTICS_DB))
+        conn.row_factory = _sqlite3.Row
+        where  = ''
+        params = []
+        if days:
+            import datetime
+            since = (datetime.datetime.utcnow() - datetime.timedelta(days=int(days))).strftime('%Y-%m-%d %H:%M:%S')
+            where = 'WHERE ts >= ?'
+            params.append(since)
+        # Visite recenti
+        rows = conn.execute(
+            f'SELECT * FROM visits {where} ORDER BY id DESC LIMIT ? OFFSET ?',
+            params + [limit, offset]
+        ).fetchall()
+        visits = [dict(r) for r in rows]
+        # Totale
+        total = conn.execute(f'SELECT COUNT(*) FROM visits {where}', params).fetchone()[0]
+        # Aggregati
+        by_country = conn.execute(
+            f'SELECT country, country_code, COUNT(*) as n FROM visits {where} GROUP BY country ORDER BY n DESC',
+            params
+        ).fetchall()
+        by_device = conn.execute(
+            f'SELECT device, COUNT(*) as n FROM visits {where} GROUP BY device ORDER BY n DESC',
+            params
+        ).fetchall()
+        by_section = conn.execute(
+            f'SELECT section, COUNT(*) as n FROM visits {where} WHERE section != "" GROUP BY section ORDER BY n DESC LIMIT 10',
+            params
+        ).fetchall()
+        by_day = conn.execute(
+            f'SELECT substr(ts,1,10) as day, COUNT(*) as n FROM visits {where} GROUP BY day ORDER BY day DESC LIMIT 30',
+            params
+        ).fetchall()
+        conn.close()
+        return jsonify({
+            'total': total,
+            'visits': visits,
+            'by_country': [dict(r) for r in by_country],
+            'by_device':  [dict(r) for r in by_device],
+            'by_section': [dict(r) for r in by_section],
+            'by_day':     [dict(r) for r in by_day],
+        })
+    except Exception as e:
+        import traceback
+        return jsonify({'error': str(e), 'trace': traceback.format_exc()}), 500
 
 if __name__ == '__main__':
     print('\n  Rizzi CMS — avviato su http://localhost:5151')

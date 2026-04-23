@@ -25250,5 +25250,41 @@ loadFromCMS();
 
 })();
 </script>
+
+<script>
+/* ── Rizzi Analytics Tracker ── */
+(function() {
+  // Non tracciare se siamo in localhost (sviluppo locale)
+  if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') return;
+  // Aspetta che la sezione sia caricata (max 3s) poi invia
+  var _sent = false;
+  function _sendTrack() {
+    if (_sent) return;
+    _sent = true;
+    var section = '';
+    try {
+      // Legge la sezione corrente dal sito
+      if (typeof scCurrentSection !== 'undefined') section = scCurrentSection || '';
+      else if (typeof window._scCurrentSection !== 'undefined') section = window._scCurrentSection || '';
+    } catch(e) {}
+    var payload = {
+      section:  section,
+      referrer: document.referrer || ''
+    };
+    try {
+      fetch('/api/track', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+        keepalive: true
+      }).catch(function(){});
+    } catch(e) {}
+  }
+  // Invia dopo 1.5s (la sezione è già impostata)
+  setTimeout(_sendTrack, 1500);
+  // Fallback: invia comunque al beforeunload se non ancora inviato
+  window.addEventListener('beforeunload', _sendTrack);
+})();
+</script>
 </body>
 </html>
