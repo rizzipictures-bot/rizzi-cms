@@ -8036,6 +8036,45 @@
     #sc-images2-prev:hover, #sc-images2-next:hover { color: #fff; }
     #sc-images2-prev { left: 10px; }
     #sc-images2-next { right: 10px; }
+    /* Modalita portrait: sfondo sgranato + foto piccola */
+    #sc-images2-bg {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: none;
+      z-index: 0;
+      filter: blur(18px) brightness(0.38) saturate(0.6);
+      transform: scale(1.08);
+    }
+    #sc-images2-viewer.portrait #sc-images2-bg {
+      display: block;
+    }
+    #sc-images2-viewer.portrait #sc-images2-img,
+    #sc-images2-viewer.portrait #sc-images2-img-next {
+      position: absolute;
+      inset: auto;
+      top: 50%;
+      left: 75%;
+      width: auto;
+      height: 72vh;
+      object-fit: contain;
+      transform: translate(-50%, -50%);
+      transition: transform 0.65s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+      z-index: 2;
+    }
+    #sc-images2-viewer.portrait #sc-images2-img-next {
+      z-index: 1;
+      left: 75%;
+      transform: translate(calc(-50% + 100vw), -50%);
+    }
+    #sc-images2-viewer.portrait #sc-images2-img.slide-out-left {
+      transform: translate(calc(-50% - 100vw), -50%);
+    }
+    #sc-images2-viewer.portrait #sc-images2-img-next.slide-in {
+      transform: translate(-50%, -50%);
+    }
     #sc-images2-count {
       position: absolute;
       bottom: 18px; left: 50%;
@@ -11996,9 +12035,12 @@
 </div>
 <!-- Viewer fullscreen landscape Images-2 -->
 <div id="sc-images2-viewer">
+  <img id="sc-images2-bg" src="" alt="" aria-hidden="true">
   <img id="sc-images2-img" src="" alt="">
   <img id="sc-images2-img-next" src="" alt="">
   <button id="sc-images2-close-viewer" class="ae-fab-btn ae-fab-close btn-circle-close" onclick="_scImages2ViewerClose()" aria-label="Chiudi"></button>
+  <button id="sc-images2-prev" onclick="_scImages2Nav(-1)">PREV</button>
+  <button id="sc-images2-next" onclick="_scImages2Nav(1)">NEXT</button>
   <div id="sc-images2-count"></div>
 </div>
 <div id="lightbox">
@@ -16263,7 +16305,12 @@ function lbUpdateCursor() {
     closeBtn.setAttribute('aria-label', 'Chiudi');
     closeBtn.onclick = function() {
       container.style.display = 'none';
-      scSwitchSection('images');
+      if (section === 'images-2') {
+        // Per images-2: riapre il wrapper (pagina con griglia thumbnail)
+        if (typeof _scImages2Open === 'function') _scImages2Open();
+      } else {
+        scSwitchSection('images');
+      }
     };
     container.appendChild(closeBtn);
     // Titolo sezione
@@ -16919,39 +16966,52 @@ function lbUpdateCursor() {
     _idx2 = idx;
     var viewer = document.getElementById('sc-images2-viewer');
     var img    = document.getElementById('sc-images2-img');
+    var bgEl   = document.getElementById('sc-images2-bg');
     var count  = document.getElementById('sc-images2-count');
     if (!viewer || !img) return;
+    img.style.transition = 'none';
+    viewer.classList.remove('portrait');
+    if (bgEl) { bgEl.src = ''; }
+    img.classList.remove('slide-out-left');
     img.src = _imgs2[idx];
-    count.textContent = String(idx + 1).padStart(2,'0') + ' / ' + String(_imgs2.length).padStart(2,'0');
+    img.getBoundingClientRect();
+    img.style.transition = '';
+    if (count) count.textContent = String(idx + 1).padStart(2,'0') + ' / ' + String(_imgs2.length).padStart(2,'0');
     viewer.classList.add('open');
+    document.body.classList.add('sc-images2-open');
+    document.addEventListener('keydown', _scImages2Key);
   }
 
   function _scImages2OpenPortrait(idx) {
     _idx2 = idx;
-    window.scCurrentImages = _imgs2.map(function(u) { return { url: u, title: '', desc: '', caption: '' }; });
-    window.scCurrentIndex = idx;
-    window._scCurrentSection = 'images-2';
-    var child = document.getElementById('sculptures-child');
-    if (!child) return;
-    child.classList.remove('sc-fullscreen');
-    if (typeof _scResetExpandIcon === 'function') _scResetExpandIcon();
-    child.classList.add('active');
-    document.body.classList.add('sc-viewer-active');
-    document.body.classList.remove('sc-diary-viewer-active');
-    if (typeof scUpdateCarousel === 'function') scUpdateCarousel();
-    requestAnimationFrame(function() {
-      child.classList.add('sc-fullscreen');
-      var expandIcon   = document.getElementById('sc-expand-icon');
-      var collapseIcon = document.getElementById('sc-collapse-icon');
-      if (expandIcon)   expandIcon.style.display   = 'none';
-      if (collapseIcon) collapseIcon.style.display = 'block';
-    });
+    var viewer = document.getElementById('sc-images2-viewer');
+    var imgEl  = document.getElementById('sc-images2-img');
+    var bgEl   = document.getElementById('sc-images2-bg');
+    var count  = document.getElementById('sc-images2-count');
+    if (!viewer || !imgEl) return;
+    // Imposta modalita portrait: sfondo sgranato + foto piccola a destra
+    imgEl.style.transition = 'none';
+    viewer.classList.add('portrait');
+    imgEl.classList.remove('slide-out-left');
+    // Carica sfondo sgranato e foto
+    if (bgEl) { bgEl.src = _imgs2[idx]; }
+    imgEl.src = _imgs2[idx];
+    imgEl.getBoundingClientRect();
+    imgEl.style.transition = '';
+    if (count) count.textContent = String(idx + 1).padStart(2,'0') + ' / ' + String(_imgs2.length).padStart(2,'0');
+    viewer.classList.add('open');
+    document.body.classList.add('sc-images2-open');
+    document.addEventListener('keydown', _scImages2Key);
   }
 
   window._scImages2ViewerClose = function() {
     var viewer = document.getElementById('sc-images2-viewer');
-    if (viewer) viewer.classList.remove('open');
+    if (viewer) { viewer.classList.remove('open'); viewer.classList.remove('portrait'); }
+    document.body.classList.remove('sc-images2-open');
+    document.removeEventListener('keydown', _scImages2Key);
     _imgs2NavLocked = false;
+    // Torna al wrapper di images-2 (pagina con griglia thumbnail), non alla griglia dark
+    if (typeof _scImages2Open === 'function') _scImages2Open();
   };
 
   window._scImages2Nav = function(dir) {
