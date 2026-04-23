@@ -8161,50 +8161,6 @@
       pointer-events: none;
     }
 
-    /* -- Wrapper griglia thumbnail Images-4 (Sculptures Vol. I) -- */
-    #sc-images4-thumbs-wrapper {
-      display: none;
-      position: fixed;
-      inset: 0;
-      z-index: 1200;
-      background: #fff;
-      overflow-y: auto;
-      overflow-x: hidden;
-      -webkit-overflow-scrolling: touch;
-    }
-    #sc-images4-thumbs-wrapper.open { display: block; }
-    #sc-images4-thumbs-close {
-      position: fixed;
-      top: 22px; right: 22px;
-      z-index: 1300;
-      background: none; border: none;
-      cursor: pointer;
-      width: 36px; height: 36px;
-      display: none;
-      align-items: center; justify-content: center;
-      padding: 0;
-    }
-    #sc-images4-thumbs-wrapper.open #sc-images4-thumbs-close { display: flex; }
-    #sc-images4-thumbs-close svg { pointer-events: none; }
-    #sc-images4-thumbs-grid {
-      padding: 60px 28px 60px 28px;
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
-      gap: 8px;
-    }
-    .sc-i4-thumb-item {
-      aspect-ratio: 1;
-      overflow: hidden;
-      cursor: pointer;
-      background: #111;
-      position: relative;
-    }
-    .sc-i4-thumb-item img {
-      display: block; width: 100%; height: 100%;
-      object-fit: cover;
-      transition: transform 0.15s cubic-bezier(0.4,0,0.2,1);
-    }
-    .sc-i4-thumb-item:hover img { transform: scale(1.08); }
     #lightbox {
       position: fixed; inset: 0;
       background: #000;
@@ -12080,16 +12036,6 @@
 </div>
 
 <!-- ══ IMAGES-2 WRAPPER: hero + masonry grid ══ -->
-<!-- == IMAGES-4 THUMBS WRAPPER: griglia thumbnail Sculptures Vol. I == -->
-<div id="sc-images4-thumbs-wrapper">
-  <button id="sc-images4-thumbs-close" onclick="_scImages4ThumbsClose()" aria-label="Chiudi">
-    <svg viewBox="0 0 20 20" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round">
-      <line x1="2.5" y1="2.5" x2="17.5" y2="17.5"/>
-      <line x1="17.5" y1="2.5" x2="2.5" y2="17.5"/>
-    </svg>
-  </button>
-  <div id="sc-images4-thumbs-grid"></div>
-</div>
 <div id="sc-images2-wrapper">
   <div id="sc-images2-hero">
     <img id="sc-images2-hero-img" src="" alt="March for all Justice">
@@ -16945,62 +16891,11 @@ function lbUpdateCursor() {
     viewer.classList.remove('open');
     document.body.classList.remove('sc-images4-open');
     document.removeEventListener('keydown', _scImages4Key);
-    // Nascondi griglia dark se visibile
-    var _cto4 = document.getElementById('sc-cat-thumbs-overlay');
-    if (_cto4) _cto4.style.display = 'none';
-    // Torna alla griglia thumbnail di images-4 (non alla pagina Images)
-    if (typeof _scImages4ThumbsOpen === 'function') _scImages4ThumbsOpen();
+    // Apre la griglia thumbnail stile overview (9 colonne, spazi vuoti)
+    if (typeof _scShowCategoryThumbs === 'function') _scShowCategoryThumbs('images-4');
   };
 
 
-  // Apre la griglia thumbnail di images-4 (Sculptures Vol. I)
-  window._scImages4ThumbsOpen = function() {
-    var _projs = (typeof PROJECTS !== 'undefined' ? PROJECTS : []);
-    var proj = _projs.find(function(p){ return p.sc_section === 'images-4'; });
-    _imgs4 = proj && proj.images ? proj.images.map(function(img){ return img.url || img.thumb; }).filter(Boolean) : [];
-    if (_imgs4.length === 0) return;
-    var wrapper = document.getElementById('sc-images4-thumbs-wrapper');
-    var grid = document.getElementById('sc-images4-thumbs-grid');
-    if (!wrapper || !grid) return;
-    // Costruisci griglia se vuota
-    if (grid.children.length === 0) {
-      _imgs4.forEach(function(url, i) {
-        var item = document.createElement('div');
-        item.className = 'sc-i4-thumb-item';
-        var img = document.createElement('img');
-        img.src = url;
-        img.loading = 'lazy';
-        img.alt = '';
-        item.appendChild(img);
-        (function(idx){ item.addEventListener('click', function() {
-          _scImages4ThumbsHide();
-          _scImages4Open(idx);
-        }); })(i);
-        grid.appendChild(item);
-      });
-    }
-    wrapper.classList.add('open');
-    // Ripristina posizione scroll se disponibile
-    var _savedScroll = window._imgs4ThumbsScrollPos || 0;
-    if (_savedScroll > 0) {
-      setTimeout(function() { wrapper.scrollTop = _savedScroll; }, 30);
-    }
-  };
-  // Nasconde temporaneamente il wrapper thumbnail (senza resettarlo) per mostrare il viewer
-  function _scImages4ThumbsHide() {
-    var wrapper = document.getElementById('sc-images4-thumbs-wrapper');
-    if (wrapper) {
-      window._imgs4ThumbsScrollPos = wrapper.scrollTop;
-      wrapper.classList.remove('open');
-    }
-  }
-  // Chiude definitivamente la griglia thumbnail e torna alla pagina Images (5 sezioni)
-  window._scImages4ThumbsClose = function() {
-    var wrapper = document.getElementById('sc-images4-thumbs-wrapper');
-    if (wrapper) wrapper.classList.remove('open');
-    window._imgs4ThumbsScrollPos = 0;
-    scSwitchSection('images');
-  };
   window._scImages4Nav = function(dir) {
     if (_imgs4.length === 0 || _imgs4NavLocked) return;
     _imgs4NavLocked = true;
@@ -18115,12 +18010,12 @@ function scSwitchSection(section) {
     document.body.classList.remove('sc-images-grid-active');
     if (typeof _scImages2Open === 'function') _scImages2Open();
   } else if (section === 'images-4') {
-    // Apri griglia thumbnail Images-4 (Sculptures Vol. I)
+    // Apri direttamente il viewer foto grande di Images-4 (Sculptures Vol. I)
     if (wrapper) wrapper.style.display = 'none';
     if (pageTitle) pageTitle.style.display = 'none';
     const igw4 = document.getElementById('sc-images-grid-wrapper');
     if (igw4) igw4.style.display = 'none';
-    if (typeof _scImages4ThumbsOpen === 'function') _scImages4ThumbsOpen();
+    if (typeof _scImages4Open === 'function') _scImages4Open();
   } else if (section === 'images-5') {
     // Apri viewer fullscreen Images-5 (landscape) o scOpenChild fullscreen (portrait)
     if (wrapper) wrapper.style.display = 'none';
