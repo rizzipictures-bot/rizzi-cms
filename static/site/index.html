@@ -17885,6 +17885,18 @@ function scSwitchSection(section) {
   const pageTitle = document.getElementById('sculptures-page-title');
   // Mostra/nascondi box Topics (solo in images-book)
   _scTopicsSetVisible(section === 'images-book');
+  // Nascondi TUTTI i box flottanti delle sezioni precedenti ad ogni cambio sezione
+  (function() {
+    // Artist's note (diary)
+    var _gn = document.getElementById('sc-diary-grid-note-box');
+    if (_gn) _gn.classList.remove('sc-diary-grid-note-visible', 'sc-diary-grid-note-open');
+    if (window._scDiaryGridNoteTimer) { clearTimeout(window._scDiaryGridNoteTimer); window._scDiaryGridNoteTimer = null; }
+    // Recordings note
+    var _rn = document.getElementById('sc-recordings-note-box');
+    if (_rn) _rn.classList.remove('active');
+    if (window._scRecNoteTimer) { clearTimeout(window._scRecNoteTimer); window._scRecNoteTimer = null; }
+    if (window._scRecNoteClose) { clearTimeout(window._scRecNoteClose); window._scRecNoteClose = null; }
+  })();
   if (section === 'overview') {
     // Mostra griglia immagini + titolo grande
     if (wrapper) wrapper.style.display = 'block';
