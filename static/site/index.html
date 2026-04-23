@@ -8045,7 +8045,7 @@
       object-fit: cover;
       display: none;
       z-index: 0;
-      filter: blur(18px) brightness(0.38) saturate(0.6);
+      filter: blur(6px) brightness(0.30) saturate(0.5);
       transform: scale(1.08);
     }
     #sc-images2-viewer.portrait #sc-images2-bg {
@@ -8083,6 +8083,21 @@
       color: rgba(255,255,255,0.35);
       letter-spacing: 0.4px;
       pointer-events: none;
+    }
+    /* Canvas grain per viewer portrait images-2 */
+    #sc-images2-grain {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 1;
+      pointer-events: none;
+      mix-blend-mode: screen;
+      opacity: 0.28;
+      display: none;
+    }
+    #sc-images2-viewer.portrait #sc-images2-grain {
+      display: block;
     }
 
         /* Fix: i bottoni dei viewer non aperti NON devono catturare click */
@@ -12034,6 +12049,7 @@
 <!-- Viewer fullscreen landscape Images-2 -->
 <div id="sc-images2-viewer">
   <img id="sc-images2-bg" src="" alt="" aria-hidden="true">
+  <canvas id="sc-images2-grain"></canvas>
   <img id="sc-images2-img" src="" alt="">
   <img id="sc-images2-img-next" src="" alt="">
   <button id="sc-images2-close-viewer" class="ae-fab-btn ae-fab-close btn-circle-close" onclick="_scImages2ViewerClose()" aria-label="Chiudi"></button>
@@ -24740,6 +24756,63 @@ loadFromCMS();
       }
     });
     _obs.observe(_child, { attributes: true, attributeFilter: ['class'] });
+  }
+  window.addEventListener('resize', () => { if (_running) _resize(); });
+})();
+
+/* ── Grain canvas per sc-images2-viewer portrait ── */
+(function() {
+  const canvas = document.getElementById('sc-images2-grain');
+  if (!canvas) return;
+  const ctx = canvas.getContext('2d');
+  let _raf = null;
+  let _running = false;
+  let _lastFrame = 0;
+  const _FPS = 108;
+  const _INTERVAL = 1000 / _FPS;
+  function _resize() {
+    const rect = canvas.parentElement.getBoundingClientRect();
+    canvas.width  = rect.width  || window.innerWidth;
+    canvas.height = rect.height || window.innerHeight;
+  }
+  function _drawGrain() {
+    if (!_running) return;
+    const w = canvas.width;
+    const h = canvas.height;
+    const bw = Math.ceil(w * 0.75);
+    const bh = Math.ceil(h * 0.75);
+    const imageData = ctx.createImageData(bw, bh);
+    const data = imageData.data;
+    const len = data.length;
+    for (let i = 0; i < len; i += 4) {
+      const r = Math.random();
+      let v;
+      if (r < 0.55) { v = Math.random() * 60; }
+      else if (r < 0.80) { v = 60 + Math.random() * 80; }
+      else { v = 160 + Math.random() * 95; }
+      data[i] = v; data[i+1] = v; data[i+2] = v; data[i+3] = 255;
+    }
+    const offscreen = document.createElement('canvas');
+    offscreen.width  = bw;
+    offscreen.height = bh;
+    offscreen.getContext('2d').putImageData(imageData, 0, 0);
+    ctx.clearRect(0, 0, w, h);
+    ctx.imageSmoothingEnabled = false;
+    ctx.drawImage(offscreen, 0, 0, w, h);
+    _raf = requestAnimationFrame(function(ts) {
+      if (ts - _lastFrame < _INTERVAL) { _raf = requestAnimationFrame(arguments.callee); return; }
+      _lastFrame = ts;
+      _drawGrain();
+    });
+  }
+  const _viewer = document.getElementById('sc-images2-viewer');
+  if (_viewer) {
+    const _obs = new MutationObserver(() => {
+      const isPortrait = _viewer.classList.contains('portrait') && _viewer.classList.contains('open');
+      if (isPortrait) { _running = true; _resize(); _drawGrain(); }
+      else { _running = false; if (_raf) { cancelAnimationFrame(_raf); _raf = null; } }
+    });
+    _obs.observe(_viewer, { attributes: true, attributeFilter: ['class'] });
   }
   window.addEventListener('resize', () => { if (_running) _resize(); });
 })();
