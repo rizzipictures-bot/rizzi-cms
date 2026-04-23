@@ -17090,7 +17090,8 @@ function lbUpdateCursor() {
     var wrapper = document.getElementById('sc-images2-wrapper');
     if (wrapper) wrapper.classList.remove('open');
     document.removeEventListener('keydown', _scImages2Key);
-    // Torna alla pagina corrente di Images from the broader archive (non alla griglia dark)
+    // Torna alla pagina Images (griglia con le 5 sezioni)
+    scSwitchSection('images');
   };
 
   function _scImages2OpenPhoto(idx) {
