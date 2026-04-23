@@ -7938,20 +7938,23 @@
     }
     .sc-i2-item {
       break-inside: avoid;
-      margin-bottom: 18px;
+      margin-bottom: 50px;
       cursor: pointer;
     }
     .sc-i2-item-img {
       display: block;
       width: 100%;
       height: auto;
+      filter: grayscale(100%);
       transition: transform 0.22s cubic-bezier(0.25,0.46,0.45,0.94),
-                  box-shadow 0.22s cubic-bezier(0.25,0.46,0.45,0.94);
+                  box-shadow 0.22s cubic-bezier(0.25,0.46,0.45,0.94),
+                  filter 0.28s ease;
       will-change: transform;
     }
     .sc-i2-item:hover .sc-i2-item-img {
       transform: scale(1.03);
       box-shadow: 0 6px 22px rgba(0,0,0,0.18);
+      filter: grayscale(0%);
     }
     .sc-i2-caption {
       margin-top: 7px;
@@ -16242,9 +16245,12 @@ function lbUpdateCursor() {
       // Wrapper immagine (come sculptures-grid)
       const wrap = document.createElement('div');
       wrap.className = 'sc-img-wrap';
-      const thumbUrl = proj && proj.images && proj.images.length > 0
-        ? (proj.images[0].url || proj.images[0].thumb)
-        : null;
+      // Thumb personalizzate per celle specifiche
+      const _customThumbs = { 'images-2': '/sc-i2-thumb.webp' };
+      const thumbUrl = _customThumbs[sec] ||
+        (proj && proj.images && proj.images.length > 0
+          ? (proj.images[0].url || proj.images[0].thumb)
+          : null);
       if (thumbUrl) {
         const img = document.createElement('img');
         img.className = 'sc-img-thumb';
@@ -16763,10 +16769,24 @@ function lbUpdateCursor() {
 
   function _scImages2OpenPortrait(idx) {
     _idx2 = idx;
-    if (typeof scOpenChild === 'function') {
-      window.scCurrentImages = _imgs2.map(function(u) { return { url: u, title: '', desc: '', caption: '' }; });
-      scOpenChild(idx, 'images-2');
-    }
+    window.scCurrentImages = _imgs2.map(function(u) { return { url: u, title: '', desc: '', caption: '' }; });
+    window.scCurrentIndex = idx;
+    window._scCurrentSection = 'images-2';
+    var child = document.getElementById('sculptures-child');
+    if (!child) return;
+    child.classList.remove('sc-fullscreen');
+    if (typeof _scResetExpandIcon === 'function') _scResetExpandIcon();
+    child.classList.add('active');
+    document.body.classList.add('sc-viewer-active');
+    document.body.classList.remove('sc-diary-viewer-active');
+    if (typeof scUpdateCarousel === 'function') scUpdateCarousel();
+    requestAnimationFrame(function() {
+      child.classList.add('sc-fullscreen');
+      var expandIcon   = document.getElementById('sc-expand-icon');
+      var collapseIcon = document.getElementById('sc-collapse-icon');
+      if (expandIcon)   expandIcon.style.display   = 'none';
+      if (collapseIcon) collapseIcon.style.display = 'block';
+    });
   }
 
   window._scImages2ViewerClose = function() {
