@@ -18138,6 +18138,7 @@ function scToggleStudiesText() {
   box.classList.toggle('sc-studies-text-open');
 }
 function _scShowStudiesTextBox() {
+  if (typeof scCurrentSection !== 'undefined' && scCurrentSection !== 'studies') return;
   const box = document.getElementById('sc-studies-text-box');
   if (box) box.classList.add('sc-studies-text-visible');
 }
@@ -18158,12 +18159,20 @@ function scToggleLifeText() {
   box.classList.toggle('sc-life-text-open');
 }
 function _scShowLifeTextBox() {
+  // Non mostrare il box se non siamo più in images-3
+  if (typeof scCurrentSection !== 'undefined' && scCurrentSection !== 'images-3') return;
   const box = document.getElementById('sc-life-text-box');
   if (box) box.classList.add('sc-life-text-visible');
 }
 function _scHideLifeTextBox() {
+  // Cancella tutti i timer pendenti delle animazioni Life Beside
+  if (window._scLifeCardTimers) {
+    window._scLifeCardTimers.forEach(function(t){ clearTimeout(t); });
+    window._scLifeCardTimers = [];
+  }
   const box = document.getElementById('sc-life-text-box');
   if (box) {
+    if (box._autoCloseTimer) { clearTimeout(box._autoCloseTimer); box._autoCloseTimer = null; }
     box.classList.remove('sc-life-text-visible');
     box.classList.remove('sc-life-text-open');
   }
@@ -19239,18 +19248,21 @@ function scBuildSectionContent(section) {
   // Mostra/nasconde box testo Life Beside
   if (isLife) {
     _scHideStudiesTextBox();
-    setTimeout(function() {
+    // Cancella eventuali timer precedenti
+    if (window._scLifeCardTimers) window._scLifeCardTimers.forEach(function(t){ clearTimeout(t); });
+    window._scLifeCardTimers = [];
+    var _lifeT0 = setTimeout(function() {
       const cards = el.querySelectorAll('.sc-life-card-hidden');
       const totalCards = cards.length;
       const perCard = 280;
       cards.forEach(function(card, i) {
-        setTimeout(function() {
+        var _t = setTimeout(function() {
           card.classList.remove('sc-life-card-hidden');
           card.classList.add('sc-life-card-visible');
           if (i === totalCards - 1) {
-            setTimeout(function() {
+            var _t2 = setTimeout(function() {
               _scShowLifeTextBox();
-              setTimeout(function() {
+              var _t3 = setTimeout(function() {
                 var box = document.getElementById('sc-life-text-box');
                 if (box && !box.classList.contains('sc-life-text-open')) {
                   box.classList.add('sc-life-text-open');
@@ -19261,12 +19273,16 @@ function scBuildSectionContent(section) {
                   }, 7000);
                 }
               }, 0);
+              if (window._scLifeCardTimers) window._scLifeCardTimers.push(_t3);
             }, 0);
+            if (window._scLifeCardTimers) window._scLifeCardTimers.push(_t2);
           }
         }, i * perCard);
+        if (window._scLifeCardTimers) window._scLifeCardTimers.push(_t);
       });
       if (totalCards === 0) _scShowLifeTextBox();
     }, 100);
+    if (window._scLifeCardTimers) window._scLifeCardTimers.push(_lifeT0);
   } else {
     _scHideLifeTextBox();
   }
