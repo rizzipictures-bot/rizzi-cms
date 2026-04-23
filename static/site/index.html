@@ -16256,7 +16256,7 @@ function lbUpdateCursor() {
     if (imgs.length === 0) { container.style.display = 'none'; scSwitchSection('images'); return; }
     // Svuota e ricostruisci
     container.innerHTML = '';
-    // Pulsante chiudi (stile Overview X)
+    // Pulsante chiudi
     var closeBtn = document.createElement('button');
     closeBtn.style.cssText = 'position:fixed;top:16px;right:18px;background:none;border:none;cursor:pointer;z-index:9001;color:#fff;padding:4px;line-height:1;';
     closeBtn.innerHTML = '<svg viewBox="0 0 20 20" width="14" height="14" fill="none" stroke="#fff" stroke-width="1.5" stroke-linecap="round"><line x1="2.5" y1="2.5" x2="17.5" y2="17.5"/><line x1="17.5" y1="2.5" x2="2.5" y2="17.5"/></svg>';
@@ -16266,28 +16266,86 @@ function lbUpdateCursor() {
       scSwitchSection('images');
     };
     container.appendChild(closeBtn);
-    // Titolo sezione (stile menu sculptures)
+    // Titolo sezione
     var titleEl = document.createElement('div');
     titleEl.style.cssText = 'color:#fff;font-size:10px;letter-spacing:0.12em;text-transform:uppercase;padding:15px 21px 10px;font-family:"Times New Roman",Times,serif;font-weight:400;';
     titleEl.textContent = sectionTitle;
     container.appendChild(titleEl);
-    // Griglia identica a Overview home: 9 colonne, celle quadrate proporzionali
+    // ── Griglia identica a Overview home ──
+    // 9 colonne, grid-auto-rows proporzionale, blank sparsi, is-landscape per orizzontali
+    var COLS = 9;
     var grid = document.createElement('div');
-    grid.style.cssText = 'display:grid;grid-template-columns:repeat(9,1fr);grid-auto-rows:calc((100vw - 24px) / 9 * 1.15);gap:16px;padding:35px 12px 40px;background:#000;';
-    imgs.forEach(function(url, i) {
-      var cell = document.createElement('div');
-      cell.style.cssText = 'cursor:pointer;position:relative;overflow:hidden;background:#222;';
-      var wrap = document.createElement('div');
-      wrap.style.cssText = 'width:100%;height:100%;position:relative;';
-      var img = document.createElement('img');
-      img.src = url;
-      img.loading = 'lazy';
-      img.style.cssText = 'position:absolute;top:0;left:0;width:100%;height:100%;object-fit:cover;object-position:center;display:block;transition:opacity .4s cubic-bezier(.77,0,.175,1);';
-      img.onmouseenter = function(){ this.style.opacity='0.85'; };
-      img.onmouseleave = function(){ this.style.opacity='1'; };
-      wrap.appendChild(img);
-      cell.appendChild(wrap);
-      cell.onclick = function() {
+    grid.style.cssText = [
+      'display:grid',
+      'grid-template-columns:repeat(9,1fr)',
+      'grid-auto-rows:calc((100vw - 24px) / 9 * 1.15)',
+      'gap:16px',
+      'padding:12px 12px 50px',
+      'background:#000'
+    ].join(';') + ';';
+    // Costruisci sequenza celle con blank sparsi (max 1 per riga, max 3 ogni 36 foto)
+    var maxBlanks = Math.max(1, Math.round(imgs.length / 36 * 3));
+    var cells = [];
+    var imgIdx = 0;
+    var blanksInserted = 0;
+    while (imgIdx < imgs.length) {
+      var photosLeft = imgs.length - imgIdx;
+      var photosThisRow = Math.min(photosLeft, COLS);
+      var blanksLeft = maxBlanks - blanksInserted;
+      var useBlank = blanksLeft > 0 && photosThisRow >= 2 && Math.random() < 0.55;
+      var blankCol = useBlank ? (1 + Math.floor(Math.random() * (photosThisRow - 1))) : -1;
+      for (var col = 0; col < photosThisRow + (useBlank ? 1 : 0); col++) {
+        if (useBlank && col === blankCol) {
+          cells.push({ type: 'blank' });
+          blanksInserted++;
+        } else {
+          if (imgIdx < imgs.length) {
+            cells.push({ type: 'img', url: imgs[imgIdx], idx: imgIdx });
+            imgIdx++;
+          }
+        }
+      }
+    }
+    // Renderizza celle
+    cells.forEach(function(cell) {
+      if (cell.type === 'blank') {
+        var blank = document.createElement('div');
+        blank.style.cssText = 'background:#000;pointer-events:none;';
+        grid.appendChild(blank);
+        return;
+      }
+      var url = cell.url;
+      var i = cell.idx;
+      var item = document.createElement('div');
+      item.style.cssText = 'position:relative;overflow:hidden;cursor:pointer;background:#111;';
+      var imgEl = document.createElement('img');
+      imgEl.src = url;
+      imgEl.loading = 'lazy';
+      imgEl.style.cssText = 'display:block;width:100%;height:100%;object-fit:cover;object-position:center top;transition:opacity .18s ease,transform .15s cubic-bezier(0.4,0,0.2,1);transform:scale(1);';
+      imgEl.addEventListener('load', function() {
+        if (this.naturalWidth > this.naturalHeight) {
+          // Controlla quante landscape ci sono già nella stessa riga
+          var allCells = Array.from(grid.children);
+          var cellIndex = allCells.indexOf(item);
+          var rowStart = Math.floor(cellIndex / 9) * 9;
+          var rowCells = allCells.slice(rowStart, rowStart + 9);
+          var landscapeInRow = rowCells.filter(function(c){ return c.dataset.landscape === '1'; }).length;
+          if (landscapeInRow < 3) {
+            item.dataset.landscape = '1';
+            item.style.height = 'calc((100vw - 24px) / 9 * 1.15 * 0.575)';
+            item.style.alignSelf = 'end';
+          }
+        }
+      });
+      // Overlay hover
+      var overlay = document.createElement('div');
+      overlay.style.cssText = 'position:absolute;inset:0;background:rgba(40,40,40,0);transition:background .18s ease;pointer-events:none;z-index:1;';
+      item.onmouseenter = function(){ overlay.style.background = 'rgba(40,40,40,0.60)'; imgEl.style.transform = 'scale(1.18)'; };
+      item.onmouseleave = function(){ overlay.style.background = 'rgba(40,40,40,0)'; imgEl.style.transform = 'scale(1)'; };
+      item.appendChild(imgEl);
+      item.appendChild(overlay);
+      // Click → riapre lightbox
+      item.onclick = (function(url, i) { return function() {
         container.style.display = 'none';
         if (section === 'images-1') {
           var t = new Image();
@@ -16305,8 +16363,8 @@ function lbUpdateCursor() {
         } else if (section === 'images-2') {
           if (typeof _scImages2Open === 'function') _scImages2Open();
         }
-      };
-      grid.appendChild(cell);
+      }; })(url, i);
+      grid.appendChild(item);
     });
     container.appendChild(grid);
   };
