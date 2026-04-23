@@ -11595,15 +11595,13 @@
       <!-- Box Topics (stile Corboz) — visibile solo in images-book -->
       <div id="sc-topics-box">
         <div id="sc-topics-drag" onclick="scToggleTopics()"></div>
-        <div id="sc-topics-selected" onclick="scToggleTopics()">All</div>
+        <div id="sc-topics-selected" onclick="scToggleTopics()">Text</div>
         <ul id="sc-topics-list">
-          <li onclick="scTopicsNavigate('images-book')" class="sc-topics-active">All</li>
-          <li onclick="scTopicsNavigate('video')">Video Book</li>
-          <li onclick="scTopicsNavigate('diary')">Testimonial Diary</li>
-          <li onclick="scTopicsNavigate('studies')">Studies</li>
-          <li onclick="scTopicsNavigate('synopsis')">A Story of Brotherhood and Witness</li>
-          <li onclick="scTopicsNavigate('recordings')">Recordings</li>
-          <li onclick="scTopicsNavigate('information')">Information</li>
+          <li onclick="scTopicsNavigate('images-1')" class="">Bound Images</li>
+          <li onclick="scTopicsNavigate('images-2')">Images from the broader archive</li>
+          <li onclick="scTopicsNavigate('images-3')">A Life Beside</li>
+          <li onclick="scTopicsNavigate('images-4')">Sculptures Vol. I</li>
+          <li onclick="scTopicsNavigate('images-5')">Sculpture Print proof</li>
         </ul>
       </div>
 
@@ -18030,7 +18028,12 @@ function scTopicsNavigate(section) {
   // Aggiorna il testo della voce selezionata
   const sel = document.getElementById('sc-topics-selected');
   const titles = {
-    'images-book': 'All',
+    'images-book': 'Text',
+    'images-1': 'Bound Images',
+    'images-2': 'Images from the broader archive',
+    'images-3': 'A Life Beside',
+    'images-4': 'Sculptures Vol. I',
+    'images-5': 'Sculpture Print proof',
     'video': 'Video Book',
     'diary': 'Testimonial Diary',
     'life': 'A Life Beside',
