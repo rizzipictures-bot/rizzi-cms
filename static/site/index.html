@@ -17973,6 +17973,9 @@ function scSwitchSection(section) {
     // Mostra griglia delle 8 cartelle Images
     // Assicura che view-sculptures sia attivo (i viewer images-1/4/5 sono fuori dal view)
     // NON chiamare switchView('sculptures') perché resetta a overview — aggiungiamo solo la classe active
+    // Nascondi box testo Life Beside e Studies se visibili
+    _scHideLifeTextBox();
+    _scHideStudiesTextBox();
     (function() {
       document.querySelectorAll('.view').forEach(function(v) { v.classList.remove('active'); });
       var _vs = document.getElementById('view-sculptures');
