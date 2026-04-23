@@ -16229,6 +16229,73 @@ function lbUpdateCursor() {
   let _idx1 = 0;
 
   // Costruisce la griglia delle 8 cartelle Images
+  /* ── Griglia dark thumbnail per categoria (dopo chiusura lightbox) ── */
+  window._scShowCategoryThumbs = function(section) {
+    // Nascondi tutti i viewer
+    ['sc-images1-viewer','sc-images4-viewer','sc-images5-viewer','sc-images2-wrapper','sc-images2-viewer'].forEach(function(id){
+      var el = document.getElementById(id);
+      if (el) { el.classList.remove('open'); }
+    });
+    document.body.classList.remove('sc-images1-open','sc-images4-open','sc-images5-open');
+    // Crea o recupera il container dark
+    var container = document.getElementById('sc-cat-thumbs-overlay');
+    if (!container) {
+      container = document.createElement('div');
+      container.id = 'sc-cat-thumbs-overlay';
+      container.style.cssText = 'position:fixed;inset:0;background:#111;z-index:9000;overflow-y:auto;padding:60px 24px 40px;box-sizing:border-box;';
+      // Pulsante chiudi
+      var closeBtn = document.createElement('button');
+      closeBtn.style.cssText = 'position:fixed;top:18px;right:18px;background:none;border:none;cursor:pointer;z-index:9001;color:#fff;font-size:22px;line-height:1;padding:6px;';
+      closeBtn.innerHTML = '<svg viewBox="0 0 20 20" width="16" height="16" fill="none" stroke="#fff" stroke-width="1.5" stroke-linecap="round"><line x1="2.5" y1="2.5" x2="17.5" y2="17.5"/><line x1="17.5" y1="2.5" x2="2.5" y2="17.5"/></svg>';
+      closeBtn.setAttribute('aria-label', 'Chiudi');
+      closeBtn.onclick = function() {
+        container.style.display = 'none';
+        scSwitchSection('images');
+      };
+      container.appendChild(closeBtn);
+      document.body.appendChild(container);
+    }
+    container.style.display = 'block';
+    // Titoli sezione
+    var _catTitles = { 'images-1': 'Bound Images', 'images-2': 'Images from the broader archive', 'images-3': 'A life beside', 'images-4': 'Sculptures Vol. I', 'images-5': 'Sculpture Print proof' };
+    var sectionTitle = _catTitles[section] || section;
+    // Raccoglie immagini
+    var _projs = (typeof PROJECTS !== 'undefined' ? PROJECTS : []);
+    var proj = _projs.find(function(p){ return p.sc_section === section; });
+    var imgs = proj && proj.images ? proj.images.map(function(img){ return img.url || img.thumb; }).filter(Boolean) : [];
+    if (imgs.length === 0) { container.style.display = 'none'; scSwitchSection('images'); return; }
+    // Costruisci griglia
+    var titleEl = document.createElement('h2');
+    titleEl.style.cssText = 'color:#fff;font-size:13px;letter-spacing:0.12em;text-transform:uppercase;margin:0 0 28px 0;font-weight:400;';
+    titleEl.textContent = sectionTitle;
+    // Svuota e ricostruisci (escludi il closeBtn che è fixed)
+    while (container.children.length > 1) container.removeChild(container.lastChild);
+    container.appendChild(titleEl);
+    var grid = document.createElement('div');
+    grid.style.cssText = 'display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:6px;';
+    imgs.forEach(function(url, i) {
+      var cell = document.createElement('div');
+      cell.style.cssText = 'cursor:pointer;overflow:hidden;aspect-ratio:3/2;background:#222;';
+      var img = document.createElement('img');
+      img.src = url;
+      img.loading = 'lazy';
+      img.style.cssText = 'width:100%;height:100%;object-fit:cover;display:block;transition:opacity 0.2s;';
+      img.onmouseenter = function(){ this.style.opacity='0.75'; };
+      img.onmouseleave = function(){ this.style.opacity='1'; };
+      cell.appendChild(img);
+      cell.onclick = function() {
+        container.style.display = 'none';
+        // Riapri il viewer della sezione all'indice corretto
+        if (section === 'images-1') { _idx1 = i; if(typeof _scImages1OpenLandscapeViewer==='function') { var t=new Image(); t.onload=function(){ if(t.naturalHeight>t.naturalWidth){_scImages1OpenPortraitViewer(i);}else{_scImages1OpenLandscapeViewer(i);} }; t.src=url; } }
+        else if (section === 'images-4') { _idx4 = i; if(typeof _scImages4Open==='function') { _scImages4Open(); window._scImages4Nav && (_idx4=i); } }
+        else if (section === 'images-5') { _idx5 = i; if(typeof _scImages5Open==='function') { _scImages5Open(); } }
+        else if (section === 'images-2') { if(typeof _scImages2Open==='function') { _scImages2Open(); } }
+      };
+      grid.appendChild(cell);
+    });
+    container.appendChild(grid);
+  };
+
   window.scBuildImagesGrid = function() {
     const grid = document.getElementById('sc-images-grid');
     if (!grid) return;
@@ -16274,7 +16341,7 @@ function lbUpdateCursor() {
       cap.className = 'sc-caption';
       const t = document.createElement('p');
       // Titoli personalizzati per le celle della griglia images
-      const _imgGridTitles = { 'images-2': 'Images from the broader archive', 'images-3': 'A life beside', 'images-4': 'Sculptures Vol. I', 'images-5': 'Sculpture Print proof' };
+      const _imgGridTitles = { 'images-1': 'Bound Images', 'images-2': 'Images from the broader archive', 'images-3': 'A life beside', 'images-4': 'Sculptures Vol. I', 'images-5': 'Sculpture Print proof' };
       t.textContent = _imgGridTitles[sec] || (proj && proj.title ? proj.title : String(i));
       cap.appendChild(t);
       cell.appendChild(cap);
@@ -16402,8 +16469,8 @@ function lbUpdateCursor() {
     viewer.classList.remove('open');
     document.body.classList.remove('sc-images1-open');
     document.removeEventListener('keydown', _scImages1Key);
-    // Torna alla griglia Images
-    scSwitchSection('images');
+    // Mostra griglia dark thumbnail della categoria
+    _scShowCategoryThumbs('images-1');
   };
 
   let _imgs1NavLocked = false;
@@ -16564,7 +16631,7 @@ function lbUpdateCursor() {
     viewer.classList.remove('open');
     document.body.classList.remove('sc-images5-open');
     document.removeEventListener('keydown', _scImages5Key);
-    scSwitchSection('images');
+    _scShowCategoryThumbs('images-5');
   };
 
   let _imgs5NavLocked = false;
@@ -16655,7 +16722,7 @@ function lbUpdateCursor() {
     viewer.classList.remove('open');
     document.body.classList.remove('sc-images4-open');
     document.removeEventListener('keydown', _scImages4Key);
-    scSwitchSection('images');
+    _scShowCategoryThumbs('images-4');
   };
 
   window._scImages4Nav = function(dir) {
@@ -16741,7 +16808,7 @@ function lbUpdateCursor() {
     var wrapper = document.getElementById('sc-images2-wrapper');
     if (wrapper) wrapper.classList.remove('open');
     document.removeEventListener('keydown', _scImages2Key);
-    scSwitchSection('images');
+    _scShowCategoryThumbs('images-2');
   };
 
   function _scImages2OpenPhoto(idx) {
@@ -18934,6 +19001,7 @@ function scBuildSectionContent(section) {
 
   const titles = {
     'images-book': 'Images',
+    'images-1': 'Bound Images',
     'studies': 'Studies',
     'diary': 'Testimonial Diary',
     'life': 'A Life Beside',
