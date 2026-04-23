@@ -17762,8 +17762,10 @@ function scSwitchSection(section) {
     document.body.classList.add('sc-images-grid-active');
     // Rimuovi classi di sezioni con sfondo chiaro (studies/life) che renderebbero il menu nero
     document.body.classList.remove('sc-studies-active');
+    // Rimuovi classi di sezioni (synopsis/diary/archive) che lasciano il menu con colore sbagliato
+    document.body.classList.remove('sc-diary-nav-mode', 'sc-synopsis-mode', 'sc-archive-nav-mode');
     const _vscImgGrid = document.getElementById('view-sculptures');
-    if (_vscImgGrid) _vscImgGrid.style.backgroundColor = '';
+    if (_vscImgGrid) { _vscImgGrid.style.backgroundColor = ''; _vscImgGrid.style.background = ''; }
   } else if (section === 'images-1') {
     // Apri viewer fullscreen Images-1 (dalla griglia Images)
     if (wrapper) wrapper.style.display = 'none';
