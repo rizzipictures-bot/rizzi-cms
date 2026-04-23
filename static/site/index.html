@@ -16204,7 +16204,14 @@ function lbUpdateCursor() {
     const newUrl = _imgs1[_idx1];
     // Precarica per rilevare portrait/landscape della nuova foto
     const tmp = new Image();
+    // Timeout di sicurezza: sblocca sempre dopo 4s in caso di errore/stallo
+    const _navUnlock = setTimeout(function() { _imgs1NavLocked = false; }, 4000);
+    tmp.onerror = function() {
+      clearTimeout(_navUnlock);
+      _imgs1NavLocked = false;
+    };
     tmp.onload = function() {
+      clearTimeout(_navUnlock);
       const newIsPortrait = tmp.naturalHeight > tmp.naturalWidth;
       const viewer1 = document.getElementById('sc-images1-viewer');
       const child   = document.getElementById('sculptures-child');
