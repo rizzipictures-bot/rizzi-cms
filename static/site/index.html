@@ -6712,7 +6712,23 @@
       display: flex !important;
     }
     /* ── Mapping Lives nav mode: nasconde nav, mostra Back bianco, nasconde player ── */
-    .sc-mapping-nav-mode #sculptures-nav {
+    /* Griglia Images: menu bianco su sfondo nero */
+    body.sc-images-grid-active #sculptures-nav [data-sc-section],
+    body.sc-images-grid-active #sculptures-back {
+      color: #fff;
+    }
+    body.sc-images-grid-active #sculptures-nav [data-sc-section].active {
+      color: #4c00fc;
+    }
+    body.sc-images-grid-active #sculptures-nav [data-sc-section]:hover,
+    body.sc-images-grid-active #sculptures-back:hover {
+      color: rgba(255,255,255,0.75);
+    }
+    body.sc-images-grid-active #sculptures-nav-sep {
+      border-color: rgba(255,255,255,0.18);
+    }
+
+        .sc-mapping-nav-mode #sculptures-nav {
       display: none !important;
     }
     .sc-mapping-nav-mode #sculptures-back {
@@ -17301,6 +17317,7 @@ function scSwitchSection(section) {
     // Nascondi griglia Images se visibile
     const _igwOv = document.getElementById('sc-images-grid-wrapper');
     if (_igwOv) _igwOv.style.display = 'none';
+    document.body.classList.remove('sc-images-grid-active');
     scBuildGrid();
     // Auto-show box information: gestito nell'entrata a Sculptures (showView), non qui
   } else if (section === 'images') {
@@ -17310,6 +17327,7 @@ function scSwitchSection(section) {
     if (pageTitle) pageTitle.style.display = 'none';
     const igw = document.getElementById('sc-images-grid-wrapper');
     if (igw) { igw.style.display = 'block'; scBuildImagesGrid(); }
+    document.body.classList.add('sc-images-grid-active');
   } else if (section === 'images-1') {
     // Apri viewer fullscreen Images-1 (dalla griglia Images)
     if (wrapper) wrapper.style.display = 'none';
