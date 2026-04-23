@@ -2417,8 +2417,10 @@ def analytics_read():
             f'SELECT device, COUNT(*) as n FROM visits {where} GROUP BY device ORDER BY n DESC',
             params
         ).fetchall()
+        # by_section: se where è già presente, usa AND; altrimenti WHERE
+        section_filter = (where + ' AND section != ""') if where else 'WHERE section != ""'
         by_section = conn.execute(
-            f'SELECT section, COUNT(*) as n FROM visits {where} WHERE section != "" GROUP BY section ORDER BY n DESC LIMIT 10',
+            f'SELECT section, COUNT(*) as n FROM visits {section_filter} GROUP BY section ORDER BY n DESC LIMIT 10',
             params
         ).fetchall()
         by_day = conn.execute(
