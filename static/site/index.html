@@ -16422,8 +16422,7 @@ function lbUpdateCursor() {
           };
           t.src = url;
         } else if (section === 'images-4') {
-          _idx4 = i;
-          if (typeof _scImages4Open === 'function') _scImages4Open();
+          if (typeof _scImages4Open === 'function') _scImages4Open(i);
         } else if (section === 'images-5') {
           _idx5 = i;
           if (typeof _scImages5Open === 'function') _scImages5Open();
@@ -16849,17 +16848,22 @@ function lbUpdateCursor() {
 (function() {
   let _imgs4 = [], _idx4 = 0, _imgs4NavLocked = false;
 
-  window._scImages4Open = function() {
+  window._scImages4Open = function(startIdx) {
     const _projs = (typeof PROJECTS !== 'undefined' ? PROJECTS : []);
     const proj = _projs.find(p => p.sc_section === 'images-4');
     _imgs4 = proj && proj.images ? proj.images.map(img => img.url || img.thumb).filter(Boolean) : [];
     if (_imgs4.length === 0) return;
-    _idx4 = 0;
+    // Usa startIdx se fornito (dalla griglia dark), altrimenti usa _idx4 se già impostato, altrimenti 0
+    if (typeof startIdx === 'number' && startIdx >= 0 && startIdx < _imgs4.length) {
+      _idx4 = startIdx;
+    } else if (typeof _idx4 !== 'number' || _idx4 < 0 || _idx4 >= _imgs4.length) {
+      _idx4 = 0;
+    }
     const viewer = document.getElementById('sc-images4-viewer');
     const imgEl  = document.getElementById('sc-images4-img');
     const count  = document.getElementById('sc-images4-count');
-    imgEl.src = _imgs4[0];
-    count.textContent = '01 / ' + String(_imgs4.length).padStart(2, '0');
+    imgEl.src = _imgs4[_idx4];
+    count.textContent = String(_idx4 + 1).padStart(2, '0') + ' / ' + String(_imgs4.length).padStart(2, '0');
     viewer.classList.add('open');
     document.body.classList.add('sc-images4-open');
     document.addEventListener('keydown', _scImages4Key);
