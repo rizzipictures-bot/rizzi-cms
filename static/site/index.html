@@ -11465,7 +11465,7 @@
         <span data-sc-section="diary">Testimonial Diary</span>
         <span data-sc-section="recordings">Recordings</span>
         <span data-sc-section="video">Video Book</span>
-        <span data-sc-section="synopsis">A Story of love and brotherhood</span>
+        <span data-sc-section="synopsis">A Story of Brotherhood and Witness</span>
         <span data-sc-section="mapping-lives">Mapping Lives</span>
         <span data-sc-section="archive">Archive</span>
         <span data-sc-section="data">Data</span>
@@ -11562,7 +11562,7 @@
           <li onclick="scTopicsNavigate('video')">Video Book</li>
           <li onclick="scTopicsNavigate('diary')">Testimonial Diary</li>
           <li onclick="scTopicsNavigate('studies')">Studies</li>
-          <li onclick="scTopicsNavigate('synopsis')">A Story of love and brotherhood</li>
+          <li onclick="scTopicsNavigate('synopsis')">A Story of Brotherhood and Witness</li>
           <li onclick="scTopicsNavigate('recordings')">Recordings</li>
           <li onclick="scTopicsNavigate('information')">Information</li>
         </ul>
@@ -17819,7 +17819,7 @@ function scTopicsNavigate(section) {
     'diary': 'Testimonial Diary',
     'life': 'A Life Beside',
     'studies': 'Studies',
-    'synopsis': 'A Story of love and brotherhood',
+    'synopsis': 'A Story of Brotherhood and Witness',
     'recordings': 'Recordings',
     'information': 'Information'
   };
@@ -17953,7 +17953,7 @@ function scBuildGrid() {
     return;
   }
 
-  // Override thumbnail per synopsis (A Story of Love and Brotherhood) con screenshot
+  // Override thumbnail per synopsis (A Story of Brotherhood and Witness) con screenshot
   const synopsisEntry = scCurrentImages.find(img => img.sc_section === 'synopsis');
   if (synopsisEntry) {
     synopsisEntry.url = 'https://files.manuscdn.com/user_upload_by_module/session_file/310519663156367470/ySfYcvqPeVGfRPGR.png';
@@ -18724,12 +18724,12 @@ function scBuildSectionContent(section) {
     html += `<div id="sc-synopsis-overlay"></div>`;
     // Statement autore: overlay fisso centrato, appare subito con l'overlay bianco
     html += `<div id="sc-synopsis-statement" class="sc-synopsis-statement" style="opacity:0;transition:opacity 1.0s ease;transform:translate(-50%,-50%) translateY(20px);">
-      <p class="sc-synopsis-statement-title">A Story of Love and Brotherhood</p>
+      <p class="sc-synopsis-statement-title">A Story of Brotherhood and Witness</p>
       <p>December 13, 2014. Washington D.C. United States of America.</p>
       <p>Can love reach far enough to touch the deepest strings that hold a society together? Can a personal story become an artist&#8217;s passage into the heart of civil and human rights?</p>
       <p>My answer was given on December 13, 2014. Washington D.C. The March for All Justice. The great march of Afro-American people against police violence&#8212;the largest demonstration for civil rights since the time of Martin Luther King.</p>
-      <p>A Story of Love and Brotherhood is my story. The story of a white Italian man, an artist, who decides to leave&#8212;to photograph, to witness, to be present. It is the story of a love, of how it became the door through which I entered something much larger than myself: a struggle, a wound, a dignity. It is the story of how an artist asks himself what it means to give universal weight to his own experience&#8212;to his own life among other lives, among other human beings.</p>
-      <p>A Story of Love and Brotherhood is a book and exhibition project. It gathers photographs, visual traces, and sound recordings from December 13, 2014, in Washington D.C.&#8212;a single day that carried the weight of history, and the quiet, irreducible weight of love.</p>
+      <p>A Story of Brotherhood and Witness is my story. The story of a white Italian man, an artist, who decides to leave&#8212;to photograph, to witness, to be present. It is the story of a love, of how it became the door through which I entered something much larger than myself: a struggle, a wound, a dignity. It is the story of how an artist asks himself what it means to give universal weight to his own experience&#8212;to his own life among other lives, among other human beings.</p>
+      <p>A Story of Brotherhood and Witness is a book and exhibition project. It gathers photographs, visual traces, and sound recordings from December 13, 2014, in Washington D.C.&#8212;a single day that carried the weight of history, and the quiet, irreducible weight of love.</p>
       <span class="sc-synopsis-statement-author">Alessandro Rizzi</span>
     </div>`;
     el.innerHTML = html;
@@ -20362,7 +20362,7 @@ function _scBuildArchivePage() {
       html += '<span class="sc-arc-text-thumb-label">Alessandro Rizzi<br>Conversation</span>';
       html += '</button>';
        html += '<button class="sc-arc-text-thumb sc-arc-text-thumb--img" style="background-image:url(https://files.manuscdn.com/user_upload_by_module/session_file/310519663156367470/ySfYcvqPeVGfRPGR.png)" onclick="scSwitchSection(\'synopsis\')">'
-      html += '<div class="sc-arc-text-thumb-hover"><span>A Story of Love<br>&amp; Brotherhood</span></div>';
+      html += '<div class="sc-arc-text-thumb-hover"><span>A Story of Brotherhood<br>&amp; Witness</span></div>';
       html += '</button>';
       html += '<button class="sc-arc-libretto-thumb" onclick="_scLibrettoOpen()" title="Libretto PDF">';
       html += '<span class="sc-arc-libretto-thumb-label">Libretto<br>Sculptures</span>';
@@ -20387,8 +20387,8 @@ const _SC_ARC_TEXT_DATA = {
     html: `<p>Abiding by the facts, we can affirm that <em>Sculptures</em> is in all respects an instant book whose photographs were shot over the timespan of a few hours in Washington D.C. on December 14, 2014, and more precisely, during the civil rights protests that took place in the capital after the fatal shooting and civil unrest originating in Ferguson. Another important fact about this work is the emotional premise that led the author to the decision to travel to Washington D.C.: his relationship with an Afro-American woman. The body of work should not be attributed to this precise space-time reference (a political event, for that matter) or the very intimate trigger for the work, and the author manages to achieve a sort of liberation from these two strong elements at play.</p><p>Rizzi gives back a sharp and paradigmatic work on American society as a whole, and on the importance of a political demonstration that is a sign of the times and is coherent to its prescribed script, he plays with the fragments and cracks of what could be a historic moment for the struggle of the black community but that does not appear to be so: the <em>sculptures</em> at play in this event are part of a larger scenario that provides for their presence and contribution as actors both united and alone. This kind of structural weakness of the human element does not manifest in what is portrayed in the photographs which always appears to be plastic and structured, but instead lives within this visual paradox, as testimony to the distance in the union, and a fragility, despite the solidity, structure, and plasticity within each one of us.</p>`
   },
   love: {
-    title: "A Story of Love and Brotherhood",
-    html: `<p style="font-size:11px;color:#fff;margin-bottom:16px;letter-spacing:0.08em;">December 13, 2014. Washington D.C. United States of America.</p><p>Can love reach far enough to touch the deepest strings that hold a society together? Can a personal story become an artist’s passage into the heart of civil and human rights?</p><p>My answer was given on December 13, 2014. Washington D.C. The March for All Justice. The great march of Afro-American people against police violence—the largest demonstration for civil rights since the time of Martin Luther King.</p><p><em>A Story of Love and Brotherhood</em> is my story. The story of a white Italian man, an artist, who decides to leave—to photograph, to witness, to be present. It is the story of a love for an Italian-Afro-American woman, and of how that love became the door through which I entered something much larger than myself: a struggle, a wound, a dignity. It is the story of how an artist asks himself what it means to give universal weight to his own experience—to his own life among other lives, among other human beings.</p><p><em>A Story of Love and Brotherhood</em> is a book and exhibition project. It gathers photographs, visual traces, and sound recordings from December 14, 2014, in Washington D.C.—a single day that carried the weight of history, and the quiet, irreducible weight of love.</p>`
+    title: "A Story of Brotherhood and Witness",
+    html: `<p style="font-size:11px;color:#fff;margin-bottom:16px;letter-spacing:0.08em;">December 13, 2014. Washington D.C. United States of America.</p><p>Can love reach far enough to touch the deepest strings that hold a society together? Can a personal story become an artist’s passage into the heart of civil and human rights?</p><p>My answer was given on December 13, 2014. Washington D.C. The March for All Justice. The great march of Afro-American people against police violence—the largest demonstration for civil rights since the time of Martin Luther King.</p><p><em>A Story of Brotherhood and Witness</em> is my story. The story of a white Italian man, an artist, who decides to leave—to photograph, to witness, to be present. It is the story of a love for an Italian-Afro-American woman, and of how that love became the door through which I entered something much larger than myself: a struggle, a wound, a dignity. It is the story of how an artist asks himself what it means to give universal weight to his own experience—to his own life among other lives, among other human beings.</p><p><em>A Story of Brotherhood and Witness</em> is a book and exhibition project. It gathers photographs, visual traces, and sound recordings from December 14, 2014, in Washington D.C.—a single day that carried the weight of history, and the quiet, irreducible weight of love.</p>`
   },
   conversation: {
     title: "Alessandro Rizzi Conversation",
