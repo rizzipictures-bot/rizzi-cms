@@ -16348,6 +16348,12 @@ function lbUpdateCursor() {
       item.onclick = (function(url, i) { return function() {
         container.style.display = 'none';
         if (section === 'images-1') {
+          // Assicura che _imgs1 sia popolato prima di aprire il viewer
+          if (typeof _imgs1 !== 'undefined' && _imgs1.length === 0) {
+            var _projs1 = (typeof PROJECTS !== 'undefined' ? PROJECTS : []);
+            var _proj1 = _projs1.find(function(p){ return p.sc_section === 'images-1'; });
+            _imgs1 = _proj1 && _proj1.images ? _proj1.images.map(function(img){ return img.url || img.thumb; }).filter(Boolean) : [];
+          }
           var t = new Image();
           t.onload = function(){
             if (t.naturalHeight > t.naturalWidth) { _scImages1OpenPortraitViewer(i); }
@@ -16361,7 +16367,15 @@ function lbUpdateCursor() {
           _idx5 = i;
           if (typeof _scImages5Open === 'function') _scImages5Open();
         } else if (section === 'images-2') {
-          if (typeof _scImages2Open === 'function') _scImages2Open();
+          // Assicura che _imgs2 sia popolato prima di aprire il viewer
+          if (typeof _imgs2 !== 'undefined' && _imgs2.length === 0) {
+            var _projs2 = (typeof PROJECTS !== 'undefined' ? PROJECTS : []);
+            var _projs2f = _projs2.filter(function(p){ return p.sc_section === 'images-2'; });
+            _imgs2 = [];
+            _projs2f.forEach(function(p){ (p.images || []).forEach(function(img){ _imgs2.push(img.url); }); });
+          }
+          if (typeof _scImages2OpenPhoto === 'function') _scImages2OpenPhoto(i);
+          else if (typeof _scImages2Open === 'function') _scImages2Open();
         }
       }; })(url, i);
       grid.appendChild(item);
@@ -16881,7 +16895,7 @@ function lbUpdateCursor() {
     var wrapper = document.getElementById('sc-images2-wrapper');
     if (wrapper) wrapper.classList.remove('open');
     document.removeEventListener('keydown', _scImages2Key);
-    _scShowCategoryThumbs('images-2');
+    // Torna alla pagina corrente di Images from the broader archive (non alla griglia dark)
   };
 
   function _scImages2OpenPhoto(idx) {
