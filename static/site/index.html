@@ -16626,11 +16626,8 @@ function lbUpdateCursor() {
     viewer.classList.remove('open');
     document.body.classList.remove('sc-images1-open');
     document.removeEventListener('keydown', _scImages1Key);
-    // Nascondi griglia dark se visibile
-    var _cto1 = document.getElementById('sc-cat-thumbs-overlay');
-    if (_cto1) _cto1.style.display = 'none';
-    // Torna alla pagina Images (griglia con le 5 sezioni)
-    scSwitchSection('images');
+    // Apre la griglia thumbnail stile overview (9 colonne, spazi vuoti)
+    if (typeof _scShowCategoryThumbs === 'function') _scShowCategoryThumbs('images-1');
   };
 
   let _imgs1NavLocked = false;
