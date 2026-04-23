@@ -17953,6 +17953,15 @@ function scSwitchSection(section) {
     // Auto-show box information: gestito nell'entrata a Sculptures (showView), non qui
   } else if (section === 'images') {
     // Mostra griglia delle 8 cartelle Images
+    // Assicura che view-sculptures sia attivo (i viewer images-1/4/5 sono fuori dal view)
+    // NON chiamare switchView('sculptures') perché resetta a overview — aggiungiamo solo la classe active
+    (function() {
+      document.querySelectorAll('.view').forEach(function(v) { v.classList.remove('active'); });
+      var _vs = document.getElementById('view-sculptures');
+      if (_vs) _vs.classList.add('active');
+      document.body.classList.add('sculptures-active');
+      window._scIsInsideSculptures = true;
+    })();
     if (wrapper) wrapper.style.display = 'none';
     if (sectionContent) sectionContent.classList.remove('active');
     if (pageTitle) pageTitle.style.display = 'none';
