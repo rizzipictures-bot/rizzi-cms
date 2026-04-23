@@ -8027,10 +8027,12 @@
       z-index: 10;
       background: none;
       border: none;
-      color: rgba(255,255,255,0.6);
-      font-size: 28px;
-      cursor: none;
-      padding: 20px;
+      color: rgba(255,255,255,0.5);
+      font-size: 10px;
+      letter-spacing: 0.12em;
+      font-family: 'Times New Roman', Times, serif;
+      cursor: pointer;
+      padding: 6px 12px;
       transition: color 0.2s;
     }
     #sc-images2-prev:hover, #sc-images2-next:hover { color: #fff; }
@@ -16434,6 +16436,9 @@ function lbUpdateCursor() {
             _imgs2 = [];
             _projs2f.forEach(function(p){ (p.images || []).forEach(function(img){ _imgs2.push(img.url); }); });
           }
+          // Salva scroll della griglia dark per ripristinarla se si torna
+          window._scCatThumbsScrollPos = window._scCatThumbsScrollPos || {};
+          window._scCatThumbsScrollPos[section] = container.scrollTop;
           if (typeof _scImages2OpenPhoto === 'function') _scImages2OpenPhoto(i);
           else if (typeof _scImages2Open === 'function') _scImages2Open();
         }
@@ -16441,6 +16446,11 @@ function lbUpdateCursor() {
       grid.appendChild(item);
     });
     container.appendChild(grid);
+    // Ripristina posizione scroll se disponibile (dopo aver chiuso un viewer)
+    var _savedCatScroll = (window._scCatThumbsScrollPos || {})[section] || 0;
+    if (_savedCatScroll > 0) {
+      setTimeout(function() { container.scrollTop = _savedCatScroll; }, 30);
+    }
   };
 
   window.scBuildImagesGrid = function() {
@@ -16616,8 +16626,8 @@ function lbUpdateCursor() {
     viewer.classList.remove('open');
     document.body.classList.remove('sc-images1-open');
     document.removeEventListener('keydown', _scImages1Key);
-    // Mostra griglia dark thumbnail della categoria
-    _scShowCategoryThumbs('images-1');
+    // Torna alla pagina Images (griglia con le 5 sezioni)
+    scSwitchSection('images');
   };
 
   let _imgs1NavLocked = false;
@@ -16778,7 +16788,8 @@ function lbUpdateCursor() {
     viewer.classList.remove('open');
     document.body.classList.remove('sc-images5-open');
     document.removeEventListener('keydown', _scImages5Key);
-    _scShowCategoryThumbs('images-5');
+    // Torna alla pagina Images (griglia con le 5 sezioni)
+    scSwitchSection('images');
   };
 
   let _imgs5NavLocked = false;
@@ -16874,7 +16885,8 @@ function lbUpdateCursor() {
     viewer.classList.remove('open');
     document.body.classList.remove('sc-images4-open');
     document.removeEventListener('keydown', _scImages4Key);
-    _scShowCategoryThumbs('images-4');
+    // Torna alla pagina Images (griglia con le 5 sezioni)
+    scSwitchSection('images');
   };
 
   window._scImages4Nav = function(dir) {
@@ -17029,7 +17041,17 @@ function lbUpdateCursor() {
     document.removeEventListener('keydown', _scImages2Key);
     _imgs2NavLocked = false;
     // Torna al wrapper di images-2 (pagina con griglia thumbnail), non alla griglia dark
-    if (typeof _scImages2Open === 'function') _scImages2Open();
+    if (typeof _scImages2Open === 'function') {
+      _scImages2Open();
+      // Ripristina posizione scroll alla thumbnail cliccata
+      var _savedScroll = window._imgs2ScrollPos || 0;
+      if (_savedScroll > 0) {
+        setTimeout(function() {
+          var _w2 = document.getElementById('sc-images2-wrapper');
+          if (_w2) _w2.scrollTop = _savedScroll;
+        }, 50);
+      }
+    }
   };
 
   window._scImages2Nav = function(dir) {
