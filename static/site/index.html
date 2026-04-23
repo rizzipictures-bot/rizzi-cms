@@ -16621,11 +16621,14 @@ function lbUpdateCursor() {
     tmp.src = src;
   }
 
-  window._scImages1Close = function() {
+    window._scImages1Close = function() {
     const viewer = document.getElementById('sc-images1-viewer');
     viewer.classList.remove('open');
     document.body.classList.remove('sc-images1-open');
     document.removeEventListener('keydown', _scImages1Key);
+    // Nascondi griglia dark se visibile
+    var _cto1 = document.getElementById('sc-cat-thumbs-overlay');
+    if (_cto1) _cto1.style.display = 'none';
     // Torna alla pagina Images (griglia con le 5 sezioni)
     scSwitchSection('images');
   };
@@ -16788,6 +16791,9 @@ function lbUpdateCursor() {
     viewer.classList.remove('open');
     document.body.classList.remove('sc-images5-open');
     document.removeEventListener('keydown', _scImages5Key);
+    // Nascondi griglia dark se visibile
+    var _cto5 = document.getElementById('sc-cat-thumbs-overlay');
+    if (_cto5) _cto5.style.display = 'none';
     // Torna alla pagina Images (griglia con le 5 sezioni)
     scSwitchSection('images');
   };
@@ -16885,6 +16891,9 @@ function lbUpdateCursor() {
     viewer.classList.remove('open');
     document.body.classList.remove('sc-images4-open');
     document.removeEventListener('keydown', _scImages4Key);
+    // Nascondi griglia dark se visibile
+    var _cto4 = document.getElementById('sc-cat-thumbs-overlay');
+    if (_cto4) _cto4.style.display = 'none';
     // Torna alla pagina Images (griglia con le 5 sezioni)
     scSwitchSection('images');
   };
@@ -16964,7 +16973,13 @@ function lbUpdateCursor() {
       grid.appendChild(item);
     });
     wrapper.classList.add('open');
-    wrapper.scrollTop = 0;
+    // Ripristina posizione scroll se disponibile (dopo chiusura viewer)
+    var _s2sp = window._imgs2ScrollPos || 0;
+    if (_s2sp > 0) {
+      setTimeout(function() { wrapper.scrollTop = _s2sp; window._imgs2ScrollPos = 0; }, 30);
+    } else {
+      wrapper.scrollTop = 0;
+    }
     document.addEventListener('keydown', _scImages2Key);
   };
 
@@ -16976,6 +16991,9 @@ function lbUpdateCursor() {
   };
 
   function _scImages2OpenPhoto(idx) {
+    // Salva posizione scroll del wrapper prima di aprire il viewer
+    var _w2save = document.getElementById('sc-images2-wrapper');
+    if (_w2save) window._imgs2ScrollPos = _w2save.scrollTop;
     _idx2 = idx;
     var url = _imgs2[idx];
     var tmp = new Image();
