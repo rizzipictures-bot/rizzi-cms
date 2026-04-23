@@ -17923,8 +17923,8 @@ function scSwitchSection(section) {
   const wrapper = document.getElementById('sculptures-images-wrapper');
   const sectionContent = document.getElementById('sculptures-section-content');
   const pageTitle = document.getElementById('sculptures-page-title');
-  // Mostra/nascondi box Topics (solo in images-book)
-  _scTopicsSetVisible(section === 'images-book');
+  // Mostra/nascondi box Topics (in images-book e nella pagina Sculptures Images)
+  _scTopicsSetVisible(section === 'images-book' || section === 'images');
   // Nascondi TUTTI i box flottanti delle sezioni precedenti ad ogni cambio sezione
   (function() {
     // Artist's note (diary)
