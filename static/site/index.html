@@ -11595,7 +11595,7 @@
       <!-- Box Topics (stile Corboz) — visibile solo in images-book -->
       <div id="sc-topics-box">
         <div id="sc-topics-drag" onclick="scToggleTopics()"></div>
-        <div id="sc-topics-selected" onclick="scToggleTopics()">Text</div>
+        <div id="sc-topics-selected" onclick="scToggleTopics()">Images</div>
         <ul id="sc-topics-list">
           <li onclick="scTopicsNavigate('images-1')" class="">Bound Images</li>
           <li onclick="scTopicsNavigate('images-2')">Images from the broader archive</li>
@@ -18028,7 +18028,7 @@ function scTopicsNavigate(section) {
   // Aggiorna il testo della voce selezionata
   const sel = document.getElementById('sc-topics-selected');
   const titles = {
-    'images-book': 'Text',
+    'images-book': 'Images',
     'images-1': 'Bound Images',
     'images-2': 'Images from the broader archive',
     'images-3': 'A Life Beside',
