@@ -7944,6 +7944,12 @@
     #sc-images2-wrapper.open #sc-images2-close {
       display: inline-flex;
     }
+    /* Nasconde il pulsante X della pagina quando il viewer è aperto */
+    #sc-images2-viewer.open ~ #sc-images2-close,
+    #sc-images2-wrapper #sc-images2-viewer.open + * + * + #sc-images2-close,
+    #sc-images2-wrapper.viewer-open #sc-images2-close {
+      display: none !important;
+    }
     /* Griglia masonry */
     #sc-images2-grid {
       padding: 32px 28px 60px 28px;
@@ -12062,7 +12068,7 @@
   <canvas id="sc-images2-grain"></canvas>
   <img id="sc-images2-img" src="" alt="">
   <img id="sc-images2-img-next" src="" alt="">
-  <button id="sc-images2-close-viewer" class="ae-fab-btn ae-fab-close btn-circle-close" onclick="_scImages2ViewerClose()" aria-label="Chiudi"></button>
+  <button id="sc-images2-close-viewer" class="btn-circle-close" onclick="_scImages2ViewerClose()" aria-label="Chiudi"></button>
   <button id="sc-images2-prev" onclick="_scImages2Nav(-1)">PREV</button>
   <button id="sc-images2-next" onclick="_scImages2Nav(1)">NEXT</button>
   <div id="sc-images2-count"></div>
@@ -16957,6 +16963,20 @@ function lbUpdateCursor() {
       (p.images || []).forEach(function(img) { _imgs2.push(img.url); });
     });
     if (_imgs2.length === 0) return;
+    window._s2scrollCount = 0;
+    window._s2heroCollapsed = false;
+    // Reset stile hero e grid-scroll se erano stati collassati
+    var _heroReset = document.getElementById('sc-images2-hero');
+    var _gsReset = document.getElementById('sc-images2-grid-scroll');
+    if (_heroReset) { _heroReset.style.transition = ''; _heroReset.style.height = ''; }
+    if (_gsReset) { _gsReset.style.transition = ''; _gsReset.style.top = ''; }
+    window._s2scrollCount = 0;
+    window._s2heroCollapsed = false;
+    // Reset stile hero e grid-scroll se erano stati collassati
+    var _heroReset = document.getElementById('sc-images2-hero');
+    var _gsReset = document.getElementById('sc-images2-grid-scroll');
+    if (_heroReset) { _heroReset.style.transition = ''; _heroReset.style.height = ''; }
+    if (_gsReset) { _gsReset.style.transition = ''; _gsReset.style.top = ''; }
     var wrapper = document.getElementById('sc-images2-wrapper');
     var heroImg = document.getElementById('sc-images2-hero-img');
     var hero    = document.getElementById('sc-images2-hero');
@@ -17008,9 +17028,69 @@ function lbUpdateCursor() {
       }, 800);
     }
     document.addEventListener('keydown', _scImages2Key);
+    // Hero collapse al terzo scroll verso il basso
+    var _s2scrollCount = 0;
+    var _s2heroCollapsed = false;
+    var _s2scrollHandler = function() {
+      if (_s2heroCollapsed) return;
+      _s2scrollCount++;
+      if (_s2scrollCount >= 3) {
+        _s2heroCollapsed = true;
+        var _h = document.getElementById('sc-images2-hero');
+        var _gs = document.getElementById('sc-images2-grid-scroll');
+        if (_h) {
+          _h.style.transition = 'height 0.6s cubic-bezier(0.77,0,0.175,1)';
+          _h.style.height = '0px';
+        }
+        if (_gs) {
+          _gs.style.transition = 'top 0.6s cubic-bezier(0.77,0,0.175,1)';
+          _gs.style.top = '0px';
+        }
+      }
+    };
+    var _s2gridScroll = document.getElementById('sc-images2-grid-scroll');
+    if (_s2gridScroll) {
+      _s2gridScroll.addEventListener('scroll', _s2scrollHandler);
+      window._s2scrollHandler = _s2scrollHandler;
+      window._s2gridScrollEl = _s2gridScroll;
+    }
+    // Hero collapse al terzo scroll verso il basso
+    var _s2scrollCount = 0;
+    var _s2heroCollapsed = false;
+    var _s2scrollHandler = function() {
+      if (_s2heroCollapsed) return;
+      _s2scrollCount++;
+      if (_s2scrollCount >= 3) {
+        _s2heroCollapsed = true;
+        var _h = document.getElementById('sc-images2-hero');
+        var _gs = document.getElementById('sc-images2-grid-scroll');
+        if (_h) {
+          _h.style.transition = 'height 0.6s cubic-bezier(0.77,0,0.175,1)';
+          _h.style.height = '0px';
+        }
+        if (_gs) {
+          _gs.style.transition = 'top 0.6s cubic-bezier(0.77,0,0.175,1)';
+          _gs.style.top = '0px';
+        }
+      }
+    };
+    var _s2gridScroll = document.getElementById('sc-images2-grid-scroll');
+    if (_s2gridScroll) {
+      _s2gridScroll.addEventListener('scroll', _s2scrollHandler);
+      window._s2scrollHandler = _s2scrollHandler;
+      window._s2gridScrollEl = _s2gridScroll;
+    }
   };
 
   window._scImages2Close = function() {
+    // Rimuovi listener scroll hero
+    if (window._s2scrollHandler && window._s2gridScrollEl) {
+      window._s2gridScrollEl.removeEventListener('scroll', window._s2scrollHandler);
+    }
+    // Rimuovi listener scroll hero
+    if (window._s2scrollHandler && window._s2gridScrollEl) {
+      window._s2gridScrollEl.removeEventListener('scroll', window._s2scrollHandler);
+    }
     var wrapper = document.getElementById('sc-images2-wrapper');
     var hero    = document.getElementById('sc-images2-hero');
     var grid    = document.getElementById('sc-images2-grid');
@@ -17058,8 +17138,61 @@ function lbUpdateCursor() {
     img.style.transition = '';
     if (count) count.textContent = String(idx + 1).padStart(2,'0') + ' / ' + String(_imgs2.length).padStart(2,'0');
     viewer.classList.add('open');
+    var _w2wrap = document.getElementById('sc-images2-wrapper'); if (_w2wrap) _w2wrap.classList.add('viewer-open');
     document.body.classList.add('sc-images2-open');
     document.addEventListener('keydown', _scImages2Key);
+    // Hero collapse al terzo scroll verso il basso
+    var _s2scrollCount = 0;
+    var _s2heroCollapsed = false;
+    var _s2scrollHandler = function() {
+      if (_s2heroCollapsed) return;
+      _s2scrollCount++;
+      if (_s2scrollCount >= 3) {
+        _s2heroCollapsed = true;
+        var _h = document.getElementById('sc-images2-hero');
+        var _gs = document.getElementById('sc-images2-grid-scroll');
+        if (_h) {
+          _h.style.transition = 'height 0.6s cubic-bezier(0.77,0,0.175,1)';
+          _h.style.height = '0px';
+        }
+        if (_gs) {
+          _gs.style.transition = 'top 0.6s cubic-bezier(0.77,0,0.175,1)';
+          _gs.style.top = '0px';
+        }
+      }
+    };
+    var _s2gridScroll = document.getElementById('sc-images2-grid-scroll');
+    if (_s2gridScroll) {
+      _s2gridScroll.addEventListener('scroll', _s2scrollHandler);
+      window._s2scrollHandler = _s2scrollHandler;
+      window._s2gridScrollEl = _s2gridScroll;
+    }
+    // Hero collapse al terzo scroll verso il basso
+    var _s2scrollCount = 0;
+    var _s2heroCollapsed = false;
+    var _s2scrollHandler = function() {
+      if (_s2heroCollapsed) return;
+      _s2scrollCount++;
+      if (_s2scrollCount >= 3) {
+        _s2heroCollapsed = true;
+        var _h = document.getElementById('sc-images2-hero');
+        var _gs = document.getElementById('sc-images2-grid-scroll');
+        if (_h) {
+          _h.style.transition = 'height 0.6s cubic-bezier(0.77,0,0.175,1)';
+          _h.style.height = '0px';
+        }
+        if (_gs) {
+          _gs.style.transition = 'top 0.6s cubic-bezier(0.77,0,0.175,1)';
+          _gs.style.top = '0px';
+        }
+      }
+    };
+    var _s2gridScroll = document.getElementById('sc-images2-grid-scroll');
+    if (_s2gridScroll) {
+      _s2gridScroll.addEventListener('scroll', _s2scrollHandler);
+      window._s2scrollHandler = _s2scrollHandler;
+      window._s2gridScrollEl = _s2gridScroll;
+    }
   }
 
   function _scImages2OpenPortrait(idx) {
@@ -17082,11 +17215,64 @@ function lbUpdateCursor() {
     viewer.classList.add('open');
     document.body.classList.add('sc-images2-open');
     document.addEventListener('keydown', _scImages2Key);
+    // Hero collapse al terzo scroll verso il basso
+    var _s2scrollCount = 0;
+    var _s2heroCollapsed = false;
+    var _s2scrollHandler = function() {
+      if (_s2heroCollapsed) return;
+      _s2scrollCount++;
+      if (_s2scrollCount >= 3) {
+        _s2heroCollapsed = true;
+        var _h = document.getElementById('sc-images2-hero');
+        var _gs = document.getElementById('sc-images2-grid-scroll');
+        if (_h) {
+          _h.style.transition = 'height 0.6s cubic-bezier(0.77,0,0.175,1)';
+          _h.style.height = '0px';
+        }
+        if (_gs) {
+          _gs.style.transition = 'top 0.6s cubic-bezier(0.77,0,0.175,1)';
+          _gs.style.top = '0px';
+        }
+      }
+    };
+    var _s2gridScroll = document.getElementById('sc-images2-grid-scroll');
+    if (_s2gridScroll) {
+      _s2gridScroll.addEventListener('scroll', _s2scrollHandler);
+      window._s2scrollHandler = _s2scrollHandler;
+      window._s2gridScrollEl = _s2gridScroll;
+    }
+    // Hero collapse al terzo scroll verso il basso
+    var _s2scrollCount = 0;
+    var _s2heroCollapsed = false;
+    var _s2scrollHandler = function() {
+      if (_s2heroCollapsed) return;
+      _s2scrollCount++;
+      if (_s2scrollCount >= 3) {
+        _s2heroCollapsed = true;
+        var _h = document.getElementById('sc-images2-hero');
+        var _gs = document.getElementById('sc-images2-grid-scroll');
+        if (_h) {
+          _h.style.transition = 'height 0.6s cubic-bezier(0.77,0,0.175,1)';
+          _h.style.height = '0px';
+        }
+        if (_gs) {
+          _gs.style.transition = 'top 0.6s cubic-bezier(0.77,0,0.175,1)';
+          _gs.style.top = '0px';
+        }
+      }
+    };
+    var _s2gridScroll = document.getElementById('sc-images2-grid-scroll');
+    if (_s2gridScroll) {
+      _s2gridScroll.addEventListener('scroll', _s2scrollHandler);
+      window._s2scrollHandler = _s2scrollHandler;
+      window._s2gridScrollEl = _s2gridScroll;
+    }
   }
 
   window._scImages2ViewerClose = function() {
     var viewer = document.getElementById('sc-images2-viewer');
     if (viewer) { viewer.classList.remove('open'); viewer.classList.remove('portrait'); }
+    var _w2wrap2 = document.getElementById('sc-images2-wrapper'); if (_w2wrap2) _w2wrap2.classList.remove('viewer-open');
     document.body.classList.remove('sc-images2-open');
     document.removeEventListener('keydown', _scImages2Key);
     _imgs2NavLocked = false;
