@@ -2250,7 +2250,7 @@ Es: &quot;Havana, 2004. Ottantasette fotografie scattate in una settimana. Ne ho
 <div id="toast"></div>
 
 <script>
-const API = '/api';
+const API = (location.hostname === 'www.alessandrorizzi.com' || location.hostname === 'alessandrorizzi.com') ? 'https://rizzi-cms.onrender.com/api' : '/api';
 let currentProject = null;
 let currentFilter  = 'all';
 let previewDark    = false;
@@ -5194,7 +5194,7 @@ function anSetDays(d, btn) {
   anLoad();
 }
 function anLoad() {
-  var url = '/api/analytics?limit=200' + (_anDays > 0 ? '&days=' + _anDays : '');
+  var url = API + '/analytics?limit=200' + (_anDays > 0 ? '&days=' + _anDays : '');
   fetch(url).then(r => r.json()).then(function(data) {
     if (data.error) { console.error('Analytics error:', data.error); return; }
     document.getElementById('an-total').textContent = data.total || 0;
