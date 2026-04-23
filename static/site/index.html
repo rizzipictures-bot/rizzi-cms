@@ -7886,28 +7886,46 @@
       inset: 0;
       z-index: 1200;
       background: #fff;
-      overflow-y: auto;
+      overflow-y: hidden;
       overflow-x: hidden;
       -webkit-overflow-scrolling: touch;
     }
     #sc-images2-wrapper.open {
       display: block;
     }
-    /* Hero */
+    /* Dopo l'animazione a tenda: abilita lo scroll */
+    #sc-images2-wrapper.scroll-ready {
+      overflow-y: auto;
+    }
+    /* Hero — animazione a tenda: parte da 100vh, poi scende a 42vh */
     #sc-images2-hero {
       width: 100%;
-      height: 75vh;
-      min-height: 420px;
+      height: 100vh;
       position: relative;
       overflow: hidden;
       background: #111;
+      /* Transizione a tenda: riduce l'altezza dal basso verso l'alto */
+      transition: height 0.9s cubic-bezier(0.77, 0, 0.175, 1);
+      flex-shrink: 0;
+    }
+    #sc-images2-hero.curtain-done {
+      height: 42vh;
+      min-height: 280px;
     }
     #sc-images2-hero img {
       width: 100%;
       height: 100%;
       object-fit: cover;
-      object-position: center;
+      object-position: center top;
       display: block;
+    }
+    /* Griglia nascosta durante l'animazione a tenda */
+    #sc-images2-grid.curtain-hidden {
+      opacity: 0;
+      pointer-events: none;
+    }
+    #sc-images2-grid {
+      transition: opacity 0.3s ease;
     }
     /* Close button */
     #sc-images2-close {
@@ -16951,36 +16969,60 @@ function lbUpdateCursor() {
     if (_imgs2.length === 0) return;
     var wrapper = document.getElementById('sc-images2-wrapper');
     var heroImg = document.getElementById('sc-images2-hero-img');
+    var hero    = document.getElementById('sc-images2-hero');
     var grid    = document.getElementById('sc-images2-grid');
     if (!wrapper || !heroImg || !grid) return;
     heroImg.src = '/site/sc-i2-thumb.webp';
-    grid.innerHTML = '';
-    _imgs2.forEach(function(url, idx) {
-      var item = document.createElement('div');
-      item.className = 'sc-i2-item';
-      item.innerHTML =
-        '<img class="sc-i2-item-img" src="' + url + '" alt="March for all Justice" loading="lazy">' +
-        '<div class="sc-i2-caption">' +
-          '<div class="sc-i2-caption-title">March for all Justice</div>' +
-          '<div class="sc-i2-caption-sub">Washington D.C. 12.13.2014</div>' +
-        '</div>';
-      (function(i){ item.addEventListener('click', function() { _scImages2OpenPhoto(i); }); })(idx);
-      grid.appendChild(item);
-    });
-    wrapper.classList.add('open');
+    // Costruisci griglia solo se vuota (evita ricostruzione al ritorno dal viewer)
+    if (grid.children.length === 0) {
+      _imgs2.forEach(function(url, idx) {
+        var item = document.createElement('div');
+        item.className = 'sc-i2-item';
+        item.innerHTML =
+          '<img class="sc-i2-item-img" src="' + url + '" alt="March for all Justice" loading="lazy">' +
+          '<div class="sc-i2-caption">' +
+            '<div class="sc-i2-caption-title">March for all Justice</div>' +
+            '<div class="sc-i2-caption-sub">Washington D.C. 12.13.2014</div>' +
+          '</div>';
+        (function(i){ item.addEventListener('click', function() { _scImages2OpenPhoto(i); }); })(idx);
+        grid.appendChild(item);
+      });
+    }
     // Ripristina posizione scroll se disponibile (dopo chiusura viewer)
     var _s2sp = window._imgs2ScrollPos || 0;
     if (_s2sp > 0) {
+      // Ritorno dal viewer: salta l'animazione a tenda, mostra direttamente
+      if (hero) { hero.classList.add('curtain-done'); }
+      grid.classList.remove('curtain-hidden');
+      wrapper.classList.add('open', 'scroll-ready');
       setTimeout(function() { wrapper.scrollTop = _s2sp; window._imgs2ScrollPos = 0; }, 30);
     } else {
+      // Prima apertura: animazione a tenda
+      if (hero) { hero.classList.remove('curtain-done'); }
+      grid.classList.add('curtain-hidden');
+      wrapper.classList.remove('scroll-ready');
+      wrapper.classList.add('open');
       wrapper.scrollTop = 0;
+      // Dopo 0.8s: avvia la tenda (riduce hero da 100vh a 42vh)
+      setTimeout(function() {
+        if (hero) { hero.classList.add('curtain-done'); }
+        // Dopo la transizione (0.9s): mostra griglia e abilita scroll
+        setTimeout(function() {
+          grid.classList.remove('curtain-hidden');
+          wrapper.classList.add('scroll-ready');
+        }, 920);
+      }, 800);
     }
     document.addEventListener('keydown', _scImages2Key);
   };
 
   window._scImages2Close = function() {
     var wrapper = document.getElementById('sc-images2-wrapper');
-    if (wrapper) wrapper.classList.remove('open');
+    var hero    = document.getElementById('sc-images2-hero');
+    var grid    = document.getElementById('sc-images2-grid');
+    if (wrapper) wrapper.classList.remove('open', 'scroll-ready');
+    if (hero) hero.classList.remove('curtain-done');
+    if (grid) { grid.classList.remove('curtain-hidden'); grid.innerHTML = ''; }
     document.removeEventListener('keydown', _scImages2Key);
     // Torna alla pagina Images (griglia con le 5 sezioni)
     scSwitchSection('images');
