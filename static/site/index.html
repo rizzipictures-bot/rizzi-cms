@@ -17328,6 +17328,10 @@ function scSwitchSection(section) {
     const igw = document.getElementById('sc-images-grid-wrapper');
     if (igw) { igw.style.display = 'block'; scBuildImagesGrid(); }
     document.body.classList.add('sc-images-grid-active');
+    // Rimuovi classi di sezioni con sfondo chiaro (studies/life) che renderebbero il menu nero
+    document.body.classList.remove('sc-studies-active');
+    const _vscImgGrid = document.getElementById('view-sculptures');
+    if (_vscImgGrid) _vscImgGrid.style.backgroundColor = '';
   } else if (section === 'images-1') {
     // Apri viewer fullscreen Images-1 (dalla griglia Images)
     if (wrapper) wrapper.style.display = 'none';
