@@ -16237,22 +16237,12 @@ function lbUpdateCursor() {
       if (el) { el.classList.remove('open'); }
     });
     document.body.classList.remove('sc-images1-open','sc-images4-open','sc-images5-open');
-    // Crea o recupera il container dark
+    // Crea o recupera il container overlay
     var container = document.getElementById('sc-cat-thumbs-overlay');
     if (!container) {
       container = document.createElement('div');
       container.id = 'sc-cat-thumbs-overlay';
-      container.style.cssText = 'position:fixed;inset:0;background:#111;z-index:9000;overflow-y:auto;padding:60px 24px 40px;box-sizing:border-box;';
-      // Pulsante chiudi
-      var closeBtn = document.createElement('button');
-      closeBtn.style.cssText = 'position:fixed;top:18px;right:18px;background:none;border:none;cursor:pointer;z-index:9001;color:#fff;font-size:22px;line-height:1;padding:6px;';
-      closeBtn.innerHTML = '<svg viewBox="0 0 20 20" width="16" height="16" fill="none" stroke="#fff" stroke-width="1.5" stroke-linecap="round"><line x1="2.5" y1="2.5" x2="17.5" y2="17.5"/><line x1="17.5" y1="2.5" x2="2.5" y2="17.5"/></svg>';
-      closeBtn.setAttribute('aria-label', 'Chiudi');
-      closeBtn.onclick = function() {
-        container.style.display = 'none';
-        scSwitchSection('images');
-      };
-      container.appendChild(closeBtn);
+      container.style.cssText = 'position:fixed;inset:0;background:#000;z-index:9000;overflow-y:auto;box-sizing:border-box;';
       document.body.appendChild(container);
     }
     container.style.display = 'block';
@@ -16264,32 +16254,57 @@ function lbUpdateCursor() {
     var proj = _projs.find(function(p){ return p.sc_section === section; });
     var imgs = proj && proj.images ? proj.images.map(function(img){ return img.url || img.thumb; }).filter(Boolean) : [];
     if (imgs.length === 0) { container.style.display = 'none'; scSwitchSection('images'); return; }
-    // Costruisci griglia
-    var titleEl = document.createElement('h2');
-    titleEl.style.cssText = 'color:#fff;font-size:13px;letter-spacing:0.12em;text-transform:uppercase;margin:0 0 28px 0;font-weight:400;';
+    // Svuota e ricostruisci
+    container.innerHTML = '';
+    // Pulsante chiudi (stile Overview X)
+    var closeBtn = document.createElement('button');
+    closeBtn.style.cssText = 'position:fixed;top:16px;right:18px;background:none;border:none;cursor:pointer;z-index:9001;color:#fff;padding:4px;line-height:1;';
+    closeBtn.innerHTML = '<svg viewBox="0 0 20 20" width="14" height="14" fill="none" stroke="#fff" stroke-width="1.5" stroke-linecap="round"><line x1="2.5" y1="2.5" x2="17.5" y2="17.5"/><line x1="17.5" y1="2.5" x2="2.5" y2="17.5"/></svg>';
+    closeBtn.setAttribute('aria-label', 'Chiudi');
+    closeBtn.onclick = function() {
+      container.style.display = 'none';
+      scSwitchSection('images');
+    };
+    container.appendChild(closeBtn);
+    // Titolo sezione (stile menu sculptures)
+    var titleEl = document.createElement('div');
+    titleEl.style.cssText = 'color:#fff;font-size:10px;letter-spacing:0.12em;text-transform:uppercase;padding:15px 21px 10px;font-family:"Times New Roman",Times,serif;font-weight:400;';
     titleEl.textContent = sectionTitle;
-    // Svuota e ricostruisci (escludi il closeBtn che è fixed)
-    while (container.children.length > 1) container.removeChild(container.lastChild);
     container.appendChild(titleEl);
+    // Griglia identica a Overview home: 9 colonne, celle quadrate proporzionali
     var grid = document.createElement('div');
-    grid.style.cssText = 'display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:6px;';
+    grid.style.cssText = 'display:grid;grid-template-columns:repeat(9,1fr);grid-auto-rows:calc((100vw - 24px) / 9 * 1.15);gap:16px;padding:35px 12px 40px;background:#000;';
     imgs.forEach(function(url, i) {
       var cell = document.createElement('div');
-      cell.style.cssText = 'cursor:pointer;overflow:hidden;aspect-ratio:3/2;background:#222;';
+      cell.style.cssText = 'cursor:pointer;position:relative;overflow:hidden;background:#222;';
+      var wrap = document.createElement('div');
+      wrap.style.cssText = 'width:100%;height:100%;position:relative;';
       var img = document.createElement('img');
       img.src = url;
       img.loading = 'lazy';
-      img.style.cssText = 'width:100%;height:100%;object-fit:cover;display:block;transition:opacity 0.2s;';
-      img.onmouseenter = function(){ this.style.opacity='0.75'; };
+      img.style.cssText = 'position:absolute;top:0;left:0;width:100%;height:100%;object-fit:cover;object-position:center;display:block;transition:opacity .4s cubic-bezier(.77,0,.175,1);';
+      img.onmouseenter = function(){ this.style.opacity='0.85'; };
       img.onmouseleave = function(){ this.style.opacity='1'; };
-      cell.appendChild(img);
+      wrap.appendChild(img);
+      cell.appendChild(wrap);
       cell.onclick = function() {
         container.style.display = 'none';
-        // Riapri il viewer della sezione all'indice corretto
-        if (section === 'images-1') { _idx1 = i; if(typeof _scImages1OpenLandscapeViewer==='function') { var t=new Image(); t.onload=function(){ if(t.naturalHeight>t.naturalWidth){_scImages1OpenPortraitViewer(i);}else{_scImages1OpenLandscapeViewer(i);} }; t.src=url; } }
-        else if (section === 'images-4') { _idx4 = i; if(typeof _scImages4Open==='function') { _scImages4Open(); window._scImages4Nav && (_idx4=i); } }
-        else if (section === 'images-5') { _idx5 = i; if(typeof _scImages5Open==='function') { _scImages5Open(); } }
-        else if (section === 'images-2') { if(typeof _scImages2Open==='function') { _scImages2Open(); } }
+        if (section === 'images-1') {
+          var t = new Image();
+          t.onload = function(){
+            if (t.naturalHeight > t.naturalWidth) { _scImages1OpenPortraitViewer(i); }
+            else { _scImages1OpenLandscapeViewer(i); }
+          };
+          t.src = url;
+        } else if (section === 'images-4') {
+          _idx4 = i;
+          if (typeof _scImages4Open === 'function') _scImages4Open();
+        } else if (section === 'images-5') {
+          _idx5 = i;
+          if (typeof _scImages5Open === 'function') _scImages5Open();
+        } else if (section === 'images-2') {
+          if (typeof _scImages2Open === 'function') _scImages2Open();
+        }
       };
       grid.appendChild(cell);
     });
