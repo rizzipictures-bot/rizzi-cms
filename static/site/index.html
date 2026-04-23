@@ -16694,8 +16694,9 @@ function lbUpdateCursor() {
   var _imgs2NavLocked = false;
 
   window._scImages2Open = function() {
-    var projects = (window.PROJECTS || []).filter(function(p) {
-      return p.category_id === 'sculptures' && p.sc_section === 'images-2';
+    var _allProjects = (typeof PROJECTS !== 'undefined' ? PROJECTS : []);
+    var projects = _allProjects.filter(function(p) {
+      return p.sc_section === 'images-2';
     });
     _imgs2 = [];
     projects.forEach(function(p) {
