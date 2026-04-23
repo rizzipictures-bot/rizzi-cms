@@ -1286,8 +1286,9 @@
     width: 100%; aspect-ratio: 4/3;
     object-fit: cover;
     display: block;
-    margin-bottom: 12px;
+    margin-bottom: 0;
     background: var(--light);
+    pointer-events: none; /* non intercettare il dragover — gestito dal wrapper */
   }
   .preview-thumbs {
     display: grid;
@@ -3384,7 +3385,25 @@ function renderPreview() {
 // COVER DRAG & DROP
 // ─────────────────────────────────────────────
 // Variabile globale per tracciare il drag verso la cover
-let _coverDragSrc = null; // { imgId, imgUrl } durante il drag
+let _coverDragSrc = null;    // { imgId, imgUrl } durante il drag
+let _coverDragActive = false; // true durante un drag da image-cell
+
+// CRITICO: il drag HTML5 cross-container richiede che il documento
+// abbia un listener dragover che chiami preventDefault, altrimenti
+// il browser non abilita il drop su elementi in container diversi.
+document.addEventListener('dragover', e => {
+  if (_coverDragActive) e.preventDefault();
+});
+document.addEventListener('drop', e => {
+  // Blocca il drop del browser su elementi non-target
+  if (_coverDragActive) {
+    e.preventDefault();
+    _coverDragActive = false;
+    _coverDragSrc = null;
+    const wrap = document.getElementById('preview-cover-wrap');
+    if (wrap) { wrap.classList.remove('drag-active'); wrap.classList.remove('drag-over'); }
+  }
+});
 
 /**
  * Attiva il drop-zone sulla cover del preview panel.
@@ -3392,12 +3411,14 @@ let _coverDragSrc = null; // { imgId, imgUrl } durante il drag
  */
 function _coverDragStart(imgId, imgUrl) {
   _coverDragSrc = { imgId, imgUrl };
+  _coverDragActive = true;
   const wrap = document.getElementById('preview-cover-wrap');
   if (wrap) wrap.classList.add('drag-active');
 }
 
 function _coverDragEnd() {
   _coverDragSrc = null;
+  _coverDragActive = false;
   const wrap = document.getElementById('preview-cover-wrap');
   if (wrap) {
     wrap.classList.remove('drag-active');
@@ -3449,24 +3470,36 @@ function _highlightCoverSource() {
 function _initCoverDropZone() {
   const wrap = document.getElementById('preview-cover-wrap');
   if (!wrap) return;
-  wrap.addEventListener('dragover', e => {
-    if (!_coverDragSrc) return;
+  // Rimuovi listener precedenti clonando il nodo
+  const fresh = wrap.cloneNode(true);
+  wrap.parentNode.replaceChild(fresh, wrap);
+  fresh.addEventListener('dragover', e => {
+    // Accetta sempre il dragover durante un drag da image-cell
+    if (!_coverDragActive) return;
     e.preventDefault();
+    e.stopPropagation();
     e.dataTransfer.dropEffect = 'copy';
-    wrap.classList.add('drag-over');
+    fresh.classList.add('drag-over');
   });
-  wrap.addEventListener('dragleave', e => {
-    // Ignora se il mouse si sposta su un figlio
-    if (wrap.contains(e.relatedTarget)) return;
-    wrap.classList.remove('drag-over');
-  });
-  wrap.addEventListener('drop', e => {
+  fresh.addEventListener('dragenter', e => {
+    if (!_coverDragActive) return;
     e.preventDefault();
-    wrap.classList.remove('drag-over');
-    wrap.classList.remove('drag-active');
+    fresh.classList.add('drag-over');
+  });
+  fresh.addEventListener('dragleave', e => {
+    if (!fresh.contains(e.relatedTarget)) {
+      fresh.classList.remove('drag-over');
+    }
+  });
+  fresh.addEventListener('drop', e => {
+    e.preventDefault();
+    e.stopPropagation();
+    fresh.classList.remove('drag-over');
+    fresh.classList.remove('drag-active');
     if (!_coverDragSrc) return;
     setCoverFromDrag(_coverDragSrc.imgUrl);
     _coverDragSrc = null;
+    _coverDragActive = false;
   });
 }
 
