@@ -1326,6 +1326,55 @@
     border: none; border-top: 1px solid var(--border);
     margin: 16px 0;
   }
+  /* ── COVER DROP ZONE ── */
+  .preview-cover-wrap {
+    position: relative;
+    margin-bottom: 12px;
+  }
+  .preview-cover-wrap .cover-drop-hint {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    background: rgba(0,0,0,0.45);
+    color: #fff;
+    font-size: 10px;
+    letter-spacing: 0.4px;
+    text-transform: uppercase;
+    opacity: 0;
+    transition: opacity 0.2s;
+    pointer-events: none;
+  }
+  .preview-cover-wrap .cover-drop-hint span { font-size: 18px; }
+  .preview-cover-wrap.drag-active .cover-drop-hint {
+    opacity: 1;
+    border: 2px dashed #7b2fff;
+  }
+  .preview-cover-wrap.drag-over .cover-drop-hint {
+    opacity: 1;
+    border: 2px dashed #7b2fff;
+    background: rgba(123,47,255,0.35);
+  }
+  .preview-cover-badge {
+    position: absolute;
+    top: 6px; right: 6px;
+    background: #7b2fff;
+    color: #fff;
+    font-size: 8px;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    padding: 2px 6px;
+    border-radius: 3px;
+    pointer-events: none;
+  }
+  .image-cell.cover-source {
+    outline: 2px solid #7b2fff;
+    outline-offset: -2px;
+  }
 
   /* ── CATEGORIES MANAGER ── */
   .cat-manager {
@@ -2782,10 +2831,15 @@ function renderImageGrid() {
       _dragSrcId = img.id;
       cell.classList.add('dragging');
       e.dataTransfer.effectAllowed = 'move';
+      // Notifica la cover drop zone
+      const _imgUrl = `/uploads/${img.thumb || img.file}`;
+      _coverDragStart(img.id, _imgUrl);
     });
     cell.addEventListener('dragend', () => {
       cell.classList.remove('dragging');
       grid.querySelectorAll('.drag-over-target').forEach(c => c.classList.remove('drag-over-target'));
+      // Disattiva la cover drop zone
+      _coverDragEnd();
     });
     cell.addEventListener('dragover', e => {
       e.preventDefault();
@@ -3273,9 +3327,15 @@ function renderPreview() {
   const p = currentProject;
   if (!p) return;
   const body = document.getElementById('preview-body');
-  const cover = p.images && p.images[0]
-    ? `<img class="preview-cover" src="/uploads/${p.images[0].thumb || p.images[0].file}" alt="">`
-    : `<div class="preview-cover" style="background:var(--light)"></div>`;
+  // Determina la cover: usa cover_url se impostata, altrimenti la prima immagine
+  const _coverSrc = p.cover_url ||
+    (p.images && p.images[0] ? `/uploads/${p.images[0].thumb || p.images[0].file}` : null);
+  const _coverBadge = p.cover_url
+    ? `<div class="preview-cover-badge">Cover</div>`
+    : '';
+  const cover = _coverSrc
+    ? `<img class="preview-cover" src="${_coverSrc}" alt="" id="preview-cover-img">`
+    : `<div class="preview-cover" style="background:var(--light)" id="preview-cover-img"></div>`;
 
   const thumbs = (p.images || []).slice(1, 9).map(img =>
     `<img src="/uploads/${img.thumb || img.file}" alt="">`
@@ -3306,10 +3366,108 @@ function renderPreview() {
     ${techMeta ? `<div style="font-size:9px;color:var(--gray);letter-spacing:.4px;margin-bottom:8px">${techMeta}</div>` : ''}
     ${kwCount > 0 ? `<div style="font-size:9px;color:var(--gray);margin-bottom:8px">✶ ${kwCount} keyword totali</div>` : ''}
     <hr class="preview-divider">
-    ${cover}
+    <div class="preview-cover-wrap" id="preview-cover-wrap">
+      ${cover}
+      ${_coverBadge}
+      <div class="cover-drop-hint"><span>&#8659;</span>Imposta come cover</div>
+    </div>
     ${thumbs ? `<div class="preview-thumbs">${thumbs}</div>` : ''}
     ${texts}
   `;
+  // Inizializza drop zone e highlight dopo il re-render del DOM
+  requestAnimationFrame(() => {
+    _initCoverDropZone();
+    _highlightCoverSource();
+  });
+}
+// ─────────────────────────────────────────────
+// COVER DRAG & DROP
+// ─────────────────────────────────────────────
+// Variabile globale per tracciare il drag verso la cover
+let _coverDragSrc = null; // { imgId, imgUrl } durante il drag
+
+/**
+ * Attiva il drop-zone sulla cover del preview panel.
+ * Chiamata ogni volta che inizia un drag da una image-cell.
+ */
+function _coverDragStart(imgId, imgUrl) {
+  _coverDragSrc = { imgId, imgUrl };
+  const wrap = document.getElementById('preview-cover-wrap');
+  if (wrap) wrap.classList.add('drag-active');
+}
+
+function _coverDragEnd() {
+  _coverDragSrc = null;
+  const wrap = document.getElementById('preview-cover-wrap');
+  if (wrap) {
+    wrap.classList.remove('drag-active');
+    wrap.classList.remove('drag-over');
+  }
+  // Rimuovi evidenziazione cover-source da tutte le celle
+  document.querySelectorAll('.image-cell.cover-source').forEach(c => c.classList.remove('cover-source'));
+}
+
+/**
+ * Imposta la cover del progetto corrente con l'URL fornito.
+ * Aggiorna il DB via API e aggiorna il preview.
+ */
+async function setCoverFromDrag(coverUrl) {
+  if (!currentProject) return;
+  try {
+    const res = await fetch(`${API}/projects/${currentProject.id}/cover`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ cover_url: coverUrl })
+    });
+    if (!res.ok) throw new Error('API error');
+    currentProject.cover_url = coverUrl;
+    renderPreview();
+    // Dopo il re-render, evidenzia la cella sorgente
+    _highlightCoverSource();
+    toast('Cover impostata ✔');
+  } catch(e) {
+    toast('Errore impostazione cover');
+  }
+}
+
+/** Evidenzia nella griglia la foto attualmente usata come cover */
+function _highlightCoverSource() {
+  document.querySelectorAll('.image-cell').forEach(c => c.classList.remove('cover-source'));
+  if (!currentProject || !currentProject.cover_url) return;
+  const coverUrl = currentProject.cover_url;
+  // Cerca la cella la cui img.src corrisponde alla cover_url
+  document.querySelectorAll('.image-cell').forEach(cell => {
+    const img = cell.querySelector('img');
+    if (img && img.src && img.src.includes(coverUrl.replace('/uploads/', ''))) {
+      cell.classList.add('cover-source');
+    }
+  });
+}
+
+/** Inizializza i listener drag-and-drop sulla cover nel preview panel.
+ * Chiamata dopo ogni renderPreview (il DOM viene ricreato). */
+function _initCoverDropZone() {
+  const wrap = document.getElementById('preview-cover-wrap');
+  if (!wrap) return;
+  wrap.addEventListener('dragover', e => {
+    if (!_coverDragSrc) return;
+    e.preventDefault();
+    e.dataTransfer.dropEffect = 'copy';
+    wrap.classList.add('drag-over');
+  });
+  wrap.addEventListener('dragleave', e => {
+    // Ignora se il mouse si sposta su un figlio
+    if (wrap.contains(e.relatedTarget)) return;
+    wrap.classList.remove('drag-over');
+  });
+  wrap.addEventListener('drop', e => {
+    e.preventDefault();
+    wrap.classList.remove('drag-over');
+    wrap.classList.remove('drag-active');
+    if (!_coverDragSrc) return;
+    setCoverFromDrag(_coverDragSrc.imgUrl);
+    _coverDragSrc = null;
+  });
 }
 
 function livePreview() {

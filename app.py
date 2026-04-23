@@ -589,6 +589,19 @@ def delete_project(pid):
     save_db(db)
     return jsonify({'ok': True})
 
+# ── COVER ─────────────────────────────────────
+@app.route('/api/projects/<pid>/cover', methods=['POST'])
+def set_cover(pid):
+    """Imposta la cover_url di un progetto (usata come thumbnail nella griglia del sito)."""
+    db = load_db()
+    p = next((p for p in db['projects'] if p['id'] == pid), None)
+    if not p: return jsonify({'error': 'not found'}), 404
+    data = request.json or {}
+    cover_url = data.get('cover_url', '')
+    p['cover_url'] = cover_url
+    save_db(db)
+    return jsonify({'ok': True, 'cover_url': cover_url})
+
 # ── IMAGES ────────────────────────────────────
 @app.route('/api/projects/<pid>/images', methods=['POST'])
 def upload_images(pid):

@@ -16249,9 +16249,10 @@ function lbUpdateCursor() {
       // Wrapper immagine (come sculptures-grid)
       const wrap = document.createElement('div');
       wrap.className = 'sc-img-wrap';
-      // Thumb personalizzate per celle specifiche
+      // Thumb: usa cover_url se impostata nel CMS, poi fallback su hardcoded, poi prima immagine
       const _customThumbs = { 'images-2': '/site/sc-i2-thumb.webp' };
-      const thumbUrl = _customThumbs[sec] ||
+      const thumbUrl = (proj && proj.cover_url) ||
+        _customThumbs[sec] ||
         (proj && proj.images && proj.images.length > 0
           ? (proj.images[0].url || proj.images[0].thumb)
           : null);
@@ -23271,6 +23272,11 @@ async function loadFromCMS() {
           keywords_manual: p.keywords_manual || '',
           sections:        p.sections || ['archive', 'cities'],  // sezioni in cui appare
           sc_section:      p.sc_section || null,  // sezione Sculptures di destinazione
+          cover_url:       p.cover_url
+            ? (p.cover_url.startsWith('http') ? p.cover_url
+               : p.cover_url.startsWith('/') ? CMS_API.replace('/api','') + p.cover_url
+               : CMS_API.replace('/api','') + '/uploads/' + p.cover_url)
+            : null,    // thumbnail personalizzata per la griglia
           texts:           p.texts || [],
           // File audio e video (caricati via CMS)
           audio_files: (p.audio_files || []).map(af => ({
