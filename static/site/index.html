@@ -7886,27 +7886,21 @@
       inset: 0;
       z-index: 1200;
       background: #fff;
-      overflow-y: hidden;
-      overflow-x: hidden;
-      -webkit-overflow-scrolling: touch;
+      overflow: hidden; /* il wrapper non scrolla mai */
     }
     #sc-images2-wrapper.open {
       display: block;
     }
-    /* Dopo l'animazione a tenda: abilita lo scroll */
-    #sc-images2-wrapper.scroll-ready {
-      overflow-y: auto;
-    }
-    /* Hero — animazione a tenda: parte da 100vh, poi scende a 42vh */
+    /* Hero — animazione a tenda: parte da 100vh, poi sale a 42vh */
     #sc-images2-hero {
       width: 100%;
       height: 100vh;
-      position: relative;
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      z-index: 1201;
       overflow: hidden;
       background: #111;
-      /* Transizione a tenda: riduce l'altezza dal basso verso l'alto */
       transition: height 0.9s cubic-bezier(0.77, 0, 0.175, 1);
-      flex-shrink: 0;
     }
     #sc-images2-hero.curtain-done {
       height: 42vh;
@@ -7919,12 +7913,23 @@
       object-position: center top;
       display: block;
     }
+    /* Griglia: scorre in un contenitore interno */
+    #sc-images2-grid-scroll {
+      position: fixed;
+      top: 42vh;
+      left: 0; right: 0; bottom: 0;
+      overflow-y: auto;
+      overflow-x: hidden;
+      -webkit-overflow-scrolling: touch;
+      background: #fff;
+      z-index: 1200;
+    }
     /* Griglia nascosta durante l'animazione a tenda */
-    #sc-images2-grid.curtain-hidden {
+    #sc-images2-grid-scroll.curtain-hidden {
       opacity: 0;
       pointer-events: none;
     }
-    #sc-images2-grid {
+    #sc-images2-grid-scroll {
       transition: opacity 0.3s ease;
     }
     /* Close button */
@@ -8026,10 +8031,7 @@
       height: 40px !important;
       background: #7b2fff !important;
     }
-    #sc-images2-close-viewer::before,
-    #sc-images2-close-viewer::after {
-      width: 16px !important;
-    }
+    /* stecche della X gestite da btn-circle-close */
     #sc-images2-prev, #sc-images2-next {
       position: absolute;
       top: 50%; transform: translateY(-50%);
@@ -12049,7 +12051,9 @@
   <div id="sc-images2-hero">
     <img id="sc-images2-hero-img" src="" alt="March for all Justice">
   </div>
-  <div id="sc-images2-grid"></div>
+  <div id="sc-images2-grid-scroll">
+    <div id="sc-images2-grid"></div>
+  </div>
   <button id="sc-images2-close" class="btn-circle-close" onclick="_scImages2Close()" aria-label="Chiudi"></button>
 </div>
 <!-- Viewer fullscreen landscape Images-2 -->
@@ -16980,22 +16984,26 @@ function lbUpdateCursor() {
       // Ritorno dal viewer: salta l'animazione a tenda, mostra direttamente
       if (hero) { hero.classList.add('curtain-done'); }
       grid.classList.remove('curtain-hidden');
-      wrapper.classList.add('open', 'scroll-ready');
-      setTimeout(function() { wrapper.scrollTop = _s2sp; window._imgs2ScrollPos = 0; }, 30);
+      wrapper.classList.add('open');
+      var gridScroll = document.getElementById('sc-images2-grid-scroll');
+      if (hero) { hero.classList.add('curtain-done'); }
+      if (gridScroll) { gridScroll.classList.remove('curtain-hidden'); }
+      setTimeout(function() {
+        if (gridScroll) { gridScroll.scrollTop = _s2sp; }
+        window._imgs2ScrollPos = 0;
+      }, 30);
     } else {
       // Prima apertura: animazione a tenda
       if (hero) { hero.classList.remove('curtain-done'); }
-      grid.classList.add('curtain-hidden');
-      wrapper.classList.remove('scroll-ready');
+      var gridScroll = document.getElementById('sc-images2-grid-scroll');
+      if (gridScroll) { gridScroll.classList.add('curtain-hidden'); gridScroll.scrollTop = 0; }
       wrapper.classList.add('open');
-      wrapper.scrollTop = 0;
       // Dopo 0.8s: avvia la tenda (riduce hero da 100vh a 42vh)
       setTimeout(function() {
         if (hero) { hero.classList.add('curtain-done'); }
-        // Dopo la transizione (0.9s): mostra griglia e abilita scroll
+        // Dopo la transizione (0.9s): mostra griglia
         setTimeout(function() {
-          grid.classList.remove('curtain-hidden');
-          wrapper.classList.add('scroll-ready');
+          if (gridScroll) { gridScroll.classList.remove('curtain-hidden'); }
         }, 920);
       }, 800);
     }
@@ -17015,8 +17023,8 @@ function lbUpdateCursor() {
   };
 
   function _scImages2OpenPhoto(idx) {
-    // Salva posizione scroll del wrapper prima di aprire il viewer
-    var _w2save = document.getElementById('sc-images2-wrapper');
+    // Salva posizione scroll del grid-scroll prima di aprire il viewer
+    var _w2save = document.getElementById('sc-images2-grid-scroll');
     if (_w2save) window._imgs2ScrollPos = _w2save.scrollTop;
     _idx2 = idx;
     var url = _imgs2[idx];
@@ -17089,7 +17097,7 @@ function lbUpdateCursor() {
       var _savedScroll = window._imgs2ScrollPos || 0;
       if (_savedScroll > 0) {
         setTimeout(function() {
-          var _w2 = document.getElementById('sc-images2-wrapper');
+          var _w2 = document.getElementById('sc-images2-grid-scroll');
           if (_w2) _w2.scrollTop = _savedScroll;
         }, 50);
       }
