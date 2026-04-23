@@ -21561,6 +21561,10 @@ function scCloseChild() {
   }
   // Se era in video mode, torna all'Overview
   if (wasVideoMode) scSwitchSection('overview');
+  // Se era in images-1 (Bound Images portrait viewer), mostra la griglia dark
+  else if (typeof _scCurrentSection !== 'undefined' && _scCurrentSection === 'images-1') {
+    if (typeof _scShowCategoryThumbs === 'function') _scShowCategoryThumbs('images-1');
+  }
 }
 
 // Toggle fullscreen (Stato 2 ↔ Stato 3)
