@@ -8441,13 +8441,13 @@
       padding: 0;
     }
     #view-home .thumbs-grid {
-      grid-template-columns: repeat(3, 1fr);
-      grid-auto-rows: calc((100vw - 8px) / 3 * 1.2);
-      gap: 4px;
-      padding: 8px 4px 24px;
+      grid-template-columns: repeat(2, 1fr);
+      grid-auto-rows: calc((100vw - 6px) / 2 * 1.25);
+      gap: 3px;
+      padding: 8px 3px 24px;
     }
     #view-home .thumbs-grid .thumb-item.is-landscape {
-      height: calc((100vw - 8px) / 3 * 1.2 * 0.575);
+      height: calc((100vw - 6px) / 2 * 1.25 * 0.575);
     }
     /* Nessun hover overlay su mobile */
     #view-home .thumbs-grid .thumb-item:hover::after {
@@ -9452,6 +9452,10 @@
     /* ── Celle vuote (thumb-blank): nascoste su mobile ── */
     #view-home .thumbs-grid .thumb-blank {
       display: none !important;
+    }
+    /* ── Griglia 2 colonne: assicura che non ci siano buchi visivi ── */
+    #view-home .thumbs-grid {
+      align-items: stretch;
     }
 
     /* ── 2. Griglia Overview (sculptures-grid): 1 colonna su mobile ── */
@@ -15599,8 +15603,8 @@ function buildArchive() {
             _aeThumbsView._positionKwPanel = _aePositionKwPanel;
 
             _aeThumbsView.style.display = 'none';
-            // Appeso al panel (archive-expanded) che ha overflow:hidden
-            panel.appendChild(_aeThumbsView);
+            // Appeso al body per evitare il clipping iOS Safari (overflow:hidden dell'ancestor)
+            document.body.appendChild(_aeThumbsView);
           }
 
           thumbsBtn.addEventListener('click', e => {
@@ -15992,9 +15996,9 @@ function buildArchive() {
           // Costruisci subito la vista thumbs e nascondi inner prima del primo paint
           _buildAeThumbsView();
           // Se _aeThumbsView era già stato costruito in precedenza (da una sessione precedente),
-          // _buildAeThumbsView() fa return senza aggiungerlo al panel. Assicuriamo che sia nel panel.
-          if (_aeThumbsView && _aeThumbsView.parentNode !== panel) {
-            panel.appendChild(_aeThumbsView);
+          // _buildAeThumbsView() fa return senza aggiungerlo al body. Assicuriamo che sia nel body.
+          if (_aeThumbsView && _aeThumbsView.parentNode !== document.body) {
+            document.body.appendChild(_aeThumbsView);
           }
           // Aggiorna l'indice thumbs con la foto corrente
           if (_aeThumbsView) {
