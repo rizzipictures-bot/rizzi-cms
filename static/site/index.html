@@ -7904,7 +7904,10 @@
     }
     #sc-images2-hero.curtain-done {
       height: 42vh;
-      min-height: 280px;
+    }
+    #sc-images2-hero.hero-collapsed {
+      height: 0px !important;
+      min-height: 0 !important;
     }
     #sc-images2-hero img {
       width: 100%;
@@ -7930,7 +7933,7 @@
       pointer-events: none;
     }
     #sc-images2-grid-scroll {
-      transition: opacity 0.3s ease;
+      transition: opacity 0.3s ease, top 0.6s cubic-bezier(0.77,0,0.175,1);
     }
     /* Close button */
     #sc-images2-close {
@@ -16968,14 +16971,7 @@ function lbUpdateCursor() {
     // Reset stile hero e grid-scroll se erano stati collassati
     var _heroReset = document.getElementById('sc-images2-hero');
     var _gsReset = document.getElementById('sc-images2-grid-scroll');
-    if (_heroReset) { _heroReset.style.transition = ''; _heroReset.style.height = ''; }
-    if (_gsReset) { _gsReset.style.transition = ''; _gsReset.style.top = ''; }
-    window._s2scrollCount = 0;
-    window._s2heroCollapsed = false;
-    // Reset stile hero e grid-scroll se erano stati collassati
-    var _heroReset = document.getElementById('sc-images2-hero');
-    var _gsReset = document.getElementById('sc-images2-grid-scroll');
-    if (_heroReset) { _heroReset.style.transition = ''; _heroReset.style.height = ''; }
+    if (_heroReset) { _heroReset.style.transition = ''; _heroReset.style.height = ''; _heroReset.classList.remove('hero-collapsed'); }
     if (_gsReset) { _gsReset.style.transition = ''; _gsReset.style.top = ''; }
     var wrapper = document.getElementById('sc-images2-wrapper');
     var heroImg = document.getElementById('sc-images2-hero-img');
@@ -17029,64 +17025,33 @@ function lbUpdateCursor() {
     }
     document.addEventListener('keydown', _scImages2Key);
     // Hero collapse al terzo scroll verso il basso
-    var _s2scrollCount = 0;
-    var _s2heroCollapsed = false;
-    var _s2scrollHandler = function() {
-      if (_s2heroCollapsed) return;
-      _s2scrollCount++;
-      if (_s2scrollCount >= 3) {
-        _s2heroCollapsed = true;
-        var _h = document.getElementById('sc-images2-hero');
-        var _gs = document.getElementById('sc-images2-grid-scroll');
-        if (_h) {
-          _h.style.transition = 'height 0.6s cubic-bezier(0.77,0,0.175,1)';
-          _h.style.height = '0px';
-        }
-        if (_gs) {
-          _gs.style.transition = 'top 0.6s cubic-bezier(0.77,0,0.175,1)';
-          _gs.style.top = '0px';
-        }
-      }
-    };
-    var _s2gridScroll = document.getElementById('sc-images2-grid-scroll');
-    if (_s2gridScroll) {
-      _s2gridScroll.addEventListener('scroll', _s2scrollHandler);
-      window._s2scrollHandler = _s2scrollHandler;
-      window._s2gridScrollEl = _s2gridScroll;
+    if (window._s2scrollHandler && window._s2gridScrollEl) {
+      window._s2gridScrollEl.removeEventListener('scroll', window._s2scrollHandler);
     }
-    // Hero collapse al terzo scroll verso il basso
-    var _s2scrollCount = 0;
-    var _s2heroCollapsed = false;
-    var _s2scrollHandler = function() {
-      if (_s2heroCollapsed) return;
-      _s2scrollCount++;
-      if (_s2scrollCount >= 3) {
-        _s2heroCollapsed = true;
+    window._s2scrollCount = 0;
+    window._s2heroCollapsed = false;
+    window._s2scrollHandler = function() {
+      if (window._s2heroCollapsed) return;
+      window._s2scrollCount++;
+      if (window._s2scrollCount >= 3) {
+        window._s2heroCollapsed = true;
         var _h = document.getElementById('sc-images2-hero');
         var _gs = document.getElementById('sc-images2-grid-scroll');
         if (_h) {
-          _h.style.transition = 'height 0.6s cubic-bezier(0.77,0,0.175,1)';
-          _h.style.height = '0px';
+          _h.classList.add('hero-collapsed');
         }
         if (_gs) {
-          _gs.style.transition = 'top 0.6s cubic-bezier(0.77,0,0.175,1)';
           _gs.style.top = '0px';
         }
       }
     };
-    var _s2gridScroll = document.getElementById('sc-images2-grid-scroll');
-    if (_s2gridScroll) {
-      _s2gridScroll.addEventListener('scroll', _s2scrollHandler);
-      window._s2scrollHandler = _s2scrollHandler;
-      window._s2gridScrollEl = _s2gridScroll;
+    window._s2gridScrollEl = document.getElementById('sc-images2-grid-scroll');
+    if (window._s2gridScrollEl) {
+      window._s2gridScrollEl.addEventListener('scroll', window._s2scrollHandler);
     }
   };
 
   window._scImages2Close = function() {
-    // Rimuovi listener scroll hero
-    if (window._s2scrollHandler && window._s2gridScrollEl) {
-      window._s2gridScrollEl.removeEventListener('scroll', window._s2scrollHandler);
-    }
     // Rimuovi listener scroll hero
     if (window._s2scrollHandler && window._s2gridScrollEl) {
       window._s2gridScrollEl.removeEventListener('scroll', window._s2scrollHandler);
@@ -17142,56 +17107,29 @@ function lbUpdateCursor() {
     document.body.classList.add('sc-images2-open');
     document.addEventListener('keydown', _scImages2Key);
     // Hero collapse al terzo scroll verso il basso
-    var _s2scrollCount = 0;
-    var _s2heroCollapsed = false;
-    var _s2scrollHandler = function() {
-      if (_s2heroCollapsed) return;
-      _s2scrollCount++;
-      if (_s2scrollCount >= 3) {
-        _s2heroCollapsed = true;
-        var _h = document.getElementById('sc-images2-hero');
-        var _gs = document.getElementById('sc-images2-grid-scroll');
-        if (_h) {
-          _h.style.transition = 'height 0.6s cubic-bezier(0.77,0,0.175,1)';
-          _h.style.height = '0px';
-        }
-        if (_gs) {
-          _gs.style.transition = 'top 0.6s cubic-bezier(0.77,0,0.175,1)';
-          _gs.style.top = '0px';
-        }
-      }
-    };
-    var _s2gridScroll = document.getElementById('sc-images2-grid-scroll');
-    if (_s2gridScroll) {
-      _s2gridScroll.addEventListener('scroll', _s2scrollHandler);
-      window._s2scrollHandler = _s2scrollHandler;
-      window._s2gridScrollEl = _s2gridScroll;
+    if (window._s2scrollHandler && window._s2gridScrollEl) {
+      window._s2gridScrollEl.removeEventListener('scroll', window._s2scrollHandler);
     }
-    // Hero collapse al terzo scroll verso il basso
-    var _s2scrollCount = 0;
-    var _s2heroCollapsed = false;
-    var _s2scrollHandler = function() {
-      if (_s2heroCollapsed) return;
-      _s2scrollCount++;
-      if (_s2scrollCount >= 3) {
-        _s2heroCollapsed = true;
+    window._s2scrollCount = 0;
+    window._s2heroCollapsed = false;
+    window._s2scrollHandler = function() {
+      if (window._s2heroCollapsed) return;
+      window._s2scrollCount++;
+      if (window._s2scrollCount >= 3) {
+        window._s2heroCollapsed = true;
         var _h = document.getElementById('sc-images2-hero');
         var _gs = document.getElementById('sc-images2-grid-scroll');
         if (_h) {
-          _h.style.transition = 'height 0.6s cubic-bezier(0.77,0,0.175,1)';
-          _h.style.height = '0px';
+          _h.classList.add('hero-collapsed');
         }
         if (_gs) {
-          _gs.style.transition = 'top 0.6s cubic-bezier(0.77,0,0.175,1)';
           _gs.style.top = '0px';
         }
       }
     };
-    var _s2gridScroll = document.getElementById('sc-images2-grid-scroll');
-    if (_s2gridScroll) {
-      _s2gridScroll.addEventListener('scroll', _s2scrollHandler);
-      window._s2scrollHandler = _s2scrollHandler;
-      window._s2gridScrollEl = _s2gridScroll;
+    window._s2gridScrollEl = document.getElementById('sc-images2-grid-scroll');
+    if (window._s2gridScrollEl) {
+      window._s2gridScrollEl.addEventListener('scroll', window._s2scrollHandler);
     }
   }
 
@@ -17216,56 +17154,29 @@ function lbUpdateCursor() {
     document.body.classList.add('sc-images2-open');
     document.addEventListener('keydown', _scImages2Key);
     // Hero collapse al terzo scroll verso il basso
-    var _s2scrollCount = 0;
-    var _s2heroCollapsed = false;
-    var _s2scrollHandler = function() {
-      if (_s2heroCollapsed) return;
-      _s2scrollCount++;
-      if (_s2scrollCount >= 3) {
-        _s2heroCollapsed = true;
-        var _h = document.getElementById('sc-images2-hero');
-        var _gs = document.getElementById('sc-images2-grid-scroll');
-        if (_h) {
-          _h.style.transition = 'height 0.6s cubic-bezier(0.77,0,0.175,1)';
-          _h.style.height = '0px';
-        }
-        if (_gs) {
-          _gs.style.transition = 'top 0.6s cubic-bezier(0.77,0,0.175,1)';
-          _gs.style.top = '0px';
-        }
-      }
-    };
-    var _s2gridScroll = document.getElementById('sc-images2-grid-scroll');
-    if (_s2gridScroll) {
-      _s2gridScroll.addEventListener('scroll', _s2scrollHandler);
-      window._s2scrollHandler = _s2scrollHandler;
-      window._s2gridScrollEl = _s2gridScroll;
+    if (window._s2scrollHandler && window._s2gridScrollEl) {
+      window._s2gridScrollEl.removeEventListener('scroll', window._s2scrollHandler);
     }
-    // Hero collapse al terzo scroll verso il basso
-    var _s2scrollCount = 0;
-    var _s2heroCollapsed = false;
-    var _s2scrollHandler = function() {
-      if (_s2heroCollapsed) return;
-      _s2scrollCount++;
-      if (_s2scrollCount >= 3) {
-        _s2heroCollapsed = true;
+    window._s2scrollCount = 0;
+    window._s2heroCollapsed = false;
+    window._s2scrollHandler = function() {
+      if (window._s2heroCollapsed) return;
+      window._s2scrollCount++;
+      if (window._s2scrollCount >= 3) {
+        window._s2heroCollapsed = true;
         var _h = document.getElementById('sc-images2-hero');
         var _gs = document.getElementById('sc-images2-grid-scroll');
         if (_h) {
-          _h.style.transition = 'height 0.6s cubic-bezier(0.77,0,0.175,1)';
-          _h.style.height = '0px';
+          _h.classList.add('hero-collapsed');
         }
         if (_gs) {
-          _gs.style.transition = 'top 0.6s cubic-bezier(0.77,0,0.175,1)';
           _gs.style.top = '0px';
         }
       }
     };
-    var _s2gridScroll = document.getElementById('sc-images2-grid-scroll');
-    if (_s2gridScroll) {
-      _s2gridScroll.addEventListener('scroll', _s2scrollHandler);
-      window._s2scrollHandler = _s2scrollHandler;
-      window._s2gridScrollEl = _s2gridScroll;
+    window._s2gridScrollEl = document.getElementById('sc-images2-grid-scroll');
+    if (window._s2gridScrollEl) {
+      window._s2gridScrollEl.addEventListener('scroll', window._s2scrollHandler);
     }
   }
 
