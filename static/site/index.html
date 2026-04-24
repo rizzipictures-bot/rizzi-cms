@@ -11639,6 +11639,7 @@
           <li onclick="scTopicsNavigate('images-3')">A Life Beside</li>
           <li onclick="scTopicsNavigate('images-4')">Sculptures Vol. I</li>
           <li onclick="scTopicsNavigate('images-5')">Sculpture Print proof</li>
+          <li onclick="scTopicsNavigate('studies')">Studies for Sculptures</li>
         </ul>
       </div>
 
@@ -16478,10 +16479,13 @@ function lbUpdateCursor() {
     // Pattern Corboz identico a Sculptures overview ma partendo da H:
     // Riga 1: H-V-H-V  →  indici 0,1,2,3  →  true,false,true,false
     // Riga 2: V-H-V-V  →  indici 4,5,6,7  →  false,true,false,false
-    const IMG_PATTERN = [true, false, true, false, false];
-    for (let i = 1; i <= 5; i++) {
-      const idx = i - 1; // 0-based
-      const sec = 'images-' + i;
+    // Pattern: H-V-H-V-V per le prime 5 celle, poi V per Studies
+    const IMG_PATTERN = [true, false, true, false, false, false];
+    // Celle: images-1..5 + studies
+    const _imgSections = ['images-1','images-2','images-3','images-4','images-5','studies'];
+    const _imgGridTitles = { 'images-1': 'Bound Images', 'images-2': 'Images from the broader archive', 'images-3': 'A life beside', 'images-4': 'Sculptures Vol. I', 'images-5': 'Sculpture Print proof', 'studies': 'Studies for Sculptures' };
+    const _customThumbs = { 'images-2': '/site/sc-i2-thumb.webp', 'studies': '/site/sc-studies-thumb.webp' };
+    _imgSections.forEach(function(sec, idx) {
       const proj = _projs.find(p => p.sc_section === sec);
       const cell = document.createElement('div');
       cell.setAttribute('data-images-section', sec);
@@ -16490,8 +16494,6 @@ function lbUpdateCursor() {
       // Wrapper immagine (come sculptures-grid)
       const wrap = document.createElement('div');
       wrap.className = 'sc-img-wrap';
-      // Thumb: usa cover_url se impostata nel CMS, poi fallback su hardcoded, poi prima immagine
-      const _customThumbs = { 'images-2': '/site/sc-i2-thumb.webp' };
       const thumbUrl = (proj && proj.cover_url) ||
         _customThumbs[sec] ||
         (proj && proj.images && proj.images.length > 0
@@ -16501,7 +16503,7 @@ function lbUpdateCursor() {
         const img = document.createElement('img');
         img.className = 'sc-img-thumb';
         img.src = thumbUrl;
-        img.alt = proj ? proj.title : String(i);
+        img.alt = _imgGridTitles[sec] || sec;
         img.loading = 'lazy';
         wrap.appendChild(img);
       } else {
@@ -16514,15 +16516,13 @@ function lbUpdateCursor() {
       const cap = document.createElement('div');
       cap.className = 'sc-caption';
       const t = document.createElement('p');
-      // Titoli personalizzati per le celle della griglia images
-      const _imgGridTitles = { 'images-1': 'Bound Images', 'images-2': 'Images from the broader archive', 'images-3': 'A life beside', 'images-4': 'Sculptures Vol. I', 'images-5': 'Sculpture Print proof' };
-      t.textContent = _imgGridTitles[sec] || (proj && proj.title ? proj.title : String(i));
+      t.textContent = _imgGridTitles[sec] || (proj && proj.title ? proj.title : sec);
       cap.appendChild(t);
       cell.appendChild(cap);
       // Click: apri viewer della cartella
       cell.addEventListener('click', (function(s){ return function(){ scSwitchSection(s); }; })(sec));
       grid.appendChild(cell);
-    }
+    });
   };
 
   // Apre il viewer scOpenChild in modalità fullscreen per una foto portrait di images-1
@@ -18036,8 +18036,13 @@ let scCurrentIndex   = 0;   // indice immagine nel carousel
 function scGoBack() {
   _scHideStudiesTextBox();
   _scHideLifeTextBox();
-  // Torna all'overview di Sculptures (non a view-index che è la lista fotografica)
-  scSwitchSection('overview');
+  // Se si è in studies, torna alla griglia Images (non a overview)
+  if (scCurrentSection === 'studies') {
+    scSwitchSection('images');
+  } else {
+    // Torna all'overview di Sculptures (non a view-index che è la lista fotografica)
+    scSwitchSection('overview');
+  }
 }
 
 // Naviga tra le sezioni del menu Sculptures
@@ -18053,7 +18058,7 @@ function scSwitchSection(section) {
   const sectionContent = document.getElementById('sculptures-section-content');
   const pageTitle = document.getElementById('sculptures-page-title');
   // Mostra/nascondi box Topics (in images-book e nella pagina Sculptures Images)
-  _scTopicsSetVisible(section === 'images-book' || section === 'images');
+  _scTopicsSetVisible(section === 'images-book' || section === 'images' || section === 'studies');
   // Nascondi TUTTI i box flottanti delle sezioni precedenti ad ogni cambio sezione
   (function() {
     // Artist's note (diary)
@@ -18250,7 +18255,7 @@ function scTopicsNavigate(section) {
     'video': 'Video Book',
     'diary': 'Testimonial Diary',
     'life': 'A Life Beside',
-    'studies': 'Studies',
+    'studies': 'Studies for Sculptures',
     'synopsis': 'A Story of Brotherhood and Witness',
     'recordings': 'Recordings',
     'information': 'Information'
