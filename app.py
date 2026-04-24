@@ -349,25 +349,89 @@ DB_FILE = DATA / 'db.json'
 # ─── Analytics DB ───────────────────────────────────────────────────────────
 ANALYTICS_DB = DATA / 'analytics.db'
 def _analytics_init():
-    """Crea la tabella visits se non esiste."""
+    """Crea le tabelle analytics se non esistono."""
     conn = _sqlite3.connect(str(ANALYTICS_DB))
     conn.execute("""
         CREATE TABLE IF NOT EXISTS visits (
-            id        INTEGER PRIMARY KEY AUTOINCREMENT,
-            ts        TEXT    NOT NULL,
-            ip        TEXT,
-            country   TEXT,
+            id           INTEGER PRIMARY KEY AUTOINCREMENT,
+            ts           TEXT    NOT NULL,
+            ip           TEXT,
+            country      TEXT,
             country_code TEXT,
-            city      TEXT,
-            region    TEXT,
-            lat       REAL,
-            lon       REAL,
-            device    TEXT,
-            os        TEXT,
-            browser   TEXT,
-            section   TEXT,
-            referrer  TEXT,
-            ua        TEXT
+            city         TEXT,
+            region       TEXT,
+            lat          REAL,
+            lon          REAL,
+            device       TEXT,
+            os           TEXT,
+            browser      TEXT,
+            section      TEXT,
+            referrer     TEXT,
+            ua           TEXT,
+            session_id   TEXT,
+            utm_source   TEXT,
+            utm_medium   TEXT,
+            utm_campaign TEXT,
+            utm_content  TEXT
+        )
+    """)
+    # Migrazione colonne mancanti su tabella visits esistente
+    existing_cols = [row[1] for row in conn.execute("PRAGMA table_info(visits)").fetchall()]
+    for col, typedef in [
+        ('session_id',   'TEXT'),
+        ('utm_source',   'TEXT'),
+        ('utm_medium',   'TEXT'),
+        ('utm_campaign', 'TEXT'),
+        ('utm_content',  'TEXT'),
+    ]:
+        if col not in existing_cols:
+            conn.execute(f'ALTER TABLE visits ADD COLUMN {col} {typedef}')
+    conn.execute("""
+        CREATE TABLE IF NOT EXISTS events (
+            id         INTEGER PRIMARY KEY AUTOINCREMENT,
+            ts         TEXT    NOT NULL,
+            session_id TEXT,
+            event_type TEXT,
+            section    TEXT,
+            photo_id   TEXT,
+            photo_url  TEXT,
+            duration   INTEGER,
+            scroll_pct INTEGER,
+            extra      TEXT
+        )
+    """)
+    conn.execute("""
+        CREATE TABLE IF NOT EXISTS email_tracks (
+            id           INTEGER PRIMARY KEY AUTOINCREMENT,
+            ts           TEXT    NOT NULL,
+            campaign_id  TEXT,
+            campaign_name TEXT,
+            track_type   TEXT,
+            ip           TEXT,
+            country      TEXT,
+            country_code TEXT,
+            city         TEXT,
+            device       TEXT,
+            os           TEXT,
+            browser      TEXT,
+            ua           TEXT
+        )
+    """)
+    conn.execute("""
+        CREATE TABLE IF NOT EXISTS sessions (
+            id           INTEGER PRIMARY KEY AUTOINCREMENT,
+            session_id   TEXT UNIQUE,
+            first_seen   TEXT,
+            last_seen    TEXT,
+            visit_count  INTEGER DEFAULT 1,
+            ip           TEXT,
+            country      TEXT,
+            country_code TEXT,
+            city         TEXT,
+            device       TEXT,
+            os           TEXT,
+            browser      TEXT,
+            utm_campaign TEXT
         )
     """)
     conn.commit()
@@ -2372,12 +2436,28 @@ def analytics_track():
         elif re.search(r'Edg', ua): browser = 'Edge'
         ts = datetime.datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S')
         conn = _sqlite3.connect(str(ANALYTICS_DB))
+        session_id   = data.get('session_id', '')
+        utm_source   = data.get('utm_source', '')
+        utm_medium   = data.get('utm_medium', '')
+        utm_campaign = data.get('utm_campaign', '')
+        utm_content  = data.get('utm_content', '')
         conn.execute("""
-            INSERT INTO visits (ts,ip,country,country_code,city,region,lat,lon,device,os,browser,section,referrer,ua)
-            VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)
+            INSERT INTO visits (ts,ip,country,country_code,city,region,lat,lon,device,os,browser,section,referrer,ua,session_id,utm_source,utm_medium,utm_campaign,utm_content)
+            VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
         """, (ts, ip, country, country_code, city, region, lat, lon,
                 device, os_name, browser,
-                data.get('section',''), data.get('referrer',''), ua[:512]))
+                data.get('section',''), data.get('referrer',''), ua[:512],
+                session_id, utm_source, utm_medium, utm_campaign, utm_content))
+        # Aggiorna/crea sessione
+        if session_id:
+            existing = conn.execute('SELECT id, visit_count FROM sessions WHERE session_id=?', (session_id,)).fetchone()
+            if existing:
+                conn.execute('UPDATE sessions SET last_seen=?, visit_count=visit_count+1 WHERE session_id=?', (ts, session_id))
+            else:
+                conn.execute("""
+                    INSERT INTO sessions (session_id,first_seen,last_seen,visit_count,ip,country,country_code,city,device,os,browser,utm_campaign)
+                    VALUES (?,?,?,1,?,?,?,?,?,?,?,?)
+                """, (session_id, ts, ts, ip, country, country_code, city, device, os_name, browser, utm_campaign))
         conn.commit()
         conn.close()
         return jsonify({'ok': True})
@@ -2428,13 +2508,179 @@ def analytics_read():
             params
         ).fetchall()
         conn.close()
+        # Sessioni uniche
+        unique_sessions = conn.execute(
+            f'SELECT COUNT(DISTINCT session_id) FROM visits {where} AND session_id != ""',
+            params
+        ).fetchone()[0]
+        # Browser
+        by_browser = conn.execute(
+            f'SELECT browser, COUNT(*) as n FROM visits {where} GROUP BY browser ORDER BY n DESC',
+            params
+        ).fetchall()
+        # OS
+        by_os = conn.execute(
+            f'SELECT os, COUNT(*) as n FROM visits {where} GROUP BY os ORDER BY n DESC',
+            params
+        ).fetchall()
+        # Foto più viste (da tabella events)
+        event_where = where.replace('ts', 'e.ts') if where else ''
+        by_photo = conn.execute(
+            f'''SELECT e.photo_id, e.photo_url, COUNT(*) as n
+               FROM events e
+               WHERE e.event_type="photo_open" {("AND " + event_where.replace("WHERE ","")) if event_where else ""}
+               GROUP BY e.photo_id ORDER BY n DESC LIMIT 10''',
+            params
+        ).fetchall()
+        # UTM campaigns
+        by_utm = conn.execute(
+            f'''SELECT utm_campaign, utm_source, COUNT(*) as n
+               FROM visits {where + " AND" if where else "WHERE"} utm_campaign != ""
+               GROUP BY utm_campaign ORDER BY n DESC LIMIT 20''',
+            params
+        ).fetchall()
+        conn.close()
         return jsonify({
             'total': total,
+            'unique_sessions': unique_sessions,
             'visits': visits,
             'by_country': [dict(r) for r in by_country],
             'by_device':  [dict(r) for r in by_device],
             'by_section': [dict(r) for r in by_section],
             'by_day':     [dict(r) for r in by_day],
+            'by_browser': [dict(r) for r in by_browser],
+            'by_os':      [dict(r) for r in by_os],
+            'by_photo':   [dict(r) for r in by_photo],
+            'by_utm':     [dict(r) for r in by_utm],
+        })
+    except Exception as e:
+        import traceback
+        return jsonify({'error': str(e), 'trace': traceback.format_exc()}), 500
+
+
+# ─── Analytics: track event (foto, tempo, scroll) ───────────────────────────
+@app.route('/api/track/event', methods=['POST', 'OPTIONS'])
+def analytics_track_event():
+    """Riceve un evento granulare (apertura foto, tempo sezione, scroll)."""
+    if request.method == 'OPTIONS':
+        return cors(jsonify({}))
+    import datetime
+    try:
+        data = request.get_json(silent=True) or {}
+        ts = datetime.datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S')
+        conn = _sqlite3.connect(str(ANALYTICS_DB))
+        conn.execute("""
+            INSERT INTO events (ts, session_id, event_type, section, photo_id, photo_url, duration, scroll_pct, extra)
+            VALUES (?,?,?,?,?,?,?,?,?)
+        """, (
+            ts,
+            data.get('session_id', ''),
+            data.get('event_type', ''),
+            data.get('section', ''),
+            data.get('photo_id', ''),
+            data.get('photo_url', ''),
+            data.get('duration', None),
+            data.get('scroll_pct', None),
+            data.get('extra', ''),
+        ))
+        conn.commit()
+        conn.close()
+        r = jsonify({'ok': True})
+        return cors(r)
+    except Exception as e:
+        return cors(jsonify({'ok': False, 'error': str(e)})), 500
+
+# ─── Analytics: pixel email 1×1 ─────────────────────────────────────────────
+@app.route('/api/track/pixel/<campaign_id>.gif', methods=['GET'])
+def email_pixel(campaign_id):
+    """Pixel di tracciamento 1x1 per email. Registra apertura email."""
+    import datetime, re, io
+    ts = datetime.datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S')
+    ip = request.headers.get('X-Forwarded-For', request.remote_addr or '').split(',')[0].strip()
+    ua = request.headers.get('User-Agent', '')
+    campaign_name = request.args.get('name', campaign_id)
+    # Geo
+    country = country_code = city = ''
+    try:
+        import urllib.request as _ur
+        _geo_url = f'http://ip-api.com/json/{ip}?fields=status,country,countryCode,city'
+        with _ur.urlopen(_geo_url, timeout=2) as _resp:
+            _geo = json.loads(_resp.read().decode())
+        if _geo.get('status') == 'success':
+            country = _geo.get('country', '')
+            country_code = _geo.get('countryCode', '')
+            city = _geo.get('city', '')
+    except Exception:
+        pass
+    # Device/OS/Browser
+    device = 'desktop'
+    if re.search(r'Mobile|Android|iPhone', ua, re.I): device = 'mobile'
+    elif re.search(r'iPad', ua, re.I): device = 'tablet'
+    os_name = 'Unknown'
+    if re.search(r'Windows', ua): os_name = 'Windows'
+    elif re.search(r'Mac OS X', ua): os_name = 'macOS'
+    elif re.search(r'Android', ua): os_name = 'Android'
+    elif re.search(r'iPhone|iPad', ua): os_name = 'iOS'
+    browser = 'Other'
+    if re.search(r'Chrome', ua) and not re.search(r'Edg', ua): browser = 'Chrome'
+    elif re.search(r'Safari', ua) and not re.search(r'Chrome', ua): browser = 'Safari'
+    elif re.search(r'Firefox', ua): browser = 'Firefox'
+    try:
+        conn = _sqlite3.connect(str(ANALYTICS_DB))
+        conn.execute("""
+            INSERT INTO email_tracks (ts,campaign_id,campaign_name,track_type,ip,country,country_code,city,device,os,browser,ua)
+            VALUES (?,?,?,?,?,?,?,?,?,?,?,?)
+        """, (ts, campaign_id, campaign_name, 'open', ip, country, country_code, city, device, os_name, browser, ua[:512]))
+        conn.commit()
+        conn.close()
+    except Exception:
+        pass
+    # GIF 1x1 trasparente
+    gif_bytes = bytes([
+        0x47,0x49,0x46,0x38,0x39,0x61,0x01,0x00,0x01,0x00,0x80,0x00,0x00,
+        0xFF,0xFF,0xFF,0x00,0x00,0x00,0x21,0xF9,0x04,0x01,0x00,0x00,0x00,
+        0x00,0x2C,0x00,0x00,0x00,0x00,0x01,0x00,0x01,0x00,0x00,0x02,0x02,
+        0x44,0x01,0x00,0x3B
+    ])
+    from flask import Response
+    resp = Response(gif_bytes, mimetype='image/gif')
+    resp.headers['Cache-Control'] = 'no-cache, no-store, must-revalidate'
+    resp.headers['Pragma'] = 'no-cache'
+    resp.headers['Expires'] = '0'
+    return resp
+
+# ─── Analytics: dati campagne email ─────────────────────────────────────────
+@app.route('/api/analytics/email', methods=['GET'])
+def analytics_email():
+    """Restituisce i dati delle campagne email (aperture pixel)."""
+    try:
+        days = request.args.get('days', '')
+        conn = _sqlite3.connect(str(ANALYTICS_DB))
+        conn.row_factory = _sqlite3.Row
+        where = ''
+        params = []
+        if days:
+            import datetime
+            since = (datetime.datetime.utcnow() - datetime.timedelta(days=int(days))).strftime('%Y-%m-%d %H:%M:%S')
+            where = 'WHERE ts >= ?'
+            params.append(since)
+        # Per campagna: totale aperture, paesi, dispositivi
+        by_campaign = conn.execute(
+            f'''SELECT campaign_id, campaign_name, COUNT(*) as opens,
+                      COUNT(DISTINCT ip) as unique_opens
+               FROM email_tracks {where}
+               GROUP BY campaign_id ORDER BY opens DESC''',
+            params
+        ).fetchall()
+        # Dettaglio ultime aperture
+        recent = conn.execute(
+            f'''SELECT * FROM email_tracks {where} ORDER BY id DESC LIMIT 100''',
+            params
+        ).fetchall()
+        conn.close()
+        return jsonify({
+            'by_campaign': [dict(r) for r in by_campaign],
+            'recent': [dict(r) for r in recent],
         })
     except Exception as e:
         import traceback

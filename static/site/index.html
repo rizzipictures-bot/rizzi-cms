@@ -17436,6 +17436,13 @@ function openLightbox(idx) {
   setLightboxImg(idx);
   cursorDot.style.visibility = 'hidden'; // nasconde solo la freccia
   lbUpdateCursor();
+  // Analytics: traccia apertura foto
+  try {
+    var _img = lightboxImages && lightboxImages[idx];
+    if (_img && typeof window._scTrackPhotoOpen === 'function') {
+      window._scTrackPhotoOpen(_img.id || String(idx), _img.url || '', typeof scCurrentSection !== 'undefined' ? scCurrentSection : '');
+    }
+  } catch(e) {}
 }
 
 function closeLightbox() {
@@ -18212,6 +18219,8 @@ function scSwitchSection(section) {
   // Salva la sezione precedente prima di aggiornarla (usata da _scArchiveGoBack in scBuildSectionContent)
   window._scPrevSectionBeforeSwitch = scCurrentSection;
   scCurrentSection = section;
+  // Analytics: traccia cambio sezione
+  try { if (typeof window._scTrackSectionChange === 'function') window._scTrackSectionChange(section); } catch(e) {}
   // Aggiorna nav active
   document.querySelectorAll('#sculptures-nav [data-sc-section]').forEach(el => {
     el.classList.toggle('active', el.dataset.scSection === section);
@@ -25692,23 +25701,48 @@ loadFromCMS();
 (function() {
   // Non tracciare se siamo in localhost (sviluppo locale)
   if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') return;
-  // Aspetta che la sezione sia caricata (max 3s) poi invia
-  var _sent = false;
-  function _sendTrack() {
-    if (_sent) return;
-    _sent = true;
-    var section = '';
+  // ── SESSION ID anonimo ──────────────────────────────────────────────────
+  var _scSessionId = '';
+  try {
+    _scSessionId = localStorage.getItem('_sc_sid');
+    if (!_scSessionId) {
+      _scSessionId = 'sid_' + Date.now().toString(36) + '_' + Math.random().toString(36).slice(2,8);
+      localStorage.setItem('_sc_sid', _scSessionId);
+    }
+  } catch(e) {}
+  window._scSessionId = _scSessionId;
+
+  // ── UTM PARAMETERS ───────────────────────────────────────────────────────
+  var _scUTM = {};
+  try {
+    var _urlParams = new URLSearchParams(window.location.search);
+    var _utmKeys = ['utm_source','utm_medium','utm_campaign','utm_content','utm_term'];
+    _utmKeys.forEach(function(k) {
+      var v = _urlParams.get(k);
+      if (v) {
+        _scUTM[k] = v;
+        sessionStorage.setItem(k, v); // persiste nella sessione
+      } else {
+        var sv = sessionStorage.getItem(k);
+        if (sv) _scUTM[k] = sv;
+      }
+    });
+  } catch(e) {}
+  window._scUTM = _scUTM;
+
+  // ── TRACK HELPER ─────────────────────────────────────────────────────────
+  var _scTrackAPI = (location.hostname === 'www.alessandrorizzi.com' || location.hostname === 'alessandrorizzi.com')
+    ? 'https://rizzi-cms.onrender.com/api'
+    : '/api';
+
+  function _scSendEvent(eventType, extra) {
     try {
-      // Legge la sezione corrente dal sito
-      if (typeof scCurrentSection !== 'undefined') section = scCurrentSection || '';
-      else if (typeof window._scCurrentSection !== 'undefined') section = window._scCurrentSection || '';
-    } catch(e) {}
-    var payload = {
-      section:  section,
-      referrer: document.referrer || ''
-    };
-    try {
-      fetch('/api/track', {
+      var payload = Object.assign({
+        session_id: _scSessionId,
+        event_type: eventType,
+        section: (typeof scCurrentSection !== 'undefined') ? (scCurrentSection || '') : ''
+      }, extra || {});
+      fetch(_scTrackAPI + '/track/event', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),
@@ -25716,10 +25750,72 @@ loadFromCMS();
       }).catch(function(){});
     } catch(e) {}
   }
-  // Invia dopo 1.5s (la sezione è già impostata)
+  window._scSendEvent = _scSendEvent;
+
+  // ── TRACK VISITA PAGINA ───────────────────────────────────────────────────
+  var _sent = false;
+  function _sendTrack() {
+    if (_sent) return;
+    _sent = true;
+    var section = '';
+    try {
+      if (typeof scCurrentSection !== 'undefined') section = scCurrentSection || '';
+      else if (typeof window._scCurrentSection !== 'undefined') section = window._scCurrentSection || '';
+    } catch(e) {}
+    var payload = Object.assign({
+      section:    section,
+      referrer:   document.referrer || '',
+      session_id: _scSessionId
+    }, _scUTM);
+    try {
+      fetch(_scTrackAPI + '/track', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+        keepalive: true
+      }).catch(function(){});
+    } catch(e) {}
+  }
   setTimeout(_sendTrack, 1500);
-  // Fallback: invia comunque al beforeunload se non ancora inviato
   window.addEventListener('beforeunload', _sendTrack);
+
+  // ── TRACK CAMBIO SEZIONE ──────────────────────────────────────────────────
+  var _scSectionEnterTime = Date.now();
+  var _scLastSection = '';
+  function _scTrackSectionChange(newSection) {
+    if (_scLastSection && _scLastSection !== newSection) {
+      var duration = Math.round((Date.now() - _scSectionEnterTime) / 1000);
+      _scSendEvent('section_leave', { section: _scLastSection, duration: duration });
+    }
+    _scLastSection = newSection;
+    _scSectionEnterTime = Date.now();
+    _scSendEvent('section_enter', { section: newSection });
+  }
+  window._scTrackSectionChange = _scTrackSectionChange;
+
+  // ── TRACK FOTO APERTA ─────────────────────────────────────────────────────
+  function _scTrackPhotoOpen(photoId, photoUrl, section) {
+    _scSendEvent('photo_open', {
+      photo_id:  photoId  || '',
+      photo_url: (photoUrl || '').slice(0, 300),
+      section:   section  || (typeof scCurrentSection !== 'undefined' ? scCurrentSection : '')
+    });
+  }
+  window._scTrackPhotoOpen = _scTrackPhotoOpen;
+
+  // ── TRACK SCROLL DEPTH ────────────────────────────────────────────────────
+  var _scScrollReported = {};
+  document.addEventListener('scroll', function() {
+    try {
+      var pct = Math.round((window.scrollY / (document.body.scrollHeight - window.innerHeight)) * 100);
+      var milestone = pct >= 75 ? 75 : pct >= 50 ? 50 : pct >= 25 ? 25 : 0;
+      if (milestone > 0 && !_scScrollReported[milestone]) {
+        _scScrollReported[milestone] = true;
+        _scSendEvent('scroll_depth', { scroll_pct: milestone });
+      }
+    } catch(e) {}
+  }, { passive: true });
+
 })();
 </script>
 </body>
