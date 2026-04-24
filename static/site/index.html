@@ -16652,8 +16652,13 @@ function lbUpdateCursor() {
       // Wrapper immagine (come sculptures-grid)
       const wrap = document.createElement('div');
       wrap.className = 'sc-img-wrap';
-      const thumbUrl = (proj && proj.cover_url) ||
-        _customThumbs[sec] ||
+      // Per Studies: usa la sesta foto (indice 5) come thumbnail
+      const _studiesThumb = (sec === 'studies' && proj && proj.images && proj.images.length > 5)
+        ? (proj.images[5].url || proj.images[5].thumb)
+        : null;
+      const thumbUrl = _studiesThumb ||
+        (proj && proj.cover_url) ||
+        (sec !== 'studies' ? _customThumbs[sec] : null) ||
         (proj && proj.images && proj.images.length > 0
           ? (proj.images[0].url || proj.images[0].thumb)
           : null);
