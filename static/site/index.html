@@ -23754,7 +23754,10 @@ document.addEventListener('keydown', e => {
 // Approccio B: categorie come entità separate
 // ══════════════════════════════════════════════════════════════════
 // URL relativo: funziona sia in locale (localhost:5151) che su qualsiasi host
-const CMS_API = window.location.origin + '/api';
+const CMS_API = (
+  location.hostname === 'www.alessandrorizzi.com' ||
+  location.hostname === 'alessandrorizzi.com'
+) ? 'https://rizzi-cms.onrender.com/api' : (window.location.origin + '/api');
 
 // Categorie caricate dal CMS (Approccio B)
 let CMS_CATEGORIES = [];
