@@ -5340,7 +5340,7 @@ function anLoad() {
     var photoEl = document.getElementById('an-photos-list');
     if (data.by_photo && data.by_photo.length > 0) {
       photoEl.innerHTML = data.by_photo.map(function(p) {
-        var thumb = p.photo_url ? '<img class="an-photo-thumb" src="' + p.photo_url + '" onerror="this.style.display='none'">' : '<div class="an-photo-thumb"></div>';
+        var thumb = p.photo_url ? '<img class="an-photo-thumb" src="' + p.photo_url + '" onerror="this.style.display=\'none\'">' : '<div class="an-photo-thumb"></div>';
         return '<div class="an-photo-row">' + thumb +
           '<div class="an-photo-info">' + (p.photo_id || '—') + '</div>' +
           '<div class="an-photo-count">' + p.n + '</div></div>';
