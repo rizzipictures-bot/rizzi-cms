@@ -11260,7 +11260,11 @@
   var alreadyAuth    = sessionStorage.getItem(SESSION_KEY) === '1';
   var previewMode    = sessionStorage.getItem(PREVIEW_KEY) === '1';
   var isSculptToken  = (pS === SCULPTURES_TOKEN_S && pK === SCULPTURES_TOKEN_K);
-
+  // Se si accede al sito senza token Sculptures, resetta la modalità preview
+  // (evita che la landing venga saltata nelle visite successive normali)
+  if (!isSculptToken) {
+    sessionStorage.removeItem(PREVIEW_KEY);
+  }
   if (isSculptToken) {
     sessionStorage.setItem(PREVIEW_KEY, '1');
     previewMode = true;
