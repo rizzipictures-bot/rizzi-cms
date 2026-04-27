@@ -2507,7 +2507,6 @@ def analytics_read():
             f'SELECT substr(ts,1,10) as day, COUNT(*) as n FROM visits {where} GROUP BY day ORDER BY day DESC LIMIT 30',
             params
         ).fetchall()
-        conn.close()
         # Sessioni uniche
         unique_sessions = conn.execute(
             f'SELECT COUNT(DISTINCT session_id) FROM visits {where} AND session_id != ""',
